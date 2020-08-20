@@ -1,0 +1,46 @@
+.columns {
+	width: 100%;
+	margin: auto;
+}
+
+#explore-box {
+	padding: 0;
+	width: 90%;
+	margin: auto;
+}
+
+#explore-fields {
+	max-width: 300px;
+	margin: auto;
+}
+
+#results-box {
+	min-width: 50%;
+	max-width: 50%;
+	margin: auto;
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+
+	-webkit-user-select: text; /* Safari */        
+	-moz-user-select: text; /* Firefox */
+	-ms-user-select: text;/* IE10+/Edge */
+	user-select: text; /* Standard */
+}
+
+#results-text {
+	max-width: 100%;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+}
+
+#feedback {
+	color: white;
+	background-color: rgba(0,0,0,0.75);
+	cursor: default;
+}
+
+#info-loader {
+	width: 75px;
+	height: 75px;
+}

@@ -1,0 +1,62 @@
+::selection {
+  background: rgb(200,230,255); /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  background: rgb(200,230,255); /* Gecko Browsers */
+}
+
+#background {
+		background: url('/static/images/alps.jpg');
+		background-size: cover;
+		display: flex;
+  		flex-direction: column;
+  		-webkit-user-select: none; /* Safari */        
+		-moz-user-select: none; /* Firefox */
+		-ms-user-select: none; /* IE10+/Edge */
+		user-select: none; /* Standard */
+}
+
+.footer {
+	background-color: transparent;
+}
+
+#footer-content {
+	margin: auto;
+	max-width: 550px;
+	padding: 15px;
+	padding-left: 20px;
+	padding-right: 20px;
+	width: 100%;
+	background-color: rgba(255,255,255,0.99);
+	border-color: rgba(255,255,255,1);
+	border-width: 2px;
+	border-style: solid;
+	border-radius: 80px;
+}
+
+#footer-text {
+	color: black;
+}
+
+#footer-container {
+
+margin-top: 200px;
+
+}
+
+.hide {
+	visibility: hidden;
+}
+
+
+#loader {
+	position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	background: url(/static/images/loader-one.gif) center no-repeat #ffff;
+	background-size: 75%;
+}

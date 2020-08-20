@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="has-text-centered">
+<p class="title is-1">Help</p>
+<div id="questions">
+	<div class="q">
+		<p class="title is-3">How to use</p>
+	</div>
+	<div class="a">
+		<p class="text subtitle is-5">To make use of the software, you'll first have to get the Airbnb listing id of the property that you wish to deanonymize. You can get that from the url of the listing as shown in the screen shot below.</p>
+
+		<img src="/static/images/tutorial-listing-id.png">
+		<br>
+		<p class="text subtitle is-5">After you've acquired the listing id, type it or paste it in the input box on <a href="/"><strong>the main page</strong></a> and click on the <i>Deanonymize</i> button as shown in the screen shot below.</p> 
+
+		<img src="/static/images/tutorial-main.png">
+	</div>
+</div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/help.css">
+<script src="../static/js/help.js"></script>
+{% endblock %}

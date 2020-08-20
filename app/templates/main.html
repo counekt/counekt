@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block body %}
+		<div class="columns">
+          <div id="explore-box" class="explore-box column is-auto has-text-centered">
+              <p class="title is-1">Explore</p>
+              <div id="explore-fields">
+	              <div class="field" id="location">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if listing_id %} value="{{location}}" {% endif %}>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-globe"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	              </div>
+
+                <div class="field" id="radius">
+                  <p class="control has-icons-left has-icons-right">
+                  <input id="radius-field" class="input is-info" type="listing-id" placeholder='Radius' {% if radius %} value="{{radius}}" {% endif %}>
+                    <span class="icon is-small is-left">
+                      <i class="fa fa-wifi"></i>
+                    </span>
+                    <span class="icon is-small is-right">
+                      <i class="fa fa-asterisk"></i>
+                    </span>
+                  </p>
+                </div>
+
+          	</div>
+          	<br>
+          	<a id="explore-button" class="form-button button is-link is-inverted is-outlined"><span>Explore</span></a>
+               <br>
+              <br>
+              <i><a id="feedback" class="feedback"></a></i>
+              <br>
+          </div>
+      <div id="results-box" class="column is-auto has-text-centered">
+          	 <figure class="image is-128x128 hide" id="info-loader">
+              <img class="is-rounded" src="/static/images/info-loader.gif">
+              </figure>
+          <div id="results-text">
+          </div>
+      </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/main.css">
+<script src="../static/js/main.js"></script>
+{% if listing_id %}
+<script type="text/javascript">
+  $(window).on("load", function () {
+  setTimeout(explore, window.loading_delay);
+  });
+</script>
+{% endif %}
+{% endblock %}

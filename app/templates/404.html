@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block body %}
+{% include "navbar.html" %}
+<section class="hero is-info is-bold is-small">
+<div class="hero-body">
+<div class="container has-text-centered">
+  <p class="title is-1">404 Page Not Found</p>
+
+  <p class="subtitle is-2">What you were looking for is just not there.</p>
+
+</div>
+</div>
+</section>
+{% include "footer.html" %}
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/navbar.js"></script>
+{% endblock %}
