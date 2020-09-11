@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from flask import redirect, url_for, render_template, abort, request
+from flask import redirect, url_for, render_template, abort, request, current_app
 from app import db
+from app.models import get_explore_query
 from app.main.funcs import geocode, get_listing_info
 import json
 import folium
@@ -9,36 +10,73 @@ import math
 from datetime import date
 from requests import HTTPError
 from app.main import bp
+
 # ======== Routing =========================================================== #
 
 # -------- Home page ---------------------------------------------------------- #
 
 
 @bp.route("/")
-@bp.route("/main/")
-@bp.route("/main/<listing_id>/")
-@bp.route("/<listing_id>/", methods=['GET', 'POST'])
-def main(listing_id=None):
-    if request.method == 'POST':
-        listing_id = request.form.get("listing-id")
-        print(f"id:{listing_id}:")
-        if not listing_id:
-            return json.dumps({'status': 'Oops, you forgot to enter an id'})
+@bp.route("/main/", methods=['GET', 'POST'])
+def main():
+    q_address = request.args.get('loc')
+    q_radius = request.args.get('rad')
+    q_skill = request.args.get('ski')
+    q_gender = request.args.get('gen')
+    q_min_age = request.args.get('min')
+    q_max_age = request.args.get('max')
 
-        if not listing_id.isdigit():
-            return json.dumps({'status': 'Oops, you entered an invalid id'})
+    q_strings = {"selected_address": q_address, "selected_radius": q_radius, "selected_skill": q_skill, "selected_gender": q_gender, "selected_min_age": q_min_age, "selected_max_age": q_max_age}
+
+    if request.method == 'POST':
+
+        address = request.form.get("location")
+        skill = request.form.get("skill")
+        radius = request.form.get("radius")
+        gender = request.form.get("gender")
+        min_age = request.form.get("min_age")
+        max_age = request.form.get("max_age")
+
+        print(address)
+        print(radius)
+        print(skill)
+        print(gender)
+        print(min_age)
+        print(max_age)
+
+        location = geocode(address)
+        if not location:
+            print("Non-valid location")
+            return json.dumps({'status': 'Non-valid location', 'box_id': 'location-field'})
 
         try:
-            info = get_listing_info(listing_id)
-        except HTTPError as e:
-            if e.response.status_code == 403:
-                return json.dumps({'status': 'Oops, you entered an invalid id'})
-            else:
-                raise
+            float(radius)
+        except ValueError:
+            print("Non-valid radius")
+            return json.dumps({'status': 'Non-valid radius', 'box_id': 'options-button'})
 
-        return json.dumps({'status': 'Successfully deanonymized', 'info': info})
+        print(f"Successfully verified")
 
-    return render_template("main.html", listing_id=listing_id)
+        url = f'/main?loc={address}&rad={radius}'
+
+        if skill:
+            if skill in current_app.config["AVAILABLE_SKILLS"]:
+                url += f'&ski={skill}'
+        if gender:
+            if gender in current_app.config["AVAILABLE_GENDERS"]:
+                url += f'&gen={gender}'
+        if min_age:
+            url += f'&min={min_age}'
+        if max_age:
+            url += f'&max={max_age}'
+
+        query = get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
+        profiles = query.limit(5).all()
+        print(profiles)
+        info = [p.username for p in profiles]
+        return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
+
+    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], **q_strings)
 
 
 @bp.route("/about/", methods=['GET'])
