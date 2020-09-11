@@ -18,3 +18,8 @@ class Config(object):
     LOG_TO_STDOUT = getenv('LOG_TO_STDOUT')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PERMANENT_SESSION_LIFETIME = True
+    AVAILABLE_SKILLS = ["Marketing", "Writing", "Photography",
+                        "Videography", "Photo editing", "Film editing",
+                        "Music producer", "Accountant", "Salesman",
+                        "(X) designer", "Lawyer", "Investor", "Software", "Acting"]
+    AVAILABLE_GENDERS=["Male", "Female", "Other"]
