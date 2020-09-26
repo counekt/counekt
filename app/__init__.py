@@ -1,9 +1,10 @@
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
-from flask import Flask, request, current_app
+from flask import Flask, request
 from app.config import Config
 from flask_sqlalchemy import SQLAlchemy
+#from flask_login import LoginManager
 from flask_migrate import Migrate
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func
@@ -14,6 +15,12 @@ airbnb_api = airbnb.Api(randomize=True)
 geolocator = Nominatim(user_agent="myGeocoder")
 db = SQLAlchemy()
 migrate = Migrate()
+
+"""
+login = LoginManager()
+login.login_view = 'main.login'
+login.login_message = 'Please log in to access this page.'
+"""
 
 
 def create_app(config_class=Config):

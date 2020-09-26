@@ -15,6 +15,7 @@ geopy = "*"
 airbnb = "*"
 pillow = "*"
 folium = "*"
+earthengine-api = "*"
 
 [requires]
 python_version = "3.7"
