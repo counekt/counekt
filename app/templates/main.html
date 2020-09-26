@@ -6,7 +6,7 @@
               <div id="explore-fields">
 	              <div class="field" id="location">
 	                <p class="control has-icons-left has-icons-right">
-	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if listing_id %} value="{{location}}" {% endif %}>
+	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if selected_address %} value="{{selected_address}}" {% endif %}>
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-globe"></i>
 	                  </span>
@@ -16,17 +16,75 @@
 	                </p>
 	              </div>
 
-                <div class="field" id="radius">
-                  <p class="control has-icons-left has-icons-right">
-                  <input id="radius-field" class="input is-info" type="listing-id" placeholder='Radius' {% if radius %} value="{{radius}}" {% endif %}>
-                    <span class="icon is-small is-left">
-                      <i class="fa fa-wifi"></i>
-                    </span>
-                    <span class="icon is-small is-right">
-                      <i class="fa fa-asterisk"></i>
-                    </span>
-                  </p>
+            <div id="options-box" style="position:relative;">
+                <div class="title is-4" id="options-button">
+                  <p>Options <span class="icon is-small is-right">
+                      <i id="down" class="fa fa-caret-down"></i>
+                      <i id="up" class="fa fa-caret-up"></i>
+                  </span></p>
+                  </div>
+
+                
+                <div id="options-wrap">
+                  <div id="options">
+                        <div class="option" id="radius-box">
+                        <p class="title is-4 field-title">Radius:</p>
+                        <div class="field" id="radius-wrap" style="display: table; margin: 0 auto;">
+                        <input id="radius-value" class="input is-info value" value="10" maxlength="3" data-slider="radius-slider"></input> <div id="radius-slider" style="margin: auto; float: right;"></div>
+                      </div>
+                        </div>
+
+                        <div class="option" id="skill-box">
+                        <p class="title is-4 field-title">Skill:</p>
+                        <div class="field" style="display: table; margin: 0 auto;">
+                          <div class="control has-icons-left">
+                          <div class="select is-info">
+                              <select id="skill">
+                              <option value="" selected>All</option>
+                              {% for skill in available_skills %}
+                              <option {% if skill == selected_skill %} selected {% endif %}>{{skill}}</option>
+                              {% endfor %}
+                              </select>
+                          </div>
+                          <div class="icon is-small is-left">
+                        <i class="fas fa-globe"></i>
+                        </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                      <div class="option" id="gender-box">
+                        <p class="title is-4 field-title">Gender:</p>
+                        <div class="field" style="display: table; margin: 0 auto;">
+                          <div class="control has-icons-left">
+                          <div class="select is-info">
+                              <select id="gender">
+                              <option value="" selected>All</option>
+                          {% for gender in available_genders %}
+                              <option {% if gender == selected_gender %} selected {% endif %}>{{gender}}</option>
+                          {% endfor %}
+                              </select>
+                          </div>
+                          <div class="icon is-small is-left">
+                        <i class="fas fa-intersex"></i>
+                        </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  <div class="option" id="age-box">
+                        <p class="title is-4 field-title">Age:</p>
+                        <div class="field" id="age-wrap" style="display: table; margin: 0 auto;">
+                        <input id="age-value0" class="input is-info value" value="10" maxlength="3" data-slider="age-slider" data-handle="0"> <div id="age-slider" style="margin: auto;"></div>
+                        <input id="age-value1" class="input is-info value" value="10" maxlength="3" style="float: right;" data-slider="age-slider" data-handle="1">
+                      </div>
+                        </div>
+
+
                 </div>
+              </div>
+        </div>
 
           	</div>
           	<br>
@@ -48,11 +106,38 @@
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/main.css">
 <script src="../static/js/main.js"></script>
-{% if listing_id %}
 <script type="text/javascript">
   $(window).on("load", function () {
   setTimeout(explore, window.loading_delay);
   });
 </script>
-{% endif %}
+<script type="text/javascript">
+   $(function() {
+    $( "#radius-slider" ).slider({
+      range: "min",
+      min: 0,
+      max: 999,
+      value: {% if selected_radius %}{{selected_radius}}{% else %} 5 {% endif %},
+      slide: function( event, ui ) {
+        $( "#radius-value" ).val( ui.value );
+      }
+    });
+    $( "#radius-value" ).val($("#radius-slider" ).slider("value"));
+  } );
+
+ $(function() {
+    $( "#age-slider" ).slider({
+      range: true,
+      min: 13,
+      max: 100,
+      values: [{% if selected_min_age %}{{selected_min_age}}{% else %} 13 {% endif %}, {% if selected_max_age %}{{selected_max_age}}{% else %} 100 {% endif %}],
+      slide: function( event, ui ) {
+        $( "#age-value0" ).val(ui.values[ 0 ]);
+        $( "#age-value1" ).val(ui.values[ 1 ]);
+      } 
+    });
+    $( "#age-value0" ).val( $( "#age-slider" ).slider( "values", 0));
+    $( "#age-value1" ).val( $( "#age-slider" ).slider( "values", 1));
+  } );
+</script>
 {% endblock %}
