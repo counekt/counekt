@@ -82,6 +82,11 @@ def main():
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], ** q_strings)
 
 
+@bp.route("/login/", methods=['GET'])
+def login():
+    return render_template("login.html")
+
+
 @bp.route("/about/", methods=['GET'])
 def about():
     return render_template("about.html")
