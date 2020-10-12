@@ -3,12 +3,6 @@
 	margin: auto;
 }
 
-#explore-box {
-	padding: 0;
-	width: 90%;
-	margin: auto;
-}
-
 #explore-fields {
 	max-width: 300px;
 	margin: auto;
@@ -18,25 +12,6 @@ div.field {
 	margin-top: 10px !important;
 }
 
-#results-box {
-	min-width: 50%;
-	max-width: 50%;
-	margin: auto;
-	display: flex;
-  	justify-content: center;
-  	align-items: center;
-
-	-webkit-user-select: text; /* Safari */        
-	-moz-user-select: text; /* Firefox */
-	-ms-user-select: text;/* IE10+/Edge */
-	user-select: text; /* Standard */
-}
-
-#results-text {
-	max-width: 100%;
-	overflow-wrap: break-word;
-	word-wrap: break-word;
-}
 
 #feedback {
 	color: white;
@@ -166,4 +141,25 @@ select.select option{
 
 .field-title {
 	margin-bottom: -5px !important;
+}
+
+
+#map {
+	margin: auto;
+	margin-bottom: 50px;
+	width: 50%;
+	height: 400px;
+}
+
+@media screen and (max-width: 768px) {
+	#map {
+	width: 85%;
+	height: 400px;
+}
+}
+
+#explore-box {
+	padding: 0;
+	width: 90%;
+	margin: auto;
 }
