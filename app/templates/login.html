@@ -1,10 +1,17 @@
 {% extends "base.html" %}
 {% block body %}
 		<div class="columns">
+<<<<<<< HEAD
           <div id="explore-box" class="explore-box column is-auto has-text-centered">
               <p class="title is-1">Log in</p>
               <p class="title is-3">Embark on entrepreneurship</p>
               <div id="explore-fields">
+=======
+          <div id="login-box" class="login-box column is-auto has-text-centered">
+              <p class="title is-1">Log in</p>
+              <p class="title is-3">Embark on entrepreneurship</p>
+              <div id="login-fields">
+>>>>>>> 2f72acab009602ad1170454555116f0b44c55406
 	              <div class="field" id="location">
 	                <p class="control has-icons-left has-icons-right">
 	                  <input id="location-field" class="input is-info" type="location" placeholder='Username' {% if selected_address %} value="{{selected_address}}" {% endif %}>
@@ -18,7 +25,11 @@
 	              </div>
 	              <div class="field" id="location">
 	                <p class="control has-icons-left has-icons-right">
+<<<<<<< HEAD
 	                  <input id="location-field" class="input is-info" type="location" placeholder='Password' {% if selected_address %} value="{{selected_address}}" {% endif %}>
+=======
+	                  <input id="location-field" class="input is-info" type="password" placeholder='Password' {% if selected_address %} value="{{selected_address}}" {% endif %}>
+>>>>>>> 2f72acab009602ad1170454555116f0b44c55406
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-globe"></i>
 	                  </span>
@@ -27,6 +38,15 @@
 	                  </span>
 	                </p>
 	              </div>
+<<<<<<< HEAD
 {% endblock %}
 {% block scripts %}
+=======
+	          </div>
+	      </div>
+	  </div>
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/login.css">
+>>>>>>> 2f72acab009602ad1170454555116f0b44c55406
 {% endblock %}
