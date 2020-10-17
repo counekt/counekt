@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
 		<div class="columns">
+          
           <div id="explore-box" class="explore-box column is-auto has-text-centered">
               <p class="title is-1">Explore</p>
               <div id="explore-fields">
@@ -94,16 +95,14 @@
               <i><a id="feedback" class="feedback"></a></i>
               <br>
           </div>
-      <div id="results-box" class="column is-auto has-text-centered">
-          	 <figure class="image is-128x128 hide" id="info-loader">
-              <img class="is-rounded" src="/static/images/info-loader.gif">
-              </figure>
-          <div id="results-text">
-          </div>
-      </div>
+     <div id="map">
+    </div>
 </div>
+
 {% endblock %}
 {% block scripts %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <link rel="stylesheet" href="/static/css/main.css">
 <script src="../static/js/main.js"></script>
 <script type="text/javascript">
@@ -111,6 +110,24 @@
   setTimeout(explore, window.loading_delay);
   });
 </script>
+<script type="text/javascript">
+         var map = L.map('map').setView([55.676111, 12.568333], 13);
+         
+         //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
+         layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+            subdomains: 'abcd',
+            maxZoom: 13,
+            minZoom: 2
+         }).addTo(map);
+         map.attributionControl.setPrefix(''); // Don't show the 'Powered by Leaflet' text. Attribution overload
+
+         $(document).ready(function() {
+         setTimeout(function(){ map.invalidateSize()}, 250);
+
+       });
+       
+  </script>
 <script type="text/javascript">
    $(function() {
     $( "#radius-slider" ).slider({

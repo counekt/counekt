@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import redirect, url_for, render_template, abort, request, current_app
+from flask import Markup
 from app import db
 from app.models import get_explore_query
 from app.main.funcs import geocode, get_listing_info
@@ -78,6 +79,8 @@ def main():
         print(profiles)
         info = [p.username for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
+
+    _map = folium.Map(location=[55.676111, 12.568333], tiles='CartoDBpositron', min_zoom=2, max_zoom=13, zoom_start=13, max_bounds=True, control_scale=True)
 
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], ** q_strings)
 
