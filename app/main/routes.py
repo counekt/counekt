@@ -88,7 +88,7 @@ def main():
 @bp.route("/login/", methods=['GET'])
 def login():
     return render_template("login.html")
-
+    
 
 @bp.route("/about/", methods=['GET'])
 def about():
