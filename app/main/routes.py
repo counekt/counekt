@@ -3,7 +3,7 @@ from flask import redirect, url_for, render_template, abort, request, current_ap
 from flask import Markup
 from app import db
 from app.models import get_explore_query
-from app.main.funcs import geocode, get_listing_info
+from app.main.funcs import geocode
 import json
 import folium
 from folium.plugins import FastMarkerCluster
@@ -83,7 +83,7 @@ def main():
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 
 
-@bp.route("/login/", methods=['GET'])
+@bp.route("/login/", methods=['GET', 'POST'])
 def login():
     return render_template("login.html", background=True, size="medium", footer=True)
 
