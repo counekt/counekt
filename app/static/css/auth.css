@@ -1,0 +1,68 @@
+.columns {
+	width: 100%;
+	margin: auto;
+}
+
+#auth-box {
+	padding: 0;
+	width: 90%;
+	margin: auto;
+}
+
+#auth-fields {
+	max-width: 300px;
+	margin: auto;
+}
+
+div.field {
+	margin-top: 10px !important;
+}
+
+#feedback {
+	color: white;
+	background-color: rgba(0,0,0,0.75);
+	cursor: default;
+}
+
+a {
+	color: black;
+}
+
+  #info {
+  	backdrop-filter: blur(1px);
+  	background-color: rgba(100,100,100,0.25);
+  	padding: 10px;
+	min-width: 50%;
+	max-width: 50%;
+	margin: auto;
+}
+
+
+
+@media screen and (max-width: 768px) {
+	
+	#info {
+		background-color: rgba(50,50,50,0.25);
+		min-width: 85%;
+		max-width: 85%;
+		margin: auto;
+		margin-top: 25px;
+
+	  	
+	}
+}
+
+.feedback {
+  width: 100%;
+  height: 5px;
+  padding: 0;
+  margin: 0 auto;
+  margin-top: 5px;
+}
+
+.feedback.message {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0 auto;
+}
