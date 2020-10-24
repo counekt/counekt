@@ -81,9 +81,7 @@ def main():
         info = [p.username for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
 
-    _map = folium.Map(location=[55.676111, 12.568333], tiles='CartoDBpositron', min_zoom=2, max_zoom=13, zoom_start=13, max_bounds=True, control_scale=True)
-
-    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], ** q_strings)
+    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 
 
 @bp.route("/login/", methods=['GET', 'POST'])
@@ -109,21 +107,22 @@ def login():
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
     return render_template("login.html")
-    
+
 
 @bp.route("/about/", methods=['GET'])
 def about():
-    return render_template("about.html")
+    return render_template("about.html", background=True, size="medium", footer=True)
 
 
 @bp.route("/help/", methods=['GET'])
 def help():
-    return render_template("help.html")
+    return render_template("help.html", background=True, size="medium", footer=True)
 
 
 @bp.route("/settings/", methods=['GET'])
 def settings():
-    return render_template("settings.html")
+    return render_template("settings.html", background=True, size="medium", footer=True)
+
 
 @bp.route("/register/", methods=['GET', 'POST'])
 def register():
@@ -159,7 +158,8 @@ def register():
 
     return render_template("register.html")
 
-    @bp.route("/logout/", methods=['GET'])
+
+@bp.route("/logout/", methods=['GET'])
 @login_required
 def logout():
     logout_user()
