@@ -3,7 +3,12 @@ from flask import redirect, url_for, render_template, abort, request, current_ap
 from flask import Markup
 from app import db
 from app.models import get_explore_query
+<< << << < HEAD
 from app.main.funcs import geocode
+== == == =
+from app.main.funcs import geocode, get_listing_info
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+>>>>>> > b4106b78139f06a353f8fecef91a063a4756e939
 import json
 import folium
 from folium.plugins import FastMarkerCluster
@@ -85,7 +90,27 @@ def main():
 
 @bp.route("/login/", methods=['GET', 'POST'])
 def login():
-    return render_template("login.html", background=True, size="medium", footer=True)
+    if current_user.is_authenticated:
+        return redirect(url_for("main.main"))
+
+    if request.method == 'POST':
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if not username:
+            return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})
+
+        if not password:
+            return json.dumps({'status': 'Password must be filled in', 'box_ids': ['password']})
+
+        user = models.User.query.filter_by(username=username).first()
+
+        if user is None or not user.check_password(password):
+            return json.dumps({'status': 'Incorrect username or password', 'box_ids': ['username', 'password']})
+
+        login_user(user, remember=True)
+        return json.dumps({'status': 'success'})
+    return render_template("login.html")
 
 
 @bp.route("/about/", methods=['GET'])
@@ -101,3 +126,45 @@ def help():
 @bp.route("/settings/", methods=['GET'])
 def settings():
     return render_template("settings.html", background=True, size="medium", footer=True)
+
+
+@bp.route("/register/", methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.main"))
+
+    if request.method == 'POST':
+        username = request.form.get("username")
+        password = request.form.get("password")
+        repeat_password = request.form.get("repeat-password")
+
+        if not username:
+            return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})
+
+        if not password:
+            return json.dumps({'status': 'Password must be filled in', 'box_ids': ['password']})
+
+        if not repeat_password:
+            return json.dumps({'status': 'Repeat Password must be filled in', 'box_ids': ['repeat-password']})
+
+        if not models.User.query.filter_by(username=username).first() is None:
+            return json.dumps({'status': 'Username taken', 'box_ids': ['username']})
+
+        if not password == repeat_password:
+            return json.dumps({'status': 'Passwords don\'t match', 'box_ids': ['password', 'repeat-password']})
+
+        user = models.User(username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        login_user(user, remember=True)
+        return json.dumps({'status': 'success'})
+
+    return render_template("register.html")
+
+
+@bp.route("/logout/", methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main.login'))
