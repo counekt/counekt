@@ -3,12 +3,8 @@ from flask import redirect, url_for, render_template, abort, request, current_ap
 from flask import Markup
 from app import db
 from app.models import get_explore_query
-<< << << < HEAD
-from app.main.funcs import geocode
-== == == =
 from app.main.funcs import geocode, get_listing_info
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
->>>>>> > b4106b78139f06a353f8fecef91a063a4756e939
 import json
 import folium
 from folium.plugins import FastMarkerCluster
