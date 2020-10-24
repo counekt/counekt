@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="has-navbar-fixed-top">
   <head>
     <meta charset="utf-8">
     <meta name="Frederik Christoffersen" content="Airbnb Deanonymizer">
@@ -18,12 +18,22 @@
     <div id="loader"></div>
   <div id="page" style="display: none;">
     {% include "navbar.html" %}
-    <section class="hero is-info is-bold is-large">
+
+    {% if background %}
+    <section class="hero is-info is-bold {% if size %}is-{{size}}{% endif %}">
     <div class="hero-body" id="background">
+    {% endif %}
+
     {% block body %}{% endblock %}
+
+    {% if footer %}
     {% include "footer.html" %}
+    {% endif %}
+
+    {% if background %}
   </div>
 </section>
+    {% endif %}
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
