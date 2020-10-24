@@ -1,4 +1,4 @@
-from app import geolocator, airbnb_api
+from app import geolocator
 from geopy.exc import GeocoderTimedOut
 from PIL import Image
 import requests
