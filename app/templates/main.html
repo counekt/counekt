@@ -5,7 +5,7 @@
           </div>
           <div id="explore-box" class="explore-box column is-auto has-text-centered">
               <div id="explore-fields">
-	              <div class="field" id="location">
+	              <div class="field input-field" id="location">
 	                <p class="control has-icons-left has-icons-right">
 	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if selected_address %} value="{{selected_address}}" {% endif %}>
 	                  <span class="icon is-small is-left">
@@ -30,14 +30,14 @@
                   <div id="options">
                         <div class="option" id="radius-box">
                         <p class="title is-4 field-title">Radius:</p>
-                        <div class="field" id="radius-wrap" style="display: table; margin: 0 auto;">
+                        <div class="field input-field" id="radius-wrap" style="display: table; margin: 0 auto;">
                         <input id="radius-value" class="input is-info value" value="10" maxlength="3" data-slider="radius-slider"></input> <div id="radius-slider" style="margin: auto; float: right;"></div>
                       </div>
                         </div>
 
                         <div class="option" id="skill-box">
                         <p class="title is-4 field-title">Skill:</p>
-                        <div class="field" style="display: table; margin: 0 auto;">
+                        <div class="field input-field" style="display: table; margin: 0 auto;">
                           <div class="control has-icons-left">
                           <div class="select is-info">
                               <select id="skill">
@@ -57,7 +57,7 @@
 
                       <div class="option" id="gender-box">
                         <p class="title is-4 field-title">Gender:</p>
-                        <div class="field" style="display: table; margin: 0 auto;">
+                        <div class="field input-field" style="display: table; margin: 0 auto;">
                           <div class="control has-icons-left">
                           <div class="select is-info">
                               <select id="gender">
@@ -76,7 +76,7 @@
 
                   <div class="option" id="age-box">
                         <p class="title is-4 field-title">Age:</p>
-                        <div class="field" id="age-wrap" style="display: table; margin: 0 auto;">
+                        <div class="field input-field" id="age-wrap" style="display: table; margin: 0 auto;">
                         <input id="age-value0" class="input is-info value" value="10" maxlength="3" data-slider="age-slider" data-handle="0"> <div id="age-slider" style="margin: auto;"></div>
                         <input id="age-value1" class="input is-info value" value="10" maxlength="3" style="float: right;" data-slider="age-slider" data-handle="1">
                       </div>
@@ -93,7 +93,6 @@
               <br>
           </div>
         </div>
-        <br>
 
 {% endblock %}
 {% block scripts %}
