@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="has-navbar-fixed-top">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="Frederik Christoffersen" content="Airbnb Deanonymizer">
@@ -16,7 +16,7 @@
   </head>
   <body>
     <div id="loader"></div>
-  <div id="page" style="display: none;">
+  <div id="page" style="display: none;" class="noselect">
     {% include "navbar.html" %}
 
     {% if background %}
@@ -40,6 +40,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="../static/js/base.js"></script>
     <script src="../static/js/navbar.js"></script>
+    <script src="../static/css/navbar.css"></script>
     {% block scripts %}{% endblock %}
       </body>
 </html>
