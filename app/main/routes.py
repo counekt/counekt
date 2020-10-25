@@ -156,7 +156,7 @@ def register():
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
 
-    return render_template("register.html")
+    return render_template("register.html", background=True, size="medium", footer=True)
 
 
 @bp.route("/logout/", methods=['GET'])
