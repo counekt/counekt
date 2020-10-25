@@ -3,10 +3,9 @@
 	margin: auto;
 }
 
-div.field {
+.input-field {
 	margin-top: 10px !important;
 }
-
 
 #feedback {
 	color: white;
@@ -153,8 +152,6 @@ select.select option{
 #map {
 	top: 0;
   	left: 0;
-	min-height: 680px;
-	height: 100%;
 	width: 100%;
 	z-index: 0;
 }
@@ -165,7 +162,3 @@ select.select option{
 	padding: 0;
 	width: 300px;
 }
-
-
-
-
