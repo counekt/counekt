@@ -192,3 +192,6 @@ $(document).on("click", window, function() {
  $('.value').change(function() {
    enter_value($(this));
  })
+
+ $(window).on("resize", function () { $("#map").height($(window).height()-55); map.invalidateSize(); }).trigger("resize");
+
