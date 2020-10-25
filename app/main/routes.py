@@ -106,7 +106,7 @@ def login():
 
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
-    return render_template("login.html")
+    return render_template("login.html", background=True, size="medium", footer=True)
 
 
 @bp.route("/about/", methods=['GET'])
