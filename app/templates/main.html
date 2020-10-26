@@ -5,16 +5,20 @@
           </div>
           <div id="explore-box" class="explore-box column is-auto has-text-centered">
               <div id="explore-fields">
-	              <div class="field input-field" id="location">
+	              <div class="field is-expanded has-addons" id="location">
 	                <p class="control has-icons-left has-icons-right">
 	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if selected_address %} value="{{selected_address}}" {% endif %}>
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-globe"></i>
 	                  </span>
-	                  <span class="icon is-small is-right">
-	                    <i class="fa fa-asterisk"></i>
-	                  </span>
 	                </p>
+                  <p class="control">
+                  <a class="button is-link is-active" id="search-button">
+                  <span class="icon is-small is-right" id="search-span">
+                      <i class="fa fa-search" id="search-icon"></i>
+                    </span>
+                </a>
+                </p>
 	              </div>
 
             <div id="options-box" style="position:relative;">
