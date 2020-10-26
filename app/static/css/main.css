@@ -162,3 +162,8 @@ select.select option{
 	padding: 0;
 	width: 300px;
 }
+
+#search-icon {
+	z-index: 10;
+	cursor: pointer;
+}
