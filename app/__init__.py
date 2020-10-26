@@ -9,9 +9,8 @@ from flask_migrate import Migrate
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func
 from geopy import Nominatim
-import airbnb
 
-airbnb_api = airbnb.Api(randomize=True)
+
 geolocator = Nominatim(user_agent="myGeocoder")
 db = SQLAlchemy()
 migrate = Migrate()
