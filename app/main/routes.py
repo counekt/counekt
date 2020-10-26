@@ -78,7 +78,7 @@ def main():
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
 
 
-    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], ** q_strings)
+    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 
 
 @bp.route("/login/", methods=['GET', 'POST'])
@@ -103,22 +103,23 @@ def login():
 
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
-    return render_template("login.html")
-    
+    return render_template("login.html", background=True, size="medium", footer=True)
+
 
 @bp.route("/about/", methods=['GET'])
 def about():
-    return render_template("about.html")
+    return render_template("about.html", background=True, size="medium", footer=True)
 
 
 @bp.route("/help/", methods=['GET'])
 def help():
-    return render_template("help.html")
+    return render_template("help.html", background=True, size="medium", footer=True)
 
 
 @bp.route("/settings/", methods=['GET'])
 def settings():
-    return render_template("settings.html")
+    return render_template("settings.html", background=True, size="medium", footer=True)
+
 
 @bp.route("/register/", methods=['GET', 'POST'])
 def register():
@@ -152,7 +153,8 @@ def register():
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
 
-    return render_template("register.html")
+    return render_template("register.html", background=True, size="medium", footer=True)
+
 
 @bp.route("/logout/", methods=['GET'])
 @login_required

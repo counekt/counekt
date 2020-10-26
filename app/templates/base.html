@@ -16,20 +16,31 @@
   </head>
   <body>
     <div id="loader"></div>
-  <div id="page" style="display: none;">
+  <div id="page" style="display: none;" class="noselect">
     {% include "navbar.html" %}
-    <section class="hero is-info is-bold is-large">
+
+    {% if background %}
+    <section class="hero is-info is-bold {% if size %}is-{{size}}{% endif %}">
     <div class="hero-body" id="background">
+    {% endif %}
+
     {% block body %}{% endblock %}
+
+    {% if footer %}
     {% include "footer.html" %}
+    {% endif %}
+
+    {% if background %}
   </div>
 </section>
+    {% endif %}
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="../static/js/base.js"></script>
     <script src="../static/js/navbar.js"></script>
+    <script src="../static/css/navbar.css"></script>
     {% block scripts %}{% endblock %}
       </body>
 </html>

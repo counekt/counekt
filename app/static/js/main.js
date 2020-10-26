@@ -192,3 +192,23 @@ $(document).on("click", window, function() {
  $('.value').change(function() {
    enter_value($(this));
  })
+
+ $(window).on("resize", function () { $("#map").height($(window).height()-55); map.invalidateSize(); }).trigger("resize");
+
+$(document).on('keydown', '#location-field', function() {
+
+if ($(this).val()) {
+  $("#search-span").css("cursor", "pointer");
+}
+
+else {
+  $("#search-span").css("cursor", "default");
+}
+
+});
+
+$(document).on('click', '#search-icon', function() {
+
+  console.log("oh");
+
+});
