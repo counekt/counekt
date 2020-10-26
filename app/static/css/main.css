@@ -1,17 +1,11 @@
-.columns {
-	width: 100%;
-	margin: auto;
-}
-
 #explore-fields {
 	max-width: 300px;
 	margin: auto;
 }
 
-div.field {
+.input-field {
 	margin-top: 10px !important;
 }
-
 
 #feedback {
 	color: white;
@@ -144,22 +138,32 @@ select.select option{
 }
 
 
-#map {
+#map-container {
 	margin: auto;
-	margin-bottom: 50px;
-	width: 50%;
-	height: 400px;
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
-@media screen and (max-width: 768px) {
-	#map {
-	width: 85%;
-	height: 400px;
+#map, #explore-box {
+	position: absolute;
 }
+
+#map {
+	top: 0;
+  	left: 0;
+	width: 100%;
+	z-index: 0;
 }
 
 #explore-box {
+	top: 10px;
+  	left: 10px;
 	padding: 0;
-	width: 90%;
-	margin: auto;
+	width: 300px;
+}
+
+#search-icon {
+	z-index: 10;
+	cursor: pointer;
 }
