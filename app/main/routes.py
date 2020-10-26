@@ -6,10 +6,6 @@ from app.models import get_explore_query
 from app.main.funcs import geocode, get_listing_info
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import json
-import folium
-from folium.plugins import FastMarkerCluster
-from folium.plugins import Fullscreen
-from folium import FeatureGroup, LayerControl, Map, Marker
 import re
 import math
 from datetime import date
@@ -81,7 +77,6 @@ def main():
         info = [p.username for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
 
-    _map = folium.Map(location=[55.676111, 12.568333], tiles='CartoDBpositron', min_zoom=2, max_zoom=13, zoom_start=13, max_bounds=True, control_scale=True)
 
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], ** q_strings)
 
@@ -159,7 +154,7 @@ def register():
 
     return render_template("register.html")
 
-    @bp.route("/logout/", methods=['GET'])
+@bp.route("/logout/", methods=['GET'])
 @login_required
 def logout():
     logout_user()
