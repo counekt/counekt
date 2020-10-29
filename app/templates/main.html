@@ -4,6 +4,11 @@
           <div id="map">
           </div>
           <div id="explore-box" class="explore-box column is-auto has-text-centered">
+              <div id="toggle-view-button" data-status="showing">
+                <span class="icon is-medium" id="toggle-span-icon">
+                      <i class="fas fa-caret-left" id="toggle-icon"></i>
+                    </span>
+              </div>
               <div id="explore-fields">
 	              <div class="field is-expanded has-addons" id="location">
 	                <p class="control has-icons-left has-icons-right">
@@ -147,6 +152,12 @@ $(document).ready(function() {
 setTimeout(function(){ map.invalidateSize()}, 250);
 
        });
+
+$(window).on("resize", function () {
+   $("#map").height($(window).height()-55);
+   map.invalidateSize();
+   $("#explore-box").height($(window).height()-80);
+ }).trigger("resize");
        
   </script>
 <script type="text/javascript">
