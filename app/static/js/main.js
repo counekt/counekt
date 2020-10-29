@@ -193,8 +193,6 @@ $(document).on("click", window, function() {
    enter_value($(this));
  })
 
- $(window).on("resize", function () { $("#map").height($(window).height()-55); map.invalidateSize(); }).trigger("resize");
-
 $(document).on('keydown', '#location-field', function() {
 
 if ($(this).val()) {
@@ -212,3 +210,19 @@ $(document).on('click', '#search-icon', function() {
   console.log("oh");
 
 });
+
+$(document).on('click', '#toggle-view-button', function() {
+
+if ($(this).data('status') == 'showing') {
+        $("#explore-box").animate({left: "-300px"});
+        $(this).data('status', 'hiding');
+        $("#toggle-icon").toggleClass("fas fa-caret-left fas fa-caret-right")
+
+      }
+else if ($(this).data('status') == 'hiding') {
+  $("#explore-box").animate({left: "0px"});
+     $(this).data('status', 'showing');
+     $("#toggle-icon").toggleClass("fas fa-caret-right fas fa-caret-left")
+  }
+
+})
