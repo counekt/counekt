@@ -17,6 +17,9 @@ from app.main import bp
 # -------- Home page ---------------------------------------------------------- #
 
 
+
+
+
 @bp.route("/")
 @bp.route("/main/", methods=['GET', 'POST'])
 def main():
@@ -110,6 +113,10 @@ def login():
 def about():
     return render_template("about.html", background=True, size="medium", footer=True)
 
+
+@bp.route("/fiskefrikadeller/", methods=['GET'])
+def fiskefrikadeller():
+    return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True)
 
 @bp.route("/help/", methods=['GET'])
 def help():
