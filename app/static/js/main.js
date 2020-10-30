@@ -119,14 +119,6 @@ $(document).on("click", '#options-button', function(event) {
   
 });
 
-$(document).on("click", '#options-wrap', function (event) {
-            event.stopPropagation();
-        });
-
-$(document).on("click", window, function() {
-  close_options();
-
-});
 //$(document).on('mouseover', '#options-button', function() {
 //var options = $(this).next('#options');
 //if (options.css("display") === "none") {
@@ -220,7 +212,7 @@ if ($(this).data('status') == 'showing') {
 
       }
 else if ($(this).data('status') == 'hiding') {
-  $("#explore-box").animate({left: "0px"});
+  $("#explore-box").animate({left: "7px"});
      $(this).data('status', 'showing');
      $("#toggle-icon").toggleClass("fas fa-caret-right fas fa-caret-left")
   }
