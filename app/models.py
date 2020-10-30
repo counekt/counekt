@@ -1,5 +1,5 @@
 from app import db, hybrid_method, hybrid_property, func
-# from app import login
+from app import login
 from datetime import datetime
 from app.funcs import geocode, get_age, is_older, is_younger
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,22 +9,22 @@ import math
 from hashlib import md5
 from datetime import date
 
-"""
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
-"""
+
 
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
 
     username = db.Column(db.String(120), index=True)
-    # email = db.Column(db.String(120), index=True)
-    # phone_number = db.Column(db.String(15), index=True)
-    # password_hash = db.Column(db.String(128))
+    email = db.Column(db.String(120), index=True)
+    phone_number = db.Column(db.String(15), index=True)
+    password_hash = db.Column(db.String(128))
 
-    # name = db.Column(db.String(120)e)
+    name = db.Column(db.String(120))
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unknown")
     skills = db.relationship(
@@ -39,12 +39,12 @@ class User(UserMixin, db.Model):
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
 
-    """def set_password(self, password):
+    def set_password(self, password):
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    """
+    
 
     def set_location(self, location, prelocated=False):
         if not prelocated:

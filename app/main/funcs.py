@@ -1,6 +1,5 @@
 from app import geolocator
 from geopy.exc import GeocoderTimedOut
-from PIL import Image
 import requests
 from io import BytesIO
 

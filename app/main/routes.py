@@ -6,10 +6,6 @@ from app.models import get_explore_query
 from app.main.funcs import geocode, get_listing_info
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import json
-import folium
-from folium.plugins import FastMarkerCluster
-from folium.plugins import Fullscreen
-from folium import FeatureGroup, LayerControl, Map, Marker
 import re
 import math
 from datetime import date
@@ -80,6 +76,7 @@ def main():
         print(profiles)
         info = [p.username for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
+
 
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 

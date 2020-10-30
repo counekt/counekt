@@ -10,6 +10,7 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func
 from geopy import Nominatim
 
+
 geolocator = Nominatim(user_agent="myGeocoder")
 db = SQLAlchemy()
 migrate = Migrate()
