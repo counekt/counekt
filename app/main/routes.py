@@ -17,9 +17,6 @@ from app.main import bp
 # -------- Home page ---------------------------------------------------------- #
 
 
-
-
-
 @bp.route("/")
 @bp.route("/main/", methods=['GET', 'POST'])
 def main():
@@ -80,7 +77,6 @@ def main():
         info = [p.username for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
 
-
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 
 
@@ -117,6 +113,7 @@ def about():
 @bp.route("/fiskefrikadeller/", methods=['GET'])
 def fiskefrikadeller():
     return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True)
+
 
 @bp.route("/help/", methods=['GET'])
 def help():
