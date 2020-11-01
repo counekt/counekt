@@ -72,10 +72,11 @@ def main():
             url += f'&max={max_age}'
 
         query = get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
-        profiles = query.limit(5).all()
+        profiles = query.all()
         print(profiles)
-        info = [p.username for p in profiles]
-        return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
+        loc = {"lat": location.latitude, "lng": location.longitude}
+        info = [{"username": p.username, "name": p.name, "lat": p.latitude, "lng": p.longitude} for p in profiles]
+        return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
 
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 

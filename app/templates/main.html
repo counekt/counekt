@@ -77,8 +77,8 @@
                   <div class="option" id="age-box">
                         <p class="title is-4 field-title">Age:</p>
                         <div class="field input-field" id="age-wrap" style="display: table; margin: 0 auto;">
-                        <input id="age-value0" class="input is-info value" value="10" maxlength="3" data-slider="age-slider" data-handle="0"> <div id="age-slider" style="margin: auto;"></div>
-                        <input id="age-value1" class="input is-info value" value="10" maxlength="3" style="float: right;" data-slider="age-slider" data-handle="1">
+                        <input id="age-value0" class="input is-info value" maxlength="3" data-slider="age-slider" data-handle="0"> <div id="age-slider" style="margin: auto;"></div>
+                        <input id="age-value1" class="input is-info value" maxlength="3" style="float: right;" data-slider="age-slider" data-handle="1">
                       </div>
                         </div>
 
@@ -150,11 +150,17 @@ $(window).on("resize", function () {
    $("#explore-box").height($(window).height()-80);
  }).trigger("resize");
 
+var proIcon = L.icon({
+    iconUrl: 'static/images/pro-pic.png',
+
+    iconSize:     [25, 25], // size of the icon
+    iconAnchor:   [12.5, 12.5], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-2, 0] // point from which the popup should open relative to the iconAnchor
+});
+
 function explore() {
 
   if ($("#location-field").val()) {
-
-  prepare_info_loading(1000);
 
   var formData = new FormData();
 
@@ -187,19 +193,17 @@ function explore() {
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
-        if ($("#location-field").val()) {
-        swap_url(response["url"]);
-        }
+        
         var status = response["status"]; 
         if (status === "Successfully explored") {
           var info = response["info"];
           console.log(info);
-          $("#results-text").text(JSON.stringify(info));
-          clear_info_loading();
-        }
-        else{
-          message(status, response["box_id"], true);
-          clear_info_loading();
+          for (var i = info.length - 1; i >= 0; i--) {
+            L.marker([info[i].lat, info[i].lng], {icon: proIcon}).addTo(map).bindPopup(info[i].name);;
+          }
+          var loc = response["loc"];
+          map.panTo(new L.LatLng(loc.lat, loc.lng));
+          
         }
         
           
