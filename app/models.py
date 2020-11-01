@@ -15,13 +15,12 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
 
     username = db.Column(db.String(120), index=True)
-    email = db.Column(db.String(120), index=True)
-    phone_number = db.Column(db.String(15), index=True)
+    email = db.Column(db.String(120))
+    phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
 
     name = db.Column(db.String(120))
@@ -39,12 +38,15 @@ class User(UserMixin, db.Model):
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
 
+    skills = db.relationship(
+        'Skill', backref='owner', lazy='dynamic',
+        foreign_keys='Skill.owner_id')
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-    
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
 
     def set_location(self, location, prelocated=False):
         if not prelocated:
@@ -56,7 +58,18 @@ class User(UserMixin, db.Model):
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)
             self.cos_rad_lat = math.cos(math.pi * location.latitude / 180)
             self.rad_lng = math.pi * location.longitude / 180
-            return location
+        return location
+
+    def set_birthdate(self, day, month, year):
+        birthdate = date(day=day, month=month, year=year)
+        self.birthdate = birthdate
+        return birthdate
+
+    def add_skill(self, title):
+        if not self.skills.filter_by(title=title).first():
+            skill = Skill(owner=self, title=title)
+            db.session.add(skill)
+            return title
 
     @ hybrid_property
     def age(self):
