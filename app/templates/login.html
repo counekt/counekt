@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block body %}
+		<div class="columns">
+          <div id="auth-box" class="auth-box column is-auto has-text-centered">
+              <p class="title is-1">Log in</p>
+              <p class="title is-4">Don't have a user yet? <a href="/register/">Sign Up</a></p>
+              <div id="auth-fields">
+	              <div class="field" id="username">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="username-field" class="input is-info" type="location" placeholder='Username'>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-id-card"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	                <div id="feedback-username" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+	              </div>
+
+	              <div class="field" id="password">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="password-field" class="input is-info" type="password" placeholder='Password'>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-lock"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	                <div id="feedback-password" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+	              </div>
+
+
+	          </div>
+
+
+	<br>
+
+	<a id="login-button" class="form-button button is-link is-inverted is-outlined"><span>Login</span></a>
+
+	      </div>
+	  </div>
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/auth.css">
+<script src="../static/js/auth.js"></script>
+{% endblock %}

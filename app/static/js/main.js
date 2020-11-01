@@ -22,42 +22,83 @@ function clear_info_loading() {
   $('#info-loader').addClass("hide");
 }
 
-function explore() {
+ $(document).on('keydown', '.value', function(event) {
+    var key = event.keyCode || event.charCode;
+    // If not digits, numpad digits, backspace, arrows, tab and enter
+    if (!(48 <= key <= 57 ||  96 <= key <= 105 || key == 8 || 37 <= key <= 40 || key == 9 || key == 13)) {
+      
+      // If decimal point, comma and period
+    if (key == 110 || key == 188 || key == 190) {
+      if (event.key === ";" || event.key === ":") {
+        event.preventDefault();
+      }
+      var val = $(this).val();
+      if (is_in(",", val) || is_in(".", val) || is_in("·", val)) {
+         event.preventDefault();
+      }
 
-  prepare_info_loading(1000);
+    }
 
-  var formData = new FormData();
+    else {
+      event.preventDefault();
+    }}
 
-   formData.append("listing-id", $("#listing-id-field").val());
+  });
 
-    $.post({
-      type: "POST",
-      url: "/main/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        if ($("#listing-id-field").val()) {
-        swap_url("/"+$("#listing-id-field").val()+"/");
-        }
-        var response = JSON.parse(response);
-        var status = response["status"]; 
-        if (status === "Successfully explored") {
-          var info = response["info"];
-          console.log(info);
-          $("#results-text").text(JSON.stringify(info));
-          clear_info_loading();
-        }
-        else{
-          message(status, "explore-fields", true);
-          clear_info_loading();
-        }
-        
-          
 
-      }});
+
+ function is_in(sub, str) {
+   return(str.indexOf(sub) != -1);
+ }
+
+ function censor(value) {
+   value = value.replace(",", ".");
+   if (value === ".") {
+     value = 0;
+   }
+   return(value);
+ }
+
+ function enter_value(val) {
+    if (typeof val.data("handle") !== "undefined") {
+    $('#'+val.data("slider")).slider('values', val.data("handle"), censor(val.val()));
+  }
+
+  else {
+    $('#'+val.data("slider")).slider('value',  censor(val.val()));
+  }
+
+ }
+
+ $('.value').change(function() {
+   enter_value($(this));
+ })
+
+$(document).on('keydown', '#location-field', function() {
+
+if ($(this).val()) {
+  $("#search-span").css("cursor", "pointer");
 }
 
-$(document).on("click", "#explore-button", function() {
-	explore();
+else {
+  $("#search-span").css("cursor", "default");
+}
+
+});
+
+
+$(document).on('click', '#toggle-view-button', function() {
+
+if ($(this).data('status') == 'showing') {
+        $("#explore-box").animate({left: "-300px"});
+        $(this).data('status', 'hiding');
+        $("#toggle-icon").toggleClass("fas fa-caret-left fas fa-caret-right")
+
+      }
+else if ($(this).data('status') == 'hiding') {
+  $("#explore-box").animate({left: "7px"});
+     $(this).data('status', 'showing');
+     $("#toggle-icon").toggleClass("fas fa-caret-right fas fa-caret-left")
+  }
+
 })

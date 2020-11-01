@@ -1,58 +1,246 @@
 {% extends "base.html" %}
 {% block body %}
-		<div class="columns">
+          <div id="map-container">
+          <div id="map">
+          </div>
           <div id="explore-box" class="explore-box column is-auto has-text-centered">
-              <p class="title is-1">Explore</p>
+              <div id="toggle-view-button" data-status="showing">
+                <span class="icon is-medium" id="toggle-span-icon">
+                      <i class="fas fa-caret-left" id="toggle-icon"></i>
+                    </span>
+              </div>
               <div id="explore-fields">
-	              <div class="field" id="location">
+	              <div class="field is-expanded has-addons" id="location">
 	                <p class="control has-icons-left has-icons-right">
-	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if listing_id %} value="{{location}}" {% endif %}>
+	                  <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if selected_address %} value="{{selected_address}}" {% endif %}>
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-globe"></i>
 	                  </span>
-	                  <span class="icon is-small is-right">
-	                    <i class="fa fa-asterisk"></i>
-	                  </span>
 	                </p>
+                  <p class="control">
+                  <a class="button is-link is-active" id="search-button">
+                  <span class="icon is-small is-right" id="search-span">
+                      <i class="fa fa-search" id="search-icon"></i>
+                    </span>
+                </a>
+                </p>
 	              </div>
+                
+                <div id="options-wrap">
+                  <div id="options">
+                        <div class="option" id="radius-box">
+                        <p class="title is-4 field-title">Radius:</p>
+                        <div class="field input-field" id="radius-wrap" style="display: table; margin: 0 auto;">
+                        <input id="radius-value" class="input is-info value" value="10" maxlength="3" data-slider="radius-slider"></input> <div id="radius-slider" style="margin: auto; float: right;"></div>
+                      </div>
+                        </div>
 
-                <div class="field" id="radius">
-                  <p class="control has-icons-left has-icons-right">
-                  <input id="radius-field" class="input is-info" type="listing-id" placeholder='Radius' {% if radius %} value="{{radius}}" {% endif %}>
-                    <span class="icon is-small is-left">
-                      <i class="fa fa-wifi"></i>
-                    </span>
-                    <span class="icon is-small is-right">
-                      <i class="fa fa-asterisk"></i>
-                    </span>
-                  </p>
+                        <div class="option" id="skill-box">
+                        <p class="title is-4 field-title">Skill:</p>
+                        <div class="field input-field" style="display: table; margin: 0 auto;">
+                          <div class="control has-icons-left">
+                          <div class="select is-info">
+                              <select id="skill">
+                              <option value="" selected>All</option>
+                              {% for skill in available_skills %}
+                              <option {% if skill == selected_skill %} selected {% endif %}>{{skill}}</option>
+                              {% endfor %}
+                              </select>
+                          </div>
+                          <div class="icon is-small is-left">
+                        <i class="fas fa-globe"></i>
+                        </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                      <div class="option" id="gender-box">
+                        <p class="title is-4 field-title">Gender:</p>
+                        <div class="field input-field" style="display: table; margin: 0 auto;">
+                          <div class="control has-icons-left">
+                          <div class="select is-info">
+                              <select id="gender">
+                              <option value="" selected>All</option>
+                          {% for gender in available_genders %}
+                              <option {% if gender == selected_gender %} selected {% endif %}>{{gender}}</option>
+                          {% endfor %}
+                              </select>
+                          </div>
+                          <div class="icon is-small is-left">
+                        <i class="fas fa-intersex"></i>
+                        </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  <div class="option" id="age-box">
+                        <p class="title is-4 field-title">Age:</p>
+                        <div class="field input-field" id="age-wrap" style="display: table; margin: 0 auto;">
+                        <input id="age-value0" class="input is-info value" value="10" maxlength="3" data-slider="age-slider" data-handle="0"> <div id="age-slider" style="margin: auto;"></div>
+                        <input id="age-value1" class="input is-info value" value="10" maxlength="3" style="float: right;" data-slider="age-slider" data-handle="1">
+                      </div>
+                        </div>
+
+
                 </div>
+              </div>
+        </div>
 
           	</div>
           	<br>
-          	<a id="explore-button" class="form-button button is-link is-inverted is-outlined"><span>Explore</span></a>
                <br>
               <br>
-              <i><a id="feedback" class="feedback"></a></i>
-              <br>
           </div>
-      <div id="results-box" class="column is-auto has-text-centered">
-          	 <figure class="image is-128x128 hide" id="info-loader">
-              <img class="is-rounded" src="/static/images/info-loader.gif">
-              </figure>
-          <div id="results-text">
-          </div>
-      </div>
-</div>
+        </div>
+
 {% endblock %}
 {% block scripts %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <link rel="stylesheet" href="/static/css/main.css">
 <script src="../static/js/main.js"></script>
-{% if listing_id %}
 <script type="text/javascript">
   $(window).on("load", function () {
   setTimeout(explore, window.loading_delay);
   });
 </script>
-{% endif %}
+<script type="text/javascript">
+         var map = L.map('map').setView([55.676111, 12.568333], 13);
+         
+         //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
+         layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+            subdomains: 'abcd',
+            maxZoom: 13,
+            minZoom: 2
+         }).addTo(map);
+         // Create additional Control placeholders
+
+  function addControlPlaceholders(map) {
+    var corners = map._controlCorners,
+        l = 'leaflet-',
+        container = map._controlContainer;
+
+    function createCorner(vSide, hSide) {
+        var className = l + vSide + ' ' + l + hSide;
+
+        corners[vSide + hSide] = L.DomUtil.create('div', className, container);
+    }
+
+    createCorner('verticalcenter', 'left');
+    createCorner('verticalcenter', 'right');
+}
+addControlPlaceholders(map);
+
+// Change the position of the Zoom Control to a newly created placeholder.
+map.zoomControl.setPosition('bottomright');
+
+// You can also put other controls in the same placeholder.
+
+map.attributionControl.setPrefix(''); // Don't show the 'Powered by Leaflet' text. Attribution overload
+$(document).ready(function() {
+setTimeout(function(){ map.invalidateSize()}, 250);
+
+       });
+
+$(window).on("resize", function () {
+   $("#map").height($(window).height()-55);
+   map.invalidateSize();
+   $("#explore-box").height($(window).height()-80);
+ }).trigger("resize");
+
+function explore() {
+
+  if ($("#location-field").val()) {
+
+  prepare_info_loading(1000);
+
+  var formData = new FormData();
+
+  formData.append("location", $("#location-field").val());
+  
+  if (0 <= $( "#radius-slider" ).slider("value") <= 999) {
+    formData.append("radius", $( "#radius-slider" ).slider( "value" ));
+  }
+
+  if ($("#skill").val()){
+    formData.append("skill", $("#skill").val());
+  }
+
+  if ($("#gender").val()) {
+   formData.append("gender", $("#gender").val());
+ }
+
+  if ($( "#age-slider" ).slider( "values", 0 ) > 13) {
+   formData.append("min_age", $( "#age-slider" ).slider( "values", 0 ));
+ }
+ if ($( "#age-slider" ).slider( "values", 1 ) < 100) {
+   formData.append("max_age", $( "#age-slider" ).slider( "values", 1 ));
+ }
+
+    $.post({
+      type: "POST",
+      url: "/main/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        if ($("#location-field").val()) {
+        swap_url(response["url"]);
+        }
+        var status = response["status"]; 
+        if (status === "Successfully explored") {
+          var info = response["info"];
+          console.log(info);
+          $("#results-text").text(JSON.stringify(info));
+          clear_info_loading();
+        }
+        else{
+          message(status, response["box_id"], true);
+          clear_info_loading();
+        }
+        
+          
+
+      }});
+}}
+
+$(document).on("click", "#search-button", function() {
+ 
+  explore();
+
+});
+       
+  </script>
+<script type="text/javascript">
+   $(function() {
+    $( "#radius-slider" ).slider({
+      range: "min",
+      min: 0,
+      max: 999,
+      value: {% if selected_radius %}{{selected_radius}}{% else %} 5 {% endif %},
+      slide: function( event, ui ) {
+        $( "#radius-value" ).val( ui.value );
+      }
+    });
+    $( "#radius-value" ).val($("#radius-slider" ).slider("value"));
+  } );
+
+ $(function() {
+    $( "#age-slider" ).slider({
+      range: true,
+      min: 13,
+      max: 100,
+      values: [{% if selected_min_age %}{{selected_min_age}}{% else %} 13 {% endif %}, {% if selected_max_age %}{{selected_max_age}}{% else %} 100 {% endif %}],
+      slide: function( event, ui ) {
+        $( "#age-value0" ).val(ui.values[ 0 ]);
+        $( "#age-value1" ).val(ui.values[ 1 ]);
+      } 
+    });
+    $( "#age-value0" ).val( $( "#age-slider" ).slider( "values", 0));
+    $( "#age-value1" ).val( $( "#age-slider" ).slider( "values", 1));
+  } );
+</script>
 {% endblock %}

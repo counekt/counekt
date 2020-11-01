@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block body %}
+		<div class="columns">
+          <div id="auth-box" class="login-box column is-auto has-text-centered">
+              <p class="title is-1">Sign Up</p>
+              <p class="title is-4">Already have a user? <a href="/login/">Log in</a></p>
+              <div id="auth-fields">
+	              <div class="field" id="username">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="username-field" class="input is-info" type="username" placeholder='Username'>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-id-card"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	                <div id="feedback-username" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+	              </div>
+
+	              <div class="field" id="password">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="password-field" class="input is-info" type="password" placeholder='Password'>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-lock"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	                <div id="feedback-password" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+	              </div>
+	              <div class="field" id="repeat-password">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="repeat-password-field" class="input is-info" type="password" placeholder='Repeat Password'>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-repeat"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	                <div id="feedback-repeat-password" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+	              </div>
+	          </div>
+
+	          <br>
+
+	<a id="register-button" class="form-button button is-link is-inverted is-outlined" data-step="1"><span>Next</span><span class="icon is-medium">
+      <i class="fa fa-arrow-right"></i>
+    </span></a>
+
+
+	      </div>
+
+	      <div class="info">
+	      	<p class="title is-2">A few clicks away to access the CRM</p>
+	      	<p class="subtitle is-5">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum iaculis, quam ut pretium porttitor, quam risus efficitur sapien, a elementum mi felis vitae massa. Phasellus sollicitudin id urna id iaculis. Sed eu dolor eu ipsum viverra accumsan quis sit amet tortor.</p>
+	      </div>
+	      <div class="image">
+			<img src="/static/images/team.jpg">
+     </div>
+	 </div>
+
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/auth.css">
+<script src="../static/js/auth.js"></script>
+{% endblock %}
