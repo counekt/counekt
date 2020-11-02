@@ -102,3 +102,9 @@ else if ($(this).data('status') == 'hiding') {
   }
 
 })
+
+$('#location-field').keypress(function(event){
+  if(event.keyCode == 13){
+    $('#search-button').click();
+  }
+});
