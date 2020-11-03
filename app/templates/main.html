@@ -208,12 +208,15 @@ function explore() {
         if (status === "Successfully explored") {
           var info = response["info"];
           console.log(info);
+          markers.clearLayers();
           info.forEach(function(marker) {
             L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup(marker.name);
           });
           var loc = response["loc"];
-          map.panTo(new L.LatLng(loc.lat, loc.lng));
-          map.setZoom(loc.zoom);
+          map.flyTo([loc.lat, loc.lng], loc.zoom);
+
+          //map.panTo(new L.LatLng(loc.lat, loc.lng));
+          //map.setZoom(loc.zoom);
           
         }
         
