@@ -3,6 +3,7 @@ from flask import redirect, url_for, render_template, abort, request, current_ap
 from flask import Markup
 from app import db
 from app.models import get_explore_query
+import app.models as models
 import app.main.funcs as funcs
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import json
@@ -114,6 +115,12 @@ def about():
 @bp.route("/fiskefrikadeller/", methods=['GET'])
 def fiskefrikadeller():
     return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True)
+
+
+@bp.route("/profile/<username>/", methods=["GET", "POST"])
+def profile_page(username):
+    profile = models.User.query.filter_by(username=username).first()
+    return render_template("profile_page.html", profile=profile)
 
 
 @bp.route("/help/", methods=['GET'])
