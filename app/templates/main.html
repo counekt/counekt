@@ -210,7 +210,7 @@ function explore() {
           console.log(info);
           markers.clearLayers();
           info.forEach(function(marker) {
-            L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup(marker.name);
+            L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup("<a href='/profile/"+marker.username+"/'>"+marker.name+"</a>");
           });
           var loc = response["loc"];
           map.flyTo([loc.lat, loc.lng], loc.zoom);
