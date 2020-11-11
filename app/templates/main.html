@@ -10,6 +10,7 @@
                     </span>
               </div>
               <div id="explore-fields">
+                <div id="search-bar">
                 <div class="field is-expanded has-addons" id="location">
                   <p class="control has-icons-left has-icons-right">
                     <input id="location-field" class="input is-info" type="location" placeholder='Location' {% if selected_address %} value="{{selected_address}}" {% endif %}>
@@ -25,8 +26,8 @@
                 </a>
                 </p>
                 </div>
+              </div>
                 
-                <div id="options-wrap">
                   <div id="options">
                         <div class="option" id="radius-box">
                         <p class="title is-4 field-title">Radius:</p>
@@ -85,8 +86,6 @@
 
                 </div>
               </div>
-        </div>
-
             </div>
             <br>
                <br>
@@ -144,17 +143,18 @@ map.zoomControl.setPosition('bottomright');
 map.attributionControl.setPrefix(''); // Don't show the 'Powered by Leaflet' text. Attribution overload
 $(document).ready(function() {
 setTimeout(function(){ 
-  $("#map").height($(window).height()-55);map.invalidateSize();
-   $("#explore-box").height($(window).height()-80);
-
+  $("#map-container").height($(window).height());map.invalidateSize();
+  $("#explore-box").height($(window).height()-50);
 }, 250);
 
        });
 
 $(window).on("resize", function () {
-   $("#map").height($(window).height()-55);
+   $("#map-container").height($(window).height());
    map.invalidateSize();
-   $("#explore-box").height($(window).height()-80);
+     $("#explore-box").height($(window).height()-50);
+
+
  }).trigger("resize");
 
 var proIcon = L.icon({
