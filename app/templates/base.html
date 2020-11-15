@@ -12,13 +12,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="/static/js/base.js"></script>
     <link rel="stylesheet" href="/static/css/base.css">
-    <script src="/static/js/navbar.js"></script>
+    {% if navbar %}
+        <script src="/static/js/navbar.js"></script>
+    {% elif exonavbar %}
+        <script src="/static/js/exonavbar.js"></script>
+        <link rel="stylesheet" href="/static/css/exonavbar.css">
+    {% endif %}
     {% block head %}{% endblock %}
   </head>
   <body>
     <div id="loader"></div>
   <div id="page" style="display: none;" class="noselect">
-    {% include "navbar.html" %}
+    {% if navbar %}
+        {% include "navbar.html" %}
+    {% elif exonavbar %}
+        {% include "exonavbar.html" %}
+    {% endif %}
     
     {% if background %}
     <section class="hero is-info is-bold {% if size %}is-{{size}}{% endif %}">
@@ -39,9 +48,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <script src="../static/js/navbar.js"></script>
     <script src="../static/js/base.js"></script>
     <link rel="stylesheet" href="../static/css/base.css">
+    {% if navbar %}
+        <script src="/static/js/navbar.js"></script>
+    {% elif exonavbar %}
+        <script src="/static/js/exonavbar.js"></script>
+        <link rel="stylesheet" href="/static/css/exonavbar.css">
+    {% endif %}
     {% block scripts %}{% endblock %}
       </body>
 </html>

@@ -79,7 +79,7 @@ def main():
         info = [{"username": p.username, "name": p.name, "lat": p.latitude, "lng": p.longitude} for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
 
-    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
+    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)
 
 
 @bp.route("/login/", methods=['GET', 'POST'])
@@ -104,33 +104,33 @@ def login():
 
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
-    return render_template("login.html", background=True, size="medium", footer=True)
+    return render_template("login.html", background=True, size="medium", footer=True, navbar=True)
 
 
 @bp.route("/about/", methods=['GET'])
 def about():
-    return render_template("about.html", background=True, size="medium", footer=True)
+    return render_template("about.html", background=True, size="medium", footer=True, navbar=True)
 
 
 @bp.route("/fiskefrikadeller/", methods=['GET'])
 def fiskefrikadeller():
-    return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True)
+    return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True, navbar=True)
 
 
 @bp.route("/profile/<username>/", methods=["GET", "POST"])
 def profile_page(username):
     profile = models.User.query.filter_by(username=username).first()
-    return render_template("profile_page.html", profile=profile)
+    return render_template("profile_page.html", profile=profile, navbar=True)
 
 
 @bp.route("/help/", methods=['GET'])
 def help():
-    return render_template("help.html", background=True, size="medium", footer=True)
+    return render_template("help.html", background=True, size="medium", footer=True, navbar=True)
 
 
 @bp.route("/settings/", methods=['GET'])
 def settings():
-    return render_template("settings.html", background=True, size="medium", footer=True)
+    return render_template("settings.html", background=True, size="medium", footer=True, navbar=True)
 
 
 @bp.route("/register/", methods=['GET', 'POST'])
@@ -165,7 +165,7 @@ def register():
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
 
-    return render_template("register.html", background=True, size="medium", footer=True)
+    return render_template("register.html", background=True, size="medium", footer=True, navbar=True)
 
 
 @bp.route("/logout/", methods=['GET'])
