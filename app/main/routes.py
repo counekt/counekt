@@ -3,13 +3,10 @@ from flask import redirect, url_for, render_template, abort, request, current_ap
 from flask import Markup
 from app import db
 from app.models import get_explore_query
-from app.main.funcs import geocode, get_listing_info
+import app.models as models
+import app.main.funcs as funcs
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import json
-import folium
-from folium.plugins import FastMarkerCluster
-from folium.plugins import Fullscreen
-from folium import FeatureGroup, LayerControl, Map, Marker
 import re
 import math
 from datetime import date
@@ -19,7 +16,6 @@ from app.main import bp
 # ======== Routing =========================================================== #
 
 # -------- Home page ---------------------------------------------------------- #
-
 
 @bp.route("/")
 @bp.route("/main/", methods=['GET', 'POST'])
@@ -49,13 +45,16 @@ def main():
         print(min_age)
         print(max_age)
 
-        location = geocode(address)
+        location = funcs.geocode(address)
+
         if not location:
             print("Non-valid location")
             return json.dumps({'status': 'Non-valid location', 'box_id': 'location-field'})
 
         try:
-            float(radius)
+
+            radius = float(radius)
+
         except ValueError:
             print("Non-valid radius")
             return json.dumps({'status': 'Non-valid radius', 'box_id': 'options-button'})
@@ -76,10 +75,12 @@ def main():
             url += f'&max={max_age}'
 
         query = get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
-        profiles = query.limit(5).all()
+
+        profiles = query.all()
         print(profiles)
-        info = [p.username for p in profiles]
-        return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info})
+        loc = {"lat": location.latitude, "lng": location.longitude, "zoom": funcs.get_zoom_from_rad(radius)}
+        info = [{"username": p.username, "name": p.name, "lat": p.latitude, "lng": p.longitude} for p in profiles]
+        return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
 
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, ** q_strings)
 
@@ -112,6 +113,17 @@ def login():
 @bp.route("/about/", methods=['GET'])
 def about():
     return render_template("about.html", background=True, size="medium", footer=True)
+
+
+@bp.route("/fiskefrikadeller/", methods=['GET'])
+def fiskefrikadeller():
+    return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True)
+
+
+@bp.route("/profile/<username>/", methods=["GET", "POST"])
+def profile_page(username):
+    profile = models.User.query.filter_by(username=username).first()
+    return render_template("profile_page.html", profile=profile)
 
 
 @bp.route("/help/", methods=['GET'])

@@ -1,8 +1,8 @@
 from app import geolocator
 from geopy.exc import GeocoderTimedOut
-from PIL import Image
 import requests
 from io import BytesIO
+import math
 
 
 def geocode(address, attempt=1, max_attempts=5):
@@ -22,10 +22,7 @@ def join_parts(*parts):
     return '/'.join(p.strip('/') for p in parts)
 
 
-def get_listing_info(listing_id):
-    details = airbnb_api.get_listing_details(listing_id)
-    filtered_details = {key: details["pdp_listing_detail"].get(key) for key in ["country_code", "country", "state", "city", "lat", "lng"]}
-    filtered_details["first_name"] = details["pdp_listing_detail"]["primary_host"].get("first_name").split()[0]
-    filtered_details["postal_code"] = geolocator.reverse((filtered_details["lat"], filtered_details["lng"])).raw['address']['postcode']
-
-    return filtered_details
+def get_zoom_from_rad(r):
+    if r == 0:
+        return 13
+    return round(min(max(2, 15 - math.log2(r)), 13))

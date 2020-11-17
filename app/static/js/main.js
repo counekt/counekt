@@ -22,125 +22,6 @@ function clear_info_loading() {
   $('#info-loader').addClass("hide");
 }
 
-function explore() {
-
-  if ($("#location-field").val()) {
-
-  prepare_info_loading(1000);
-
-  var formData = new FormData();
-
-  formData.append("location", $("#location-field").val());
-  
-  if (0 <= $( "#radius-slider" ).slider("value") <= 999) {
-    formData.append("radius", $( "#radius-slider" ).slider( "value" ));
-  }
-
-  if ($("#skill").val()){
-    formData.append("skill", $("#skill").val());
-  }
-
-  if ($("#gender").val()) {
-   formData.append("gender", $("#gender").val());
- }
-
-  if ($( "#age-slider" ).slider( "values", 0 ) > 13) {
-   formData.append("min_age", $( "#age-slider" ).slider( "values", 0 ));
- }
- if ($( "#age-slider" ).slider( "values", 1 ) < 100) {
-   formData.append("max_age", $( "#age-slider" ).slider( "values", 1 ));
- }
-
-    $.post({
-      type: "POST",
-      url: "/main/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
-        if ($("#location-field").val()) {
-        swap_url(response["url"]);
-        }
-        var status = response["status"]; 
-        if (status === "Successfully explored") {
-          var info = response["info"];
-          console.log(info);
-          $("#results-text").text(JSON.stringify(info));
-          clear_info_loading();
-        }
-        else{
-          message(status, response["box_id"], true);
-          clear_info_loading();
-        }
-        
-          
-
-      }});
-}}
-
-$(document).on("click", "#explore-button", function() {
- 
-	explore();
-
-});
-
-function open_options() {
-  $('#explore-button').css('visibility','hidden');
-  $('#options-wrap').css("display", "block");
-  var button = $('#options-button');
-  button.find('#down').css("display", "none");
-  button.find('#up').css("display", "block");
-}
-
-function close_options() {
-  $('#explore-button').css('visibility','visible');
-  $('#options-wrap').css("display", "none");
-  var button = $('#options-button');
-  button.find('#up').css("display", "none");
-  button.find('#down').css("display", "block");
-    
-
-}
-
-function options_are_open() {
-  return($('#options-wrap').css("display") === "block");
-}
-
-$(document).on("click", '#options-button', function(event) {
-  event.stopPropagation();
-  if (!options_are_open()) {
-        open_options();
-  }
-
-  else {
-    close_options();
-  }
-  
-});
-
-$(document).on("click", '#options-wrap', function (event) {
-            event.stopPropagation();
-        });
-
-$(document).on("click", window, function() {
-  close_options();
-
-});
-//$(document).on('mouseover', '#options-button', function() {
-//var options = $(this).next('#options');
-//if (options.css("display") === "none") {
-//    $('#options').css("display", "none");
-//    options.css("display", "block");
-//}
-
-//else {
-//    options.css("display", "none");
-//}
-
-//});
-
-
  $(document).on('keydown', '.value', function(event) {
     var key = event.keyCode || event.charCode;
     // If not digits, numpad digits, backspace, arrows, tab and enter
@@ -193,8 +74,6 @@ $(document).on("click", window, function() {
    enter_value($(this));
  })
 
- $(window).on("resize", function () { $("#map").height($(window).height()-55); map.invalidateSize(); }).trigger("resize");
-
 $(document).on('keydown', '#location-field', function() {
 
 if ($(this).val()) {
@@ -207,8 +86,25 @@ else {
 
 });
 
-$(document).on('click', '#search-icon', function() {
 
-  console.log("oh");
+$(document).on('click', '#toggle-view-button', function() {
 
+if ($(this).data('status') == 'showing') {
+        $("#explore-box").animate({left: "-300px"});
+        $(this).data('status', 'hiding');
+        $("#toggle-icon").toggleClass("fas fa-caret-left fas fa-caret-right")
+
+      }
+else if ($(this).data('status') == 'hiding') {
+  $("#explore-box").animate({left: "7px"});
+     $(this).data('status', 'showing');
+     $("#toggle-icon").toggleClass("fas fa-caret-right fas fa-caret-left")
+  }
+
+})
+
+$('#location-field').keypress(function(event){
+  if(event.keyCode == 13){
+    $('#search-button').click();
+  }
 });

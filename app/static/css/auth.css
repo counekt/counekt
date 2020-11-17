@@ -26,11 +26,8 @@ a {
 }
 
 
-.a {
-	/*-webkit-user-select: text; */ /* Safari */        
-	/*-moz-user-select: text;*/ /* Firefox */
-	/*-ms-user-select: text;*//* IE10+/Edge */
-	/*user-select: text;*/ /* Standard */
+
+.info	{
 	max-height: 750px;
 	overflow-y: auto;
 	padding-right: 20px;
@@ -45,8 +42,8 @@ a {
 	width: 80%;
 	margin: auto;
 	margin-top: 50px;
-	backdrop-filter: blur(5px);
-}
+	backdrop-filter: blur(5px);}
+
 
 .feedback {
   width: 100%;
