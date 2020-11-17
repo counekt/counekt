@@ -1,8 +1,55 @@
+/* Hide scrollbar for Chrome, Safari and Opera */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+body {
+	overflow: hidden;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 #explore-fields {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 	max-width: 300px;
 	margin: auto;
 	margin: 7px;
 }
+
+#explore-box {
+	top: 70px;
+  	left: 7px;
+	padding: 0;
+	margin: 0;
+	width: 300px;
+	background-color: hsl(0, 0%, 96%);
+	border: solid lightgrey 3px;
+	border-radius: 5px;
+}
+
+#options {
+	flex-grow: 1;
+	width: 280px;
+	overflow-y: scroll;
+	margin: auto;
+	margin-top: 10px;
+	position: relative;
+	margin-bottom: 10px;
+}
+
+#search-icon {
+	z-index: 10;
+	cursor: pointer;
+}
+
+#search-bar {
+	position: relative;
+
+}
+
 
 .input-field {
 	margin-top: 10px !important;
@@ -95,21 +142,6 @@ select.select option{
 	bottom: 0.5px;
 }
 
-
-#options-wrap {
-	padding-right: 20px;
-	margin: auto;
-	margin-top: 20px;
-}
-
-#options {
-	width: 280px;
-	overflow-y: auto;
-	margin: auto;
-	position: relative;
-	padding-bottom: 10px;
-}
-
 #up {
 	display: none;
 }
@@ -136,28 +168,13 @@ select.select option{
 }
 
 #map {
+	height: 100%;
 	top: 0;
   	left: 0;
 	width: 100%;
 	z-index: 0;
 }
 
-#explore-box {
-	top: 7px;
-  	left: 7px;
-	padding: 0;
-	margin: 0;
-	width: 300px;
-	height: 100%;
-	background-color: hsl(0, 0%, 96%);
-	border: solid lightgrey 3px;
-	border-radius: 5px;
-}
-
-#search-icon {
-	z-index: 10;
-	cursor: pointer;
-}
 
 #toggle-view-button {
 	position: absolute;

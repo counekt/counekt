@@ -1,0 +1,34 @@
+.navbar-burger {
+	position: relative;
+}
+
+@media screen and (min-width: 1024px)  {
+.navbar-burger {
+    display: block;
+}
+
+}
+#navbar-menu-id {
+	height: 40px;
+}
+
+#navbar-menu-container-id {
+	margin-top: 7px;
+	flex-grow: 1;
+	position: relative;
+	height: 60px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: none;
+}
+
+#exonavbar-id {
+	height: 64px;
+	display: flex;
+	flex-direction: row-reverse;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	z-index: 1;
+	max-width: 98%;
+	}
