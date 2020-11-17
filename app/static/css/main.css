@@ -95,11 +95,12 @@ select.select option{
 	bottom: 0.5px;
 }
 
+
 #options-wrap {
 	padding-right: 20px;
 	margin: auto;
 	margin-top: 20px;
-	}
+}
 
 #options {
 	width: 280px;
@@ -135,7 +136,6 @@ select.select option{
 }
 
 #map {
-	height: 100%;
 	top: 0;
   	left: 0;
 	width: 100%;

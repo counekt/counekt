@@ -1,5 +1,7 @@
 from app import db, hybrid_method, hybrid_property, func
+
 from app import login
+
 from datetime import datetime
 from app.funcs import geocode, get_age, is_older, is_younger
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -19,6 +21,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
 
     username = db.Column(db.String(120), index=True)
+
     email = db.Column(db.String(120))
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
@@ -58,6 +61,7 @@ class User(UserMixin, db.Model):
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)
             self.cos_rad_lat = math.cos(math.pi * location.latitude / 180)
             self.rad_lng = math.pi * location.longitude / 180
+
         return location
 
     def set_birthdate(self, day, month, year):

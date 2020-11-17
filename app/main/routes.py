@@ -17,7 +17,6 @@ from app.main import bp
 
 # -------- Home page ---------------------------------------------------------- #
 
-
 @bp.route("/")
 @bp.route("/main/", methods=['GET', 'POST'])
 def main():
@@ -47,12 +46,15 @@ def main():
         print(max_age)
 
         location = funcs.geocode(address)
+
         if not location:
             print("Non-valid location")
             return json.dumps({'status': 'Non-valid location', 'box_id': 'location-field'})
 
         try:
+
             radius = float(radius)
+
         except ValueError:
             print("Non-valid radius")
             return json.dumps({'status': 'Non-valid radius', 'box_id': 'options-button'})
@@ -73,6 +75,7 @@ def main():
             url += f'&max={max_age}'
 
         query = get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
+
         profiles = query.all()
         print(profiles)
         loc = {"lat": location.latitude, "lng": location.longitude, "zoom": funcs.get_zoom_from_rad(radius)}
