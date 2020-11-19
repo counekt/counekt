@@ -46,7 +46,8 @@ $.post({
         console.log(response);
         var response = JSON.parse(response);
         var status = response["status"];
-        if (status === "success") {window.location.replace("/main/"); }
+        var prev = response["prev"]
+        if (status === "success") {window.location.replace(prev); }
         else{message(status, response["box_ids"], true);}
 
       }});

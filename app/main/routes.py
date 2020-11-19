@@ -17,6 +17,7 @@ from app.main import bp
 
 # -------- Home page ---------------------------------------------------------- #
 
+
 @bp.route("/")
 @bp.route("/main/", methods=['GET', 'POST'])
 def main():
@@ -90,6 +91,8 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.main"))
 
+    prev = request.args.get('prev')
+
     if request.method == 'POST':
         username = request.form.get("username")
         password = request.form.get("password")
@@ -106,37 +109,37 @@ def login():
             return json.dumps({'status': 'Incorrect username or password', 'box_ids': ['username', 'password']})
 
         login_user(user, remember=True)
-        return json.dumps({'status': 'success'})
+        return json.dumps({'status': 'success', 'prev': prev})
     return render_template("login.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/about/", methods=['GET'])
+@ bp.route("/about/", methods=['GET'])
 def about():
     return render_template("about.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/fiskefrikadeller/", methods=['GET'])
+@ bp.route("/fiskefrikadeller/", methods=['GET'])
 def fiskefrikadeller():
     return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/profile/<username>/", methods=["GET", "POST"])
+@ bp.route("/profile/<username>/", methods=["GET", "POST"])
 def profile_page(username):
     profile = models.User.query.filter_by(username=username).first()
     return render_template("profile_page.html", profile=profile, navbar=True)
 
 
-@bp.route("/help/", methods=['GET'])
+@ bp.route("/help/", methods=['GET'])
 def help():
     return render_template("help.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/settings/", methods=['GET'])
+@ bp.route("/settings/", methods=['GET'])
 def settings():
     return render_template("settings.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/register/", methods=['GET', 'POST'])
+@ bp.route("/register/", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.main"))
@@ -171,8 +174,10 @@ def register():
     return render_template("register.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/logout/", methods=['GET'])
-@login_required
+@ bp.route("/logout/", methods=['GET'])
+@ login_required
 def logout():
+    prev = request.args.get('prev')
+
     logout_user()
-    return redirect(url_for('main.login'))
+    return redirect(prev)

@@ -11,11 +11,19 @@
       <div class="navbar-end">
         <div class="navbar-item">
           <div class="field is-grouped" style="overflow: auto;">
+            {% if not current_user.is_authenticated %}
             <p class="control">
-              <a href="/login/" class="button is-link is-outlined">
+              <a href="/login?prev={{ request.path }}/" class="button is-link is-outlined">
                 <span>Log in</span>
               </a>
             </p>
+            {% else %}
+            <p class="control">
+              <a href="/logout?prev={{ request.path }}/" class="button is-link is-outlined">
+                <span>Log out</span>
+              </a>
+            </p>
+            {% endif %}
             <p class="control">
               <a href="/about/" class="button is-link is-outlined">
                 <span>About</span>
