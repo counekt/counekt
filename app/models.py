@@ -17,33 +17,49 @@ def load_user(id):
     return User.query.get(int(id))
 
 
+followers = db.Table('followers',
+                     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+                     db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
+
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
-
-    username = db.Column(db.String(120), index=True)
-
-    email = db.Column(db.String(120))
+    username = db.Column(db.String(120), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
-
     name = db.Column(db.String(120))
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unknown")
-    skills = db.relationship(
-        'Skill', backref='owner', lazy='dynamic',
-        foreign_keys='Skill.owner_id')
-
     location = db.Column(db.String(120))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-
     sin_rad_lat = db.Column(db.Float)
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
+    profile_pic_id = db.Column(db.Integer, db.ForeignKey('picture.id'))
+    cover_pic_id = db.Column(db.Integer, db.ForeignKey('picture.id'))
 
+    profile_pic = db.relationship("Picture", foreign_keys=[profile_pic_id])
+    cover_pic = db.relationship("Picture", foreign_keys=[cover_pic_id])
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
         foreign_keys='Skill.owner_id')
+    followed = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        # do custom initialization here
+        self.profile_pic = Picture(path=f"/static/images/profile_pics/{self.username}/", replacement=gravatar(self.email.lower()))
+        self.cover_pic = Picture(path=f"/static/images/cover_pics/{self.username}/", replacement="/static/images/alps.jpg")
+
+    @ hybrid_property
+    def connections(self):
+        return User.query.filter(User.followers.any(id=self.id)).filter(followers.c.followed_id == User.id)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -127,3 +143,77 @@ class Skill(db.Model):
 
     def __repr__(self):
         return "<Skill {}>".format(self.title)
+
+class File():
+
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(25))
+    path = db.Column(db.String(2048))
+    replacement = db.Column(db.String(2048))
+
+    @ hybrid_property
+    def is_empty(self):
+        if not self.filename or not self.path:
+            return True
+        folder = os.path.join(app.root_path, Path(self.path))
+        if os.path.exists(folder):
+            return not bool(os.listdir(folder))
+
+    def empty(self):
+        if not self.is_empty:
+            folder = os.path.join(app.root_path, Path(self.path), self.filename)
+            for filename in os.listdir(folder):
+                path = Path(os.path.join(folder, filename))
+                path.unlink()
+
+    def save(self, file_format, path=None):
+        if not path:
+            path = self.path
+        folder = os.path.join(app.root_path, path)
+        self.empty()
+        filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
+        full_path = os.path.join(app.root_path, path, filename)
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        self.filename = filename
+        self.path = path
+        return full_path
+
+    @ hybrid_property
+    def src(self):
+        if not self.is_empty:
+            folder = os.path.join(app.root_path, Path(self.path), self.filename)
+            url = url_for(Path(self.path).parts[0], filename=join_parts(*Path(self.path).parts[1:], self.filename))
+            return url
+
+        return self.replacement
+
+    @ hybrid_property
+    def full_path(self):
+        if not self.is_empty:
+            return os.path.join(app.root_path, self.path, self.filename)
+
+    def __repr__(self):
+        return "<File {}>".format(self.filename)
+
+
+class Picture(db.Model, File):
+
+    def save(self, image, path=None):
+        full_path = super().save(file_format=image.format, path=path)
+        # Custom save
+        image.save(full_path)
+        return full_path
+
+    def show(self):
+        # For display in shell
+        image = Image.open(self.full_path)
+        image.show()
+
+    def __repr__(self):
+        return "<Picture {}>".format(self.filename)
+
+
+def gravatar(text_to_digest, size=256):
+    digest = md5(text_to_digest.encode("utf-8")).hexdigest()
+    return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
+        digest, size)

@@ -67,3 +67,11 @@ a {
   height: 120px;
   width: 80px;
 }
+
+.step-2, .step-3 {
+	display: none;
+}
+
+.step-1 {
+	display: block;
+}

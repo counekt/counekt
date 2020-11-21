@@ -10,13 +10,13 @@
 <div id="navbar-menu-id" class="field is-grouped">
             {% if not current_user.is_authenticated %}
             <p class="control">
-              <a href="/login?prev={{ request.path }}/" class="button is-link is-outlined">
+              <a href="/login/" class="button is-link is-outlined">
                 <span>Log in</span>
               </a>
             </p>
             {% else %}
             <p class="control">
-              <a href="/logout?prev={{ request.path }}" class="button is-link is-outlined">
+              <a class="button is-link is-outlined" onclick="logout();">
                 <span>Log out</span>
               </a>
             </p>
@@ -32,8 +32,17 @@
                 <span>Help</span>
               </a>
             </p>
+          {% if current_user.is_authenticated %}
+          <p class="control">
+              <a href="/profile/{{current_user.username}}/" class="button is-link is-outlined">
+                <span id="cog" class="icon">
+                  <i class="fa fa fa-user"></i>
+                </span>
+              </a>
+            </p>
+          {% endif %}
            <p class="control">
-              <a href="/settings" class="button is-link is-outlined">
+              <a href="/settings/" class="button is-link is-outlined">
                 <span id="cog" class="icon">
                   <i class="fa fa fa-cog"></i>
                 </span>

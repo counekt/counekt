@@ -1,6 +1,9 @@
 <section class="hero is-white is-small">
-  <nav class="navbar is-fixed-top">
+  <nav class="navbar">
     <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+        <h6 href="/" class="subtitle"><strong>CTW</strong></h6>
+      </a>
       <div id="navbar-burger-id" class="navbar-burger burger" data-target="navbar-menu-id">
         <span></span>
         <span></span>
@@ -13,13 +16,13 @@
           <div class="field is-grouped" style="overflow: auto;">
             {% if not current_user.is_authenticated %}
             <p class="control">
-              <a href="/login?prev={{ request.path }}/" class="button is-link is-outlined">
+              <a href="/login/" class="button is-link is-outlined">
                 <span>Log in</span>
               </a>
             </p>
             {% else %}
             <p class="control">
-              <a href="/logout?prev={{ request.path }}/" class="button is-link is-outlined">
+              <a class="button is-link is-outlined" onclick="logout();">
                 <span>Log out</span>
               </a>
             </p>
