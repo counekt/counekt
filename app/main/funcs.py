@@ -1,3 +1,4 @@
+from app.funcs import *
 from app import geolocator
 from geopy.exc import GeocoderTimedOut
 import requests

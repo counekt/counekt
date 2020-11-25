@@ -96,7 +96,7 @@ if ($(this).data('status') == 'showing') {
 
       }
 else if ($(this).data('status') == 'hiding') {
-  $("#explore-box").animate({left: "7px"});
+  $("#explore-box").animate({left: "27px"});
      $(this).data('status', 'showing');
      $("#toggle-icon").toggleClass("fas fa-caret-right fas fa-caret-left")
   }

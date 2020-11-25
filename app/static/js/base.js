@@ -17,3 +17,15 @@ function unload(_delay) {
  function swap_url(url){
      window.history.pushState("", "", url);
  }
+
+ function logout() {
+ 	$.post({
+      type: "POST",
+      url: "/logout/",
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {window.location.reload(true);}
+
+      }});
+ }

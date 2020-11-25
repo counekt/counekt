@@ -17,6 +17,7 @@ from app.main import bp
 
 # -------- Home page ---------------------------------------------------------- #
 
+
 @bp.route("/")
 @bp.route("/main/", methods=['GET', 'POST'])
 def main():
@@ -110,69 +111,152 @@ def login():
     return render_template("login.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/about/", methods=['GET'])
+@ bp.route("/about/", methods=['GET'])
 def about():
     return render_template("about.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/fiskefrikadeller/", methods=['GET'])
+@ bp.route("/fiskefrikadeller/", methods=['GET'])
 def fiskefrikadeller():
     return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/profile/<username>/", methods=["GET", "POST"])
+@ bp.route("/profile/<username>/", methods=["GET", "POST"])
 def profile_page(username):
     profile = models.User.query.filter_by(username=username).first()
     return render_template("profile_page.html", profile=profile, navbar=True)
 
 
-@bp.route("/help/", methods=['GET'])
+@ bp.route("/help/", methods=['GET'])
 def help():
     return render_template("help.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/settings/", methods=['GET'])
+@ bp.route("/settings/", methods=['GET'])
 def settings():
     return render_template("settings.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/register/", methods=['GET', 'POST'])
+@ bp.route("/register/", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.main"))
 
     if request.method == 'POST':
-        username = request.form.get("username")
-        password = request.form.get("password")
-        repeat_password = request.form.get("repeat-password")
+        step = request.form.get("step")
 
-        if not username:
-            return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})
+        if step == "1":
+            month = request.form.get('month')
+            day = request.form.get('day')
+            year = request.form.get('year')
 
-        if not password:
-            return json.dumps({'status': 'Password must be filled in', 'box_ids': ['password']})
+            gender = request.form.get('gender')
+            print(month)
+            print(day)
+            print(year)
+            print(gender)
 
-        if not repeat_password:
-            return json.dumps({'status': 'Repeat Password must be filled in', 'box_ids': ['repeat-password']})
+            if not month or not day or not year:
+                return json.dumps({'status': 'Birthdate must be filled in', 'box_ids': ['birthdate']})
 
-        if not models.User.query.filter_by(username=username).first() is None:
-            return json.dumps({'status': 'Username taken', 'box_ids': ['username']})
+            birthdate = date(month=int(month), day=int(day), year=int(year))
+            if not funcs.get_age(birthdate) >= 13:
+                return json.dumps({'status': 'You must be over the age of 13', 'box_ids': ['birthdate']})
 
-        if not password == repeat_password:
-            return json.dumps({'status': 'Passwords don\'t match', 'box_ids': ['password', 'repeat-password']})
+            if not gender in ["Unknown", "Male", "Female", "Other"]:
+                return json.dumps({'status': 'Invalid gender', 'box_ids': ['gender']})
 
-        user = models.User(username=username)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        login_user(user, remember=True)
-        return json.dumps({'status': 'success'})
+            return json.dumps({'status': 'success'})
+
+        elif step == "2":
+            username = request.form.get("username")
+            email = request.form.get("email")
+            print(username)
+            print(email)
+
+            if not username:
+                return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})
+
+            if not email:
+                return json.dumps({'status': 'Email must be filled in', 'box_ids': ['email']})
+
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                return json.dumps({'status': 'Invalid email', 'box_ids': ['email']})
+
+            if not models.User.query.filter_by(username=username).first() is None:
+                return json.dumps({'status': 'Username taken', 'box_ids': ['username']})
+
+            return json.dumps({'status': 'success'})
+
+        elif step == "3":
+            month = request.form.get('month')
+            day = request.form.get('day')
+            year = request.form.get('year')
+            gender = request.form.get('gender')
+
+            username = request.form.get("username")
+            email = request.form.get("email")
+
+            password = request.form.get("password")
+            repeat_password = request.form.get("repeat-password")
+
+            print(password)
+            print(repeat_password)
+            print(username)
+            print(email)
+            print(month)
+            print(day)
+            print(year)
+            print(gender)
+
+            if not password:
+                return json.dumps({'status': 'Password must be filled in', 'box_ids': ['password']})
+
+            if not repeat_password:
+                return json.dumps({'status': 'Repeat Password must be filled in', 'box_ids': ['repeat-password']})
+
+            if not password == repeat_password:
+                return json.dumps({'status': 'Passwords don\'t match', 'box_ids': ['password', 'repeat-password']})
+
+            if not username:
+                return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})
+
+            if not email:
+                return json.dumps({'status': 'Email must be filled in', 'box_ids': ['email']})
+
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                return json.dumps({'status': 'Invalid email', 'box_ids': ['email']})
+
+            if not models.User.query.filter_by(username=username).first() is None:
+                return json.dumps({'status': 'Username taken', 'box_ids': ['username']})
+
+            if not month or not day or not year:
+                return json.dumps({'status': 'Birthdate must be filled in', 'box_ids': ['birthdate']})
+
+            if not gender in ["Unknown", "Male", "Female", "Other"]:
+                return json.dumps({'status': 'Invalid gender', 'box_ids': ['gender']})
+
+            birthdate = date(month=int(month), day=int(day), year=int(year))
+            if not funcs.get_age(birthdate) >= 13:
+                return json.dumps({'status': 'You must be over the age of 13', 'box_ids': ['birthdate']})
+
+            user = models.User(username=username, email=email, gender=gender)
+            user.set_password(password)
+            user.set_birthdate(month=int(month), day=int(day), year=int(year))
+            db.session.add(user)
+            db.session.commit()
+            login_user(user, remember=True)
+            return json.dumps({'status': 'success'})
+
+        else:
+            return json.dumps({'status': 'error'})
 
     return render_template("register.html", background=True, size="medium", footer=True, navbar=True)
 
 
-@bp.route("/logout/", methods=['GET'])
-@login_required
+@ bp.route("/logout/", methods=['POST'])
+@ login_required
 def logout():
-    logout_user()
-    return redirect(url_for('main.login'))
+    if request.method == 'POST':
+        logout_user()
+        return json.dumps({'status': 'success'})

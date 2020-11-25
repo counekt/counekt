@@ -1,6 +1,50 @@
 {% extends "base.html" %}
 {% block body %}
-<div class="has-text-centered">
-	{{profile.username}}
-</div>
+<div valign="top" class="row" id="bigBox">
+            <div  width="256px" class="column" id="leftBox">
+              <div id="profile_pic">
+              <img id="profile_image" src="{{ profile.profile_pic.src }}"></div>
+              </div>
+            <div class="column" id="middleBox">
+              <h1 style="color:black"><b>
+              
+              {{ profile.name }}</b> {% if profile == current_user %}(You){% endif %}</h1>
+              
+              <h2 style="color:gray">@{{ profile.username }}</h2>
+               
+              <hr id="seperation">
+              <textarea class="textarea has-fixed-size is-success" id="bio-box" readonly>{% if profile.bio %}{{ profile.bio }}{% endif %}</textarea> 
+
+            </div>
+            <div class="column" id="rightBox">
+              {% if current_user.is_authenticated %}
+              <div class="spacy row">
+              {% if profile == current_user %}
+              <a class="button is-link is-normal is-outlined" id="edit-button" href="/settings/profile/">Edit Profile</a>
+              {% elif current_user.submitted_applications.filter_by(recipient=profile, response=None).first() %}
+              <a class="button is-info is-normal" title="Pending.." disabled>Pending..</a>
+              {% elif not current_user.is_connected_to(profile) %}
+              <a class="button is-link is-normal is-outlined" href="/profile/{{profile.username}}/connect/">Connect</a>
+              {% else %}
+              <a class="button is-info is-normal thicc">Connected</a>
+              {% endif %}
+            </div>
+            {% endif %}
+            <div class="spacy row">
+              <a id="connections"{% if not profile == current_user %} href="/profile/{{profile.username}}/connections/" {% else %} href="/connections/" {% endif %} class="button is-link is-normal is-outlined">Connections</a>
+            </div>
+            </div>
+
+        </div>
+
+        <div id="skillBox" class="row has-text-centered">
+          <h3 class="title is-4" id="skill-title" style="color:black"><b>Skills</b></h3>
+          {% for skill in profile.skills %}
+          <div class='skill'>
+          <button class='button is-info is-normal is-'>
+            <span>{{ skill.title }}</span>
+            </button>
+        </div>
+      {% endfor %}
+        </div>
 {% endblock %}

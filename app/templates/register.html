@@ -3,11 +3,42 @@
 		<div class="columns">
           <div id="auth-box" class="login-box column is-auto has-text-centered">
               <p class="title is-1">Sign Up</p>
-              <p class="title is-4">Already have a user? <a href="/login/">Log in</a></p>
+              <p class="subtitle is-4">Already have a user? <strong><a href="/login/">Log in</a></strong></p>
               <div id="auth-fields">
-	              <div class="field" id="username">
+
+              	<div class="step-1">
+              	<p class="subtitle is-4 is-close">Birthdate</p>
+              	<div class="field" id="birthdate-box" style="display:table;margin: auto;">
+              	{% include "datepicker.html" %}
+              	<div id="feedback-birthdate" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+              	</div>
+              </div>
+
+              	<div class="step-1 is-distant">
+              	<p class="subtitle is-4 is-close">Gender</p>
+              	<div class="field is-expanded" id="gender-box">
+              	<div class='select'> 
+        			<select id="gender"> 
+          			<option selected>Unknown</option>
+          			<option {% if current_user.gender == "Male" %} selected {% endif %}>Male</option>
+         			<option {% if current_user.gender == "Female" %} selected {% endif %}>Female</option>
+          			<option {% if current_user.gender == "Other" %} selected {% endif %}>Other</option>
+      				</select>
+    			</div>
+    			<div id="feedback-gender" class="feedback help level-left">
+        				<div class="message"></div>
+	              	</div>
+    			</div>
+    				
+    			</div>
+
+	          <div class="step-2">
+	          	  <p class="subtitle is-4 is-close">Username</p>
+	              <div class="field" id="username-box">
 	                <p class="control has-icons-left has-icons-right">
-	                  <input id="username-field" class="input is-info" type="username" placeholder='Username'>
+	                  <input id="username" class="input is-info" type="username" placeholder='Username'>
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-id-card"></i>
 	                  </span>
@@ -19,10 +50,31 @@
         				<div class="message"></div>
 	              </div>
 	              </div>
+	           </div>
 
-	              <div class="field" id="password">
+	           <div class="step-2 is-distant">
+    			<p class="subtitle is-4 is-close">Email</p>
+	              <div class="field" id="email-box">
 	                <p class="control has-icons-left has-icons-right">
-	                  <input id="password-field" class="input is-info" type="password" placeholder='Password'>
+	                  <input id="email" class="input is-info" type="email" placeholder='email'>
+	                  <span class="icon is-small is-left">
+	                    <i class="fa fa-envelope"></i>
+	                  </span>
+	                  <span class="icon is-small is-right">
+	                    <i class="fa fa-asterisk"></i>
+	                  </span>
+	                </p>
+	                <div id="feedback-email" class="feedback help level-left">
+        				<div class="message"></div>
+	              </div>
+	              </div>
+	          </div>
+
+			<div class="step-3">
+				<p class="subtitle is-4 is-close">Password</p>
+	              <div class="field" id="password-box">
+	                <p class="control has-icons-left has-icons-right">
+	                  <input id="password" class="input is-info" type="password" placeholder='Password'>
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-lock"></i>
 	                  </span>
@@ -34,9 +86,13 @@
         				<div class="message"></div>
 	              </div>
 	              </div>
-	              <div class="field" id="repeat-password">
+	       </div>
+
+			<div class="step-3 is-distant">
+				<p class="subtitle is-4 is-close">Repeat password</p>
+	              <div class="field" id="repeat-password-box">
 	                <p class="control has-icons-left has-icons-right">
-	                  <input id="repeat-password-field" class="input is-info" type="password" placeholder='Repeat Password'>
+	                  <input id="repeat-password" class="input is-info" type="password" placeholder='Repeat Password'>
 	                  <span class="icon is-small is-left">
 	                    <i class="fa fa-repeat"></i>
 	                  </span>
@@ -48,29 +104,33 @@
         				<div class="message"></div>
 	              </div>
 	              </div>
+	             </div>
 	          </div>
+
 
 	          <br>
 
-	<a id="register-button" class="form-button button is-link is-inverted is-outlined" data-step="1"><span>Next</span><span class="icon is-medium">
-      <i class="fa fa-arrow-right"></i>
-    </span></a>
+	<a id="register-button" class="form-button button is-link is-inverted is-outlined">
+		<div class="step-1 step-2">
+			<span>Next</span>
+			<span class="icon is-medium">
+      			<i class="fa fa-arrow-right"></i>
+    		</span>
+		</div>
+		<div class="step-3">
+			<span>Finish</span>
+		</div>
+	</a>
 
 
 	      </div>
 
-
-	      <div class="info">
-	      	<p class="title is-2">A few clicks away to access the CRM</p>
-	      	<p class="subtitle is-5">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum iaculis, quam ut pretium porttitor, quam risus efficitur sapien, a elementum mi felis vitae massa. Phasellus sollicitudin id urna id iaculis. Sed eu dolor eu ipsum viverra accumsan quis sit amet tortor.</p>
-	      </div>
-	      <div class="image">
-			<img src="/static/images/team.jpg">
-     </div>
 	 </div>
 
 {% endblock %}
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/auth.css">
 <script src="../static/js/auth.js"></script>
+<script src="../static/js/datepicker.js"></script>
+
 {% endblock %}
