@@ -1,15 +1,17 @@
-from app import db, hybrid_method, hybrid_property, func
-
+from app import db
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy import func
 from app import login
-
 from datetime import datetime
-from app.funcs import geocode, get_age, is_older, is_younger
+from time import time
+import app.funcs as funcs
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask import url_for
 import math
 from hashlib import md5
 from datetime import date
+import jwt
 
 
 @login.user_loader
@@ -24,13 +26,15 @@ followers = db.Table('followers',
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
+    creation_datetime = db.Column(db.DateTime, index=True)
     username = db.Column(db.String(120), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
+    is_activated = db.Column(db.Boolean, default=False)
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
     name = db.Column(db.String(120))
     birthdate = db.Column(db.DateTime)
-    gender = db.Column(db.String, default="Unknown")
+    gender = db.Column(db.String, default="Unspecified")
     location = db.Column(db.String(120))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
@@ -54,6 +58,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
+        self.creation_datetime = datetime.now()
         self.profile_pic = Picture(path=f"/static/images/profile_pics/{self.username}/", replacement=gravatar(self.email.lower()))
         self.cover_pic = Picture(path=f"/static/images/cover_pics/{self.username}/", replacement="/static/images/alps.jpg")
 
@@ -69,7 +74,7 @@ class User(UserMixin, db.Model):
 
     def set_location(self, location, prelocated=False):
         if not prelocated:
-            location = geocode(location)
+            location = funcs.geocode(location)
         if location:
             self.location = location.address
             self.latitude = location.latitude
@@ -91,17 +96,17 @@ class User(UserMixin, db.Model):
             db.session.add(skill)
             return title
 
-    @ hybrid_property
+    @ property
     def age(self):
-        return get_age(self.birthdate)
+        return funcs.get_age(self.birthdate)
 
     @ hybrid_method
     def is_older_than(self, age):
-        return is_older(self.birthdate, age)
+        return funcs.is_older_than(self.birthdate, age)
 
     @ hybrid_method
     def is_younger_than(self, age):
-        return is_younger(self.birthdate, age)
+        return funcs.is_younger_than(self.birthdate, age)
 
     @ hybrid_method
     def is_nearby(self, latitude, longitude, radius):
@@ -114,6 +119,25 @@ class User(UserMixin, db.Model):
                          + self.sin_rad_lat
                          * sin_rad_lat
                          ) * 6371 <= radius
+
+    def get_auth_token(self, SECRET_KEY, expires_in=600):
+        return jwt.encode(
+            {'auth': self.id, 'exp': time() + expires_in},
+            SECRET_KEY, algorithm='HS256')
+
+    @staticmethod
+    def activate(token, SECRET_KEY):
+        try:
+            id = jwt.decode(token, SECRET_KEY,
+                            algorithms=['HS256'])['auth']
+        except:
+            return
+        user = User.query.get(id)
+        return user
+
+    @hybrid_property
+    def is_expired(self):
+        return funcs.is_expired(self.creation_datetime, expires_in=600)
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

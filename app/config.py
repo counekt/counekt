@@ -22,4 +22,11 @@ class Config(object):
                         "Videography", "Photo editing", "Film editing",
                         "Music producer", "Accountant", "Salesman",
                         "(X) designer", "Lawyer", "Investor", "Software", "Acting"]
-    AVAILABLE_GENDERS=["Male", "Female", "Other"]
+    AVAILABLE_GENDERS = ["Male", "Female", "Other"]
+    MAIL_SERVER = getenv('MAIL_SERVER')
+    MAIL_PORT = int(getenv('MAIL_PORT') or 25)
+    MAIL_USE_TLS = getenv('MAIL_USE_TLS') is not None
+    MAIL_USERNAME = getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = getenv('MAIL_PASSWORD')
+    AUTH_EXPIRES_IN = 6000
+    ADMINS = ['frederik.w.l.christoffersen@gmail.com']

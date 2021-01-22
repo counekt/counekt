@@ -32,15 +32,18 @@
     {% if background %}
     <section class="hero is-info is-bold {% if size %}is-{{size}}{% endif %}">
     <div class="hero-body" id="background">
+    {% elif frame %}
+    <section class="hero is-info is-bold {% if size %}is-{{size}}{% endif %}">
+    <div class="hero-body">
     {% endif %}
 
-    {% block body %}{% endblock %}
+    {% block content %}{% endblock %}
 
     {% if footer %}
     {% include "footer.html" %}
     {% endif %}
 
-    {% if background %}
+    {% if background or frame %}
   </div>
 </section>
     {% endif %}

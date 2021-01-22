@@ -36,7 +36,7 @@ function register() {
 
   }
 
-  else if (window._step == 3) {
+  else if (window._step == 3 || window._step == "finally") {
    formData.append("password", $("#password").val());
    formData.append("repeat-password", $("#repeat-password").val());
 
@@ -69,18 +69,24 @@ $.post({
         if (status === "success") {
 
             if (window._step == 1) {
-              window._step = 2;
+              window._step = "2";
               $(".step-1").css('display','none');
               $(".step-2").css('display','block');
                          }
             else if (window._step == 2) {
-              window._step = 3;
+              window._step = "3";
               $(".step-2").css('display','none');
               $(".step-3").css('display','block');
             }
 
             else if (window._step == 3) {
-              window.location.replace("/profile/"+$("#username").val()+"/");
+              window._step = "finally";
+              $(".step-3").css('display','none');
+              $(".finally").css('display','block');
+            }
+
+            else if (window._step == "finally") {
+              
             }
          }
         else{message(status, response["box_ids"], true);}

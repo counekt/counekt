@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block content %}
+  <p class="title is-3">404 Page Not Found</p>
+
+  <p class="subtitle is-4">The page you were looking for is just not there.</p>
+
+  <p class="subtitle is-5"><a href="{{ url_for('main.main') }}">Back</a></p>
+{% endblock %}
