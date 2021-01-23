@@ -1,50 +1,52 @@
 {% extends "base.html" %}
 {% block content %}
-		<div class="columns">
-          <div id="auth-box" class="auth-box column is-auto has-text-centered">
-              <p class="title is-1">Log in</p>
-              <p class="subtitle is-4">Don't have a user yet? <strong><a href="/register/">Sign Up</a></strong></p>
-              <div id="auth-fields">
-	              <div class="field" id="username-box">
-	                <p class="control has-icons-left has-icons-right">
-	                  <input id="username" class="input is-info" type="location" placeholder='Username'>
-	                  <span class="icon is-small is-left">
-	                    <i class="fa fa-id-card"></i>
-	                  </span>
-	                  <span class="icon is-small is-right">
-	                    <i class="fa fa-asterisk"></i>
-	                  </span>
-	                </p>
-	                <div id="feedback-username" class="feedback help level-left">
-        				<div class="message"></div>
-	              </div>
-	              </div>
-
-	              <div class="field" id="password-box">
-	                <p class="control has-icons-left has-icons-right">
-	                  <input id="password" class="input is-info" type="password" placeholder='Password'>
-	                  <span class="icon is-small is-left">
-	                    <i class="fa fa-lock"></i>
-	                  </span>
-	                  <span class="icon is-small is-right">
-	                    <i class="fa fa-asterisk"></i>
-	                  </span>
-	                </p>
-	                <div id="feedback-password" class="feedback help level-left">
-        				<div class="message"></div>
-	              </div>
-	              </div>
+<div id="auth-box" class="has-text-centered">
+	<div id="auth-content">
+		<p class="title is-1">Log in</p>
+		<p class="subtitle is-4">Don't have a user yet? <strong><a href="/register/">Sign Up</a></strong></p>
+		<div class="auth-fields">
+			<div class="field" id="username-box">
+				<p class="control has-icons-left has-icons-right">
+					<input id="username" class="input is-info" type="location" placeholder='Username'>
+				  	<span class="icon is-small is-left">
+				    	<i class="fa fa-id-card"></i>
+				  	</span>
+				  	<span class="icon is-small is-right">
+				    	<i class="fa fa-asterisk"></i>
+				  	</span>
+				</p>
+				<div id="feedback-username" class="feedback help level-left">
+					<div class="message"></div>
+				</div>
+			</div>
 
 
-	          </div>
+			<div class="field" id="password-box">
+				<p class="control has-icons-left has-icons-right">
+				  <input id="password" class="input is-info" type="password" placeholder='Password'>
+				  <span class="icon is-small is-left">
+				    <i class="fa fa-lock"></i>
+				  </span>
+				  <span class="icon is-small is-right">
+				    <i class="fa fa-asterisk"></i>
+				  </span>
+				</p>
+				<div id="feedback-password" class="feedback help level-left">
+					<div class="message"></div>
+				</div>
+			</div>
+
+			
 
 
-	<br>
-
-	<a id="login-button" class="form-button button is-link is-inverted is-outlined"><span>Login</span></a>
-
-	      </div>
-	  </div>
+		</div>
+	</div>
+	<div id="auth-nav">
+	    	<a id="login-button" class="form-button button is-link">
+				<span>Login</span>
+			</a>
+	</div>
+</div>
 {% endblock %}
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/auth.css">

@@ -13,10 +13,12 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.main"))
 
+    user = None
+
     if request.method == 'POST':
         step = request.form.get("step")
 
-        if step == "1":
+        if step == "step-1":
             month = request.form.get('month')
             day = request.form.get('day')
             year = request.form.get('year')
@@ -28,7 +30,7 @@ def register():
                 return response
             return json.dumps({'status': 'success'})
 
-        elif step == "2":
+        elif step == "step-2":
             username = request.form.get("username")
             email = request.form.get("email")
 
@@ -37,7 +39,7 @@ def register():
                 return response
             return json.dumps({'status': 'success'})
 
-        elif step == "3":
+        elif step == "step-3":
             month = request.form.get('month')
             day = request.form.get('day')
             year = request.form.get('year')
@@ -65,11 +67,21 @@ def register():
             funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], SECRET_KEY=current_app.config['SECRET_KEY'])
             db.session.add(user)
             db.session.commit()
+            print(user)
             return json.dumps({'status': 'success'})
+
+        elif step == "finally":
+            """resend_token = request.form.get("resend_token")
+            user = model.User.from_resend_token(token=token, SECRET_KEY=current_app.config['SECRET_KEY'])
+            if not user:
+                return token_is_expired_error(token=token)
+            resend_token = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], SECRET_KEY=current_app.config['SECRET_KEY'])
+            return json.dumps({'status': 'success', 'resend_token': resend_token})"""
+            funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], SECRET_KEY=current_app.config['SECRET_KEY'])
 
         return json.dumps({'status': 'error'})
 
-    return render_template("auth/register.html", background=True, size="medium", footer=True, navbar=True)
+    return render_template("auth/register.html", background=True, size="medium", navbar=True)
 
 
 @bp.route("/login/", methods=['GET', 'POST'])
@@ -94,7 +106,7 @@ def login():
 
         login_user(user, remember=True)
         return json.dumps({'status': 'success'})
-    return render_template("auth/login.html", background=True, size="medium", footer=True, navbar=True)
+    return render_template("auth/login.html", background=True, size="medium", navbar=True)
 
 
 @ bp.route("/logout/", methods=['POST'])
@@ -108,8 +120,8 @@ def logout():
 @bp.route('/activate/<token>/', methods=['GET', 'POST'])
 def activate(token):
     if current_user.is_authenticated:
-        return redirect(url_for('main'))
-    user = models.User.activate(token=token, SECRET_KEY=current_app.config['SECRET_KEY'])
+        return redirect(url_for('main.main'))
+    user = models.User.from_token(token=token, SECRET_KEY=current_app.config['SECRET_KEY'])
     if not user:
         return token_is_expired_error(token=token)
     user.is_activated = True

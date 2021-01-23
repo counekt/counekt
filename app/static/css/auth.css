@@ -1,53 +1,89 @@
-.columns {
+#auth-box {
+	width: 100%;
+	min-width: 330px;
+	max-width: 400px;
+	margin: auto;
+}
+
+#auth-content {
+	padding: 10px;
 	width: 100%;
 	margin: auto;
+	background-color: hsl(0, 0%, 99%);
+	height: 400px;
+	border-top: solid rgb(200,230,255) 7px;
+	border-left: solid rgb(200,230,255) 7px;
+	border-right: solid rgb(200,230,255) 7px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+
 }
 
-#auth-box {
-	padding: 0;
-	width: 90%;
-	margin: auto;
+#auth-nav {
+	width: 100%;
+	height: 65px;
+	padding: 10px;
+	background-color: hsl(0, 0%, 99%);
+	border-bottom: solid rgb(200,230,255) 7px;
+	border-left: solid rgb(200,230,255) 7px;
+	border-right: solid rgb(200,230,255) 7px;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+
 }
 
-#auth-fields {
+#login-button, #first-continue-button #register-button {
+	width: 100%;
+}
+
+#continue-button {
+	float: right;
+}
+
+#stages {
+	float: middle;
+}
+
+#back-button {
+	float: left;
+}
+
+#back-button a, #continue-button a {
+		border-radius: 100px;
+		border: none;
+
+}
+
+#back-button a:hover, #continue-button a:hover {
+	background-color: rgba(50,115,220,0.25);
+	color: rgb(50,115,220);
+
+}
+
+#continue-button a {
+		border-radius: 50px;
+
+}
+
+#back-button a, #continue-button a {
+}
+
+.title, .subtitle, strong {
+	color: black !important;
+}
+
+.auth-fields {
 	max-width: 300px;
-	height: 112px;
 	margin: auto;
 }
-
 
 #feedback {
-	color: white;
-	background-color: rgba(0,0,0,0.75);
+	color: black;
 	cursor: default;
 }
 
-a {
-	color: black;
-}
-
-
-
-.info	{
-	max-height: 750px;
-	overflow-y: auto;
-	padding-right: 20px;
-	display:none;
-	margin-top: 20px;
-	padding-top: 10px;
-	border-top: solid 4px rgba(255,255,255,0.5);
-	padding-bottom: 20px;
-	border-bottom: solid 4px rgba(255,255,255,0.5);
-	border-left: solid 4px rgba(255,255,255,0.5);
-	border-right: solid 4px rgba(255,255,255,0.5);
-	width: 80%;
-	margin: auto;
-	margin-top: 50px;
-	backdrop-filter: blur(5px);}
-
-
 .feedback {
-  color: white;
+  color: black;
   width: 100%;
   height: 5px;
   padding: 0;
@@ -66,6 +102,7 @@ a {
 
 .infotext {
 	max-width: 475px;
+	margin: 0 auto;
 }
 
 
@@ -85,7 +122,12 @@ a {
   width: 80px;
 }
 
-.step-2, .step-3 {
+.step-1, .step-2, .step-3, .finally {
+height: 100%;
+}
+
+
+.step-2, .step-3, .finally {
 	display: none;
 }
 
@@ -93,12 +135,21 @@ a {
 	display: block;
 }
 
-.finally {
-	display: none;
-}
 
 @media (max-width:770px) {
 .feedback {
   margin-top: -0.5px;
 }
 }
+
+@media (max-width:500px) {
+	#auth-box {
+		width: 100%;
+	}
+	}
+
+@media (max-width:395px) {
+	#auth-box {
+		min-width: 250px;
+	}
+	}

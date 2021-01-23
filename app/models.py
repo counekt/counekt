@@ -27,8 +27,8 @@ followers = db.Table('followers',
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     creation_datetime = db.Column(db.DateTime, index=True)
-    username = db.Column(db.String(120), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
+    username = db.Column(db.String(120), index=True)
+    email = db.Column(db.String(120), index=True)
     is_activated = db.Column(db.Boolean, default=False)
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
@@ -122,16 +122,16 @@ class User(UserMixin, db.Model):
 
     def get_auth_token(self, SECRET_KEY, expires_in=600):
         return jwt.encode(
-            {'auth': self.id, 'exp': time() + expires_in},
+            {'user_id': self.id, 'exp': time() + expires_in},
             SECRET_KEY, algorithm='HS256')
 
     @staticmethod
-    def activate(token, SECRET_KEY):
-        try:
-            id = jwt.decode(token, SECRET_KEY,
-                            algorithms=['HS256'])['auth']
-        except:
-            return
+    def from_token(token, SECRET_KEY):
+        # try:
+        id = jwt.decode(token, SECRET_KEY,
+                        algorithms=['HS256'])['user_id']
+        # except:
+        # return
         user = User.query.get(id)
         return user
 
