@@ -12,7 +12,7 @@ function message(status, box_ids, shake=false) {
 }
 
 window._step = "step-1";
-window.resend_token = "";
+window.token = "";
 
 function register() {
   var formData = new FormData();
@@ -59,7 +59,7 @@ function register() {
  }
 
  else if (window._step == "finally") {
-      formData.append("resend_token", window.resend_token);
+      formData.append("token", window.token);
     }
 
 $.post({
@@ -83,7 +83,7 @@ $.post({
 
             else if (window._step == "step-3" || window._step == "finally") {
               change_step("finally");
-              window.resend_token = response["resend_token"];
+              window.token = response["token"];
             }
 
          }

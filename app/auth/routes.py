@@ -125,5 +125,7 @@ def activate(token):
     user.is_activated = True
     user.revoke_token()
     db.session.commit()
+    print("wuat")
+    print(user)
     login_user(user, remember=True)
     return redirect(url_for('main.main'))

@@ -144,6 +144,7 @@ class User(UserMixin, db.Model):
         user = User.query.filter_by(token=token).first()
         if user is None or user.token_is_expired:
             return None
+        print(user.token_is_expired)
         return user
 
     @hybrid_property
