@@ -14,6 +14,7 @@ geolocator = Nominatim(user_agent="myGeocoder")
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
+#jwt = JWTManager()
 
 login = LoginManager()
 login.login_view = 'main.login'

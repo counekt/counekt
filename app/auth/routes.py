@@ -64,20 +64,18 @@ def register():
             user = models.User(username=username, email=email, gender=gender)
             user.set_password(password)
             user.set_birthdate(month=int(month), day=int(day), year=int(year))
-            funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], SECRET_KEY=current_app.config['SECRET_KEY'])
+            token = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
             db.session.add(user)
             db.session.commit()
-            print(user)
-            return json.dumps({'status': 'success'})
+            return json.dumps({'status': 'success', 'token': token})
 
         elif step == "finally":
-            """resend_token = request.form.get("resend_token")
-            user = model.User.from_resend_token(token=token, SECRET_KEY=current_app.config['SECRET_KEY'])
+            token = request.form.get("token")
+            user = model.User.check_token(token=token)
             if not user:
                 return token_is_expired_error(token=token)
-            resend_token = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], SECRET_KEY=current_app.config['SECRET_KEY'])
-            return json.dumps({'status': 'success', 'resend_token': resend_token})"""
-            funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], SECRET_KEY=current_app.config['SECRET_KEY'])
+            token = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], token=token)
+            return json.dumps({'status': 'success', 'token': token})
 
         return json.dumps({'status': 'error'})
 
@@ -121,10 +119,11 @@ def logout():
 def activate(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.main'))
-    user = models.User.from_token(token=token, SECRET_KEY=current_app.config['SECRET_KEY'])
+    user = models.User.check_token(token=token)
     if not user:
         return token_is_expired_error(token=token)
     user.is_activated = True
+    user.revoke_token()
     db.session.commit()
     login_user(user, remember=True)
-    return redirect(url_for('main'))
+    return redirect(url_for('main.main'))

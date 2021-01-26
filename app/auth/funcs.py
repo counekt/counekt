@@ -31,11 +31,11 @@ def verify_identifiers(username, email):
     if not models.User.query.filter_by(username=username).first() is None:
         print("taken")
         # If only expired users with same username: delete them all and pass
-        expired_user = models.User.query.filter_by(email=email).filter(models.User.is_expired).first()
+        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).first()
         print(expired_user)
-        if not models.User.query.filter_by(username=username).filter(models.User.is_expired).first() is None:
+        if not models.User.query.filter_by(username=username).filter(models.User.token_is_expired, not models.User.is_activated).first() is None:
             print("inactive")
-            models.User.query.filter_by(username=username).filter(models.User.is_expired).delete(synchronize_session='fetch')
+            models.User.query.filter_by(username=username).filter(models.User.token_is_expired, not models.User.is_activated).delete(synchronize_session='fetch')
             db.session.commit()
         else:
             return json.dumps({'status': 'Username taken', 'box_ids': ['username']})
@@ -43,10 +43,10 @@ def verify_identifiers(username, email):
     if not models.User.query.filter_by(email=email).first() is None:
         print("taken")
         # If only expired users with same email: delete them all and pass
-        expired_user = models.User.query.filter_by(email=email).filter(models.User.is_expired).first()
+        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).first()
         print(expired_user)
-        if not models.User.query.filter_by(email=email).filter(models.User.is_expired).first() is None:
-            models.User.query.filter_by(email=email).filter(models.User.is_expired).delete(synchronize_session='fetch')
+        if not models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).first() is None:
+            models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).delete(synchronize_session='fetch')
             db.session.commit()
         else:
             return json.dumps({'status': 'Email taken', 'box_ids': ['email']})
@@ -63,8 +63,12 @@ def verify_secret(password, repeat_password):
         return json.dumps({'status': 'Passwords don\'t match', 'box_ids': ['password', 'repeat-password']})
 
 
-def send_auth_email(user, sender, SECRET_KEY):
-    token = user.get_auth_token(SECRET_KEY=SECRET_KEY)
+def send_auth_email(user, sender, token=None):
+    if token and token == user.token:
+        user.refresh_token()
+        token = existing_token
+    else:
+        token = user.get_token()
     send_email('[CTW] Activate your account',
                sender=sender,
                recipients=[user.email],
@@ -72,3 +76,4 @@ def send_auth_email(user, sender, SECRET_KEY):
                                          user=user, token=token),
                html_body=render_template('email/auth.html',
                                          user=user, token=token))
+    return token

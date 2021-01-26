@@ -2,7 +2,7 @@ from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func
 from app import login
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from time import time
 import app.funcs as funcs
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,8 +10,8 @@ from flask_login import UserMixin
 from flask import url_for
 import math
 from hashlib import md5
-from datetime import date
-import jwt
+import base64
+import os
 
 
 @login.user_loader
@@ -27,8 +27,10 @@ followers = db.Table('followers',
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     creation_datetime = db.Column(db.DateTime, index=True)
-    username = db.Column(db.String(120), index=True)
-    email = db.Column(db.String(120), index=True)
+    token = db.Column(db.String(32), index=True, unique=True)
+    token_expiration = db.Column(db.DateTime)
+    username = db.Column(db.String(120), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
     is_activated = db.Column(db.Boolean, default=False)
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
@@ -58,7 +60,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
-        self.creation_datetime = datetime.now()
+        self.creation_datetime = datetime.utcnow()
         self.profile_pic = Picture(path=f"/static/images/profile_pics/{self.username}/", replacement=gravatar(self.email.lower()))
         self.cover_pic = Picture(path=f"/static/images/cover_pics/{self.username}/", replacement="/static/images/alps.jpg")
 
@@ -120,24 +122,33 @@ class User(UserMixin, db.Model):
                          * sin_rad_lat
                          ) * 6371 <= radius
 
-    def get_auth_token(self, SECRET_KEY, expires_in=600):
-        return jwt.encode(
-            {'user_id': self.id, 'exp': time() + expires_in},
-            SECRET_KEY, algorithm='HS256')
+    def get_token(self, expires_in=3600):
+        now = datetime.utcnow()
+        if self.token and self.token_expiration > now + timedelta(seconds=60):
+            return self.token
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.token
+
+    def refresh_token(self, expires_in=3600):
+        now = datetime.utcnow()
+        self.token_expiration = now + timedelta(seconds=expires_in)
+
+    def revoke_token(self):
+        now = datetime.utcnow()
+        self.token_expiration = now
 
     @staticmethod
-    def from_token(token, SECRET_KEY):
-        # try:
-        id = jwt.decode(token, SECRET_KEY,
-                        algorithms=['HS256'])['user_id']
-        # except:
-        # return
-        user = User.query.get(id)
+    def check_token(token):
+        user = User.query.filter_by(token=token).first()
+        if user is None or user.token_is_expired:
+            return None
         return user
 
     @hybrid_property
-    def is_expired(self):
-        return funcs.is_expired(self.creation_datetime, expires_in=600)
+    def token_is_expired(self):
+        return self.token_expiration < datetime.utcnow()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

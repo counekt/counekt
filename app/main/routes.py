@@ -8,6 +8,7 @@ import math
 from datetime import date
 from requests import HTTPError
 from app.main import bp
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
 # ======== Routing =========================================================== #
 
@@ -15,6 +16,7 @@ from app.main import bp
 
 
 @bp.route("/")
+@bp.route("/explore/")
 @bp.route("/main/", methods=['GET', 'POST'])
 def main():
     q_address = request.args.get('loc')
@@ -71,7 +73,7 @@ def main():
         if max_age:
             url += f'&max={max_age}'
 
-        query = get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
+        query = models.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
 
         profiles = query.all()
         print(profiles)

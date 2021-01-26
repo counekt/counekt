@@ -75,7 +75,7 @@ $.post({
         if (status === "success") {
 
             if (window._step == "step-1") {
-              change_step("step-3");
+              change_step("step-2");
             }
             else if (window._step == "step-2") {
               change_step("step-3");
