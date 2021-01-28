@@ -94,10 +94,10 @@ def fiskefrikadeller():
     return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True, navbar=True)
 
 
-@ bp.route("/profile/<username>/", methods=["GET", "POST"])
-def profile_page(username):
-    profile = models.User.query.filter_by(username=username).first()
-    return render_template("profile_page.html", profile=profile, navbar=True)
+@ bp.route("/user/<username>/", methods=["GET", "POST"])
+def user(username):
+    user = models.User.query.filter_by(username=username).first()
+    return render_template("profiles/user.html", user=user, navbar=True)
 
 
 @ bp.route("/help/", methods=['GET'])

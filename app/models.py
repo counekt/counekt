@@ -122,7 +122,7 @@ class User(UserMixin, db.Model):
                          * sin_rad_lat
                          ) * 6371 <= radius
 
-    def get_token(self, expires_in=3600):
+    def get_token(self, expires_in=600):
         now = datetime.utcnow()
         if self.token and self.token_expiration > now + timedelta(seconds=60):
             return self.token
@@ -131,9 +131,10 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return self.token
 
-    def refresh_token(self, expires_in=3600):
+    def refresh_token(self, expires_in=600):
         now = datetime.utcnow()
         self.token_expiration = now + timedelta(seconds=expires_in)
+        return self.token
 
     def revoke_token(self):
         now = datetime.utcnow()
@@ -144,12 +145,13 @@ class User(UserMixin, db.Model):
         user = User.query.filter_by(token=token).first()
         if user is None or user.token_is_expired:
             return None
-        print(user.token_is_expired)
         return user
 
     @hybrid_property
     def token_is_expired(self):
-        return self.token_expiration < datetime.utcnow()
+        if self.token_expiration:
+            return self.token_expiration < datetime.utcnow()
+        return True
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

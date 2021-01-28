@@ -2,6 +2,7 @@ from flask_mail import Message
 from app import mail
 from flask import current_app
 from threading import Thread
+import smtplib
 
 
 def send_async_email(app, msg):
@@ -18,7 +19,17 @@ def send_email(subject, sender, recipients, text_body, html_body,
         for attachment in attachments:
             msg.attach(*attachment)
     if sync:
-        mail.send(msg)
+        try:
+            mail.send(msg)
+            return True
+        except smtplib.SMTPException as e:
+            current_app.logger.error(e.message)
+            return False
     else:
-        Thread(target=send_async_email,
-               args=(current_app._get_current_object(), msg)).start()
+        try:
+            Thread(target=send_async_email,
+                   args=(current_app._get_current_object(), msg)).start()
+            return True
+        except smtplib.SMTPException as e:
+            current_app.logger.error(e.message)
+            return False

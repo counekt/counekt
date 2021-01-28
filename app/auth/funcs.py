@@ -63,17 +63,16 @@ def verify_secret(password, repeat_password):
         return json.dumps({'status': 'Passwords don\'t match', 'box_ids': ['password', 'repeat-password']})
 
 
-def send_auth_email(user, sender, token=None):
-    if token and token == user.token:
-        user.refresh_token()
-        token = existing_token
+def send_auth_email(user, sender):
+    if user.token:
+        token = user.refresh_token()
     else:
         token = user.get_token()
-    send_email('[CTW] Activate your account',
-               sender=sender,
-               recipients=[user.email],
-               text_body=render_template('email/auth.txt',
-                                         user=user, token=token),
-               html_body=render_template('email/auth.html',
-                                         user=user, token=token))
-    return token
+    sent = send_email('[CTW] Activate your account',
+                      sender=sender,
+                      recipients=[user.email],
+                      text_body=render_template('email/auth.txt',
+                                                user=user, token=token),
+                      html_body=render_template('email/auth.html',
+                                                user=user, token=token))
+    return sent

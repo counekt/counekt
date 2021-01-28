@@ -12,7 +12,6 @@ function message(status, box_ids, shake=false) {
 }
 
 window._step = "step-1";
-window.token = "";
 
 function register() {
   var formData = new FormData();
@@ -59,7 +58,9 @@ function register() {
  }
 
  else if (window._step == "finally") {
-      formData.append("token", window.token);
+      formData.append("username", $("#username").val());
+      formData.append("password", $("#password").val());
+
     }
 
 $.post({
@@ -81,12 +82,18 @@ $.post({
               change_step("step-3");
             }
 
-            else if (window._step == "step-3" || window._step == "finally") {
+            else if (window._step == "step-3") {
               change_step("finally");
-              window.token = response["token"];
+            }
+
+            else if (window._step == "finally") {
+              email_resent();
             }
 
          }
+        else if (status === "error") {
+          window.location.reload();
+        }
         else{message(status, response["box_ids"], true);}
 
       }});
@@ -211,3 +218,29 @@ function change_step(step) {
   }
 
 }
+
+function email_resent() {
+  $('#modal-box').append(
+  `
+  <div class="modal is-active">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">The email has been resent</p>
+      <a class="delete ok"></a>
+    </header>
+    <section class="modal-card-body">
+      <p class="subtitle is-5 left">An additional email has now been sent. It can take up to 5 minutes to arrive.</p>
+        <p class="subtitle is-5 left">Please check your inbox and click on the provided link to activate your account.</p>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-info ok" >Ok</button>
+    </footer>
+  </div>
+</div>
+`);
+}
+
+$(document).on("click", ".ok", function() {
+  $('#modal-box').empty();
+});

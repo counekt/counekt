@@ -64,18 +64,27 @@ def register():
             user = models.User(username=username, email=email, gender=gender)
             user.set_password(password)
             user.set_birthdate(month=int(month), day=int(day), year=int(year))
-            token = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+            sent = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+            if not sent:
+                return json.dumps({'status': 'error'})
             db.session.add(user)
             db.session.commit()
-            return json.dumps({'status': 'success', 'token': token})
+            return json.dumps({'status': 'success'})
 
         elif step == "finally":
-            token = request.form.get("token")
-            user = model.User.check_token(token=token)
+
+            username = request.form.get("username")
+            password = request.form.get("password")
+
+            user = models.User.query.filter_by(username=username).first()
             if not user:
-                return token_is_expired_error(token=token)
-            token = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0], token=token)
-            return json.dumps({'status': 'success', 'token': token})
+                return json.dumps({'status': 'error'})
+            if user.token_is_expired:
+                return token_is_expired_error(token=user.token)
+            sent = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+            if not sent:
+                return json.dumps({'status': 'error'})
+            return json.dumps({'status': 'success'})
 
         return json.dumps({'status': 'error'})
 
@@ -125,7 +134,5 @@ def activate(token):
     user.is_activated = True
     user.revoke_token()
     db.session.commit()
-    print("wuat")
-    print(user)
     login_user(user, remember=True)
     return redirect(url_for('main.main'))
