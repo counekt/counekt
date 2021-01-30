@@ -1,54 +1,60 @@
 {% extends "base.html" %}
 {% block content %}
-<div valign="top" class="row" id="bigBox">
-            <div  width="256px" class="column" id="leftBox">
-              <div id="profile_pic">
-              <img id="profile_image" src="{{ user.profile_pic.src }}"></div>
-              </div>
-            <div class="column" id="middleBox">
-              <h1 style="color:black"><b>
-              
-              {% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b> {% if user == current_user %}(You){% endif %}</h1>
-              
-              <h2 style="color:gray">@{{ user.username }}</h2>
-               
-              <hr id="seperation">
-              <textarea class="textarea has-fixed-size is-success" id="bio-box" readonly>{% if user.bio %}{{ user.bio }}{% endif %}</textarea> 
-
-            </div>
-            <div class="column" id="rightBox">
-              {% if current_user.is_authenticated %}
-              <div class="spacy row">
-              {% if user == current_user %}
-              <a class="button is-link is-normal is-outlined" id="edit-button" href="/settings/profile/">Edit Profile</a>
-              {% elif current_user.submitted_applications.filter_by(recipient=user, response=None).first() %}
-              <a class="button is-info is-normal" title="Pending.." disabled>Pending..</a>
-              {% elif not current_user.is_connected_to(user) %}
-              <a class="button is-link is-normal is-outlined" href="/profile/{{profile.username}}/connect/">Connect</a>
-              {% else %}
-              <a class="button is-info is-normal thicc">Connected</a>
-              {% endif %}
-            </div>
-            {% endif %}
-            <div class="spacy row">
-              <a id="connections"{% if not profile == current_user %} href="/user/{{user.username}}/connections/" {% else %} href="/connections/" {% endif %} class="button is-link is-normal is-outlined">Connections</a>
-            </div>
-            </div>
-
+<div id="profile">
+  <div id="profile-top" class="container">
+    <div id="profile-left">
+      <div id="profile-image">
+        <img id="profile-image-content" src="{{ user.profile_pic.src }}">
+      </div>
+      <p class="title is-4" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
+      <p class="subtitle is-5" style="color:gray">@{{ user.username }}</p>
+    </div>
+    <div id="profile-right">
+      <div id="profile-bar" class="field">
+        <div id="profile-bar-content">
+          {% if user != current_user %}
+          <a class="button is-info is-inverted" id="more"><span>...</span></a>
+          <a class="button is-info is-inverted">Connect</a>
+          {% else %}
+          <a class="button is-info is-inverted">Edit profile</a>
+          {% endif %}
         </div>
+        <br style="clear: both;">
+      </div>
+      <div id="profile-bio">
+      <p style="color:black"> Lorem ipsum dolor sit amet </p>
+      </div>
+    </div>
+    <br style="clear: both;">
+  </div>
+  <div id="profile-tabs" class="container">
+    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
+  <ul>
+    <li class="is-active">
+      <a>
+        <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
+        <span>Connections</span>
+      </a>
+    </li>
+    <li>
+      <a>
+        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+        <span>Groups</span>
+      </a>
+    </li>
+    <li>
+      <a>
+        <span class="icon is-small"><i class="fas fa-pencil-alt" aria-hidden="true"></i></span>
+        <span>Projects</span>
+      </a>
+    </li>
+  </ul>
+</div>
+  </div>
 
-        <div id="skillBox" class="row has-text-centered">
-          <h3 class="title is-4" id="skill-title" style="color:black"><b>Skills</b></h3>
-          {% if user.skills %}
-          {% for skill in user.skills %}
-          <div class='skill'>
-          <button class='button is-info is-normal is-'>
-            <span>{{ skill.title }}</span>
-            </button>
-        </div>
-      {% endfor %}
-      {% else %}
-      <p>Nothing here yet..</p>
-      {% endif %}
-        </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/user.css">
+<script src="../static/js/user.js"></script>
 {% endblock %}
