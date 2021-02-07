@@ -43,11 +43,11 @@ class User(UserMixin, db.Model):
     sin_rad_lat = db.Column(db.Float)
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
-    profile_pic_id = db.Column(db.Integer, db.ForeignKey('picture.id'))
-    cover_pic_id = db.Column(db.Integer, db.ForeignKey('picture.id'))
+    profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    cover_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
 
-    profile_pic = db.relationship("Picture", foreign_keys=[profile_pic_id])
-    cover_pic = db.relationship("Picture", foreign_keys=[cover_pic_id])
+    profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
+    cover_photo = db.relationship("Photo", foreign_keys=[cover_photo_id])
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
         foreign_keys='Skill.owner_id')
@@ -61,8 +61,8 @@ class User(UserMixin, db.Model):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
-        self.profile_pic = Picture(path=f"/static/images/profile_pics/{self.username}/", replacement=gravatar(self.email.lower()))
-        self.cover_pic = Picture(path=f"/static/images/cover_pics/{self.username}/", replacement="/static/images/alps.jpg")
+        self.profile_photo = Photo(path=f"/static/profiles/user/{self.username}/profile_photo/", replacement=gravatar(self.email.lower()))
+        self.cover_photo = Photo(path=f"/static/profiles/user/{self.username}/cover_photo/", replacement="/static/images/alps.jpg")
 
     @ hybrid_property
     def connections(self):
@@ -98,6 +98,12 @@ class User(UserMixin, db.Model):
             db.session.add(skill)
             return title
 
+    def has_skill(self, title):
+        return any([skill.title == title for skill in self.skills.all()])
+
+    def has_skills(self, titles):
+        return all([title in [skill.title for skill in self.skills.all()] for title in titles])
+
     @ property
     def age(self):
         return funcs.get_age(self.birthdate)
@@ -126,7 +132,7 @@ class User(UserMixin, db.Model):
         now = datetime.utcnow()
         if self.token and self.token_expiration > now + timedelta(seconds=60):
             return self.token
-        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8').replace('/','')
         self.token_expiration = now + timedelta(seconds=expires_in)
         db.session.add(self)
         return self.token
@@ -234,7 +240,7 @@ class File():
         return "<File {}>".format(self.filename)
 
 
-class Picture(db.Model, File):
+class Photo(db.Model, File):
 
     def save(self, image, path=None):
         full_path = super().save(file_format=image.format, path=path)

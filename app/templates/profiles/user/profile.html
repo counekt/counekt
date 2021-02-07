@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="profile">
+  <div id="profile-top" class="container">
+    <div id="profile-left">
+      <div id="profile-image">
+        <a href="/user/{{user.username}}/photo/">
+        <img alt draggable="false" id="profile-image-content" src="{{ user.profile_photo.src }}">
+        </a>
+      </div>
+      <p class="title is-4" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
+      <p class="subtitle is-5" style="color:gray">@{{ user.username }}</p>
+    </div>
+
+    <div id="profile-right">
+      <div id="profile-bar" class="field">
+        <div id="profile-bar-content">
+          {% if user != current_user %}
+          <a class="button is-info is-inverted" id="more"><span>...</span></a>
+          <a class="button is-info is-inverted">Connect</a>
+          {% else %}
+          <a class="button is-info is-inverted" id="edit" href="/settings/profile/">Edit profile</a>
+          {% endif %}
+        </div>
+        <br style="clear: both;">
+      </div>
+      <div id="profile-bio" class="selectable">
+      <p style="color:black"> Lorem ipsum dolor sit amet </p>
+      </div>
+    </div>
+    <br style="clear: both;">
+  </div>
+  {% if user.skills.all() %}
+  <div id="profile-skills" class="container">
+    {% for skill in user.skills.all() %}
+    <div class="skill"><p>skill.title</p></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div id="profile-tabs" class="container">
+    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
+  <ul>
+    <li class="is-active">
+      <a>
+        <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
+        <span class="tabtext">Connections</span>
+      </a>
+    </li>
+    <li>
+      <a>
+        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+        <span class="tabtext">Groups</span>
+      </a>
+    </li>
+    <li>
+      <a>
+        <span class="icon is-small"><i class="fas fa-pencil-alt" aria-hidden="true"></i></span>
+        <span class="tabtext">Projects</span>
+      </a>
+    </li>
+  </ul>
+</div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block modal %}
+{% if edit %}
+{% include "profiles/user/edit.html" %}
+{% elif photo %}
+{% include "profiles/user/photo.html" %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/profiles/user/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/user/edit.css">
+<link rel="stylesheet" href="/static/css/profiles/user/photo.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<script src="/static/js/profiles/user/profile.js"></script>
+<script src="/static/js/profiles/user/edit.js"></script>
+<script src="/static/js/datepicker.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script type="text/javascript">
+  function load_map() {
+  var map = L.map('map').setView([55.676111, 12.568333], 2);
+         
+         //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
+         layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+            subdomains: 'abcd',
+            maxZoom: 13,
+            minZoom: 2
+         }).addTo(map);
+         // Create additional Control placeholders
+var markerGroup = L.layerGroup().addTo(map);
+
+map.on('click', function(e){
+    placeMarker(e.latlng);
+    getAddress(e.latlng);
+});
+
+var marker;
+
+function placeMarker(latlng, zoom_all_in=false) {
+  markerGroup.clearLayers();
+    marker = new L.marker(latlng).addTo(markerGroup);
+    if (zoom_all_in) {
+      map.flyTo(latlng, 13);
+    }
+    else {
+    map.flyTo(latlng, map.getZoom());
+    }
+    //map.flyTo(latlng, Math.min(13,map.getZoom()+1));
+    //map.flyTo(latlng, 13);
+    //if(map.getZoom()===2){map.flyTo(e.latlng, 13);}else{map.flyTo(e.latlng, map.getZoom());}
+    console.log(latlng);
+}
+
+  function addControlPlaceholders(map) {
+    var corners = map._controlCorners,
+        l = 'leaflet-',
+        container = map._controlContainer;
+
+    function createCorner(vSide, hSide) {
+        var className = l + vSide + ' ' + l + hSide;
+
+        corners[vSide + hSide] = L.DomUtil.create('div', className, container);
+    }
+
+    createCorner('verticalcenter', 'left');
+    createCorner('verticalcenter', 'right');
+}
+
+addControlPlaceholders(map);
+
+// Change the position of the Zoom Control to a newly created placeholder.
+map.zoomControl.setPosition('bottomright');
+
+// You can also put other controls in the same placeholder.
+
+var proIcon = L.icon({
+    iconUrl: 'static/images/pro-pic.png',
+
+    iconSize:     [25, 25], // size of the icon
+    iconAnchor:   [12.5, 12.5], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-2, 0] // point from which the popup should open relative to the iconAnchor
+});
+
+function getAddress(latlng) {
+  console.log(latlng);
+  var formData = new FormData();
+  formData.append('lat', latlng.lat);
+  formData.append('lng', latlng.lng);
+  $.post({
+      type: "POST",
+      url: "/get/address/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {stopErrorAlert("location-field");
+  stopErrorAlert("map");$("#location-field").val(response["address"])}
+        else{console.log("WUUUT"); $("#location-field").val(""); alertError("map");}
+        
+      }});
+}
+
+function getCoordinates() {
+  var formData = new FormData();
+  formData.append('address', $("#location-field").val());
+  $.post({
+      type: "POST",
+      url: "/get/coordinates/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {stopErrorAlert("location-field");
+  stopErrorAlert("map");placeMarker([response["lat"],response["lng"]]);}
+        else{console.log("WWW");alertError("location-field");}
+      }});
+}
+
+$(document).on('focusout', '#location-field', function() {
+  console.log("coord");
+  getCoordinates();
+});
+
+$('#location-field').keypress(function(event){
+  if(event.keyCode == 13){
+    console.log("coord");
+    getCoordinates();
+  }
+});
+
+}
+
+{% if edit %}
+load_map();
+{% endif %}
+</script>
+<script type="text/javascript">
+
+  $(document).on('click', '#profile-image a', function(e) {
+    redirect("/user/{{user.username}}/photo/", "user-photo","Profile photo", changeToPhoto);
+      e.preventDefault();
+  });
+
+
+  $(document).on('click', '#edit', function(e) {
+    redirect("/settings/profile/", "edit-user","Edit profile", changeToEdit);
+    e.preventDefault();
+  });
+
+$(document).on('click', '.close', function() {
+  redirect("/user/{{user.username}}/", "user-profile", "Profile photo", changeToProfile);
+});
+
+$(document).on('click', '.modal-background', function() {
+    redirect("/user/{{user.username}}/", "user-profile", "Profile", changeToProfile);
+});
+
+$(window).on("popstate", function() {
+  if (window.history.state.id == "edit-user") {
+    changeToEdit()
+  }
+  else if (window.history.state.id == "user-profile") {
+    changeToProfile();
+  }
+
+  else if (window.history.state.id == "user-photo") {
+    changeToPhoto();
+  }
+
+});
+
+function changeToEdit() {
+  console.log("ye");
+  $("#modal-box").append(`
+    {% include "profiles/user/edit.html" %}`);
+  load_map();
+  $(document.body).addClass('noscroll');
+}
+
+function changeToProfile() {
+  $("#modal-box").empty();
+  $(document.body).removeClass('noscroll');
+}
+
+function changeToPhoto() {
+  $("#modal-box").append(`
+    {% include "profiles/user/photo.html" %}`);
+  $(document.body).addClass('noscroll');
+
+}
+
+{% if edit %}
+window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
+{% elif photo %}
+window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
+{% else %}
+window.history.replaceState({id:"user-profile"},"Profile", "./");
+{% endif %}
+</script>
+{% endblock %}

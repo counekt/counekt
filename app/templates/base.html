@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="Frederik Christoffersen" content="Airbnb Deanonymizer">
+    <meta name="Frederik Christoffersen" content="CTW">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -10,17 +10,11 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <script src="/static/js/base.js"></script>
-    <link rel="stylesheet" href="/static/css/base.css">
-    {% if navbar %}
-        <script src="/static/js/navbar.js"></script>
-    {% elif exonavbar %}
-        <script src="/static/js/exonavbar.js"></script>
-        <link rel="stylesheet" href="/static/css/exonavbar.css">
-    {% endif %}
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     {% block head %}{% endblock %}
   </head>
-  <body>
+  <body {% if edit or photo %}class="noscroll"{% endif %}>
     <div id="loader"></div>
   <div id="page" style="display: none;" class="noselect">
     {% if navbar %}
@@ -48,17 +42,17 @@
 </section>
     {% endif %}
     </div>
-    <div id="modal-box"></div>
+    <div id="modal-box">{% block modal %}{% endblock %}</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <script src="../static/js/base.js"></script>
-    <link rel="stylesheet" href="../static/css/base.css">
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     {% if navbar %}
-        <script src="/static/js/navbar.js"></script>
+        <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
     {% elif exonavbar %}
-        <script src="/static/js/exonavbar.js"></script>
-        <link rel="stylesheet" href="/static/css/exonavbar.css">
+        <script src="{{ url_for('static', filename='js/exonavbar.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/exonavbar.css') }}">
     {% endif %}
     {% block scripts %}{% endblock %}
       </body>

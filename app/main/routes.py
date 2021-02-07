@@ -94,12 +94,6 @@ def fiskefrikadeller():
     return render_template("fiskefrikadeller.html", testvar="yes", background=True, size="medium", footer=True, navbar=True)
 
 
-@ bp.route("/user/<username>/", methods=["GET", "POST"])
-def user(username):
-    user = models.User.query.filter_by(username=username).first()
-    return render_template("profiles/user.html", user=user, navbar=True, background=True, size="medium", footer=True)
-
-
 @ bp.route("/help/", methods=['GET'])
 def help():
     return render_template("help.html", background=True, size="medium", footer=True, navbar=True)

@@ -1,0 +1,111 @@
+<div class="modal is-active">
+<div class="modal-background"></div>
+<div class="modal-card">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Edit profile</p>
+      <button class="button is-info is-normal is-rounded" id="save-button">
+        <span>Save</span>
+      </button>
+  </header>
+  <section class="modal-card-body has-text-centered">
+
+  <div id="edit-profile-image">
+      <img draggable="false" id="edit-profile-image-content" src="{{ current_user.profile_photo.src }}">
+      <input type="file"  accept="image/*" name="image" id="upload" onchange="loadFile(event)" style="display: none;">
+    <button class="button is-large is-white" id="edit-profile-upload">
+    <span class="icon is-medium">
+      <i class="fa fa-camera-retro"></i>
+    </span>
+  </button>
+  </div>
+  <br>
+  <div>
+    <div id="name">
+      <h1><b>Name</b></h1>
+      <input class="input has-fixed-size" placeholder="Add your name" id="name-field" value="{% if current_user.name %}{{current_user.name}}{% else %}{{current_user.username}}{% endif %}"></input>
+    </div>
+      <div id="feedback-name" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="name-anchor">
+    <div id="bio">
+      <h1><b>Bio</b></h1>
+      <textarea class="textarea has-fixed-size" placeholder="Add your bio" id="bio-field" rows="3">{% if current_user.bio %}{{ current_user.bio }}{% endif %}</textarea>
+    </div>
+      <div id="feedback-bio" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="bio-anchor">
+    <div id="location">
+      <h1><b>Location</b></h1>
+      <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" value="{{ current_user.location }}"></input>
+      <div id="map">
+      </div>
+    </div>
+      <div id="feedback-location" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="location-anchor">
+    <div id="birthdate">
+      <h1><b>Birthday</b></h1>
+      {% include "datepicker.html" %}
+    </div>
+      <div id="feedback-birthdate" class="feedback" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="birthdate-anchor">
+
+      <h1><b>Gender</b></h1>
+      <div class='select'> 
+        <select id="gender"> 
+          <option selected>Unspecified</option>
+          <option {% if user.gender == "Male" %} selected {% endif %}>Male</option>
+          <option {% if user.gender == "Female" %} selected {% endif %}>Female</option>
+          <option {% if user.gender == "Other" %} selected {% endif %}>Other</option>
+      </select>
+    </div>
+    <div id="feedback-gender" class="feedback" class="feedback">
+        <div class="message"></div>
+      </div>
+    <br id="gender-anchor">
+    <h1><b>Skills</b></h1>
+      <div id="skills">
+      {% for skill in user.skills %}
+        <div class='skill'>
+          <button class='button is-info is-normal'>
+            <span>{{ skill.title }}</span>
+            <span class='icon remove-skill'><a class="delete"></a></span></button>
+        </div>
+      {% endfor %}
+      {% if not current_user.has_skills(available_skills) %}
+      <div id="add-a-skill-wrap"><button id="add-a-skill" class="button is-info is-normal is-inverted">
+      <span>Add skill</span>
+      <span class="icon is-normal is-danger"><i class="fa fa-plus"></i>
+      </span></button></div>
+      </div>
+      {% endif %}
+      <div id="skill-select-form" class="vanish">
+        <div id='select-skill' class='select is-info'> 
+          <select id="selected-skill"> 
+            <option value='' disabled hidden selected>Select skill</option> 
+            {% for title in available_skills %}
+            {% if not current_user.has_skill(title) %}
+            <option>{{ title }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+          <button id='add-skill' class='button is-info is-normal is-inverted' disabled><span>Add</span><span class='icon is-normal is-danger'><i class='fa fa-plus'></i></span></button>
+      </div>
+  </div>
+
+  <br>
+
+</div>
+</section>
+</div>

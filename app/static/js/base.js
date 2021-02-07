@@ -29,3 +29,15 @@ function unload(_delay) {
 
       }});
  }
+
+ function redirect(url, id, title, what) {
+   if (window.history.pushState) {
+    // supported.
+    window.history.pushState({"id":id}, title, url);
+    what();
+    }
+
+   else {
+     window.location = url;
+   }
+ }

@@ -10,14 +10,13 @@ from geopy import Nominatim
 from flask_mail import Mail
 
 
-geolocator = Nominatim(user_agent="myGeocoder")
+geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
-#jwt = JWTManager()
 
 login = LoginManager()
-login.login_view = 'main.login'
+login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
 
 
@@ -33,10 +32,13 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     from app.api import bp as api_bp
     from app.errors import bp as errors_bp
+    from app.profiles import bp as profiles_bp
+
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(errors_bp)
+    app.register_blueprint(profiles_bp)
 
     # ... no changes to blueprint registration
     if not app.debug and not app.testing:

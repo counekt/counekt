@@ -1,9 +1,27 @@
+#edit {
+	transition: 0.3s;
+}
+
 #profile-top {
 	background-color: rgba(255,255,255,0.9);
 	padding: 10px;
 	border-radius: 10px;
 	max-width: 750px;
 	margin-bottom: 10px;
+}
+
+#profile-skills {
+	background-color: rgba(255,255,255,0.9);
+	height: 100px;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	max-width: 750px;
+
+}
+
+#profile-skills .skill {
+	display: inline-block;
+	width: 50%;
 }
 
 #profile-tabs {
@@ -24,20 +42,24 @@
 	float: left;
 }
 
-#profile-image {
+#profile-image, #edit-profile-image {
 	width: 100%;
+	max-width: 250px;
+	margin: auto;
 }
 
-#profile-image-content {
+#profile-image-content, #edit-profile-image-content {
 	width: 100%;
 	border-radius: 100%;
+	transition: 0.3s;
 }
 
 #profile-image-content:hover {
-	-webkit-filter: brightness(80%);
-  	 filter: brightness(80%);
+	-webkit-filter: brightness(85%);
+  	 filter: brightness(85%);
   	 cursor: pointer;
 }
+
 
 #profile-right {
 	margin-left: 250px;
@@ -76,6 +98,7 @@
 	padding-top: 48px;
 }
 
+
 @media (min-width:501px) {
 #profile-left {
 
@@ -85,17 +108,6 @@
 	padding-left: 10px;
 }
 	
-}
-
-
-@media (max-width:501px) {
-	#profile-left, #profile-right {
-		width: 100%;
-	}
-
-	#profile-right {
-		float: right;
-	}
 }
 
 /*
@@ -108,4 +120,30 @@ For tabs
 	font-size: 1.2em;
 }
 
+}
+
+@media (max-width:501px) {
+	#profile-left, #profile-right {
+		width: 100%;
+	}
+
+
+	#profile-right {
+		float: right;
+	}
+
+	.tabtext {
+		display: none;
+	}
+
+	#profile-tabs .tabs {
+	font-size: 1.75em;
+	}
+
+}
+
+@media (max-width:327px) {
+	#profile-tabs .tabs {
+	font-size: 1.5em;
+	}
 }

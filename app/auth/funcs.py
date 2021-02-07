@@ -31,11 +31,11 @@ def verify_identifiers(username, email):
     if not models.User.query.filter_by(username=username).first() is None:
         print("taken")
         # If only expired users with same username: delete them all and pass
-        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).first()
+        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).first()
         print(expired_user)
-        if not models.User.query.filter_by(username=username).filter(models.User.token_is_expired, not models.User.is_activated).first() is None:
+        if not models.User.query.filter_by(username=username).filter(models.User.token_is_expired, models.User.is_activated == False).first() is None:
             print("inactive")
-            models.User.query.filter_by(username=username).filter(models.User.token_is_expired, not models.User.is_activated).delete(synchronize_session='fetch')
+            models.User.query.filter_by(username=username).filter(models.User.token_is_expired, models.User.is_activated == False).delete(synchronize_session='fetch')
             db.session.commit()
         else:
             return json.dumps({'status': 'Username taken', 'box_ids': ['username']})
@@ -43,10 +43,10 @@ def verify_identifiers(username, email):
     if not models.User.query.filter_by(email=email).first() is None:
         print("taken")
         # If only expired users with same email: delete them all and pass
-        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).first()
+        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).first()
         print(expired_user)
-        if not models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).first() is None:
-            models.User.query.filter_by(email=email).filter(models.User.token_is_expired, not models.User.is_activated).delete(synchronize_session='fetch')
+        if not models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).first() is None:
+            models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).delete(synchronize_session='fetch')
             db.session.commit()
         else:
             return json.dumps({'status': 'Email taken', 'box_ids': ['email']})
