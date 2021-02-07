@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Page Expired{% endblock %}
+{% block content %}
+  <p class="title is-3">410 Page Expired</p>
+
+  <p class="subtitle is-4">The page you were looking for has expired.</p>
+
+  <p class="subtitle is-5"><a href="{{ url_for('main.main') }}">Back</a></p>
+{% endblock %}

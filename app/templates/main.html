@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block body %}
+{% block content %}
           <div id="map-container">
           <div id="map">
           </div>
@@ -144,7 +144,7 @@ map.attributionControl.setPrefix(''); // Don't show the 'Powered by Leaflet' tex
 $(document).ready(function() {
 setTimeout(function(){ 
   $("#map-container").height($(window).height());map.invalidateSize();
-  $("#explore-box").height($(window).height()-100);
+  $("#explore-box").height(Math.min(375, Math.max(55, $(window).height()-100)));
 }, 250);
 
        });
@@ -152,7 +152,7 @@ setTimeout(function(){
 $(window).on("resize", function () {
    $("#map-container").height($(window).height());
    map.invalidateSize();
-     $("#explore-box").height($(window).height()-100);
+     $("#explore-box").height(Math.min(375, Math.max(55, $(window).height()-100)));
 
 
  }).trigger("resize");

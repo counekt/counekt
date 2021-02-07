@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Unexpected Error{% endblock %}
+{% block content %}
+  <p class="title is-3">500 Unexpected Error</p>
+
+  <p class="subtitle is-4">An unexpected error has occured. The administrators have been notified. Sorry for the inconvenience!</p>
+
+  <p class="subtitle is-5"><a href="{{ url_for('main.main') }}">Back</a></p>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="profile">
+  <div id="profile-top" class="container">
+    <div id="profile-left">
+      <div id="profile-image">
+        <a href="/user/{{user.username}}/photo/">
+        <img alt draggable="true" id="profile-image-content" src="{{ user.profile_pic.src }}">
+        </a>
+      </div>
+      <p class="title is-4" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
+      <p class="subtitle is-5" style="color:gray">@{{ user.username }}</p>
+    </div>
+
+    <div id="profile-right">
+      <div id="profile-bar" class="field">
+        <div id="profile-bar-content">
+          {% if user != current_user %}
+          <a class="button is-info is-inverted" id="more"><span>...</span></a>
+          <a class="button is-info is-inverted">Connect</a>
+          {% else %}
+          <a class="button is-info is-inverted" id="edit" href="/settings/profile/">Edit profile</a>
+          {% endif %}
+        </div>
+        <br style="clear: both;">
+      </div>
+      <div id="profile-bio" class="selectable">
+      <p style="color:black"> Lorem ipsum dolor sit amet </p>
+      </div>
+    </div>
+    <br style="clear: both;">
+  </div>
+  {% if user.skills.all() %}
+  <div id="profile-skills" class="container">
+    {% for skill in user.skills.all() %}
+    <div class="skill"><p>skill.title</p></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div id="profile-tabs" class="container">
+    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
+  <ul>
+    <li class="is-active">
+      <a>
+        <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
+        <span class="tabtext">Connections</span>
+      </a>
+    </li>
+    <li>
+      <a>
+        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+        <span class="tabtext">Groups</span>
+      </a>
+    </li>
+    <li>
+      <a>
+        <span class="icon is-small"><i class="fas fa-pencil-alt" aria-hidden="true"></i></span>
+        <span class="tabtext">Projects</span>
+      </a>
+    </li>
+  </ul>
+</div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block modal %}
+{% if edit %}
+{% include "profiles/edit_user.html" %}
+{% elif photo %}
+{% include "profiles/user_photo.html" %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/user.css">
+<script src="/static/js/user.js"></script>
+<script type="text/javascript">
+
+  $(document).on('click', '#profile-image a', function() {
+    redirect("/user/{{user.username}}/photo/", "user-photo","Profile photo", changeToPhoto);
+      e.preventDefault();
+  });
+
+
+  $(document).on('click', '#edit', function(e) {
+    redirect("/settings/profile/", "edit-user","Edit profile", changeToEdit);
+    e.preventDefault();
+  });
+
+$(document).on('click', '.close', function() {
+  redirect("/user/{{user.username}}/", "user-profile", "Profile", changeToProfile);
+});
+
+$(window).on("popstate", function() {
+  if (window.history.state.id == "edit-user") {
+    changeToEdit()
+  }
+  else if (window.history.state.id == "user-profile") {
+    changeToProfile();
+  }
+});
+
+function changeToEdit() {
+  console.log("ye");
+  $("#modal-box").append(`
+    {% include "profiles/edit_user.html" %}`);
+  $(document.body).addClass('noscroll');
+}
+
+function changeToProfile() {
+  $("#modal-box").empty();
+  $(document.body).removeClass('noscroll');
+}
+
+function changeToPhoto() {
+  $("#modal-box").append(`
+    {% include "profiles/photo.html" %}`);
+  $(document.body).removeClass('noscroll');
+
+}
+
+window.history.replaceState({id:"user-profile"},"Profile", "./");
+</script>
+{% endblock %}

@@ -1,15 +1,17 @@
-from app import db, hybrid_method, hybrid_property, func
-
+from app import db
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy import func
 from app import login
-
-from datetime import datetime
-from app.funcs import geocode, get_age, is_older, is_younger
+from datetime import date, datetime, timedelta
+from time import time
+import app.funcs as funcs
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask import url_for
 import math
 from hashlib import md5
-from datetime import date
+import base64
+import os
 
 
 @login.user_loader
@@ -24,24 +26,28 @@ followers = db.Table('followers',
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
+    creation_datetime = db.Column(db.DateTime, index=True)
+    token = db.Column(db.String(32), index=True, unique=True)
+    token_expiration = db.Column(db.DateTime)
     username = db.Column(db.String(120), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
+    is_activated = db.Column(db.Boolean, default=False)
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
     name = db.Column(db.String(120))
     birthdate = db.Column(db.DateTime)
-    gender = db.Column(db.String, default="Unknown")
+    gender = db.Column(db.String, default="Unspecified")
     location = db.Column(db.String(120))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     sin_rad_lat = db.Column(db.Float)
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
-    profile_pic_id = db.Column(db.Integer, db.ForeignKey('picture.id'))
-    cover_pic_id = db.Column(db.Integer, db.ForeignKey('picture.id'))
+    profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    cover_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
 
-    profile_pic = db.relationship("Picture", foreign_keys=[profile_pic_id])
-    cover_pic = db.relationship("Picture", foreign_keys=[cover_pic_id])
+    profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
+    cover_photo = db.relationship("Photo", foreign_keys=[cover_photo_id])
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
         foreign_keys='Skill.owner_id')
@@ -54,8 +60,9 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
-        self.profile_pic = Picture(path=f"/static/images/profile_pics/{self.username}/", replacement=gravatar(self.email.lower()))
-        self.cover_pic = Picture(path=f"/static/images/cover_pics/{self.username}/", replacement="/static/images/alps.jpg")
+        self.creation_datetime = datetime.utcnow()
+        self.profile_photo = Photo(path=f"/static/profiles/user/{self.username}/profile_photo/", replacement=gravatar(self.email.lower()))
+        self.cover_photo = Photo(path=f"/static/profiles/user/{self.username}/cover_photo/", replacement="/static/images/alps.jpg")
 
     @ hybrid_property
     def connections(self):
@@ -69,7 +76,7 @@ class User(UserMixin, db.Model):
 
     def set_location(self, location, prelocated=False):
         if not prelocated:
-            location = geocode(location)
+            location = funcs.geocode(location)
         if location:
             self.location = location.address
             self.latitude = location.latitude
@@ -91,17 +98,23 @@ class User(UserMixin, db.Model):
             db.session.add(skill)
             return title
 
-    @ hybrid_property
+    def has_skill(self, title):
+        return any([skill.title == title for skill in self.skills.all()])
+
+    def has_skills(self, titles):
+        return all([title in [skill.title for skill in self.skills.all()] for title in titles])
+
+    @ property
     def age(self):
-        return get_age(self.birthdate)
+        return funcs.get_age(self.birthdate)
 
     @ hybrid_method
     def is_older_than(self, age):
-        return is_older(self.birthdate, age)
+        return funcs.is_older_than(self.birthdate, age)
 
     @ hybrid_method
     def is_younger_than(self, age):
-        return is_younger(self.birthdate, age)
+        return funcs.is_younger_than(self.birthdate, age)
 
     @ hybrid_method
     def is_nearby(self, latitude, longitude, radius):
@@ -114,6 +127,37 @@ class User(UserMixin, db.Model):
                          + self.sin_rad_lat
                          * sin_rad_lat
                          ) * 6371 <= radius
+
+    def get_token(self, expires_in=600):
+        now = datetime.utcnow()
+        if self.token and self.token_expiration > now + timedelta(seconds=60):
+            return self.token
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8').replace('/','')
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.token
+
+    def refresh_token(self, expires_in=600):
+        now = datetime.utcnow()
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        return self.token
+
+    def revoke_token(self):
+        now = datetime.utcnow()
+        self.token_expiration = now
+
+    @staticmethod
+    def check_token(token):
+        user = User.query.filter_by(token=token).first()
+        if user is None or user.token_is_expired:
+            return None
+        return user
+
+    @hybrid_property
+    def token_is_expired(self):
+        if self.token_expiration:
+            return self.token_expiration < datetime.utcnow()
+        return True
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -196,7 +240,7 @@ class File():
         return "<File {}>".format(self.filename)
 
 
-class Picture(db.Model, File):
+class Photo(db.Model, File):
 
     def save(self, image, path=None):
         full_path = super().save(file_format=image.format, path=path)

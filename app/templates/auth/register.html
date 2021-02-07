@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="auth-box" class="has-text-centered">
+    <div id="auth-content">
+	    <div class="step-1">
+	        <p class="title is-1">Sign Up</p>
+	        <p class="subtitle is-4">Already have a user? <strong><a href="/login/">Log in</a></strong></p>
+	        <div class="auth-fields">
+		        <p class="subtitle is-4 is-close">Birthdate</p>
+		        <div class="field" id="birthdate-box" style="display:table;margin:auto;">
+		        	{% include "datepicker.html" %}
+		        	<div id="feedback-birthdate" class="feedback help level-left">
+		        		<div class="message"></div>
+			        </div>
+		        </div>
+		        <br>
+		        <p class="subtitle is-4 is-close">Gender</p>
+		        <div class="field is-expanded" id="gender-box">
+		            <div class='select'> 
+	        			<select id="gender"> 
+	          			<option selected>Unspecified</option>
+	          			<option>Male</option>
+	         			<option>Female</option>
+	          			<option>Other</option>
+	      				</select>
+	    			</div>
+	    			<div id="feedback-gender" class="feedback help level-left">
+	    				<div class="message"></div>
+			        </div>
+		    	</div>
+						
+		    </div>
+		    <p style="color:gray;">Please confirm your own age, even if this account is for a business or another form of organisation.</p>
+		</div>
+
+		<div class="step-2">
+	      	<p class="title is-1">Sign Up</p>
+	      	<p class="subtitle is-4">Already have a user? <strong><a href="/login/">Log in</a></strong></p>
+	      	<div class="auth-fields">
+	          	<p class="subtitle is-4 is-close">Username</p>
+	            <div class="field" id="username-box">
+	                <p class="control has-icons-left has-icons-right">
+	                  	<input id="username" class="input is-info" type="username" placeholder='Username'>
+	                  	<span class="icon is-small is-left">
+	                    	<i class="fa fa-id-card"></i>
+	                  	</span>
+	                  	<span class="icon is-small is-right">
+	                    	<i class="fa fa-asterisk"></i>
+	                  	</span>
+	                </p>
+	                <div id="feedback-username" class="feedback help level-left">
+	    				<div class="message"></div>
+	              	</div>
+	            </div>
+
+				<p class="subtitle is-4 is-close">Email</p>
+	          	<div class="field" id="email-box">
+	                <p class="control has-icons-left has-icons-right">
+		                <input id="email" class="input is-info" type="email" placeholder='Email'>
+		                <span class="icon is-small is-left">
+		                	<i class="fa fa-envelope"></i>
+	                  	</span>
+	                  	<span class="icon is-small is-right">
+		                	<i class="fa fa-asterisk"></i>
+	                  	</span>
+	                </p>
+	                <div id="feedback-email" class="feedback help level-left">
+	    				<div class="message"></div>
+	              	</div>
+	        	</div>
+		    </div>
+		    <br>
+		    <p style="color:gray;">Your email will be used for authentication only. We promise we won't spam you or anything, unless you consent to it.</p>
+		</div>
+
+		<div class="step-3">
+			<p class="title is-1">Sign Up</p>
+	      	<p class="subtitle is-4">Already have a user? <strong><a href="/login/">Log in</a></strong></p>
+	      	<div class="auth-fields">
+				<p class="subtitle is-4 is-close">Password</p>
+	            <div class="field" id="password-box">
+	                <p class="control has-icons-left has-icons-right">
+	                	<input id="password" class="input is-info" type="password" placeholder='Password'>
+	                	<span class="icon is-small is-left">
+	                    	<i class="fa fa-lock"></i>
+	                	</span>
+	                	<span class="icon is-small is-right">
+	                    	<i class="fa fa-asterisk"></i>
+	                	</span>
+	                </p>
+	                <div id="feedback-password" class="feedback help level-left">
+	    				<div class="message"></div>
+	              	</div>
+	            </div>
+
+				<p class="subtitle is-4 is-close">Repeat password</p>
+	            <div class="field" id="repeat-password-box">
+	                <p class="control has-icons-left has-icons-right">
+	                	<input id="repeat-password" class="input is-info" type="password" placeholder='Repeat Password'>
+	                	<span class="icon is-small is-left">
+	                    	<i class="fa fa-repeat"></i>
+	                  	</span>
+	                  	<span class="icon is-small is-right">
+	                    	<i class="fa fa-asterisk"></i>
+	                  	</span>
+	                </p>
+	                <div id="feedback-repeat-password" class="feedback help level-left">
+		    			<div class="message"></div>
+	              	</div>
+	            </div>
+			</div>
+		</div>
+
+		<div class="finally infotext" style="margin:auto;">
+			<p class="title is-1">Activate</p>
+			<div class="auth-fields">
+				<p class="subtitle is-5 left">An email has now been sent. It can take up to 5 minutes to arrive.</p>
+				<p class="subtitle is-5 left">Please check your inbox and click on the provided link to activate your account.</p>
+				<p class="subtitle is-5 left">If you have not received the message by then, please resend the email by clicking the below button.</p> 
+			</div>
+		</div>
+	</div>
+	<div id="auth-nav">
+		<div id="first-continue-button">
+	    	<a id="register-button" class="form-button button is-link is-outlined">
+				<span>Next</span>
+				<span class="icon is-medium">
+	  			<i class="fa fa-arrow-right"></i>
+				</span>
+			</a>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/auth.css">
+<script src="../static/js/auth.js"></script>
+<script src="../static/js/datepicker.js"></script>
+
+{% endblock %}

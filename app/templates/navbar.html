@@ -1,4 +1,4 @@
-<section class="hero is-white is-small">
+<section id="navbar" class="hero is-white is-small" style="max-height: 56px;">
   <nav class="navbar">
     <div class="navbar-brand">
       <a class="navbar-item" href="/">
@@ -13,7 +13,7 @@
     <div id="navbar-menu-id" class="navbar-menu">
       <div class="navbar-end">
         <div class="navbar-item">
-          <div class="field is-grouped" style="overflow: auto;">
+          <div class="field is-grouped" style="overflow: auto; margin-top: 0 !important;">
             {% if not current_user.is_authenticated %}
             <p class="control">
               <a href="/login/" class="button is-link is-outlined">
