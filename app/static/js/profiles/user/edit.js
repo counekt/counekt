@@ -21,7 +21,7 @@ function stopErrorAlert(field_id) {
  $(document).on("click", "#save-button", function() {
    console.log("Applying edit");
    console.log($("#day").val());
-   var skills = $(".skill button span").map(function() { return $(this).text();}).get();
+   var skills = $(".skill :button :span").map(function() { return $(this).text();}).get();
    
    var formData = new FormData();
    formData.append('photo', $("#upload").prop('files')[0]);
@@ -30,7 +30,15 @@ function stopErrorAlert(field_id) {
 
    formData.append("bio", $("#bio-field").val());
 
-   formData.append("location", $("#location-field").val());
+   formData.append("visible", $("#visible").val());
+
+   formData.append("address", $("#location-field").val());
+
+   formData.append("lat", $("#location-field").val());
+
+   formData.append("lng", $("#location-field").val());
+
+
 
    if ($("#month").val()) {
     formData.append("month", $("#month").val());

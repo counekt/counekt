@@ -26,7 +26,11 @@ def edit_user():
     if request.method == 'POST':
         name = request.form.get("name")
         bio = request.form.get("bio")
-        location = request.form.get("location")
+
+        explore_visible = request.form.get("explore_visible")
+        address = request.form.get("address")
+        lat = request.form.get("lat")
+        lng = request.form.get("lng")
 
         month = request.form.get("month")
         day = request.form.get("day")
@@ -38,15 +42,26 @@ def edit_user():
         file = request.files.get("image")
 
         if not name:
-            print("All fields required")
             return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
 
-        if not location:
-            print("All fields required")
-            return json.dumps({'status': 'Location must be filled in', 'box_id': 'location'})
+        save_location = False
+        if explore_visible:
+            if not address:
+                return json.dumps({'status': 'Location must be filled in', 'box_id': 'location'})
+
+            if not lat or not lng:
+                return json.dumps({'status': 'Coordinates must be filled in', 'box_id': 'location'})
+
+            location = geocode(address)
+            if not (location.latitude, location.longitude) == (float(lat), float(lng)):
+                return json.dumps({'status': 'Coordinates do not match address', 'box_id': 'location'})
+        elif address and lat and lng:
+            location = geocode(address)
+            if not (location.latitude, location.longitude) == (float(lat), float(lng)):
+                return json.dumps({'status': 'Coordinates do not match address', 'box_id': 'location'})
+            save_location = True
 
         if not month or not day or not year:
-            print("All fields required")
             return json.dumps({'status': 'Birthday must be filled in', 'box_id': 'birthdate'})
 
         try:
@@ -57,10 +72,6 @@ def edit_user():
         if not get_age(birthdate) >= 13:
             return json.dumps({'status': 'You must be over the age of 13', 'box_id': 'birthdate'})
 
-        location = geocode(location)
-        if not location:
-            return json.dumps({'status': 'Non-valid location', 'box_id': 'location'})
-
         if file:
             image = Image.open(file)
             new_image = image.resize((256, 256), Image.ANTIALIAS)
@@ -68,7 +79,8 @@ def edit_user():
             current_user.profile_photo.save(image=new_image)
         current_user.name = name.strip()
         current_user.bio = bio.strip()
-        current_user.set_location(location=location, prelocated=True)
+        if (save_location or explore_visible) and ((current_user.latitude, current_user.longitude) != (float(lat), float(lng)) or current_user.address != address):
+            current_user.set_location(location=location, prelocated=True)
         current_user.set_birthdate(birthdate)
         current_user.gender = gender
 

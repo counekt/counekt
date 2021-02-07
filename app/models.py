@@ -37,7 +37,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(120))
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unspecified")
-    location = db.Column(db.String(120))
+    address = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     sin_rad_lat = db.Column(db.Float)
@@ -78,7 +78,7 @@ class User(UserMixin, db.Model):
         if not prelocated:
             location = funcs.geocode(location)
         if location:
-            self.location = location.address
+            self.address = location.address
             self.latitude = location.latitude
             self.longitude = location.longitude
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)
@@ -132,7 +132,7 @@ class User(UserMixin, db.Model):
         now = datetime.utcnow()
         if self.token and self.token_expiration > now + timedelta(seconds=60):
             return self.token
-        self.token = base64.b64encode(os.urandom(24)).decode('utf-8').replace('/','')
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8').replace('/', '')
         self.token_expiration = now + timedelta(seconds=expires_in)
         db.session.add(self)
         return self.token
