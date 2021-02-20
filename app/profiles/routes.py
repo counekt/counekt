@@ -16,17 +16,23 @@ def user(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
         abort(404)
-    return render_template("profiles/user/profile.html", user=user, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
+    skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
 
 
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
 @login_required
 def edit_user():
-    user = current_user
     if request.method == 'POST':
         name = request.form.get("name")
         bio = request.form.get("bio")
-        location = request.form.get("location")
+
+        show_location = int(request.form.get("show-location"))
+        is_visible = request.form.get("visible")
+        if is_visible:
+            is_visible = int(is_visible)
+        lat = request.form.get("lat")
+        lng = request.form.get("lng")
 
         month = request.form.get("month")
         day = request.form.get("day")
@@ -35,18 +41,33 @@ def edit_user():
         gender = request.form.get("gender")
         skills = eval(request.form.get("skills"))
 
-        file = request.files.get("image")
+        file = request.files.get("photo")
 
         if not name:
-            print("All fields required")
             return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
 
-        if not location:
-            print("All fields required")
-            return json.dumps({'status': 'Location must be filled in', 'box_id': 'location'})
+        if show_location:
+
+            if not lat or not lng:
+                return json.dumps({'status': 'Coordinates must be filled in, if you want to show your location and or be visible on the map', 'box_id': 'location'})
+
+            if [current_user.latitude, current_user.longitude] != [float(lat), float(lng)]:
+                current_user.set_location(location=funcs.reverse_geocode([lat, lng]), prelocated=True)
+
+            current_user.show_location = True
+            if is_visible:
+                current_user.is_visible = True
+        else:
+            current_user.latitude = None
+            current_user.longitude = None
+            current_user.sin_rad_lat = None
+            current_user.cos_rad_lat = None
+            current_user.rad_lng = None
+            current_user.address = None
+            current_user.is_visible = False
+            current_user.show_location = False
 
         if not month or not day or not year:
-            print("All fields required")
             return json.dumps({'status': 'Birthday must be filled in', 'box_id': 'birthdate'})
 
         try:
@@ -54,21 +75,16 @@ def edit_user():
         except ValueError:
             return json.dumps({'status': 'Invalid date', 'box_id': 'birthdate'})
 
-        if not get_age(birthdate) >= 13:
+        if not funcs.get_age(birthdate) >= 13:
             return json.dumps({'status': 'You must be over the age of 13', 'box_id': 'birthdate'})
 
-        location = geocode(location)
-        if not location:
-            return json.dumps({'status': 'Non-valid location', 'box_id': 'location'})
+        if len(bio) > 160:
+            return json.dumps({'status': 'Your bio can\'t exceed a lenght of 160 characters', 'box_id': 'bio'})
+        current_user.bio = bio.strip()
 
         if file:
-            image = Image.open(file)
-            new_image = image.resize((256, 256), Image.ANTIALIAS)
-            new_image.format = image.format
-            current_user.profile_photo.save(image=new_image)
+            current_user.profile_photo.save(file=file)
         current_user.name = name.strip()
-        current_user.bio = bio.strip()
-        current_user.set_location(location=location, prelocated=True)
         current_user.set_birthdate(birthdate)
         current_user.gender = gender
 
@@ -84,8 +100,9 @@ def edit_user():
                 db.session.delete(skill)
 
         db.session.commit()
-        return json.dumps({'status': 'success'})
-    return render_template("profiles/user/profile.html", user=user, edit=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
+        return json.dumps({'status': 'success', 'username': current_user.username})
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], edit=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
 
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
@@ -94,7 +111,7 @@ def user_photo(username):
     return render_template("profiles/user/profile.html", user=user, photo=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
 
 
-@bp.route("/get/coordinates/", methods=["POST"])
+@ bp.route("/get/coordinates/", methods=["POST"])
 def get_coordinates():
     if request.method == 'POST':
         address = request.form.get("address")
@@ -104,7 +121,7 @@ def get_coordinates():
         return json.dumps({'status': 'success', 'lat': location.latitude, 'lng': location.longitude})
 
 
-@bp.route("/get/address/", methods=["POST"])
+@ bp.route("/get/address/", methods=["POST"])
 def get_address():
     if request.method == 'POST':
         lat = request.form.get("lat")

@@ -1,3 +1,47 @@
+.profile-skill {
+display: inline-block;
+  height: 50px;
+  width: 100%;
+  padding: 10px;
+  background-color: orange;
+  text-align:center;
+  border-radius: 5px;
+text-align: middle;
+font-size: 20px;
+font-weight: 500;
+font-family: Universe, "Helvetica Neue",sans-serif;
+  margin: auto !important;
+  	transition: 0.3s;
+
+}
+
+#profile-top {
+	height: 330px;
+}
+
+#profile-birthdate {
+	margin-top: 10px;
+}
+
+#profile-address span, #profile-birthdate span {
+	margin-right: 5px;
+	color: gray;
+}
+
+#profile-birthdate + #profile-address {
+	margin-top: 5px;
+}
+
+#profile-bio {
+	word-wrap: break-word;
+}
+
+.profile-skill:hover {
+	-webkit-filter: brightness(87.5%);
+  	 filter: brightness(87.5%);
+  	 cursor: pointer;
+}
+
 #edit {
 	transition: 0.3s;
 }
@@ -10,18 +54,25 @@
 	margin-bottom: 10px;
 }
 
-#profile-skills {
-	background-color: rgba(255,255,255,0.9);
-	height: 100px;
-	border-radius: 5px;
-	margin-bottom: 10px;
-	max-width: 750px;
+.profile-skill-row {
+	display: grid;
+		grid-auto-flow: column;
+		grid-column-gap: 10px;
+	width: 100%;
+}
+
+.profile-skill-row + .profile-skill-row {
+		margin-top: 10px;
 
 }
 
-#profile-skills .skill {
-	display: inline-block;
-	width: 50%;
+#profile-skills {
+	width: 100%;
+	padding: 10px;
+	background-color: rgba(255,255,255,0.9);
+	border-radius: 5px;
+	margin-bottom: 10px;
+	max-width: 750px;
 }
 
 #profile-tabs {
@@ -60,9 +111,14 @@
   	 cursor: pointer;
 }
 
-
 #profile-right {
 	margin-left: 250px;
+}
+
+#profile-right-bottom {
+	position: absolute; 
+                bottom: 10px; 
+                padding-right: 10px;
 }
 
 #profile-bar {
@@ -127,6 +183,10 @@ For tabs
 		width: 100%;
 	}
 
+
+	#profile-top {
+		height: 520px;
+	}
 
 	#profile-right {
 		float: right;

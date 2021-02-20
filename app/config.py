@@ -19,10 +19,14 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PERMANENT_SESSION_LIFETIME = True
     AVAILABLE_SKILLS = ["Marketing", "Writing", "Photography",
-                        "Videography", "Photo editing", "Film editing",
-                        "Music producer", "Accountant", "Salesman",
-                        "(X) designer", "Lawyer", "Investor", "Software", "Acting"]
+                        "Videography", "Photo Editing", "Film Editing",
+                        "Music Production", "Accounting", "Sales",
+                        "Design", "Law", "Investing", "Software", "Acting"]
     AVAILABLE_GENDERS = ["Male", "Female", "Other"]
+    SKILL_ASPECTS = {"Marketing": {"background-color": "#3eafaf", "color": "white"}, "Writing": {"background-color": "#bc903d", "color": "white"}, "Photography": {"background-color": "#8c4c42", "color": "white"},
+                     "Videography": {"background-color": "#413422", "color": "white"}, "Photo Editing": {"background-color": "#3d5115", "color": "white"}, "Film Editing": {"background-color": "#431512", "color": "white"},
+                     "Music Production": {"background-color": "#025d57", "color": "white"}, "Accounting": {"background-color": "#1d3d59", "color": "white"}, "Sales": {"background-color": "#0b4e88", "color": "white"},
+                     "Design": {"background-color": "#eca219", "color": "white"}, "Law": {"background-color": "#001a49", "color": "white"}, "Investing": {"background-color": "#01c690", "color": "white"}, "Software": {"background-color": "#0086d4", "color": "white"}, "Acting": {"background-color": "#d3021c", "color": "white"}}
     MAIL_SERVER = getenv('MAIL_SERVER')
     MAIL_PORT = int(getenv('MAIL_PORT') or 25)
     MAIL_USE_TLS = getenv('MAIL_USE_TLS') is not None
@@ -30,3 +34,6 @@ class Config(object):
     MAIL_PASSWORD = getenv('MAIL_PASSWORD')
     AUTH_EXPIRES_IN = 6000
     ADMINS = ['frederik.w.l.christoffersen@gmail.com']
+    BUCKET = getenv('BUCKET')
+    AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_KEY = getenv("AWS_SECRET_KEY")

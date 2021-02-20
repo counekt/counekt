@@ -6,6 +6,7 @@ from app.errors.custom import token_is_expired_error
 from app import db, models
 from app.auth import bp
 import json
+from datetime import date
 
 
 @ bp.route("/register/", methods=['GET', 'POST'])
@@ -63,7 +64,7 @@ def register():
 
             user = models.User(username=username, email=email, gender=gender)
             user.set_password(password)
-            user.set_birthdate(month=int(month), day=int(day), year=int(year))
+            user.set_birthdate(date(month=int(month), day=int(day), year=int(year)))
             sent = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
             if not sent:
                 return json.dumps({'status': 'error'})
@@ -99,6 +100,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get("username")
         password = request.form.get("password")
+        print(password)
 
         if not username:
             return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})

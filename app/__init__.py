@@ -8,6 +8,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from geopy import Nominatim
 from flask_mail import Mail
+import boto3
 
 
 geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
@@ -27,6 +28,11 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login.init_app(app)
     mail.init_app(app)
+
+    app.boto_session = boto3.Session(
+        aws_access_key_id=app.config["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=app.config["AWS_SECRET_KEY"]
+    )
 
     from app.main import bp as main_bp
     from app.auth import bp as auth_bp

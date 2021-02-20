@@ -4,15 +4,19 @@ import re
 from app import db, models
 from app.email import send_email
 from flask import render_template
+from datetime import date
 
 
 def verify_traits(month, day, year, gender):
     if not month or not day or not year:
         return json.dumps({'status': 'Birthdate must be filled in', 'box_ids': ['birthdate']})
 
-    birthdate = date(month=int(month), day=int(day), year=int(year))
-    if not get_age(birthdate) >= 13:
-        return json.dumps({'status': 'You must be over the age of 13', 'box_ids': ['birthdate']})
+    try:
+        birthdate = date(month=int(month), day=int(day), year=int(year))
+        if not get_age(birthdate) >= 13:
+            return json.dumps({'status': 'You must be over the age of 13', 'box_ids': ['birthdate']})
+    except ValueError:
+        return json.dumps({'status': 'Invalid date', 'box_id': 'birthdate'})
 
     if not gender in ["Unspecified", "Male", "Female", "Other"]:
         return json.dumps({'status': 'Invalid gender', 'box_ids': ['gender']})
