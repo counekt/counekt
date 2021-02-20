@@ -1,9 +1,14 @@
+from flask import current_app
 from app import geolocator
 from geopy.exc import GeocoderTimedOut
 from geopy.extra.rate_limiter import RateLimiter
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-from flask import current_app
+import errno
+from threading import Thread
+import concurrent.futures
+from botocore.exceptions import EndpointConnectionError
+from pathlib import Path
 
 
 def geocode(address, attempt=1, max_attempts=5):
@@ -38,3 +43,149 @@ def is_older_than(date_of_birth, age, today=datetime.today()):
 
 def is_younger_than(date_of_birth, age, today=datetime.today()):
     return date_of_birth >= today - relativedelta(years=age)
+
+
+def join_parts(*parts):
+    return '/'.join(p.strip('/') for p in parts)
+
+
+def upload_file(file_path, object_name, sync=False):
+    """
+    Function to upload a file to an S3 bucket
+    """
+
+    if sync:
+        try:
+            s3_client = current_app.boto_session.client('s3')
+            response = s3_client.upload_file(file_path, current_app.config["BUCKET"], object_name)
+            return response
+        except EndpointConnectionError as e:
+            current_app.logger.error(e.message)
+            return False
+    else:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            try:
+                response = executor.submit(upload_async_file, current_app._get_current_object(), file_path, object_name).result()
+                return response
+            except EndpointConnectionError as e:
+                current_app.logger.error(e.message)
+                return False
+
+
+def delete_file(file_path, sync=False):
+    """
+    Function to delete a file from an S3 bucket
+    """
+    if sync:
+        try:
+            s3 = current_app.boto_session.client('s3')
+            s3.delete_object(Bucket=current_app.config["BUCKET"], Key=file_path)
+            return True
+        except EndpointConnectionError as e:
+            current_app.logger.error(e.message)
+            return False
+    else:
+        try:
+            Thread(target=delete_async_file,
+                   args=(current_app._get_current_object(), file_path)).start()
+            return True
+        except EndpointConnectionError as e:
+            current_app.logger.error(e.message)
+            return False
+
+
+def download_file(file_path, output_path, sync=False):
+    """
+    Function to download a given file from an S3 bucke
+    """
+    if sync:
+        try:
+            s3 = current_app.boto_session.resource('s3')
+            s3.Bucket(current_app.config["BUCKET"]).download_file(file_path, output_path)
+            return True
+        except EndpointConnectionError as e:
+            current_app.logger.error(e.message)
+            return False
+    else:
+        try:
+            Thread(target=download_async_file,
+                   args=(current_app._get_current_object(), file_path, output_path)).start()
+            return True
+        except EndpointConnectionError as e:
+            current_app.logger.error(e.message)
+            return False
+
+
+def list_files(folder_path, sync=False):
+    """
+    Function to list files in a given folder from an S3 bucket
+    """
+    if sync:
+        try:
+            s3 = current_app.boto_session.client('s3')
+            file_list = [Path(file["Key"]).parts[-1] for file in s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)["Contents"]]
+            return file_list
+        except EndpointConnectionError as e:
+            current_app.logger.error(e.message)
+            return False
+    else:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            try:
+                response = executor.submit(list_async_files, current_app._get_current_object(), folder_path).result()
+                return response
+            except EndpointConnectionError as e:
+                current_app.logger.error(e.message)
+                return False
+
+
+"""
+       __________________
+      ///////////////////
+     //ASYNC FUNCTIONS//
+    ///////////////////
+    ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
+"""
+
+
+def upload_async_file(app, file_path, object_name):
+    with app.app_context():
+        s3_client = current_app.boto_session.client('s3')
+        response = s3_client.upload_file(file_path, current_app.config["BUCKET"], object_name)
+        return response
+
+
+def delete_async_file(app, file_path):
+    with app.app_context():
+        s3 = current_app.boto_session.client('s3')
+        s3.delete_object(Bucket=current_app.config["BUCKET"], Key=file_path)
+
+
+def download_async_file(app, file_path, output_path):
+    with app.app_context():
+        s3 = current_app.boto_session.resource('s3')
+        s3.Bucket(current_app.config["BUCKET"]).download_file(file_path, output_path)
+
+
+def list_async_files(app, folder_path):
+    with app.app_context():
+        s3 = current_app.boto_session.client('s3')
+        file_list = [Path(file["Key"]).parts[-1] for file in s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)["Contents"]]
+        return file_list
+
+
+"""
+def src_for(file_path):
+    s3 = current_app.boto_session.resource('s3')
+    bucket = s3.Bucket(current_app.config["BUCKET"])
+    location = boto_session.client('s3').get_bucket_location(Bucket=current_app.config["BUCKET"])['LocationConstraint']
+    url = "https://s3-%s.amazonaws.com/%s/%s" % (location, current_app.config["BUCKET"], file_path)
+    return url
+"""
+
+
+def silent_local_remove(file_path):
+    try:
+        os.remove(file_path)
+    except OSError as e:
+        if e.eerno != errno.ENOENT:  # errno.ENOENT = no such file or directory
+            raise  # re-raise exception if a different error occurred

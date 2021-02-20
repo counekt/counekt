@@ -1,8 +1,8 @@
 ::selection {
-  background: rgb(200,230,255); /* WebKit/Blink Browsers */
+  background: rgba(150,200,255,0.5); /* WebKit/Blink Browsers */
 }
 ::-moz-selection {
-  background: rgb(200,230,255); /* Gecko Browsers */
+  background: rgba(150,200,255,0.5); /* Gecko Browsers */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

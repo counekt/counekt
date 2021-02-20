@@ -13,27 +13,41 @@
     </div>
 
     <div id="profile-right">
-      <div id="profile-bar" class="field">
-        <div id="profile-bar-content">
-          {% if user != current_user %}
-          <a class="button is-info is-inverted" id="more"><span>...</span></a>
-          <a class="button is-info is-inverted">Connect</a>
-          {% else %}
-          <a class="button is-info is-inverted" id="edit" href="/settings/profile/">Edit profile</a>
-          {% endif %}
+      <div id="profile-right-top">
+        <div id="profile-bar" class="field">
+          <div id="profile-bar-content">
+            {% if user != current_user %}
+            <a class="button is-info is-inverted" id="more"><span>...</span></a>
+            <a class="button is-info is-inverted">Connect</a>
+            {% else %}
+            <a class="button is-info is-inverted" id="edit" href="/settings/profile/">Edit profile</a>
+            {% endif %}
+          </div>
+          <br style="clear: both;">
         </div>
-        <br style="clear: both;">
+        <div id="profile-bio" class="selectable">
+        <p style="color:black"> {% if user.bio %}{{user.bio}}{% endif %} </p>
+        </div>
       </div>
-      <div id="profile-bio" class="selectable">
-      <p style="color:black"> Lorem ipsum dolor sit amet </p>
+      <div id="profile-right-bottom">
+        <div id="profile-birthdate" style="color: black;">
+          <span class="icon is-small"><i class="fa fa-birthday-cake" aria-hidden="true"></i></span><span>{{user.birthdate.year}}-{{user.birthdate.month}}-{{user.birthdate.day}}</span>
+        </div>
+        <div id="profile-address" style="color: black;">
+          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span>{{user.address}}</span>
+        </div>
       </div>
     </div>
     <br style="clear: both;">
   </div>
   {% if user.skills.all() %}
   <div id="profile-skills" class="container">
-    {% for skill in user.skills.all() %}
-    <div class="skill"><p>skill.title</p></div>
+    {% for skillrow in skillrows %}
+    <div class="profile-skill-row">
+    {% for skill in skillrow %}
+      <div class="profile-skill selectable" style="color: {{skill_aspects[skill.title]['color']}}; background-color: {{skill_aspects[skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
+    {% endfor %}
+    </div>
     {% endfor %}
   </div>
   {% endif %}
@@ -85,8 +99,11 @@
 <script src="/static/js/datepicker.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
-  function load_map() {
-  var map = L.map('map').setView([55.676111, 12.568333], 2);
+
+
+
+  function load_edit_js() {
+  var map = L.map('map').setView({% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
          
          //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
          layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -104,6 +121,21 @@ map.on('click', function(e){
 });
 
 var marker;
+
+{% if current_user.latitude and current_user.longitude %}
+  marker = new L.marker([{{current_user.latitude}}, {{current_user.longitude}}]).addTo(markerGroup);
+{% endif %}
+
+window.getLatLng = function() {
+  return(marker.getLatLng());
+}
+
+window.markerIsPlaced = function() {
+  if (marker) {
+    return(true);
+  }
+  return(false);
+}
 
 function placeMarker(latlng, zoom_all_in=false) {
   markerGroup.clearLayers();
@@ -204,7 +236,7 @@ $('#location-field').keypress(function(event){
 }
 
 {% if edit %}
-load_map();
+load_edit_js();
 {% endif %}
 </script>
 <script type="text/javascript">
@@ -246,7 +278,7 @@ function changeToEdit() {
   console.log("ye");
   $("#modal-box").append(`
     {% include "profiles/user/edit.html" %}`);
-  load_map();
+  load_edit_js();
   $(document.body).addClass('noscroll');
 }
 

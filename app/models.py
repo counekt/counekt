@@ -1,3 +1,4 @@
+from flask import current_app
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func
@@ -12,6 +13,8 @@ import math
 from hashlib import md5
 import base64
 import os
+from PIL import Image
+from pathlib import Path
 
 
 @login.user_loader
@@ -35,6 +38,7 @@ class User(UserMixin, db.Model):
     phone_number = db.Column(db.String(15))
     password_hash = db.Column(db.String(128))
     name = db.Column(db.String(120))
+    bio = db.Column(db.String(160))
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unspecified")
     address = db.Column(db.String)
@@ -43,6 +47,7 @@ class User(UserMixin, db.Model):
     sin_rad_lat = db.Column(db.Float)
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
+    is_visible = db.Column(db.Boolean, default=False)
     profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     cover_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
 
@@ -61,8 +66,8 @@ class User(UserMixin, db.Model):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
-        self.profile_photo = Photo(path=f"/static/profiles/user/{self.username}/profile_photo/", replacement=gravatar(self.email.lower()))
-        self.cover_photo = Photo(path=f"/static/profiles/user/{self.username}/cover_photo/", replacement="/static/images/alps.jpg")
+        self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/users/{self.username}/", replacement=gravatar(self.email.lower()))
+        self.cover_photo = Photo(filename="cover_photo", path=f"static/profiles/users/{self.username}/", replacement="/static/images/alps.jpg")
 
     @ hybrid_property
     def connections(self):
@@ -87,8 +92,7 @@ class User(UserMixin, db.Model):
 
         return location
 
-    def set_birthdate(self, day, month, year):
-        birthdate = date(day=day, month=month, year=year)
+    def set_birthdate(self, birthdate):
         self.birthdate = birthdate
         return birthdate
 
@@ -188,70 +192,104 @@ class Skill(db.Model):
     def __repr__(self):
         return "<Skill {}>".format(self.title)
 
+
 class File():
-
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(25))
+    filename = db.Column(db.String)
     path = db.Column(db.String(2048))
-    replacement = db.Column(db.String(2048))
 
-    @ hybrid_property
-    def is_empty(self):
-        if not self.filename or not self.path:
-            return True
-        folder = os.path.join(app.root_path, Path(self.path))
-        if os.path.exists(folder):
-            return not bool(os.listdir(folder))
+    def save_locally(self, file_format):
+        folder = os.path.join(current_app.root_path, self.path, self.filename)
+        end_filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
+        full_local_path = os.path.join(current_app.root_path, folder, end_filename)
+        # make sure the whole path exists
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        return full_local_path
+
+    def upload_to_bucket(self):
+        # Uploading to bucket
+        funcs.upload_file(file_path=self.full_local_path, object_name=os.path.join(self.path, self.filename, self.end_filename))
+
+    @property
+    def full_local_path(self):
+        folder = os.path.join(current_app.root_path, self.path, self.filename)
+        full_local_path = os.path.join(current_app.root_path, folder, self.end_filename)
+        return full_local_path
+
+    @property
+    def full_bucket_path(self):
+        return os.path.join(self.path, self.filename, self.end_filename)
+
+    @property
+    def end_filename(self):
+        if self.is_local:
+            folder = os.path.join(current_app.root_path, self.path, self.filename)
+            end_filename = os.listdir(folder)[0]
+        else:
+            folder = os.path.join(self.path, self.filename)
+            end_filename = funcs.list_files(folder_path=folder)[-1]
+        return end_filename
+
+    @property
+    def src(self):
+        if self.is_local:
+            url = url_for("static", filename=funcs.join_parts(*Path(self.path).parts[1:], self.filename, self.end_filename))
+            return url
+        else:
+            self.make_local()
+            return self.src
 
     def empty(self):
-        if not self.is_empty:
-            folder = os.path.join(app.root_path, Path(self.path), self.filename)
-            for filename in os.listdir(folder):
-                path = Path(os.path.join(folder, filename))
-                path.unlink()
+        os.remove(self.full_local_path)
+        funcs.delete_file(self.full_bucket_path)
+        funcs.silent_local_remove(self.full_local_path)
 
-    def save(self, file_format, path=None):
-        if not path:
-            path = self.path
-        folder = os.path.join(app.root_path, path)
+    def remove(self):
         self.empty()
-        filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
-        full_path = os.path.join(app.root_path, path, filename)
+        db.session.delete(self)
+
+    @property
+    def is_local(self):
+        local_folder = os.path.join(current_app.root_path, self.path, self.filename)
+        return os.path.exists(local_folder) and os.listdir(local_folder)
+
+    def make_local(self):
+        folder = os.path.join(current_app.root_path, self.path, self.filename)
         Path(folder).mkdir(parents=True, exist_ok=True)
-        self.filename = filename
-        self.path = path
-        return full_path
-
-    @ hybrid_property
-    def src(self):
-        if not self.is_empty:
-            folder = os.path.join(app.root_path, Path(self.path), self.filename)
-            url = url_for(Path(self.path).parts[0], filename=join_parts(*Path(self.path).parts[1:], self.filename))
-            return url
-
-        return self.replacement
-
-    @ hybrid_property
-    def full_path(self):
-        if not self.is_empty:
-            return os.path.join(app.root_path, self.path, self.filename)
+        funcs.download_file(self.full_bucket_path, self.full_local_path)
 
     def __repr__(self):
         return "<File {}>".format(self.filename)
 
-
 class Photo(db.Model, File):
 
-    def save(self, image, path=None):
-        full_path = super().save(file_format=image.format, path=path)
-        # Custom save
-        image.save(full_path)
-        return full_path
+    is_empty = db.Column(db.Boolean, default=True)
+    replacement = db.Column(db.String(2048))
+
+    def save(self, file, d=(256, 256), path=None):
+        image = Image.open(file)
+        new_image = image.resize((256, 256), Image.ANTIALIAS)
+        new_image.format = image.format
+        full_local_path = self.save_locally(file_format=image.format)
+        print(full_local_path)
+        new_image.save(full_local_path)
+        self.upload_to_bucket()
+        self.is_empty = False
+
+    def empty(self):
+        super(Photo, self).empty()
+        self.is_empty = True
 
     def show(self):
         # For display in shell
         image = Image.open(self.full_path)
         image.show()
+
+    @property
+    def src(self):
+        if not self.is_empty:
+            return super(Photo, self).src
+        return self.replacement
 
     def __repr__(self):
         return "<Picture {}>".format(self.filename)
