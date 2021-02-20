@@ -47,6 +47,7 @@ class User(UserMixin, db.Model):
     sin_rad_lat = db.Column(db.Float)
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
+    show_location = db.Column(db.Boolean, default=False)
     is_visible = db.Column(db.Boolean, default=False)
     profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     cover_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))

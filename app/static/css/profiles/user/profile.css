@@ -23,14 +23,13 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	margin-top: 10px;
 }
 
-#profile-birthdate span {
+#profile-address span, #profile-birthdate span {
 	margin-right: 5px;
 	color: gray;
 }
 
-#profile-address span {
-	margin-right: 5px;
-	color: gray;
+#profile-birthdate + #profile-address {
+	margin-top: 5px;
 }
 
 #profile-bio {

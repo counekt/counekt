@@ -23,13 +23,14 @@ def user(username):
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
 @login_required
 def edit_user():
-    user = current_user
     if request.method == 'POST':
         name = request.form.get("name")
         bio = request.form.get("bio")
 
-        is_visible = int(request.form.get("visible"))
-        print(is_visible)
+        show_location = int(request.form.get("show-location"))
+        is_visible = request.form.get("visible")
+        if is_visible:
+            is_visible = int(is_visible)
         lat = request.form.get("lat")
         lng = request.form.get("lng")
 
@@ -45,18 +46,26 @@ def edit_user():
         if not name:
             return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
 
-        save_location_anyway = False
-        if is_visible:
+        if show_location:
 
             if not lat or not lng:
-                return json.dumps({'status': 'Coordinates must be filled in, if you want to be visible on the map', 'box_id': 'location'})
+                return json.dumps({'status': 'Coordinates must be filled in, if you want to show your location and or be visible on the map', 'box_id': 'location'})
 
             if [current_user.latitude, current_user.longitude] != [float(lat), float(lng)]:
                 current_user.set_location(location=funcs.reverse_geocode([lat, lng]), prelocated=True)
 
-        elif lat and lng:
-            if [current_user.latitude, current_user.longitude] != [float(lat), float(lng)]:
-                current_user.set_location(location=funcs.reverse_geocode([lat, lng]), prelocated=True)
+            current_user.show_location = True
+            if is_visible:
+                current_user.is_visible = True
+        else:
+            current_user.latitude = None
+            current_user.longitude = None
+            current_user.sin_rad_lat = None
+            current_user.cos_rad_lat = None
+            current_user.rad_lng = None
+            current_user.address = None
+            current_user.is_visible = False
+            current_user.show_location = False
 
         if not month or not day or not year:
             return json.dumps({'status': 'Birthday must be filled in', 'box_id': 'birthdate'})
@@ -73,13 +82,9 @@ def edit_user():
             return json.dumps({'status': 'Your bio can\'t exceed a lenght of 160 characters', 'box_id': 'bio'})
         current_user.bio = bio.strip()
 
-        print(file)
         if file:
-            print("file is there")
             current_user.profile_photo.save(file=file)
         current_user.name = name.strip()
-        if is_visible:
-            current_user.is_visible = is_visible
         current_user.set_birthdate(birthdate)
         current_user.gender = gender
 
@@ -96,7 +101,8 @@ def edit_user():
 
         db.session.commit()
         return json.dumps({'status': 'success', 'username': current_user.username})
-    return render_template("profiles/user/profile.html", user=user, edit=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], edit=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
 
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])

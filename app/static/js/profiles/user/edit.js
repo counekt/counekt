@@ -18,6 +18,7 @@ function stopErrorAlert(field_id) {
   $('#'+field_id).removeClass('errorClass');
 }
 
+
 $(document).on("click", "#save-button", function() {
    console.log("Applying edit");
    console.log($("#day").val());
@@ -30,14 +31,15 @@ $(document).on("click", "#save-button", function() {
 
    formData.append("bio", $("#bio-field").val());
 
+   formData.append("show-location", $("#show-location").is(':checked') ? 1 : 0);
+   if ($("#show-location").is(':checked')) {
    formData.append("visible", $("#visible").is(':checked') ? 1 : 0);
-   console.log($("#visible").is(':checked'));
    if (window.markerIsPlaced()) {
    formData.append("lat", window.getLatLng().lat);
-
    formData.append("lng", window.getLatLng().lng);
    }
 
+  }
 
    if ($("#month").val()) {
     formData.append("month", $("#month").val());

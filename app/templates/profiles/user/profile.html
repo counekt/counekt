@@ -33,9 +33,11 @@
         <div id="profile-birthdate" style="color: black;">
           <span class="icon is-small"><i class="fa fa-birthday-cake" aria-hidden="true"></i></span><span>{{user.birthdate.year}}-{{user.birthdate.month}}-{{user.birthdate.day}}</span>
         </div>
+        {% if user.address %}
         <div id="profile-address" style="color: black;">
           <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span>{{user.address}}</span>
         </div>
+        {% endif %}
       </div>
     </div>
     <br style="clear: both;">
@@ -233,6 +235,21 @@ $('#location-field').keypress(function(event){
   }
 });
 
+$('#show-location').change(function() {
+        if($(this).is(":checked")) {
+            console.log("checked");
+          $('#location-settings').removeClass("vanish");
+        }
+        else {
+           console.log("unchecked");
+          $('#location-settings').addClass("vanish");
+        }
+       });
+
+if(!$('#show-location').is(":checked")) {
+  $('#location-settings').addClass("vanish");
+  }
+
 }
 
 {% if edit %}
@@ -275,7 +292,6 @@ $(window).on("popstate", function() {
 });
 
 function changeToEdit() {
-  console.log("ye");
   $("#modal-box").append(`
     {% include "profiles/user/edit.html" %}`);
   load_edit_js();

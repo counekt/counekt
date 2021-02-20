@@ -41,25 +41,37 @@
         <div class="message"></div>
       </div>
       <br id="bio-anchor">
-    <h1><b>Visible on the map</b></h1>
+
+    <h1><b>Show location</b></h1>
     <label class="switch">
-      <input type="checkbox" id="visible" {% if user.is_visible %}checked{% endif %}>
+      <input type="checkbox" id="show-location" {% if user.show_location %}checked{% endif %}>
       <span class="slider round"></span>
     </label>
-    <div id="feedback-visible" class="feedback">
+    <div id="feedback-show-location" class="feedback">
         <div class="message"></div>
       </div>
-      <br id="visible-anchor">
-    <div id="location">
-      <h1><b>Location</b></h1>
-      <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" {% if user.address %}value="{{ user.address }}"{% endif %}></input>
-      <div id="map">
+      <br id="show-location-anchor">
+    <div id="location-settings">
+      <div id="location">
+        <h1><b>Location</b></h1>
+        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" {% if user.address %}value="{{ user.address }}"{% endif %}></input>
+        <div id="map">
+        </div>
       </div>
+        <div id="feedback-location" class="feedback">
+          <div class="message"></div>
+        </div>
+        <br id="location-anchor">
+        <h1><b>Visible on the map</b></h1>
+      <label class="switch">
+        <input type="checkbox" id="visible" {% if user.is_visible %}checked{% endif %}>
+        <span class="slider round"></span>
+      </label>
+      <div id="feedback-visible" class="feedback">
+          <div class="message"></div>
+        </div>
+        <br id="visible-anchor">
     </div>
-      <div id="feedback-location" class="feedback">
-        <div class="message"></div>
-      </div>
-      <br id="location-anchor">
     <div id="birthdate">
       <h1><b>Birthday</b></h1>
       {% with selected_day = user.birthdate.day, selected_month = user.birthdate.month, selected_year = user.birthdate.year %}
