@@ -4,9 +4,12 @@ __pycache__/
 *$py.class
 
 # profile specific static files
-static/profiles/users/*
-static/profiles/groups/*
-static/profiles/projects/*
+app/static/profiles/users/*
+app/static/profiles/groups/*
+app/static/profiles/projects/*
+
+# keep .gitkeep files
+!*.gitkeep
 
 # C extensions
 *.so
