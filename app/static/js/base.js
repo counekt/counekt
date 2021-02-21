@@ -30,10 +30,10 @@ function unload(_delay) {
       }});
  }
 
- function redirect(url, id, title, what) {
+ function redirect(object, title, url, what) {
    if (window.history.pushState) {
     // supported.
-    window.history.pushState({"id":id}, title, url);
+    window.history.pushState(object, title, url);
     what();
     }
 

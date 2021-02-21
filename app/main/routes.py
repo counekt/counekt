@@ -37,17 +37,9 @@ def main():
         min_age = request.form.get("min_age")
         max_age = request.form.get("max_age")
 
-        print(address)
-        print(radius)
-        print(skill)
-        print(gender)
-        print(min_age)
-        print(max_age)
-
         location = funcs.geocode(address)
 
         if not location:
-            print("Non-valid location")
             return json.dumps({'status': 'Non-valid location', 'box_id': 'location-field'})
 
         try:
@@ -55,10 +47,7 @@ def main():
             radius = float(radius)
 
         except ValueError:
-            print("Non-valid radius")
             return json.dumps({'status': 'Non-valid radius', 'box_id': 'options-button'})
-
-        print(f"Successfully verified")
 
         url = f'/main?loc={address}&rad={radius}'
 
