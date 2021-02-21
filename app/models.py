@@ -242,9 +242,9 @@ class File():
             return self.src
 
     def empty(self):
-        funcs.silent_local_remove(self.full_local_path)
-        funcs.delete_file(self.full_bucket_path)
-        funcs.silent_local_remove(self.full_local_path)
+        if not self.is_empty:
+            funcs.silent_local_remove(self.full_local_path)
+            funcs.delete_file(self.full_bucket_path)
 
     def remove(self):
         self.empty()
@@ -254,6 +254,16 @@ class File():
     def is_local(self):
         local_folder = os.path.join(current_app.root_path, self.path, self.filename)
         return os.path.exists(local_folder) and os.listdir(local_folder)
+
+    @property
+    def is_global(self):
+        folder = os.path.join(self.path, self.filename)
+        exists = bool(funcs.list_files(folder_path=folder))
+        return exists
+
+    @property
+    def is_empty(self):
+        return not (self.is_local or self.is_local)
 
     def make_local(self):
         folder = os.path.join(current_app.root_path, self.path, self.filename)

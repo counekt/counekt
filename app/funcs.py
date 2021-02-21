@@ -62,7 +62,6 @@ def upload_file(file_path, object_name, sync=False):
             return response
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
-            return False
     else:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             try:
@@ -70,7 +69,6 @@ def upload_file(file_path, object_name, sync=False):
                 return response
             except EndpointConnectionError as e:
                 current_app.logger.error(e.message)
-                return False
 
 
 def delete_file(file_path, sync=False):
@@ -84,7 +82,6 @@ def delete_file(file_path, sync=False):
             return True
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
-            return False
     else:
         try:
             Thread(target=delete_async_file,
@@ -92,7 +89,6 @@ def delete_file(file_path, sync=False):
             return True
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
-            return False
 
 
 def download_file(file_path, output_path, sync=False):
@@ -106,7 +102,6 @@ def download_file(file_path, output_path, sync=False):
             return True
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
-            return False
     else:
         try:
             Thread(target=download_async_file,
@@ -114,7 +109,6 @@ def download_file(file_path, output_path, sync=False):
             return True
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
-            return False
 
 
 def list_files(folder_path, sync=False):
@@ -124,11 +118,14 @@ def list_files(folder_path, sync=False):
     if sync:
         try:
             s3 = current_app.boto_session.client('s3')
-            file_list = [Path(file["Key"]).parts[-1] for file in s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)["Contents"]]
-            return file_list
+            folder = s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)
+            if folder.get("Contents"):
+                file_list = [Path(file["Key"]).parts[-1] for file in folder["Contents"]]
+                return file_list
+            else:
+                return False
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
-            return False
     else:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             try:
@@ -170,8 +167,12 @@ def download_async_file(app, file_path, output_path):
 def list_async_files(app, folder_path):
     with app.app_context():
         s3 = current_app.boto_session.client('s3')
-        file_list = [Path(file["Key"]).parts[-1] for file in s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)["Contents"]]
-        return file_list
+        folder = s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)
+        if folder.get("Contents"):
+            file_list = [Path(file["Key"]).parts[-1] for file in folder["Contents"]]
+            return file_list
+        else:
+            return False
 
 
 """
