@@ -170,7 +170,7 @@ class User(UserMixin, db.Model):
 
 def get_explore_query(latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
     query = User.query.filter(User.is_nearby(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
-
+    query = User.query.filter(User.show_location == True, User.is_visible == True)
     if skill:
         query = query.filter(User.skills.any(Skill.title == skill))
 
@@ -200,6 +200,7 @@ class File():
     path = db.Column(db.String(2048))
 
     def save_locally(self, file_format):
+        self.empty()
         folder = os.path.join(current_app.root_path, self.path, self.filename)
         end_filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
         full_local_path = os.path.join(current_app.root_path, folder, end_filename)
@@ -241,9 +242,9 @@ class File():
             return self.src
 
     def empty(self):
-        os.remove(self.full_local_path)
-        funcs.delete_file(self.full_bucket_path)
-        funcs.silent_local_remove(self.full_local_path)
+        if not self.is_empty:
+            funcs.silent_local_remove(self.full_local_path)
+            funcs.delete_file(self.full_bucket_path)
 
     def remove(self):
         self.empty()
@@ -253,6 +254,16 @@ class File():
     def is_local(self):
         local_folder = os.path.join(current_app.root_path, self.path, self.filename)
         return os.path.exists(local_folder) and os.listdir(local_folder)
+
+    @property
+    def is_global(self):
+        folder = os.path.join(self.path, self.filename)
+        exists = bool(funcs.list_files(folder_path=folder))
+        return exists
+
+    @property
+    def is_empty(self):
+        return not (self.is_local or self.is_local)
 
     def make_local(self):
         folder = os.path.join(current_app.root_path, self.path, self.filename)

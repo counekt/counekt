@@ -3,6 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# profile specific static files
+app/static/profiles/users/*
+app/static/profiles/groups/*
+app/static/profiles/projects/*
+
+# keep .gitkeep files
+!*.gitkeep
+
 # C extensions
 *.so
 
