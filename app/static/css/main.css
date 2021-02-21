@@ -10,6 +10,18 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
+#profile-image {
+	width: 100%;
+	max-width: 250px;
+	margin: auto;
+}
+
+#profile-image-content {
+	width: 100%;
+	border-radius: 100%;
+	transition: 0.3s;
+}
+
 #explore-fields {
 	display: flex;
 	flex-direction: column;

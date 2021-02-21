@@ -221,7 +221,12 @@ function explore(do_redirect=true) {
           console.log(info);
           markers.clearLayers();
           info.forEach(function(marker) {
-            L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup("<a href='/user/"+marker.username+"/'>"+marker.name+"</a>");
+          L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup(`
+      <div id="profile-image">
+        <a href="user/`+marker.username+`">
+        <img alt draggable="false" id="profile-image-content" src="`+marker.profile_photo+`">
+        </a>
+      </div><a class="title is-4 selectable" href="user/`+marker.username+`" style="color:black"><b>`+marker.name+`</b></a>`);
           });
           if (do_redirect) {
           map.flyTo([loc.lat, loc.lng], loc.zoom);

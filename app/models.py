@@ -170,7 +170,7 @@ class User(UserMixin, db.Model):
 
 def get_explore_query(latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
     query = User.query.filter(User.is_nearby(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
-    query = User.query.filter(User.show_location == True, User.is_visible == True)
+    query = query.filter(User.show_location == True, User.is_visible == True)
     if skill:
         query = query.filter(User.skills.any(Skill.title == skill))
 
