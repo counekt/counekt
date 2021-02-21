@@ -76,8 +76,21 @@
     </li>
   </ul>
 </div>
+ <div id="profile-tabs-content">
+    <div id="profile-connections">
+      {% for connection in user.connections %}
+      {% endfor %}
+    </div>
+    <div id="profile-groups">
+      {% for group in user.groups %}
+      {% endfor %}
+    </div>
+    <div id="profile-projects">
+      {% for project in user.projects %}
+      {% endfor %}
+    </div>
+ </div>
   </div>
-
 </div>
 
 {% endblock %}

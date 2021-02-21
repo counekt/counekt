@@ -9,6 +9,7 @@ from threading import Thread
 import concurrent.futures
 from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
+import os
 
 
 def geocode(address, attempt=1, max_attempts=5):

@@ -6,13 +6,38 @@ display: inline-block;
   background-color: orange;
   text-align:center;
   border-radius: 5px;
-text-align: middle;
 font-size: 20px;
 font-weight: 500;
 font-family: Universe, "Helvetica Neue",sans-serif;
   margin: auto !important;
   	transition: 0.3s;
 
+}
+
+.add-specific-button {
+	border: solid 2px gray;
+	color: gray;
+	height: 50px;
+  width: 100%;
+  line-height: 50px;
+    text-align:center;
+      border-radius: 5px;
+      font-size: 20px;
+      font-weight: 500;
+        margin: auto !important;
+        	  	transition: 0.3s;
+
+
+}
+
+.add-specific-button:hover {
+	-webkit-filter: brightness(85%);
+  	 filter: brightness(85%);
+  	 cursor: pointer;
+}
+
+#profile-tabs-content {
+	padding: 10px;
 }
 
 #profile-top {
@@ -85,6 +110,7 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 
 #profile-tabs .tabs {
 	width: 100%;
+	margin: 0;
 }
 
 
