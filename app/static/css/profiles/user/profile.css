@@ -1,4 +1,7 @@
 .profile-skill {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	 white-space: nowrap;
 display: inline-block;
   height: 50px;
   width: 100%;
@@ -41,10 +44,6 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	padding: 10px;
 }
 
-#profile-top {
-	height: 330px;
-}
-
 #profile-birthdate {
 	margin-top: 10px;
 }
@@ -54,12 +53,19 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	color: gray;
 }
 
+#profile-address {
+	width: 200px; white-space: nowrap; color: black; text-overflow: ellipsis; overflow: hidden;
+}
+
 #profile-birthdate + #profile-address {
 	margin-top: 5px;
 }
 
 #profile-bio {
 	word-wrap: break-word;
+	margin-bottom: 60px;
+	overflow-y: auto;
+	max-height:140px;
 }
 
 .profile-skill:hover {
@@ -78,6 +84,8 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	border-radius: 10px;
 	max-width: 750px;
 	margin-bottom: 10px;
+	display: flex;
+	min-height: 200px;
 }
 
 .profile-skill-row {
@@ -116,21 +124,32 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 
 
 #profile-left {
-	width: 250px;
+	width: 50%;
 	float: left;
+	max-width: 255px;
 }
 
-#profile-image, #edit-profile-image {
+#profile-image {
+	left: 0;
+}
+
+#edit-profile-image {
 	width: 100%;
 	max-width: 250px;
 	margin: auto;
 }
+
+#profile-image {width: 100%;
+	max-width: 250px;
+margin-bottom: 55px;}
 
 #profile-image-content, #edit-profile-image-content {
 	width: 100%;
 	border-radius: 100%;
 	transition: 0.3s;
 }
+
+
 
 #profile-image-content:hover {
 	-webkit-filter: brightness(85%);
@@ -139,7 +158,11 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 }
 
 #profile-right {
-	margin-left: 250px;
+	float:right;
+		padding-left: 10px;
+		width: 50%;
+	flex-grow: 1;
+
 }
 
 #profile-right-bottom {
@@ -147,6 +170,14 @@ font-family: Universe, "Helvetica Neue",sans-serif;
                 bottom: 10px; 
                 padding-right: 10px;
     right: 0px;
+    text-align: right;
+}
+
+#profile-left-bottom {
+	position: absolute; 
+                bottom: 10px; 
+                padding-left: 10px;
+    left: 0px;
 }
 
 #profile-bar {
@@ -180,25 +211,75 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 
 #background {
 	padding-top: 48px;
+	padding-bottom: 0px;
 }
 
 
-@media (min-width:501px) {
-#profile-left {
+@media (max-width:500px) {
+  .profile {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+}
+
+#background {
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+}
+
+#profile-address {
+		width: 150px;
+	}
+
+#profile-skills {
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.profile-skill-row {
+
+		grid-column-gap: 5px;}
+
+#profile-top, #profile-skills { border-radius: 0px; margin-bottom: 7px;}
+
+
+#profile-top, #profile-tabs, #profile-skills {
+	background-color: rgba(255,255,255,0.75);
+}
+
+.add-specific-button {
+	border: solid 2px silver;
+	color: gray;
+}
+
+.profile-skill:first-child {
+	border-top-left-radius: 0px;
+	border-bottom-left-radius: 0px;
+}
+
+.profile-skill:last-child {
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.profile-skill-row + .profile-skill-row {
+		margin-top: 5px;
 
 }
 
-#profile-right {
-	padding-left: 10px;
 }
-	
-}
-
 /*
 
 For tabs
 
 */
+
+
 @media (max-width:590px) {
 	#profile-tabs .tabs {
 	font-size: 1.2em;
@@ -206,28 +287,15 @@ For tabs
 
 }
 
-@media (max-width:501px) {
-	#profile-left, #profile-right {
-		width: 100%;
-	}
-
-
-	#profile-top {
-		height: 520px;
-	}
-
-	#profile-right {
-		float: right;
-	}
+@media (max-width:500px) {
 
 	.tabtext {
 		display: none;
 	}
 
 	#profile-tabs .tabs {
-	font-size: 1.75em;
+	font-size: 1.5em;
 	}
-
 }
 
 @media (max-width:327px) {

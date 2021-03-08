@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="notification-box" class="floater container">
+  <div id="notification-top">
+    <p class="title selectable" id="notification-title">Notifications</p>
+  </div>
+  <div id="notifications">
+    {% for notification in notifications %}
+    <div class="splitter"></div>
+    <div class="notif box">
+      <span class="notif-icon icon" style="color: {{notification.get('color')}};"><i class="fas fa-lg {{notification.get('icon')}}"></i></span>
+      <div class="notif-content">
+        <span class="profile-image" href="/user/{{notification.get('sender-username')}}">
+        <img alt draggable="false" class="profile-image-content" src="{{notification.get('sender-photo')}}">
+        </span>
+        <br>
+      <a class="profile-name" href="/user/{{notification.get('sender-username')}}"><b >{{notification.get('sender-name')}}</b></a> <span class="selectable">{{notification.get('message')}}</span>
+    </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/notifications.css">
+<script src="/static/js/notifications.js"></script>
+{% endblock %}

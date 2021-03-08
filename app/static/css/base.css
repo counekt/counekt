@@ -20,13 +20,6 @@
   scrollbar-width: none;  /* Firefox */
 }
 
-body.noscroll div section #background {
-	padding-right: 44px;
-}
-
-body.noscroll div #navbar {
-	padding-right: 20px;
-}
 
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
@@ -87,7 +80,29 @@ margin-top: 200px;
 
 }
 
-.hide {
+.vanish {
+  display: none !important;
+}
+
+.invisible {
+	opacity: 0;
+}
+
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
+.transition {
+-webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+.hidden {
 	visibility: hidden;
 }
 
@@ -110,4 +125,27 @@ p.is-close {
 
 .is-distant {
 	margin-top: 10px;
+}
+
+.floater {
+	background-color: rgba(255,255,255,0.9);
+	padding: 10px;
+	border-radius: 10px;
+	max-width: 750px;
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+body div section, body div section #background {
+	width:100% !important;
+}
+
+
+@media (min-width:500px) {
+	
+
+body.noscroll div section #background {
+	padding-right: 44px;
+}
+
 }

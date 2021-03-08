@@ -18,18 +18,6 @@ function unload(_delay) {
      window.history.pushState("", "", url);
  }
 
- function logout() {
- 	$.post({
-      type: "POST",
-      url: "/logout/",
-      success(response) {
-        var response = JSON.parse(response);
-        var status = response["status"];
-        if (status === "success") {window.location.reload(true);}
-
-      }});
- }
-
  function redirect(object, title, url, what) {
    if (window.history.pushState) {
     // supported.

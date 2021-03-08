@@ -103,10 +103,6 @@ input.errorClass, input.errorClass:hover {
   margin: 0 auto;
 }
 
-.vanish {
-  display: none !important;
-}
-
 
 select option[disabled] {
     display: none;

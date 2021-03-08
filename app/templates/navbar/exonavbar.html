@@ -1,0 +1,20 @@
+<div id="exonavbar-id" style="height: 0px;">
+  <div id="navbar-burger-id" class="navbar-burger" data-target="navbar-menu-id">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <div id="navbar-menu-container-id" style="height: 40px;">
+    <div id="navbar-menu-id" class="field is-grouped">
+    {% with selected="is-link is-outlined selected-nav-option", class="is-link" %}
+    {% include 'navbar/navbar-contents.html' %}
+    {% endwith %}
+    {% with closed="is-info" %}
+        {% include 'navbar/more-button.html' %}
+    {% endwith %}
+    </div>
+    <div id="more" class="transition invisible">
+      {% include 'navbar/navbar-more.html' %}
+    </div>
+  </div>
+</div>

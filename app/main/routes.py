@@ -88,6 +88,21 @@ def help():
     return render_template("help.html", background=True, size="medium", footer=True, navbar=True)
 
 
+@ bp.route("/notifications/", methods=['GET', 'POST'])
+def notifications():
+    notifications = [
+        {"type": "connect", "color": "#3298dc", "icon": "fa fa-user-friends", "sender-name": "This guy", "sender-username": "frederik", "message": "wants to connect", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "ban", "color": "hsl(348, 100%, 61%)", "icon": "fa fa-ban", "sender-name": "This other guy", "sender-username": "frederik", "message": "banned you from", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "invite", "color": "#3298dc", "icon": "fa fa-envelope", "sender-name": "This third guy", "sender-username": "frederik", "message": "invited you to join", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "role", "color": "#3273dc", "icon": "fa fa-black-tie", "sender-name": "This guy", "sender-username": "frederik", "message": "changed your role to", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "message", "color": "#3298dc", "icon": "fa fa-comments", "sender-name": "This guy", "sender-username": "frederik", "message": "messaged you", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "accepted-invite", "color": "hsl(141, 53%, 53%)", "icon": "fa fa-envelope", "sender-name": "This guy", "sender-username": "frederik", "message": "accepted your invite to", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "accepted-connect", "color": "hsl(141, 53%, 53%)", "icon": "fa fa-user-friends", "sender-name": "This guy", "sender-username": "frederik", "message": "accepted your attempt to connect", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "rejected-invite", "color": "hsl(348, 100%, 61%)", "icon": "fa fa-envelope", "sender-name": "This guy", "sender-username": "frederik", "message": "rejected your invite", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}] + [
+        {"type": "rejected-connect", "color": "hsl(348, 100%, 61%)", "icon": "fa fa-user-friends", "sender-name": "This guy", "sender-username": "frederik", "message": "rejected your attempt to connect", "sender-photo": "/static/profiles/users/frederik/profile_photo/2021%2C02%2C28%2C12%2C43%2C49.PNG"}]
+    return render_template("notifications.html", background=True, size="medium", navbar=True, notifications=notifications)
+
+
 @ bp.route("/settings/", methods=['GET'])
 def settings():
     return render_template("settings.html", background=True, size="medium", footer=True, navbar=True)

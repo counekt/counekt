@@ -1,0 +1,31 @@
+<p class="control">
+    <a href="/about/" class="button transition {% if class %}{{class}}{% endif %}">
+      <span class="icon">
+        <i class="fas fa-info-circle"></i>
+      </span>
+    </a>
+  </p>
+  <p class="control">
+    <a href="/help/" class="button transition {% if class %}{{class}}{% endif %}">
+      <span class="icon">
+        <i class="fas fa-question"></i>
+      </span>
+    </a>
+  </p>
+  {% if not current_user.is_authenticated %}
+  <p class="control">
+    <a href="/login/" class="button transition {% if class %}{{class}}{% endif %}">
+      <span class="icon">
+        <i class="fa fa-sign-in"></i>
+      </span>  
+    </a>
+  </p>
+  {% else %}
+  <p class="control">
+    <a href="/logout/" class="button transition {% if class %}{{class}}{% endif %}">
+      <span class="icon">
+        <i class="fa fa-sign-out"></i>
+      </span>
+    </a>
+  </p>
+  {% endif %}

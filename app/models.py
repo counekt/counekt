@@ -80,11 +80,9 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def set_location(self, location, prelocated=False):
-        if not prelocated:
-            location = funcs.geocode(location)
+    def set_location(self, location):
         if location:
-            self.address = location.address
+            self.address = funcs.shorten_addr(location=location)
             self.latitude = location.latitude
             self.longitude = location.longitude
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)

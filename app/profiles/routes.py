@@ -17,7 +17,7 @@ def user(username):
     if not user:
         abort(404)
     skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
+    return render_template("profiles/user/profile.html", user=user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium")
 
 
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
@@ -52,7 +52,10 @@ def edit_user():
                 return json.dumps({'status': 'Coordinates must be filled in, if you want to show your location and or be visible on the map', 'box_id': 'location'})
 
             if [current_user.latitude, current_user.longitude] != [float(lat), float(lng)]:
-                current_user.set_location(location=funcs.reverse_geocode([lat, lng]), prelocated=True)
+                location = funcs.reverse_geocode([lat, lng])
+                if not location:
+                    return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
+                current_user.set_location(location=location)
 
             current_user.show_location = True
             if is_visible:
@@ -102,13 +105,14 @@ def edit_user():
         db.session.commit()
         return json.dumps({'status': 'success', 'username': current_user.username})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], edit=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
 def user_photo(username):
     user = models.User.query.filter_by(username=username).first()
-    return render_template("profiles/user/profile.html", user=user, photo=True, available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", footer=True)
+    skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", footer=True)
 
 
 @ bp.route("/get/coordinates/", methods=["POST"])

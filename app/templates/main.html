@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
           <div id="map-container">
+            <div class="logo">
+              <span class="icon is-small"><i class="fas fa-mountain" aria-hidden="true"></i></span>
+              </span>
+            </div>
           <div id="map">
           </div>
-          <div id="explore-box" class="explore-box column is-auto has-text-centered">
+          <div id="explore-box" class="explore-box column is-auto has-text-centered is-resting">
               <div id="toggle-view-button" data-status="showing">
                 <span class="icon is-medium" id="toggle-span-icon">
                       <i class="fas fa-caret-left" id="toggle-icon"></i>
@@ -104,7 +108,7 @@
 <script src="../static/js/main.js"></script>
 <script type="text/javascript">
   $(window).on("load", function () {
-  setTimeout(function(){explore(do_redirect=false)}, window.loading_delay);
+  explore(do_redirect=false);
   });
 </script>
 <script type="text/javascript">
@@ -167,82 +171,6 @@ var proIcon = L.icon({
 
 var markers = L.markerClusterGroup().addTo(map);
 
-
-function explore(do_redirect=true) {
-  if ($("#location-field").val()) {
-  var searchObject = {rad:"", loc:"", ski:"", gen:"", min:"", max:""};
-  var formData = new FormData();
-
-  formData.append("location", $("#location-field").val());
-  searchObject["loc"] = $("#location-field").val();
-
-  if (0 <= $( "#radius-slider" ).slider("value") <= 999) {
-    formData.append("radius", $( "#radius-slider" ).slider( "value" ));
-    searchObject["rad"] = $( "#radius-slider" ).slider( "value" );
-  }
-
-  if ($("#skill").val()){
-    formData.append("skill", $("#skill").val());
-    searchObject["ski"] = $("#skill").val();
-
-  }
-
-  if ($("#gender").val()) {
-   formData.append("gender", $("#gender").val());
-  searchObject["gen"] = $("#gender").val();
-
- }
-
-  if ($( "#age-slider" ).slider( "values", 0 ) > 13) {
-   formData.append("min_age", $( "#age-slider" ).slider( "values", 0 ));
-     searchObject["min"] = $( "#age-slider" ).slider( "values", 0 );
-
- }
- if ($( "#age-slider" ).slider( "values", 1 ) < 100) {
-   formData.append("max_age", $( "#age-slider" ).slider( "values", 1 ));
-    searchObject["max"] = $( "#age-slider" ).slider( "values", 1 );
-
- }
-
-    $.post({
-      type: "POST",
-      url: "/main/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
-        
-        var status = response["status"]; 
-        if (status === "Successfully explored") {
-          var loc = response["loc"];
-          if (do_redirect) {redirect(searchObject, "Explore", response["url"], function(){});} else { window.history.replaceState(searchObject,"Explore", response["url"]);}
-          var info = response["info"];
-          console.log(info);
-          markers.clearLayers();
-          info.forEach(function(marker) {
-          L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup(`
-      <div id="profile-image">
-        <a href="user/`+marker.username+`">
-        <img alt draggable="false" id="profile-image-content" src="`+marker.profile_photo+`">
-        </a>
-      </div><a class="title is-4 selectable" href="user/`+marker.username+`" style="color:black"><b>`+marker.name+`</b></a>`);
-          });
-          if (do_redirect) {
-          map.flyTo([loc.lat, loc.lng], loc.zoom);
-          }
-          else {
-          map.panTo(new L.LatLng(loc.lat, loc.lng));
-          map.setZoom(loc.zoom);
-          }
-          
-          
-        }
-        
-          
-
-      }});
-}}
 
 
 $(document).on("click", "#search-button", function() {
