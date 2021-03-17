@@ -26,6 +26,16 @@ followers = db.Table('followers',
                      db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
                      db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
 
+groups = db.Table('groups',
+                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                  db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
+                  )
+
+projects = db.Table('projects',
+                    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                    db.Column('project_id', db.Integer, db.ForeignKey('project.id'))
+                    )
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
@@ -62,6 +72,20 @@ class User(UserMixin, db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
+    notifications = db.relationship('Notification', backref='user',
+                                    lazy='dynamic', foreign_keys='Notification.receiver_id')
+    groups = db.relationship(
+        'Group', secondary=groups,
+        primaryjoin=(groups.c.user_id == id),
+        secondaryjoin=(groups.c.group_id == id),
+        backref=db.backref('members', lazy='dynamic'), lazy='dynamic')
+
+    projects = db.relationship(
+        'Project', secondary=projects,
+        primaryjoin=(projects.c.user_id == id),
+        secondaryjoin=(projects.c.project_id == id),
+        backref=db.backref('members', lazy='dynamic'), lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -309,3 +333,191 @@ def gravatar(text_to_digest, size=256):
     digest = md5(text_to_digest.encode("utf-8")).hexdigest()
     return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
         digest, size)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String)
+    timestamp = db.Column(db.Float, index=True, default=time)
+
+    object_role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    object_group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+    object_project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+
+    object_role = db.relationship("Role", foreign_keys=[object_role_id])
+    object_group = db.relationship("Group", foreign_keys=[object_group_id])
+    object_project = db.relationship("Project", foreign_keys=[object_project_id])
+
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+
+    @hybrid_property
+    def object(self):
+        return self.object_group or self.object_project or self.object_role
+
+    @hybrid_property
+    def object_id(self):
+        return self.object_group_id or self.object_project_id or self.object_role_id
+
+    @property
+    def raw(self):
+        return {"type": self.type,
+                "color": self.color,
+                "icon": self.icon,
+                "sender-name": self.sender.name,
+                "sender-username": self.sender.username,
+                "message": self.message,
+                "sender-photo": self.sender.profile_photo.src,
+                "object-name": getattr(self.object, 'handle', lambda: None)() or getattr(self.object, 'title', lambda: None)(),
+                "object-photo": getattr(self.object, 'profile_pic', lambda: None)()}
+
+    @property
+    def color(self):
+        return {"connect": "#3298dc",
+                "ban": "hsl(348, 100%, 61%)",
+                "invite": "#3298dc",
+                "role": "#3273dc",
+                "message": "#3298dc",
+                "accepted-invite": "hsl(141, 53%, 53%)",
+                "accepted-connect": "hsl(141, 53%, 53%)",
+                "rejected-invite": "hsl(348, 100%, 61%)",
+                "rejected-connect": "hsl(348, 100%, 61%)"}.get(self.type)
+
+    @property
+    def icon(self):
+        return {"connect": "fa fa-user-friends",
+                "ban": "fa fa-ban",
+                "invite": "fa fa-envelope",
+                "role": "fa fa-black-tie",
+                "message": "fa fa-comments",
+                "accepted-invite": "fa fa-envelope",
+                "accepted-connect": "fa fa-user-friends",
+                "rejected-invite": "fa fa-envelope",
+                "rejected-connect": "fa fa-user-friends"}.get(self.type)
+
+    @property
+    def message(self):
+        return {"connect": "wants to connect",
+                "ban": "banned you from",
+                "invite": "invited you to join",
+                "role": "changed your role to",
+                "message": "messaged you",
+                "accepted-invite": "accepted your invite to",
+                "accepted-connect": "accepted your attempt to connect",
+                "rejected-invite": "rejected your invite to",
+                "rejected-connect": "rejected your attempt to connect"}.get(self.type)
+
+    @property
+    def has_object(self):
+        return {"connect": False,
+                "ban": True,
+                "invite": True,
+                "role": True,
+                "message": False,
+                "accepted-invite": True,
+                "accepted-connect": False,
+                "rejected-invite": True,
+                "rejected-connect": False}.get(self.type)
+
+    def __repr__(self):
+        return "<Notification {}>".format(self.type)
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, index=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
+    group = db.relationship("Group", back_populates="roles", foreign_keys=[group_id])
+    project = db.relationship("Project", back_populates="roles", foreign_keys=[project_id])
+    holders = db.relationship('Membership', back_populates="role")
+
+    @hybrid_property
+    def organisation_id(self):
+        return self.group_id or self.project_id
+
+    @hybrid_property
+    def organisation(self):
+        return self.group or self.project
+
+    def __repr__(self):
+        return "<Role {}>".format(self.title)
+
+
+class Group(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    handle = db.Column(db.String, index=True, unique=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+    public = db.Column(db.Boolean, default=False)
+
+    profile_pic_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    profile_pic = db.relationship("Photo", foreign_keys=[profile_pic_id])
+
+    supergroup_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+
+    roles = db.relationship("Role")
+
+    memberships = db.relationship(
+        'Membership', backref='organisation', lazy='dynamic',
+        foreign_keys='Membership.group_id')
+
+    subgroups = db.relationship('Group', backref=db.backref("supergroup", remote_side=[id]))
+
+    def __init__(self, **kwargs):
+        super(Group, self).__init__(**kwargs)
+        # do custom initialization here
+        self.profile_pic = Picture(path=f"/static/profiles/groups/{self.handle}/profile_pic", replacement="/static/images/defaults/group.png")
+
+    def __repr__(self):
+        return "<Group {}>".format(self.handle)
+
+
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    handle = db.Column(db.String, index=True, unique=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+    public = db.Column(db.Boolean, default=False)
+
+    profile_pic_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    profile_pic = db.relationship("Photo", foreign_keys=[profile_pic_id])
+
+    roles = db.relationship("Role")
+
+    superproject_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+
+    memberships = db.relationship(
+        'Membership')
+
+    subprojects = db.relationship('Project', backref=db.backref("superproject", remote_side=[id]))
+
+    def __init__(self, **kwargs):
+        super(Project, self).__init__(**kwargs)
+        # do custom initialization here
+        self.profile_pic = Picture(path=f"/static/profiles/projects/{self.handle}/profile_pic", replacement="/static/images/defaults/project.png")
+
+    def __repr__(self):
+        return "<Project {}>".format(self.handle)
+
+
+class Membership(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
+    group = db.relationship("Group", foreign_keys=[group_id])
+    project = db.relationship("Project", foreign_keys=[project_id])
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    role = db.relationship("Role", foreign_keys=[role_id])
+
+    @hybrid_property
+    def organisation_id(self):
+        return self.group_id or self.project_id
+
+    @hybrid_property
+    def organisation(self):
+        return self.group or self.project
+
+    def __repr__(self):
+        return "<Membership {}>".format(self.role)

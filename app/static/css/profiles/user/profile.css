@@ -187,23 +187,11 @@ margin-bottom: 55px;}
 	height: 50px;
 }
 
-#profile-bar-content a {
+#profile-bar-content button {
 	border-radius: 100px;
 	border: solid #3298dc 1px;
 }
 
-#profile-bar-content #more {
-	width: 40px;
-	height: 40px;
-	margin-right: 5px;
-}
-
-#profile-bar-content #more span{
-	font-size: 1.75em;
-	font-weight: 600;
-	margin-bottom: 18px;
-	letter-spacing: 0.5px;
-}
 
 #profile-bar-content {
 	float: right;

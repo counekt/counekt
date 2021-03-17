@@ -135,3 +135,9 @@ def get_address():
         if not location:
             return json.dumps({'status': 'Non-valid location'})
         return json.dumps({'status': 'success', 'address': location.address})
+
+
+@ bp.route("/connect/<username>/", methods=["POST"])
+def connect(username):
+    if request.method == 'POST':
+        return json.dumps({'status': 'success'})

@@ -19,10 +19,10 @@
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
             {% if user != current_user %}
-            <a class="button is-info is-inverted" id="more"><span>...</span></a>
-            <a class="button is-info is-inverted">Connect</a>
+            <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+            <button id="connect-button" class="button is-info is-inverted">Connect</button>
             {% else %}
-            <a class="button is-info is-inverted" id="edit" href="/settings/profile/">Edit profile</a>
+            <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
             {% endif %}
           </div>
           <br style="clear: both;">
@@ -288,7 +288,7 @@ load_edit_js();
   });
 
 
-  $(document).on('click', '#edit', function(e) {
+  $(document).on('click', '#edit-button', function(e) {
     redirect({id:"edit-user"},"Edit profile", "/settings/profile/", changeToEdit);
     e.preventDefault();
   });
