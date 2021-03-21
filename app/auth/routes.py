@@ -118,12 +118,13 @@ def login():
     return render_template("auth/login.html", background=True, size="medium", navbar=True)
 
 
-@ bp.route("/logout/", methods=['POST'])
+@ bp.route("/logout/", methods=['GET', 'POST'])
 @ login_required
 def logout():
     if request.method == 'POST':
         logout_user()
         return json.dumps({'status': 'success'})
+    return render_template("auth/logout.html", size="medium")
 
 
 @bp.route('/activate/<token>/', methods=['GET', 'POST'])

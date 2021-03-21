@@ -37,17 +37,9 @@ def main():
         min_age = request.form.get("min_age")
         max_age = request.form.get("max_age")
 
-        print(address)
-        print(radius)
-        print(skill)
-        print(gender)
-        print(min_age)
-        print(max_age)
-
         location = funcs.geocode(address)
 
         if not location:
-            print("Non-valid location")
             return json.dumps({'status': 'Non-valid location', 'box_id': 'location-field'})
 
         try:
@@ -55,10 +47,7 @@ def main():
             radius = float(radius)
 
         except ValueError:
-            print("Non-valid radius")
             return json.dumps({'status': 'Non-valid radius', 'box_id': 'options-button'})
-
-        print(f"Successfully verified")
 
         url = f'/main?loc={address}&rad={radius}'
 
@@ -78,7 +67,7 @@ def main():
         profiles = query.all()
         print(profiles)
         loc = {"lat": location.latitude, "lng": location.longitude, "zoom": funcs.get_zoom_from_rad(radius)}
-        info = [{"username": p.username, "name": p.name, "lat": p.latitude, "lng": p.longitude} for p in profiles]
+        info = [{"username": p.username, "profile_photo": p.profile_photo.src, "name": p.name if p.name else p.username, "lat": p.latitude, "lng": p.longitude} for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
 
     return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)

@@ -29,6 +29,20 @@
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	z-index: 1;
+	z-index: 5000;
 	max-width: 98%;
 	}
+
+#more {
+	position: absolute;
+	right: 0px;
+	top: 50px;
+}
+
+#more p + p {
+	margin-top: 10px;
+}
+
+#navbar-menu-container-id {
+	overflow: visible;
+}

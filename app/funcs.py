@@ -30,6 +30,30 @@ def reverse_geocode(coordinates, attempt=1, max_attempts=5, languages=["en"], zo
         raise
 
 
+def shorten_addr(location):
+    addr = location.raw["address"]
+    display = addr.get("country")
+    print(addr)
+    if addr.get("city"):
+        display += ", " + addr.get("city")
+    elif addr.get("town"):
+        display += ", " + addr.get("town")
+    elif addr.get("state"):
+        display += ", " + addr.get("state")
+    elif addr.get("county"):
+        display += ", " + addr.get("county")
+    elif addr.get("borough"):
+        display += ", " + addr.get("borough")
+    elif addr.get("suburb"):
+        display += ", " + addr.get("suburb")
+    elif addr.get("village"):
+        display += ", " + addr.get("village")
+    elif addr.get("hamlet"):
+        display += ", " + addr.get("hamlet")
+
+    return display
+
+
 def get_age(birthdate, today=date.today()):
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 

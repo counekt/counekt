@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 <div id="profile">
-  <div id="profile-top" class="container">
+  <div id="profile-top" class="floater container">
     <div id="profile-left">
       <div id="profile-image">
         <a href="/user/{{user.username}}/photo/">
         <img alt draggable="false" id="profile-image-content" src="{{ user.profile_photo.src }}">
         </a>
       </div>
-      <p class="title is-4" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
-      <p class="subtitle is-5" style="color:gray">@{{ user.username }}</p>
+      <div id="profile-left-bottom">
+        <p class="title is-4 selectable" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
+        <p class="subtitle is-5 selectable" style="color:gray">@{{ user.username }}</p>
+      </div>
     </div>
 
     <div id="profile-right">
@@ -17,11 +19,23 @@
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
             {% if user != current_user %}
-            <a class="button is-info is-inverted" id="more"><span>...</span></a>
-            <a class="button is-info is-inverted">Connect</a>
+              <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+              {% with request_sent = models.Request.query.filter_by(type='connect', sender=current_user, receiver=user).first(), request_received = models.Request.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_connected = user in current_user.connections %}
+              <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_connected %}
+                  {% include 'profiles/user/connect-button/connected.html' %}
+                {% elif request_sent %}
+                  {% include 'profiles/user/connect-button/pending.html' %}
+                {% elif request_received %}
+                  {% include 'profiles/user/connect-button/accept.html' %}
+                {% else %}
+                  {% include 'profiles/user/connect-button/default.html' %}
+                {% endif %}
+              </button>
+              {% endwith %}
             {% else %}
-            <a class="button is-info is-inverted" id="edit" href="/settings/profile/">Edit profile</a>
-            {% endif %}
+              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
+              {% endif %}
           </div>
           <br style="clear: both;">
         </div>
@@ -31,11 +45,11 @@
       </div>
       <div id="profile-right-bottom">
         <div id="profile-birthdate" style="color: black;">
-          <span class="icon is-small"><i class="fa fa-birthday-cake" aria-hidden="true"></i></span><span>{{user.birthdate.year}}-{{user.birthdate.month}}-{{user.birthdate.day}}</span>
+          <span class="icon is-small"><i class="fa fa-birthday-cake" aria-hidden="true"></i></span><span class="selectable">{{user.birthdate.year}}-{{user.birthdate.month}}-{{user.birthdate.day}}</span>
         </div>
         {% if user.address %}
-        <div id="profile-address" style="color: black;">
-          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span>{{user.address}}</span>
+        <div id="profile-address">
+          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{user.address}}</span>
         </div>
         {% endif %}
       </div>
@@ -47,7 +61,7 @@
     {% for skillrow in skillrows %}
     <div class="profile-skill-row">
     {% for skill in skillrow %}
-      <div class="profile-skill selectable" style="color: {{skill_aspects[skill.title]['color']}}; background-color: {{skill_aspects[skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
+      <div class="profile-skill" style="color: {{skill_aspects[skill.title]['color']}}; background-color: {{skill_aspects[skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
     {% endfor %}
     </div>
     {% endfor %}
@@ -56,19 +70,19 @@
   <div id="profile-tabs" class="container">
     <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
   <ul>
-    <li class="is-active">
+    <li class="is-active" data-content="#profile-connections">
       <a>
         <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
         <span class="tabtext">Connections</span>
       </a>
     </li>
-    <li>
+    <li data-content="#profile-groups">
       <a>
         <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
         <span class="tabtext">Groups</span>
       </a>
     </li>
-    <li>
+    <li data-content="#profile-projects">
       <a>
         <span class="icon is-small"><i class="fas fa-pencil-alt" aria-hidden="true"></i></span>
         <span class="tabtext">Projects</span>
@@ -77,17 +91,36 @@
   </ul>
 </div>
  <div id="profile-tabs-content">
-    <div id="profile-connections">
+    <div id="profile-connections" class="profile-associate">
       {% for connection in user.connections %}
+      <div class="splitter"></div>
+      <div class="subprofile box">
+        <div class="subprofile-content">
+            <a class="subprofile-image" href="/user/{{connection.username}}">
+            <img alt draggable="false" class="subprofile-image-content" src="{{connection.profile_photo.src}}">
+            </a>
+            <br>
+          <a class="subprofile-name" href="/user/{{connection.username}}"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></a> <span class="selectable">{% if connection.bio %}{{connection.bio}}{% endif %}</span>
+        </div>
+      </div>
       {% endfor %}
+      {% if user==current_user %}
+      <a href="/explore/"><div class="add-specific-button"><span>Add connection</span></div></a>
+      {% endif %}
     </div>
-    <div id="profile-groups">
+    <div id="profile-groups" class="profile-associate vanish">
       {% for group in user.groups %}
       {% endfor %}
+      {% if user==current_user %}
+      <div class="add-specific-button"><span>Create group</span></div>
+      {% endif %}
     </div>
-    <div id="profile-projects">
+    <div id="profile-projects" class="profile-associate vanish">
       {% for project in user.projects %}
       {% endfor %}
+      {% if user==current_user %}
+      <div class="add-specific-button"><span>Create project</span></div>
+      {% endif %}
     </div>
  </div>
   </div>
@@ -97,9 +130,9 @@
 
 
 {% block modal %}
-{% if edit %}
+{% if request.url_rule.endpoint == 'profiles.edit_user' %}
 {% include "profiles/user/edit.html" %}
-{% elif photo %}
+{% elif request.url_rule.endpoint == 'profiles.user_photo' %}
 {% include "profiles/user/photo.html" %}
 {% endif %}
 {% endblock %}
@@ -115,7 +148,60 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
+  function makeConnectButtonDefault() {
+    $('#connect-button').addClass('is-info');
+    $('#connect-button').removeClass('is-light').removeClass('is-link');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/default.html' %}`);
+    $('#connect-button').data('type', 'default');
+    $('#connect-button').removeClass('is-danger');
+    
+  }
 
+  function makeConnectButtonPending() {
+    $('#connect-button').toggleClass('is-info is-light');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+    $('#connect-button').data('type', 'pending');
+    $('#connect-button').addClass('calm');
+  }
+
+  function makeConnectButtonConnected() {
+    $('#connect-button').toggleClass('is-success is-info');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+    $('#connect-button').data('type', 'connected');
+    $('#connect-button').addClass('calm');
+  }
+
+$("#connect-button").hover(
+  function() {
+        if ($(this).data('type') == 'connected' && !$(this).hasClass('calm')) {
+          $(this).addClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/disconnect.html' %}`);
+        }
+        else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
+          $(this).addClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/undo.html' %}`);
+
+    }
+  }, function() {
+        if ($(this).data('type') == 'connected') {
+          $(this).removeClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+          $(this).removeClass('calm');
+
+        }
+        else if ($(this).data('type') == 'pending') {
+          $(this).removeClass('is-danger');
+          $(this).removeClass('calm');
+          $(this).html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+
+        }
+  }
+);
+ 
+
+</script>
+<script type="text/javascript">
+  var username = "{{user.username}}";
 
   function load_edit_js() {
   var map = L.map('map').setView({% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
@@ -272,22 +358,22 @@ load_edit_js();
 <script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
-    redirect("/user/{{user.username}}/photo/", "user-photo","Profile photo", changeToPhoto);
+    redirect({id:"user-photo"},"Profile photo", "/user/{{user.username}}/photo/", changeToPhoto);
       e.preventDefault();
   });
 
 
-  $(document).on('click', '#edit', function(e) {
-    redirect("/settings/profile/", "edit-user","Edit profile", changeToEdit);
+  $(document).on('click', '#edit-button', function(e) {
+    redirect({id:"edit-user"},"Edit profile", "/settings/profile/", changeToEdit);
     e.preventDefault();
   });
 
 $(document).on('click', '.close', function() {
-  redirect("/user/{{user.username}}/", "user-profile", "Profile photo", changeToProfile);
+  redirect({id:"user-profile"}, "Profile photo", "/user/{{user.username}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {
-    redirect("/user/{{user.username}}/", "user-profile", "Profile", changeToProfile);
+    redirect({id:"user-profile"}, "Profile", "/user/{{user.username}}/", changeToProfile);
 });
 
 $(window).on("popstate", function() {
@@ -323,9 +409,9 @@ function changeToPhoto() {
 
 }
 
-{% if edit %}
+{% if request.url_rule.endpoint == 'profiles.edit_user' %}
 window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
-{% elif photo %}
+{% elif request.url_rule.endpoint == 'profiles.user_photo' %}
 window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
 {% else %}
 window.history.replaceState({id:"user-profile"},"Profile", "./");

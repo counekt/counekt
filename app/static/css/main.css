@@ -10,6 +10,28 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
+.profile-name:hover {
+	text-decoration: underline;
+}
+
+.profile-image-content:hover {
+	-webkit-filter: brightness(85%);
+  	 filter: brightness(85%);
+  	 cursor: pointer;
+}
+
+.profile-image {
+	width: 100%;
+	max-width: 250px;
+	margin: auto;
+}
+
+.profile-image-content {
+	width: 100%;
+	border-radius: 100%;
+	transition: 0.3s;
+}
+
 #explore-fields {
 	display: flex;
 	flex-direction: column;
@@ -21,13 +43,15 @@ body {
 
 #explore-box {
 	top: 70px;
-  	left: 27px;
+	left: -300px;
 	padding: 0;
 	margin: 0;
 	width: 300px;
 	background-color: hsl(0, 0%, 96%);
 	border: solid lightgrey 3px;
 	border-radius: 5px;
+	z-index: 2;
+	transition: 0.3s;
 }
 
 #options {
@@ -194,4 +218,59 @@ margin: 0 auto;
   left: -7px;
   color: grey;
   cursor: pointer;
+}
+
+.logo {
+	position: absolute;
+	bottom: 15px;
+	left: 50%;
+	z-index: 1;
+}
+
+.is-resting {
+	left: 27px !important;
+}
+
+.is-hiding {
+	left: -300px;
+}
+
+/* Very bad coding, I knoooow */
+@media screen and (max-width: 380px) {
+
+.leaflet-bottom.leaflet-right {
+  		display: none;
+}
+}
+
+@media screen and (max-width: 360px) {
+
+  .is-resting {
+	left: 20px !important;
+}
+}
+
+@media screen and (max-width: 350px) {
+	.is-resting {
+	left: 15px !important;
+}
+}
+
+@media screen and (max-width: 340px) {
+	.is-resting {
+	left: 7px !important;
+}
+}
+
+@media screen and (max-width: 330px) {
+	.is-resting {
+	left: 0px !important;
+}
+}
+
+
+@media screen and (max-width: 320px) {
+	.is-resting {
+	left: -5px !important;
+}
 }

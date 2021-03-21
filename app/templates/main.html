@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
           <div id="map-container">
+            <div class="logo">
+              <span class="icon is-small"><i class="fas fa-mountain" aria-hidden="true"></i></span>
+              </span>
+            </div>
           <div id="map">
           </div>
-          <div id="explore-box" class="explore-box column is-auto has-text-centered">
+          <div id="explore-box" class="explore-box column is-auto has-text-centered is-resting">
               <div id="toggle-view-button" data-status="showing">
                 <span class="icon is-medium" id="toggle-span-icon">
                       <i class="fas fa-caret-left" id="toggle-icon"></i>
@@ -104,7 +108,7 @@
 <script src="../static/js/main.js"></script>
 <script type="text/javascript">
   $(window).on("load", function () {
-  setTimeout(explore, window.loading_delay);
+  explore(do_redirect=false);
   });
 </script>
 <script type="text/javascript">
@@ -168,69 +172,44 @@ var proIcon = L.icon({
 var markers = L.markerClusterGroup().addTo(map);
 
 
-function explore() {
-
-  if ($("#location-field").val()) {
-
-  var formData = new FormData();
-
-  formData.append("location", $("#location-field").val());
-  
-  if (0 <= $( "#radius-slider" ).slider("value") <= 999) {
-    formData.append("radius", $( "#radius-slider" ).slider( "value" ));
-  }
-
-  if ($("#skill").val()){
-    formData.append("skill", $("#skill").val());
-  }
-
-  if ($("#gender").val()) {
-   formData.append("gender", $("#gender").val());
- }
-
-  if ($( "#age-slider" ).slider( "values", 0 ) > 13) {
-   formData.append("min_age", $( "#age-slider" ).slider( "values", 0 ));
- }
- if ($( "#age-slider" ).slider( "values", 1 ) < 100) {
-   formData.append("max_age", $( "#age-slider" ).slider( "values", 1 ));
- }
-
-    $.post({
-      type: "POST",
-      url: "/main/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
-        
-        var status = response["status"]; 
-        if (status === "Successfully explored") {
-          var info = response["info"];
-          console.log(info);
-          markers.clearLayers();
-          info.forEach(function(marker) {
-            L.marker([marker.lat, marker.lng], {icon: proIcon}).addTo(markers).bindPopup("<a href='/user/"+marker.username+"/'>"+marker.name+"</a>");
-          });
-          var loc = response["loc"];
-          map.flyTo([loc.lat, loc.lng], loc.zoom);
-
-          //map.panTo(new L.LatLng(loc.lat, loc.lng));
-          //map.setZoom(loc.zoom);
-          
-        }
-        
-          
-
-      }});
-}}
-
 
 $(document).on("click", "#search-button", function() {
- 
+  $("#location-field").blur();
+  $("#radius-value").blur();
+  $("#age-value0").blur();
+  $("#age-value1").blur();
   explore();
 
 });
+
+$(window).on("popstate", function() {
+    changeTo();
+});
+
+function changeTo() {
+  var state = window.history.state;
+  console.log(state);
+
+  if (state) {
+  if (state.loc) {$("#location-field").val(state.loc);} else {$("#location-field").val('');}
+  if (state.rad) {$("#radius-value").val(state.rad);$('#radius-slider').slider('value',state.rad);} else{$("#radius-value").val(5);$('#radius-slider').slider('value',5);}
+  if (state.min) {$("#age-value0" ).val(state.min);$('#age-slider').slider('values', 0, state.min);} else {$("#age-value0" ).val(13);$('#age-slider').slider('values', 0, 13);}
+  if (state.max) {$("#age-value1" ).val(state.max);$('#age-slider').slider('values', 1, state.max);} else {$("#age-value1" ).val(100);$('#age-slider').slider('values', 1, 100);}
+  if (state.gen) {$("#gender").val(state.gen);} else {$("#gender").val("");}
+  if (state.ski) {$("#skill").val(state.ski);} else {$("#skill").val("");}
+    explore(do_redirect=false);
+  }
+  else {
+    $("#location-field").val('');
+    $("#radius-value").val(5);$('#radius-slider').slider('value',5);
+    $("#age-value0").val(13);$('#age-slider').slider('values', 0, 13);
+    $("#age-value1" ).val(100);$('#age-slider').slider('values', 1, 100);
+    $("#gender").val("");
+    $("#skill").val("");
+    markers.clearLayers();
+    map.setView([55.676111, 12.568333], 13);
+  }
+}
        
   </script>
 <script type="text/javascript">

@@ -1,0 +1,54 @@
+#more {
+    position: absolute;
+    right: 7px;
+    top: 55px;
+    z-index: 3;
+    padding: 5px;
+    background-color: whitesmoke;
+    border-radius: 10px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+
+}
+
+#more p + p {
+    margin-top: 10px;
+}
+
+.navbar {
+    overflow-x: auto;
+}
+
+@media screen and (min-width: 0px) and (max-width: 1024px) {
+    .navbar>.container {
+        align-items: stretch;
+        display: flex;
+        min-height: 3.25rem;
+        width: 100%;
+    }
+    .navbar-burger {
+        display: none;
+    }
+    .navbar-menu {
+        background-color: transparent;
+        box-shadow: none;
+        padding: 0;
+        justify-content: flex-end;
+        flex-grow: 1;
+        flex-shrink: 0;
+    }
+    .navbar, .navbar-end, .navbar-menu, .navbar-start {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .navbar-end {
+    	justify-content: flex-end;
+    margin-left: auto;
+    }
+
+    .navbar-item {
+        display: flex;
+        align-items: center;
+    }
+}

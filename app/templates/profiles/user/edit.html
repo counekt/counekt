@@ -1,6 +1,6 @@
 <div class="modal is-active">
 <div class="modal-background"></div>
-<div class="modal-card">
+<div class="modal-card noselect">
   <header class="modal-card-head">
       <a class="close button is-info is-inverted" aria-label="close">
         <span class="icon">
@@ -35,7 +35,7 @@
       <br id="name-anchor">
     <div id="bio">
       <h1><b>Bio</b></h1>
-      <textarea class="textarea has-fixed-size" placeholder="Add your bio" id="bio-field" rows="3" maxlength="160">{% if user.bio %}{{ user.bio }}{% endif %}</textarea>
+      <textarea class="textarea has-fixed-size" placeholder="Add your bio" id="bio-field" rows="3" maxlength="100">{% if user.bio %}{{ user.bio }}{% endif %}</textarea>
     </div>
       <div id="feedback-bio" class="feedback">
         <div class="message"></div>

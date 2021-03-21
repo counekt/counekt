@@ -1,9 +1,9 @@
 from flask import current_app
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-from sqlalchemy import func
+from sqlalchemy import func, inspect
 from app import login
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from time import time
 import app.funcs as funcs
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,6 +15,7 @@ import base64
 import os
 from PIL import Image
 from pathlib import Path
+from sqlalchemy.exc import InvalidRequestError
 
 
 @login.user_loader
@@ -22,9 +23,25 @@ def load_user(id):
     return User.query.get(int(id))
 
 
+connections = db.Table('connections',
+                       db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
+                       db.Column('right_id', db.Integer, db.ForeignKey('user.id'))
+                       )
+
+
 followers = db.Table('followers',
                      db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
                      db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
+
+groups = db.Table('groups',
+                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                  db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
+                  )
+
+projects = db.Table('projects',
+                    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                    db.Column('project_id', db.Integer, db.ForeignKey('project.id'))
+                    )
 
 
 class User(UserMixin, db.Model):
@@ -63,6 +80,25 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
+    connections = db.relationship(
+        'User', secondary=connections,
+        primaryjoin=(connections.c.left_id == id),
+        secondaryjoin=(connections.c.right_id == id), lazy='dynamic')
+
+    notifications = db.relationship('Notification', back_populates='receiver',
+                                    lazy='dynamic', foreign_keys='Notification.receiver_id')
+    groups = db.relationship(
+        'Group', secondary=groups,
+        primaryjoin=(groups.c.user_id == id),
+        secondaryjoin=(groups.c.group_id == id),
+        backref=db.backref('members', lazy='dynamic'), lazy='dynamic')
+
+    projects = db.relationship(
+        'Project', secondary=projects,
+        primaryjoin=(projects.c.user_id == id),
+        secondaryjoin=(projects.c.project_id == id),
+        backref=db.backref('members', lazy='dynamic'), lazy='dynamic')
+
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
@@ -70,21 +106,15 @@ class User(UserMixin, db.Model):
         self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/users/{self.username}/", replacement=gravatar(self.email.lower()))
         self.cover_photo = Photo(filename="cover_photo", path=f"static/profiles/users/{self.username}/", replacement="/static/images/alps.jpg")
 
-    @ hybrid_property
-    def connections(self):
-        return User.query.filter(User.followers.any(id=self.id)).filter(followers.c.followed_id == User.id)
-
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def set_location(self, location, prelocated=False):
-        if not prelocated:
-            location = funcs.geocode(location)
+    def set_location(self, location):
         if location:
-            self.address = location.address
+            self.address = funcs.shorten_addr(location=location)
             self.latitude = location.latitude
             self.longitude = location.longitude
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)
@@ -170,7 +200,7 @@ class User(UserMixin, db.Model):
 
 def get_explore_query(latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
     query = User.query.filter(User.is_nearby(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
-    query = User.query.filter(User.show_location == True, User.is_visible == True)
+    query = query.filter(User.show_location == True, User.is_visible == True)
     if skill:
         query = query.filter(User.skills.any(Skill.title == skill))
 
@@ -311,3 +341,244 @@ def gravatar(text_to_digest, size=256):
     digest = md5(text_to_digest.encode("utf-8")).hexdigest()
     return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
         digest, size)
+
+
+class Request(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    sender = db.relationship("User", foreign_keys=[sender_id])
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    receiver = db.relationship("User", foreign_keys=[receiver_id])
+
+    notification_id = db.Column(db.Integer, db.ForeignKey('notification.id', ondelete='CASCADE'))
+    notification = db.relationship("Notification", back_populates="request", foreign_keys=[notification_id])
+
+    def __init__(self, **kwargs):
+        super(Request, self).__init__(**kwargs)
+        # do custom initialization here
+        self.notification = Notification(type=self.type)
+
+    def accept(self):
+        self.__do()
+        if exists_in_db(self):
+            db.session.delete(self)
+
+    def reject(self):
+        if exists_in_db(self):
+            db.session.delete(self)
+
+    def regret(self):
+        if exists_in_db(self):
+            db.session.delete(self)
+        if exists_in_db(self.notification):
+            db.session.delete(self.notification)
+
+    def __do(self):
+        if self.type == "connect":
+            self.receiver.connections.append(self.sender)
+            self.sender.connections.append(self.receiver)
+
+    def __repr__(self):
+        return "<Request {}>".format(self.type)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String)
+
+    seen = db.Column(db.Boolean, default=False)
+
+    timestamp = db.Column(db.Float, index=True, default=time)
+
+    object_role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    object_group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+    object_project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+
+    object_role = db.relationship("Role", foreign_keys=[object_role_id])
+    object_group = db.relationship("Group", foreign_keys=[object_group_id])
+    object_project = db.relationship("Project", foreign_keys=[object_project_id])
+
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+
+    sender = db.relationship("User", foreign_keys=[sender_id])
+    receiver = db.relationship("User", foreign_keys=[receiver_id])
+
+    request = db.relationship("Request", back_populates="notification", uselist=False)
+
+    @hybrid_property
+    def object(self):
+        return self.object_group or self.object_project or self.object_role
+
+    @hybrid_property
+    def object_id(self):
+        return self.object_group_id or self.object_project_id or self.object_role_id
+
+    @property
+    def raw(self):
+        return {"type": self.type,
+                "color": self.color,
+                "icon": self.icon,
+                "sender-name": self.sender.name,
+                "sender-username": self.sender.username,
+                "message": self.message,
+                "sender-photo": self.sender.profile_photo.src,
+                "object-name": getattr(self.object, 'handle', lambda: None)() or getattr(self.object, 'title', lambda: None)(),
+                "object-photo": getattr(self.object, 'profile_pic', lambda: None)()}
+
+    @property
+    def color(self):
+        return {"connect": "#3298dc",
+                "ban": "hsl(348, 100%, 61%)",
+                "invite": "#3298dc",
+                "role": "#3273dc",
+                "message": "#3298dc",
+                "accepted-invite": "hsl(141, 53%, 53%)",
+                "accepted-connect": "hsl(141, 53%, 53%)",
+                "rejected-invite": "hsl(348, 100%, 61%)",
+                "rejected-connect": "hsl(348, 100%, 61%)"}.get(self.type)
+
+    @property
+    def icon(self):
+        return {"connect": "fa fa-user-friends",
+                "ban": "fa fa-ban",
+                "invite": "fa fa-envelope",
+                "role": "fa fa-black-tie",
+                "message": "fa fa-comments",
+                "accepted-invite": "fa fa-envelope",
+                "accepted-connect": "fa fa-user-friends",
+                "rejected-invite": "fa fa-envelope",
+                "rejected-connect": "fa fa-user-friends"}.get(self.type)
+
+    @property
+    def message(self):
+        return {"connect": "wants to connect",
+                "ban": "banned you from",
+                "invite": "invited you to join",
+                "role": "changed your role to",
+                "message": "messaged you",
+                "accepted-invite": "accepted your invite to",
+                "accepted-connect": "accepted your attempt to connect",
+                "rejected-invite": "rejected your invite to",
+                "rejected-connect": "rejected your attempt to connect"}.get(self.type)
+
+    @property
+    def has_object(self):
+        return {"connect": False,
+                "ban": True,
+                "invite": True,
+                "role": True,
+                "message": False,
+                "accepted-invite": True,
+                "accepted-connect": False,
+                "rejected-invite": True,
+                "rejected-connect": False}.get(self.type)
+
+    def __repr__(self):
+        return "<Notification {}>".format(self.type)
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, index=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
+    group = db.relationship("Group", back_populates="roles", foreign_keys=[group_id])
+    project = db.relationship("Project", back_populates="roles", foreign_keys=[project_id])
+    holders = db.relationship('Membership', back_populates="role")
+
+    @hybrid_property
+    def organisation_id(self):
+        return self.group_id or self.project_id
+
+    @hybrid_property
+    def organisation(self):
+        return self.group or self.project
+
+    def __repr__(self):
+        return "<Role {}>".format(self.title)
+
+
+class Group(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    handle = db.Column(db.String, index=True, unique=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+    public = db.Column(db.Boolean, default=False)
+
+    profile_pic_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    profile_pic = db.relationship("Photo", foreign_keys=[profile_pic_id])
+
+    supergroup_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+
+    roles = db.relationship("Role")
+
+    memberships = db.relationship(
+        'Membership', backref='organisation', lazy='dynamic',
+        foreign_keys='Membership.group_id')
+
+    subgroups = db.relationship('Group', backref=db.backref("supergroup", remote_side=[id]))
+
+    def __init__(self, **kwargs):
+        super(Group, self).__init__(**kwargs)
+        # do custom initialization here
+        self.profile_pic = Picture(path=f"/static/profiles/groups/{self.handle}/profile_pic", replacement="/static/images/defaults/group.png")
+
+    def __repr__(self):
+        return "<Group {}>".format(self.handle)
+
+
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    handle = db.Column(db.String, index=True, unique=True)
+    name = db.Column(db.String)
+    description = db.Column(db.String)
+    public = db.Column(db.Boolean, default=False)
+
+    profile_pic_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    profile_pic = db.relationship("Photo", foreign_keys=[profile_pic_id])
+
+    roles = db.relationship("Role")
+
+    superproject_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+
+    memberships = db.relationship(
+        'Membership')
+
+    subprojects = db.relationship('Project', backref=db.backref("superproject", remote_side=[id]))
+
+    def __init__(self, **kwargs):
+        super(Project, self).__init__(**kwargs)
+        # do custom initialization here
+        self.profile_pic = Picture(path=f"/static/profiles/projects/{self.handle}/profile_pic", replacement="/static/images/defaults/project.png")
+
+    def __repr__(self):
+        return "<Project {}>".format(self.handle)
+
+
+class Membership(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
+    group = db.relationship("Group", foreign_keys=[group_id])
+    project = db.relationship("Project", foreign_keys=[project_id])
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    role = db.relationship("Role", foreign_keys=[role_id])
+
+    @hybrid_property
+    def organisation_id(self):
+        return self.group_id or self.project_id
+
+    @hybrid_property
+    def organisation(self):
+        return self.group or self.project
+
+    def __repr__(self):
+        return "<Membership {}>".format(self.role)
+
+
+def exists_in_db(row):
+    exists = bool(db.session.query(row.__class__).filter(row.__class__.id == row.id).first())
+    return exists

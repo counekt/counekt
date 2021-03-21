@@ -14,13 +14,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     {% block head %}{% endblock %}
   </head>
-  <body {% if edit or photo %}class="noscroll"{% endif %}>
+  <body {% if noscroll %}class="noscroll"{% endif %}>
     <div id="loader"></div>
   <div id="page" style="display: none;" class="noselect">
     {% if navbar %}
-        {% include "navbar.html" %}
+        {% include "navbar/navbar.html" %}
     {% elif exonavbar %}
-        {% include "exonavbar.html" %}
+        {% include "navbar/exonavbar.html" %}
     {% endif %}
     
     {% if background %}
@@ -47,12 +47,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar/base.css') }}">
     {% if navbar %}
-        <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/navbar/navbar.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar/navbar.css') }}">
     {% elif exonavbar %}
-        <script src="{{ url_for('static', filename='js/exonavbar.js') }}"></script>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/exonavbar.css') }}">
+        <script src="{{ url_for('static', filename='js/navbar/exonavbar.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar/exonavbar.css') }}">
+    {% endif %}
+    {% if navbar or exonavbar %}
+    <script src="{{ url_for('static', filename='js/navbar/more.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar/navbar-contents.css') }}">
     {% endif %}
     {% block scripts %}{% endblock %}
       </body>

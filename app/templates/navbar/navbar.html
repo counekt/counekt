@@ -1,0 +1,27 @@
+<section class="hero is-white is-small" style="max-height: 56px;">
+  <nav class="navbar is-transparent">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/" style="white-space: nowrap;">
+        <span class="icon" style="display: inline-block;"><i class="fas fa-mountain" aria-hidden="true"></i></span>
+        <h6 href="/" class="subtitle" style="display: inline-block;"><strong>CTW</strong></h6>
+      </a>
+    </div>
+    <div id="navbar-menu-id" class="navbar-menu">
+      <div class="navbar-end">
+        <div class="navbar-item field is-grouped" style="overflow: auto; margin-top: 0 !important;">
+            {% with selected="is-link is-inverted selected-nav-option", class="is-link" %}
+            {% include 'navbar/navbar-contents.html' %}
+            {% endwith %}
+
+            {% with closed="is-info" %}
+            {% include 'navbar/more-button.html' %}
+            {% endwith %}
+
+        </div>
+      </div>
+    </div>
+  </nav>
+</section>
+<div id="more" class="transition invisible">
+      {% include 'navbar/navbar-more.html' %}
+</div>
