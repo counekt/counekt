@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from flask import redirect, url_for, render_template, abort, request, current_app
+from flask import redirect, url_for, render_template, abort, current_app
+from flask import request as flask_request
 from app import db, models
 import app.profiles.funcs as funcs
 import json
@@ -17,31 +18,31 @@ def user(username):
     if not user:
         abort(404)
     skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium")
+    return render_template("profiles/user/profile.html", user=user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
 @login_required
 def edit_user():
-    if request.method == 'POST':
-        name = request.form.get("name")
-        bio = request.form.get("bio")
+    if flask_request.method == 'POST':
+        name = flask_request.form.get("name")
+        bio = flask_request.form.get("bio")
 
-        show_location = int(request.form.get("show-location"))
-        is_visible = request.form.get("visible")
+        show_location = int(flask_request.form.get("show-location"))
+        is_visible = flask_request.form.get("visible")
         if is_visible:
             is_visible = int(is_visible)
-        lat = request.form.get("lat")
-        lng = request.form.get("lng")
+        lat = flask_request.form.get("lat")
+        lng = flask_request.form.get("lng")
 
-        month = request.form.get("month")
-        day = request.form.get("day")
-        year = request.form.get("year")
+        month = flask_request.form.get("month")
+        day = flask_request.form.get("day")
+        year = flask_request.form.get("year")
 
-        gender = request.form.get("gender")
-        skills = eval(request.form.get("skills"))
+        gender = flask_request.form.get("gender")
+        skills = eval(flask_request.form.get("skills"))
 
-        file = request.files.get("photo")
+        file = flask_request.files.get("photo")
 
         if not name:
             return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
@@ -105,20 +106,22 @@ def edit_user():
         db.session.commit()
         return json.dumps({'status': 'success', 'username': current_user.username})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True, models=models)
 
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
 def user_photo(username):
     user = models.User.query.filter_by(username=username).first()
+    if not user:
+        abort(404)
     skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", footer=True)
+    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", footer=True, models=models)
 
 
 @ bp.route("/get/coordinates/", methods=["POST"])
 def get_coordinates():
-    if request.method == 'POST':
-        address = request.form.get("address")
+    if flask_request.method == 'POST':
+        address = flask_request.form.get("address")
         location = funcs.geocode(address)
         if not location:
             return json.dumps({'status': 'Non-valid location'})
@@ -127,9 +130,9 @@ def get_coordinates():
 
 @ bp.route("/get/address/", methods=["POST"])
 def get_address():
-    if request.method == 'POST':
-        lat = request.form.get("lat")
-        lng = request.form.get("lng")
+    if flask_request.method == 'POST':
+        lat = flask_request.form.get("lat")
+        lng = flask_request.form.get("lng")
         print(lat, lng)
         location = funcs.reverse_geocode([lat, lng])
         if not location:
@@ -139,5 +142,47 @@ def get_address():
 
 @ bp.route("/connect/<username>/", methods=["POST"])
 def connect(username):
-    if request.method == 'POST':
-        return json.dumps({'status': 'success'})
+    user = models.User.query.filter_by(username=username).first()
+    if user and flask_request.method == 'POST':
+        sent_request = models.Request.query.filter_by(type="connect", sender=current_user, receiver=user).first()
+        received_request = models.Request.query.filter_by(type="connect", receiver=current_user, sender=user).first()
+        print(flask_request.form)
+        if flask_request.form.get("do") and not sent_request and not received_request:
+            request = models.Request(type="connect")
+            request.sender = current_user
+            request.receiver = user
+            request.notification.sender = current_user
+            user.notifications.append(request.notification)
+            db.session.add(request)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif flask_request.form.get("accept") and received_request:
+            received_request.accept()
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif flask_request.form.get("undo") and sent_request:
+            sent_request.regret()
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif flask_request.form.get("disconnect"):
+            current_user.connections.remove(user)
+            user.connections.remove(current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+    return json.dumps({'status': 'error'})
+
+
+@ bp.route("/notifications/", methods=['GET', 'POST'])
+def notifications():
+    if flask_request.method == 'POST':
+        notif_id = flask_request.form.get("id")
+        notification = models.Notification.query.filter_by(id=notif_id).first()
+        if notification:
+            notification.seen = True
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        return json.dumps({'status': 'error'})
+
+    notifications = current_user.notifications
+    print(notifications.all())
+    return render_template("notifications.html", background=True, size="medium", navbar=True, notifications=notifications)

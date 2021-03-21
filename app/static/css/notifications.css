@@ -26,10 +26,18 @@
 	border-radius:0px !important;
 }
 
+.notif.unread {
+	background-color: rgb(230,235,255);
+}
+
 .notif:hover {
 	background-color: whitesmoke;
   	 cursor: pointer;
   	 transition: 0.3s;
+}
+
+.notif.unread:hover {
+	background-color: rgb(225,230,255);
 }
 
 .notif-content {
@@ -75,4 +83,24 @@
 	border-radius: 100%;
 	transition: 0.3s;
 	vertical-align: bottom;
+}
+
+@media (max-width:500px) {
+  #notification-box {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+  	background-color: rgba(255,255,255,0.75);
+  	padding-right: 0;
+  	padding-left: 0;
+}
+
+#background {
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+}
+
 }

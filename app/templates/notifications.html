@@ -7,16 +7,19 @@
   <div id="notifications">
     {% for notification in notifications %}
     <div class="splitter"></div>
-    <div class="notif box">
-      <span class="notif-icon icon" style="color: {{notification.get('color')}};"><i class="fas fa-lg {{notification.get('icon')}}"></i></span>
-      <div class="notif-content">
-        <span class="profile-image" href="/user/{{notification.get('sender-username')}}">
-        <img alt draggable="false" class="profile-image-content" src="{{notification.get('sender-photo')}}">
-        </span>
-        <br>
-      <a class="profile-name" href="/user/{{notification.get('sender-username')}}"><b >{{notification.get('sender-name')}}</b></a> <span class="selectable">{{notification.get('message')}}</span>
-    </div>
-    </div>
+    <a {% if notification.type == 'connect' %}href="/user/{{notification.sender.username}}"{% endif %}>
+      <div class="notif box {% if not notification.seen %}unread{% endif %}" data-id="{{notification.id}}">
+        <span class="notif-icon icon" style="color: {{notification.color}};"><i class="fas fa-lg {{notification.icon}}"></i></span>
+          <div class="notif-content">
+              <a class="profile-image" href="/user/{{notification.sender.username}}">
+              <img alt draggable="false" class="profile-image-content" src="{{notification.sender.profile_photo.src}}">
+              </a>
+              <br>
+              <a class="profile-name" href="/user/{{notification.sender.username}}"><b>{% if notification.sender.name %}{{notification.sender.name}}{% else %}{{notification.sender.username}}{% endif %}</b></a>
+              <span class="selectable">{{notification.message}}</span>
+        </div>
+      </div>
+    </a>
     {% endfor %}
   </div>
 </div>

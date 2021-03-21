@@ -19,11 +19,23 @@
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
             {% if user != current_user %}
-            <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-            <button id="connect-button" class="button is-info is-inverted">Connect</button>
+              <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+              {% with request_sent = models.Request.query.filter_by(type='connect', sender=current_user, receiver=user).first(), request_received = models.Request.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_connected = user in current_user.connections %}
+              <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_connected %}
+                  {% include 'profiles/user/connect-button/connected.html' %}
+                {% elif request_sent %}
+                  {% include 'profiles/user/connect-button/pending.html' %}
+                {% elif request_received %}
+                  {% include 'profiles/user/connect-button/accept.html' %}
+                {% else %}
+                  {% include 'profiles/user/connect-button/default.html' %}
+                {% endif %}
+              </button>
+              {% endwith %}
             {% else %}
-            <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
-            {% endif %}
+              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
+              {% endif %}
           </div>
           <br style="clear: both;">
         </div>
@@ -81,6 +93,16 @@
  <div id="profile-tabs-content">
     <div id="profile-connections" class="profile-associate">
       {% for connection in user.connections %}
+      <div class="splitter"></div>
+      <div class="subprofile box">
+        <div class="subprofile-content">
+            <a class="subprofile-image" href="/user/{{connection.username}}">
+            <img alt draggable="false" class="subprofile-image-content" src="{{connection.profile_photo.src}}">
+            </a>
+            <br>
+          <a class="subprofile-name" href="/user/{{connection.username}}"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></a> <span class="selectable">{% if connection.bio %}{{connection.bio}}{% endif %}</span>
+        </div>
+      </div>
       {% endfor %}
       {% if user==current_user %}
       <a href="/explore/"><div class="add-specific-button"><span>Add connection</span></div></a>
@@ -126,7 +148,60 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
+  function makeConnectButtonDefault() {
+    $('#connect-button').addClass('is-info');
+    $('#connect-button').removeClass('is-light').removeClass('is-link');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/default.html' %}`);
+    $('#connect-button').data('type', 'default');
+    $('#connect-button').removeClass('is-danger');
+    
+  }
 
+  function makeConnectButtonPending() {
+    $('#connect-button').toggleClass('is-info is-light');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+    $('#connect-button').data('type', 'pending');
+    $('#connect-button').addClass('calm');
+  }
+
+  function makeConnectButtonConnected() {
+    $('#connect-button').toggleClass('is-success is-info');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+    $('#connect-button').data('type', 'connected');
+    $('#connect-button').addClass('calm');
+  }
+
+$("#connect-button").hover(
+  function() {
+        if ($(this).data('type') == 'connected' && !$(this).hasClass('calm')) {
+          $(this).addClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/disconnect.html' %}`);
+        }
+        else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
+          $(this).addClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/undo.html' %}`);
+
+    }
+  }, function() {
+        if ($(this).data('type') == 'connected') {
+          $(this).removeClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+          $(this).removeClass('calm');
+
+        }
+        else if ($(this).data('type') == 'pending') {
+          $(this).removeClass('is-danger');
+          $(this).removeClass('calm');
+          $(this).html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+
+        }
+  }
+);
+ 
+
+</script>
+<script type="text/javascript">
+  var username = "{{user.username}}";
 
   function load_edit_js() {
   var map = L.map('map').setView({% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});

@@ -1,9 +1,9 @@
 from flask import current_app
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-from sqlalchemy import func
+from sqlalchemy import func, inspect
 from app import login
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from time import time
 import app.funcs as funcs
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,11 +15,18 @@ import base64
 import os
 from PIL import Image
 from pathlib import Path
+from sqlalchemy.exc import InvalidRequestError
 
 
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+
+connections = db.Table('connections',
+                       db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
+                       db.Column('right_id', db.Integer, db.ForeignKey('user.id'))
+                       )
 
 
 followers = db.Table('followers',
@@ -73,7 +80,12 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
-    notifications = db.relationship('Notification', backref='user',
+    connections = db.relationship(
+        'User', secondary=connections,
+        primaryjoin=(connections.c.left_id == id),
+        secondaryjoin=(connections.c.right_id == id), lazy='dynamic')
+
+    notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
     groups = db.relationship(
         'Group', secondary=groups,
@@ -93,10 +105,6 @@ class User(UserMixin, db.Model):
         self.creation_datetime = datetime.utcnow()
         self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/users/{self.username}/", replacement=gravatar(self.email.lower()))
         self.cover_photo = Photo(filename="cover_photo", path=f"static/profiles/users/{self.username}/", replacement="/static/images/alps.jpg")
-
-    @ hybrid_property
-    def connections(self):
-        return User.query.filter(User.followers.any(id=self.id)).filter(followers.c.followed_id == User.id)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -335,9 +343,52 @@ def gravatar(text_to_digest, size=256):
         digest, size)
 
 
+class Request(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    sender = db.relationship("User", foreign_keys=[sender_id])
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    receiver = db.relationship("User", foreign_keys=[receiver_id])
+
+    notification_id = db.Column(db.Integer, db.ForeignKey('notification.id', ondelete='CASCADE'))
+    notification = db.relationship("Notification", back_populates="request", foreign_keys=[notification_id])
+
+    def __init__(self, **kwargs):
+        super(Request, self).__init__(**kwargs)
+        # do custom initialization here
+        self.notification = Notification(type=self.type)
+
+    def accept(self):
+        self.__do()
+        if exists_in_db(self):
+            db.session.delete(self)
+
+    def reject(self):
+        if exists_in_db(self):
+            db.session.delete(self)
+
+    def regret(self):
+        if exists_in_db(self):
+            db.session.delete(self)
+        if exists_in_db(self.notification):
+            db.session.delete(self.notification)
+
+    def __do(self):
+        if self.type == "connect":
+            self.receiver.connections.append(self.sender)
+            self.sender.connections.append(self.receiver)
+
+    def __repr__(self):
+        return "<Request {}>".format(self.type)
+
+
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String)
+
+    seen = db.Column(db.Boolean, default=False)
+
     timestamp = db.Column(db.Float, index=True, default=time)
 
     object_role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
@@ -350,6 +401,11 @@ class Notification(db.Model):
 
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+
+    sender = db.relationship("User", foreign_keys=[sender_id])
+    receiver = db.relationship("User", foreign_keys=[receiver_id])
+
+    request = db.relationship("Request", back_populates="notification", uselist=False)
 
     @hybrid_property
     def object(self):
@@ -521,3 +577,8 @@ class Membership(db.Model):
 
     def __repr__(self):
         return "<Membership {}>".format(self.role)
+
+
+def exists_in_db(row):
+    exists = bool(db.session.query(row.__class__).filter(row.__class__.id == row.id).first())
+    return exists
