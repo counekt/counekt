@@ -1,3 +1,11 @@
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 ::selection {
   background: rgba(150,200,255,0.5); /* WebKit/Blink Browsers */
 }

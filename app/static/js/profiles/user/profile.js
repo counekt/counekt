@@ -98,3 +98,19 @@ function acceptConnect() {
         }
       }});
 }
+
+$(".subprofile-identity").hover(
+  function() {
+    $(this).find('.subprofile-name').addClass('underlined');
+        
+  }, function() {
+      $(this).find('.subprofile-name').removeClass('underlined');
+
+  }
+  );
+
+$(".subprofile").on('click', function() {
+
+  window.location.href = $(this).find('.subprofile-name').attr('href');
+
+});

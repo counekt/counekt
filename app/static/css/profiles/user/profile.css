@@ -28,6 +28,8 @@ font-family: Universe, "Helvetica Neue",sans-serif;
       font-size: 20px;
       font-weight: 500;
         margin: auto !important;
+        	margin-top: 10px !important;
+
         	  	transition: 0.3s;
 
 
@@ -51,6 +53,10 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 #profile-address span, #profile-birthdate span {
 	margin-right: 5px;
 	color: gray;
+}
+
+#connect-button {
+	transition: 0.3s;
 }
 
 #profile-address {
@@ -205,28 +211,68 @@ margin-bottom: 55px;}
 .subprofile {
 	margin: 0px !important;
 	border-radius:0px !important;
+	overflow: hidden;
+	box-sizing: border-box;
+	word-wrap: nowrap;
+	border: solid 0px black;
+	 display: flex;
+	 background-color: rgba(255,255,255,1);
+	   	 transition: 0.3s;
+
+
 }
 
 .subprofile:hover {
-	background-color: whitesmoke;
+	background-color: rgba(245,245,245,1);
   	 cursor: pointer;
-  	 transition: 0.3s;
+}
+
+.subprofile-bio {
+	display: inline-block;
+	 word-wrap: break-word;
+	text-overflow: ellipsis; 
+	box-sizing: border-box;
+			width: 100%;
+			color: black;
+			font-size: 15px;
+  line-height: 16px;
+
 }
 
 .subprofile-content {
-	display: inline-block;
+		box-sizing: border-box;
+		width: calc(100% - 80px);
+		vertical-align: top;
+		flex: 1;
+		max-width: inherit;
+
 }
 
-
-.splitter {
-	margin: 0;
+.subprofile-content br {
+	display: block;
+	line-height: 0;
 	height: 0px;
-	border-bottom: 1px #edf0f2 solid;
-	margin: auto;
+	content: " ";
+
 }
 
+.subprofile-identity {
+	height: 43.2px;
+	line-height: 1.2em;
+	display: inline-block;
+	font-size: 15px;
+}
 
-.subprofile-name:hover {
+.subprofile-name {
+		vertical-align: top;
+
+}
+
+.subprofile-username {
+	vertical-align: bottom;
+	color: darkgray !important;
+}
+.underlined {
 	text-decoration: underline;
 }
 
@@ -236,13 +282,20 @@ margin-bottom: 55px;}
   	 cursor: pointer;
 }
 
+.subprofile-image-wrap {
+	box-sizing: border-box;
+
+	width: 40px;
+	height: 40px;
+	margin-right: 10px;
+}
 
 .subprofile-image {
-	width: 32px;
-	height: 32px;
+	width: 40px;
+	height: 40px;
 	display: inline-block;
 	line-height: 20px;
-	vertical-align: bottom;
+	vertical-align: top;
 
 }
 
@@ -252,7 +305,6 @@ margin-bottom: 55px;}
 	transition: 0.3s;
 	vertical-align: bottom;
 }
-
 
 @media (max-width:500px) {
   .profile {
