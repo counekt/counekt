@@ -93,15 +93,21 @@
  <div id="profile-tabs-content">
     <div id="profile-connections" class="profile-associate">
       {% for connection in user.connections %}
-      <div class="splitter"></div>
       <div class="subprofile box">
-        <div class="subprofile-content">
-            <a class="subprofile-image" href="/user/{{connection.username}}">
+        <div class="subprofile-image-wrap">
+        <a class="subprofile-image" href="/user/{{connection.username}}">
             <img alt draggable="false" class="subprofile-image-content" src="{{connection.profile_photo.src}}">
-            </a>
+        </a>
+      </div>
+        <div class="subprofile-content">
+          <div class="subprofile-identity">
+            <a class="subprofile-name" href="/user/{{connection.username}}"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></a>
             <br>
-          <a class="subprofile-name" href="/user/{{connection.username}}"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></a> <span class="selectable">{% if connection.bio %}{{connection.bio}}{% endif %}</span>
-        </div>
+            <a class="subprofile-username" href="/user/{{connection.username}}">@{{connection.username}}</a>
+          </div>
+          <br>
+        <span class="subprofile-bio selectable" maxlenght="30">{% if connection.bio %}{{connection.bio}}{% endif %}</span>
+      </div>
       </div>
       {% endfor %}
       {% if user==current_user %}
