@@ -130,11 +130,11 @@ $(document).on('change','#selected-skill',function(){
 
 function loadFile(input) {
   if (event.target.files[0]) {
-  $("#edit-profile-image-content").attr('src', URL.createObjectURL(event.target.files[0]));
+  $("#edit-associate-image-content").attr('src', URL.createObjectURL(event.target.files[0]));
 }
   console.log("WOOOOOW");
 };
 
-$(document).on("click", "#edit-profile-upload", function() {
+$(document).on("click", "#edit-associate-image-upload", function() {
   $("#upload").click();
 });
