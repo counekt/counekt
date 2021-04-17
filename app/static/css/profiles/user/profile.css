@@ -28,9 +28,8 @@ font-family: Universe, "Helvetica Neue",sans-serif;
       font-size: 20px;
       font-weight: 500;
         margin: auto !important;
-        	margin-top: 10px !important;
-
         	  	transition: 0.3s;
+        	  	margin-top: 10px !important;
 
 
 }
@@ -44,7 +43,13 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 
 #profile-tabs-content {
 	padding: 10px;
+	padding-top: 0px;
 }
+
+.profile-associate {
+	margin-top: 10px;
+}
+
 
 #profile-birthdate {
 	margin-top: 10px;
@@ -71,7 +76,8 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	word-wrap: break-word;
 	margin-bottom: 60px;
 	overflow-y: auto;
-	max-height:140px;
+	max-height:150px;
+
 }
 
 .profile-skill:hover {
@@ -139,20 +145,18 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	left: 0;
 }
 
-#edit-profile-image {
-	width: 100%;
-	max-width: 250px;
-	margin: auto;
-}
+
 
 #profile-image {width: 100%;
 	max-width: 250px;
 margin-bottom: 55px;}
 
-#profile-image-content, #edit-profile-image-content {
+#profile-image-content {
 	width: 100%;
 	border-radius: 100%;
 	transition: 0.3s;
+	border: solid rgba(0, 0, 0, 0.04) 0.1px;
+
 }
 
 
@@ -161,6 +165,8 @@ margin-bottom: 55px;}
 	-webkit-filter: brightness(85%);
   	 filter: brightness(85%);
   	 cursor: pointer;
+  	 	border: solid rgba(0, 0, 0, 0.138) 0.1px;
+
 }
 
 #profile-right {
@@ -222,6 +228,11 @@ margin-bottom: 55px;}
 
 }
 
+.subprofile:active:hover {
+		background-color: rgba(235,235,235,1);
+
+}
+
 .subprofile:hover {
 	background-color: rgba(245,245,245,1);
   	 cursor: pointer;
@@ -280,19 +291,18 @@ margin-bottom: 55px;}
 	-webkit-filter: brightness(85%);
   	 filter: brightness(85%);
   	 cursor: pointer;
+  	 border: solid rgba(0, 0, 0, 0.138) 0.1px;
+
 }
 
 .subprofile-image-wrap {
 	box-sizing: border-box;
-
-	width: 40px;
-	height: 40px;
 	margin-right: 10px;
 }
 
 .subprofile-image {
-	width: 40px;
-	height: 40px;
+	width: 48px;
+	height: 48px;
 	display: inline-block;
 	line-height: 20px;
 	vertical-align: top;
@@ -302,6 +312,7 @@ margin-bottom: 55px;}
 .subprofile-image-content {
 	width: 100%;
 	border-radius: 100%;
+	border: solid rgba(0, 0, 0, 0.04) 0.1px;
 	transition: 0.3s;
 	vertical-align: bottom;
 }

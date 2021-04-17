@@ -110,7 +110,19 @@ $(".subprofile-identity").hover(
   );
 
 $(".subprofile").on('click', function() {
+  if (!getSelection().toString()) {
+  window.location.href = $(this).find('.subprofile-identity').attr('href');
+}
+else {
+    getSelection().empty();
+}
 
-  window.location.href = $(this).find('.subprofile-name').attr('href');
+});
+
+$(".subprofile-bio").on('click', function(e) {
+  e.stopPropagation();
+  if (!getSelection().toString()) {
+  window.location.href = $(this).find('.subprofile-identity').attr('href');
+  }
 
 });

@@ -100,11 +100,11 @@
         </a>
       </div>
         <div class="subprofile-content">
-          <div class="subprofile-identity">
-            <a class="subprofile-name" href="/user/{{connection.username}}"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></a>
+          <a class="subprofile-identity" href="/user/{{connection.username}}">
+            <span class="subprofile-name selectable"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></span>
             <br>
-            <a class="subprofile-username" href="/user/{{connection.username}}">@{{connection.username}}</a>
-          </div>
+            <span class="subprofile-username selectable">@{{connection.username}}</span>
+          </a>
           <br>
         <span class="subprofile-bio selectable" maxlenght="30">{% if connection.bio %}{{connection.bio}}{% endif %}</span>
       </div>
@@ -118,14 +118,14 @@
       {% for group in user.groups %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button"><span>Create group</span></div>
+      <div class="add-specific-button" id="create-group-button"><span>Create group</span></div>
       {% endif %}
     </div>
     <div id="profile-projects" class="profile-associate vanish">
       {% for project in user.projects %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button"><span>Create project</span></div>
+      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
       {% endif %}
     </div>
  </div>
@@ -145,6 +145,7 @@
 
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/profiles/user/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/user/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/user/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
@@ -209,7 +210,7 @@ $("#connect-button").hover(
 <script type="text/javascript">
   var username = "{{user.username}}";
 
-  function load_edit_js() {
+  function load_map_js() {
   var map = L.map('map').setView({% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
          
          //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
@@ -357,8 +358,8 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if edit %}
-load_edit_js();
+{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_group','profiles.create_project']  %}
+load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
@@ -371,6 +372,16 @@ load_edit_js();
 
   $(document).on('click', '#edit-button', function(e) {
     redirect({id:"edit-user"},"Edit profile", "/settings/profile/", changeToEdit);
+    e.preventDefault();
+  });
+
+   $(document).on('click', '#create-group-button', function(e) {
+    redirect({id:"create-group"},"Create group", "/create/group/", changeToCreateGroup);
+    e.preventDefault();
+  });
+
+     $(document).on('click', '#create-project-button', function(e) {
+    redirect({id:"create-project"},"Create project", "/create/project/", changeToCreateProject);
     e.preventDefault();
   });
 
@@ -399,7 +410,7 @@ $(window).on("popstate", function() {
 function changeToEdit() {
   $("#modal-box").append(`
     {% include "profiles/user/edit.html" %}`);
-  load_edit_js();
+  load_map_js();
   $(document.body).addClass('noscroll');
 }
 
@@ -414,6 +425,21 @@ function changeToPhoto() {
   $(document.body).addClass('noscroll');
 
 }
+
+function changeToCreateGroup() {
+    $("#modal-box").append(`
+    {% include "profiles/group/create.html" %}`);
+  load_map_js();
+  $(document.body).addClass('noscroll');
+}
+
+function changeToCreateProject() {
+    $("#modal-box").append(`
+    {% include "profiles/project/create.html" %}`);
+  load_map_js();
+  $(document.body).addClass('noscroll');
+}
+
 
 {% if request.url_rule.endpoint == 'profiles.edit_user' %}
 window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
