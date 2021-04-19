@@ -1,1 +1,1 @@
-web: gunicorn wsgi:ctw.py
+web: gunicorn wsgi:app
