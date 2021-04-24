@@ -15,7 +15,7 @@
   <section class="modal-card-body has-text-centered">
 
   <div id="edit-associate-image">
-      <img draggable="false" id="edit-associate-image-content" src="{{ url_for('static', filename='images/club.png') }}">
+      <img draggable="false" id="edit-associate-image-content" src="{{ url_for('static', filename='images/club.jpg') }}">
       <input type="file"  accept="image/*" name="image" id="upload" onchange="loadFile(event)" style="display: none;">
     <button class="button is-large is-white" id="edit-associate-image-upload">
     <span class="icon is-medium">
@@ -27,7 +27,7 @@
   <div>
     <div id="name">
       <h1><b>Name</b></h1>
-      <input class="input has-fixed-size" placeholder="Add your Group's name" id="name-field"></input>
+      <input class="input has-fixed-size" placeholder="Add your Club's name" id="name-field"></input>
     </div>
       <div id="feedback-name" class="feedback">
         <div class="message"></div>
@@ -35,7 +35,7 @@
       <br id="name-anchor">
     <div id="description">
       <h1><b>Description</b></h1>
-      <textarea class="textarea has-fixed-size" placeholder="Add your Group's description" id="bio-field" rows="3" maxlength="160"></textarea>
+      <textarea class="textarea has-fixed-size" placeholder="Add your Club's description" id="bio-field" rows="3" maxlength="160"></textarea>
     </div>
       <div id="feedback-description" class="feedback">
         <div class="message"></div>
@@ -54,7 +54,7 @@
     <div id="location-settings">
       <div id="location">
         <h1><b>Location</b></h1>
-        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2"></input>
+        <input class="input has-fixed-size" placeholder="Add your Club's location" id="location-field" rows="2"></input>
         <div id="map">
         </div>
       </div>

@@ -140,7 +140,12 @@
 {% include "profiles/user/edit.html" %}
 {% elif request.url_rule.endpoint == 'profiles.user_photo' %}
 {% include "profiles/user/photo.html" %}
+{% elif request.url_rule.endpoint == 'profiles.create_club' %}
+{% include "profiles/club/create.html" %}
+{% elif request.url_rule.endpoint == 'profiles.create_project' %}
+{% include "profiles/project/create.html" %}
 {% endif %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -405,6 +410,14 @@ $(window).on("popstate", function() {
     changeToPhoto();
   }
 
+  else if (window.history.state.id == "create-club") {
+    changeToCreateClub();
+  }
+
+  else if (window.history.state.id == "create-project") {
+    changeToCreateProject();
+  }
+
 });
 
 function changeToEdit() {
@@ -445,6 +458,10 @@ function changeToCreateProject() {
 window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
 {% elif request.url_rule.endpoint == 'profiles.user_photo' %}
 window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
+{% elif request.url_rule.endpoint == 'profiles.create_club' %}
+window.history.replaceState({id:"create-club"},"Create club", "/create/club/");
+{% elif request.url_rule.endpoint == 'profiles.create_project' %}
+window.history.replaceState({id:"create-project"},"Create project", "/create/project/");
 {% else %}
 window.history.replaceState({id:"user-profile"},"Profile", "./");
 {% endif %}
