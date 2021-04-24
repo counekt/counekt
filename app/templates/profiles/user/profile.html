@@ -20,7 +20,7 @@
           <div id="profile-bar-content">
             {% if user != current_user %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.Request.query.filter_by(type='connect', sender=current_user, receiver=user).first(), request_received = models.Request.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_connected = user in current_user.connections %}
+              {% with request_sent = models.Request.query.filter_by(type='connect', sender=current_user, receiver=user).first(), request_received = models.Request.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_connected = user in current_user.allies %}
               <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
                 {% if is_connected %}
                   {% include 'profiles/user/connect-button/connected.html' %}
@@ -70,16 +70,16 @@
   <div id="profile-tabs" class="container">
     <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
   <ul>
-    <li class="is-active" data-content="#profile-connections">
+    <li class="is-active" data-content="#profile-allies">
       <a>
         <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
-        <span class="tabtext">Connections</span>
+        <span class="tabtext">Allies</span>
       </a>
     </li>
-    <li data-content="#profile-groups">
+    <li data-content="#profile-clubs">
       <a>
         <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
-        <span class="tabtext">Groups</span>
+        <span class="tabtext">Clubs</span>
       </a>
     </li>
     <li data-content="#profile-projects">
@@ -91,34 +91,34 @@
   </ul>
 </div>
  <div id="profile-tabs-content">
-    <div id="profile-connections" class="profile-associate">
-      {% for connection in user.connections %}
+    <div id="profile-allies" class="profile-associate">
+      {% for ally in user.allies %}
       <div class="subprofile box">
         <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="/user/{{connection.username}}">
-            <img alt draggable="false" class="subprofile-image-content" src="{{connection.profile_photo.src}}">
+        <a class="subprofile-image" href="/user/{{ally.username}}">
+            <img alt draggable="false" class="subprofile-image-content" src="{{ally.profile_photo.src}}">
         </a>
       </div>
         <div class="subprofile-content">
-          <a class="subprofile-identity" href="/user/{{connection.username}}">
-            <span class="subprofile-name selectable"><b>{% if connection.name %}{{connection.name}}{% else %}{{connection.username}}{% endif %}</b></span>
+          <a class="subprofile-identity" href="/user/{{ally.username}}">
+            <span class="subprofile-name selectable"><b>{% if ally.name %}{{ally.name}}{% else %}{{ally.username}}{% endif %}</b></span>
             <br>
-            <span class="subprofile-username selectable">@{{connection.username}}</span>
+            <span class="subprofile-username selectable">@{{ally.username}}</span>
           </a>
           <br>
-        <span class="subprofile-bio selectable" maxlenght="30">{% if connection.bio %}{{connection.bio}}{% endif %}</span>
+        <span class="subprofile-bio selectable" maxlenght="30">{% if ally.bio %}{{ally.bio}}{% endif %}</span>
       </div>
       </div>
       {% endfor %}
       {% if user==current_user %}
-      <a href="/explore/"><div class="add-specific-button"><span>Add connection</span></div></a>
+      <a href="/explore/"><div class="add-specific-button"><span>Add ally</span></div></a>
       {% endif %}
     </div>
-    <div id="profile-groups" class="profile-associate vanish">
-      {% for group in user.groups %}
+    <div id="profile-clubs" class="profile-associate vanish">
+      {% for club in user.clubs %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button" id="create-group-button"><span>Create group</span></div>
+      <div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
       {% endif %}
     </div>
     <div id="profile-projects" class="profile-associate vanish">
@@ -358,7 +358,7 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_group','profiles.create_project']  %}
+{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_club','profiles.create_project']  %}
 load_map_js();
 {% endif %}
 </script>
@@ -375,8 +375,8 @@ load_map_js();
     e.preventDefault();
   });
 
-   $(document).on('click', '#create-group-button', function(e) {
-    redirect({id:"create-group"},"Create group", "/create/group/", changeToCreateGroup);
+   $(document).on('click', '#create-club-button', function(e) {
+    redirect({id:"create-club"},"Create club", "/create/club/", changeToCreateClub);
     e.preventDefault();
   });
 
@@ -426,9 +426,9 @@ function changeToPhoto() {
 
 }
 
-function changeToCreateGroup() {
+function changeToCreateClub() {
     $("#modal-box").append(`
-    {% include "profiles/group/create.html" %}`);
+    {% include "profiles/club/create.html" %}`);
   load_map_js();
   $(document.body).addClass('noscroll');
 }
