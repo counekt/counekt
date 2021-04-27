@@ -2,9 +2,10 @@ from app import db
 from app.models.profiles.group import Group
 from app.models.static.photo import Photo
 from app.models.base import Base
+from app.models.locationBase import locationBase
 
 
-class Project(db.Model, Base):
+class Project(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
     group = db.relationship("Group", foreign_keys=[group_id])
@@ -23,7 +24,11 @@ class Project(db.Model, Base):
     def __init__(self, **kwargs):
         super(Project, self).__init__(**kwargs)
         # do custom initialization here
-        self.profile_pic = Picture(path=f"/static/profiles/projects/{self.handle}/profile_pic", replacement="/static/images/defaults/project.png")
+        members = kwargs.get(members) or []
+        self.group = Group(members=members)
+        for user in members:
+            user.projects.append(self)
+        self.profile_pic = Photo(path=f"/static/profiles/projects/{self.handle}/profile_pic", replacement="/static/images/defaults/project.png")
 
     def __repr__(self):
         return "<Project {}>".format(self.handle)

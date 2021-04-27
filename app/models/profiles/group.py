@@ -11,6 +11,25 @@ class Group(db.Model, Base):
         'Membership', backref='group', lazy='dynamic',
         foreign_keys='Membership.group_id')
 
+    def __init__(self, **kwargs):
+        super(Group, self).__init__(**kwargs)
+        if kwargs.get("members"):
+            for user in members:
+                self.add_member(user)
+
+    def add_member(self, user, role=None):
+        membership = Membership()
+        membership.owner = user
+        membership.role = role
+        self.memberships.append(membership)
+
+    def remove_member(self, user):
+        self.memberships.filter_by(owner=user).delete()
+
+    @property
+    def members(self):
+        return [m.owner for m in self.memberships]
+
     def __repr__(self):
         return "<Group {}>".format(self.id)
 

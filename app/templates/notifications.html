@@ -6,20 +6,22 @@
   </div>
   <div id="notifications">
     {% for notification in notifications %}
+    {% with data = notification.get_data() %}
     <div class="splitter"></div>
-    <a {% if notification.type == 'connect' %}href="/user/{{notification.sender.username}}"{% endif %}>
+    <a {% if notification.type == 'ally' %}href="/user/{{data.get('sender-username')}}"{% endif %}>
       <div class="notif box {% if not notification.seen %}unread{% endif %}" data-id="{{notification.id}}">
-        <span class="notif-icon icon" style="color: {{notification.color}};"><i class="fas fa-lg {{notification.icon}}"></i></span>
+        <span class="notif-icon icon" style="color: {{data.get('color')}};"><i class="fas fa-lg {{data.get('icon')}}"></i></span>
           <div class="notif-content">
-              <a class="profile-image" href="/user/{{notification.sender.username}}">
-              <img alt draggable="false" class="profile-image-content" src="{{notification.sender.profile_photo.src}}">
+              <a class="profile-image" href="/user/{{data.get('sender-username')}}">
+              <img alt draggable="false" class="profile-image-content" src="{{data.get('sender-photo')}}">
               </a>
               <br>
-              <a class="profile-name" href="/user/{{notification.sender.username}}"><b>{% if notification.sender.name %}{{notification.sender.name}}{% else %}{{notification.sender.username}}{% endif %}</b></a>
-              <span class="selectable">{{notification.message}}</span>
+              <a class="profile-name" href="/user/{{data.get('sender-username')}}"><b>{% if data.get('sender-name') %}{{data.get('sender-name')}}{% else %}{{data.get('sender-username')}}{% endif %}</b></a>
+              <span class="selectable">{{data.get('message')}}</span>
         </div>
       </div>
     </a>
+    {% endwith %}
     {% endfor %}
   </div>
 </div>

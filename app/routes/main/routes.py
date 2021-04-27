@@ -62,7 +62,7 @@ def main():
         if max_age:
             url += f'&max={max_age}'
 
-        query = models.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
+        query = models.User.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
 
         profiles = query.all()
         print(profiles)

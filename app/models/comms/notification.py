@@ -1,18 +1,26 @@
 from app import db
 from app.models.base import Base
-from datetime import time
+from time import time
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 import json
 
 
 class Notification(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(128), index=True)
     seen = db.Column(db.Boolean, default=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     receiver = db.relationship("User", foreign_keys=[receiver_id])
     timestamp = db.Column(db.Float, index=True, default=time)
     payload_json = db.Column(db.Text)
+
+    def __init__(self, **kwargs):
+        super(Notification, self).__init__(**kwargs)
+        if kwargs.get("receiver"):
+            receiver = kwargs.get("receiver")
+            receiver.notifications.append(self)
+
+    def __repr__(self):
+        return "<Notification {}>".format(self.get_data().get('title'))
 
     def get_data(self):
         return json.loads(str(self.payload_json))

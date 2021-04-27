@@ -1,6 +1,7 @@
 from flask import current_app
 from app import db
 from app.models.base import Base
+from app.models.locationBase import locationBase
 from app.models.static.photo import Photo
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func, inspect
@@ -35,7 +36,7 @@ projects = db.Table('projects',
                     )
 
 
-class User(UserMixin, db.Model, Base):
+class User(UserMixin, db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     creation_datetime = db.Column(db.DateTime, index=True)
     token = db.Column(db.String(32), index=True, unique=True)
@@ -49,14 +50,7 @@ class User(UserMixin, db.Model, Base):
     bio = db.Column(db.String(160))
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unspecified")
-    address = db.Column(db.String)
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    sin_rad_lat = db.Column(db.Float)
-    cos_rad_lat = db.Column(db.Float)
-    rad_lng = db.Column(db.Float)
-    show_location = db.Column(db.Boolean, default=False)
-    is_visible = db.Column(db.Boolean, default=False)
+
     profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     cover_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
 
@@ -102,17 +96,6 @@ class User(UserMixin, db.Model, Base):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-    def set_location(self, location):
-        if location:
-            self.address = funcs.shorten_addr(location=location)
-            self.latitude = location.latitude
-            self.longitude = location.longitude
-            self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)
-            self.cos_rad_lat = math.cos(math.pi * location.latitude / 180)
-            self.rad_lng = math.pi * location.longitude / 180
-
-        return location
 
     def set_birthdate(self, birthdate):
         self.birthdate = birthdate

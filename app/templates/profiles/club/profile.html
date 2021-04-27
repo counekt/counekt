@@ -9,8 +9,8 @@
         </a>
       </div>
       <div id="profile-left-bottom">
-        <p class="title is-4 selectable" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">@{{ user.username }}</p>
+        <p class="title is-4 selectable" style="color:black"><b>{{ club.name }}</b></p>
+        <p class="subtitle is-5 selectable" style="color:gray">@{{ club.username }}</p>
       </div>
     </div>
 
@@ -18,11 +18,11 @@
       <div id="profile-right-top">
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
-            {% if user != current_user %}
+            {% if club not in current_user.clubs %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.UserToUserRequest.query.filter_by(type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
+              {% with request_sent = models.Request.query.filter_by(type='join', sender=current_user, receiver=user).first(), request_received = models.Request.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_joined = club in current_user.clubs %}
               <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
-                {% if is_allied %}
+                {% if is_connected %}
                   {% include 'profiles/user/connect-button/connected.html' %}
                 {% elif request_sent %}
                   {% include 'profiles/user/connect-button/pending.html' %}

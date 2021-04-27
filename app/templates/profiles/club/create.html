@@ -8,7 +8,7 @@
         </span>
       </a>
       <p class="modal-card-title" id="header">Create Club</p>
-      <button class="button is-info is-normal is-rounded" id="save-button">
+      <button class="button is-info is-normal is-rounded" id="create-club">
         <span>Save</span>
       </button>
   </header>
@@ -25,6 +25,21 @@
   </div>
   <br>
   <div>
+    <div id="handle">
+      <h1><b>Handle</b></h1>
+        <div class="field has-addons">
+          <p class="control">
+          <a class="button is-static">@</a>
+          </p>
+          <p class="control" style="width:100%;">
+          <input class="input has-fixed-size" placeholder="Add your Club's handle" id="handle-field"></input>
+          </p>
+        </div>
+    </div>
+      <div id="feedback-handle" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="handle-anchor">
     <div id="name">
       <h1><b>Name</b></h1>
       <input class="input has-fixed-size" placeholder="Add your Club's name" id="name-field"></input>
@@ -41,6 +56,16 @@
         <div class="message"></div>
       </div>
       <br id="description-anchor">
+
+    <h1><b>Public</b></h1>
+    <label class="switch">
+      <input type="checkbox" id="public">
+      <span class="slider round"></span>
+    </label>
+    <div id="feedback-public" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="public-anchor">
 
     <h1><b>Show location</b></h1>
     <label class="switch">
@@ -72,6 +97,7 @@
         </div>
         <br id="visible-anchor">
     </div>
+
   </div>
   <br>
 </div>
