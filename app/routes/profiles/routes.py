@@ -83,7 +83,7 @@ def edit_user():
             return json.dumps({'status': 'You must be over the age of 13', 'box_id': 'birthdate'})
 
         if len(bio) > 160:
-            return json.dumps({'status': 'Your bio can\'t exceed a lenght of 160 characters', 'box_id': 'bio'})
+            return json.dumps({'status': 'Your bio can\'t exceed a length of 160 characters', 'box_id': 'bio'})
         current_user.bio = bio.strip()
 
         if file:
@@ -106,7 +106,7 @@ def edit_user():
         db.session.commit()
         return json.dumps({'status': 'success', 'username': current_user.username})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True, models=models)
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
@@ -115,7 +115,169 @@ def user_photo(username):
     if not user:
         abort(404)
     skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", footer=True, models=models)
+    return render_template("profiles/user/profile.html", photo_src=user.profile_photo.src, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", footer=True, models=models)
+
+
+@ bp.route("/create/club/", methods=["GET", "POST"])
+@login_required
+def create_club():
+    if flask_request.method == 'POST':
+        handle = flask_request.form.get("handle")
+        name = flask_request.form.get("name")
+        description = flask_request.form.get("description")
+
+        public = bool(flask_request.form.get("public"))
+
+        show_location = int(flask_request.form.get("show-location"))
+        is_visible = int(bool(flask_request.form.get("visible")))
+        lat = flask_request.form.get("lat")
+        lng = flask_request.form.get("lng")
+
+        #skills = eval(flask_request.form.get("skills"))
+
+        file = flask_request.files.get("photo")
+
+        if not handle:
+            return json.dumps({'status': 'Handle must be filled in', 'box_id': 'handle'})
+
+        if not name:
+            return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
+
+        if not description:
+            return json.dumps({'status': 'Description must be filled in', 'box_id': 'description'})
+
+        if not models.Club.query.filter_by(handle=handle).first() is None:
+            return json.dumps({'status': 'Handle already taken', 'box_id': 'handle'})
+
+        if len(description.strip()) > 160:
+            return json.dumps({'status': 'Your Club\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
+
+        club = models.Club(handle=handle.strip(), name=name.strip(), description=description.strip(), public=public, members=[current_user])
+
+        if show_location:
+
+            if not lat or not lng:
+                return json.dumps({'status': 'Coordinates must be filled in, if you want to show your Club\'s location and or be visible on the map', 'box_id': 'location'})
+
+            location = funcs.reverse_geocode([lat, lng])
+            if not location:
+                return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
+            club.set_location(location=location)
+
+            club.show_location = True
+            if is_visible:
+                club.is_visible = True
+        else:
+            club.latitude = None
+            club.longitude = None
+            club.sin_rad_lat = None
+            club.cos_rad_lat = None
+            club.rad_lng = None
+            club.address = None
+            club.is_visible = False
+            club.show_location = False
+
+        if file:
+            club.profile_photo.save(file=file)
+
+        """
+        # Add skills that are not already there
+        for skill in skills:
+            if not current_user.skills.filter_by(title=skill).first():
+                skill = models.Skill(owner=current_user, title=skill)
+                db.session.add(skill)
+
+        # Delete skills that are meant to be deleted
+        for skill in current_user.skills:
+            if not skill.title in skills:
+                db.session.delete(skill)
+        """
+        current_user.clubs.append(club)
+        db.session.commit()
+        return json.dumps({'status': 'success'})
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+
+
+@ bp.route("/create/project/", methods=["GET", "POST"])
+@login_required
+def create_project():
+    if flask_request.method == 'POST':
+        handle = flask_request.form.get("handle")
+        name = flask_request.form.get("name")
+        description = flask_request.form.get("description")
+
+        public = bool(flask_request.form.get("public"))
+
+        show_location = int(flask_request.form.get("show-location"))
+        is_visible = int(bool(flask_request.form.get("visible")))
+        lat = flask_request.form.get("lat")
+        lng = flask_request.form.get("lng")
+
+        skills = eval(flask_request.form.get("skills"))
+
+        file = flask_request.files.get("photo")
+
+        if not handle:
+            return json.dumps({'status': 'Handle must be filled in', 'box_id': 'handle'})
+
+        if not name:
+            return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
+
+        if not description:
+            return json.dumps({'status': 'Description must be filled in', 'box_id': 'description'})
+
+        if not models.Club.query.filter_by(handle=handle).first() is None:
+            return json.dumps({'status': 'Handle already taken', 'box_id': 'handle'})
+
+        if len(description.strip()) > 160:
+            return json.dumps({'status': 'Your Project\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
+
+        project = models.Project(handle=handle.strip(), name=name.strip(), description=description.strip(), public=public, members=[current_user])
+
+        if show_location:
+
+            if not lat or not lng:
+                return json.dumps({'status': 'Coordinates must be filled in, if you want to show your Project\'s location and or be visible on the map', 'box_id': 'location'})
+
+            location = funcs.reverse_geocode([lat, lng])
+            if not location:
+                return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
+            project.set_location(location=location)
+
+            project.show_location = True
+            if is_visible:
+                project.is_visible = True
+        else:
+            project.latitude = None
+            project.longitude = None
+            project.sin_rad_lat = None
+            project.cos_rad_lat = None
+            project.rad_lng = None
+            project.address = None
+            project.is_visible = False
+            project.show_location = False
+
+        if file:
+            project.profile_photo.save(file=file)
+
+        # Add skills that are not already there
+        """
+        for skill in skills:
+            if not current_user.skills.filter_by(title=skill).first():
+                skill = models.Skill(owner=current_user, title=skill)
+                db.session.add(skill)
+        
+        # Delete skills that are meant to be deleted
+        for skill in current_user.skills:
+            if not skill.title in skills:
+                db.session.delete(skill)
+        """
+        current_user.projects.append(project)
+        db.session.commit()
+        return json.dumps({'status': 'success'})
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/get/coordinates/", methods=["POST"])
@@ -144,15 +306,11 @@ def get_address():
 def connect(username):
     user = models.User.query.filter_by(username=username).first()
     if user and flask_request.method == 'POST':
-        sent_request = models.Request.query.filter_by(type="connect", sender=current_user, receiver=user).first()
-        received_request = models.Request.query.filter_by(type="connect", receiver=current_user, sender=user).first()
+        sent_request = models.UserToUserRequest.query.filter_by(type="ally", sender=current_user, receiver=user).first()
+        received_request = models.UserToUserRequest.query.filter_by(type="ally", receiver=current_user, sender=user).first()
         print(flask_request.form)
         if flask_request.form.get("do") and not sent_request and not received_request:
-            request = models.Request(type="connect")
-            request.sender = current_user
-            request.receiver = user
-            request.notification.sender = current_user
-            user.notifications.append(request.notification)
+            request = models.UserToUserRequest(type="ally", sender=current_user, receiver=user)
             db.session.add(request)
             db.session.commit()
             return json.dumps({'status': 'success'})

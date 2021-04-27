@@ -1,14 +1,15 @@
-$(document).on("click", "#save-button", function() {
-   console.log("Applying edit");
-   console.log($("#day").val());
-   var skills = $(".skill-title").map(function() { return $(this).text();}).get();
+$(document).on("click", "#create-club", function() {
+   
+   //var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    
    var formData = new FormData();
    formData.append('photo', $("#upload").prop('files')[0]);
 
+   formData.append("handle", $("#handle-field").val());
+
    formData.append("name", $("#name-field").val());
 
-   formData.append("bio", $("#bio-field").val());
+   formData.append("description", $("#description-field").val());
 
    formData.append("show-location", $("#show-location").is(':checked') ? 1 : 0);
    if ($("#show-location").is(':checked')) {
@@ -20,34 +21,20 @@ $(document).on("click", "#save-button", function() {
 
   }
 
-   if ($("#month").val()) {
-    formData.append("month", $("#month").val());
-  }
-   
-   if ($("#day").val()) {
-    formData.append("day", $("#day").val());
-  }
-
-  if ($("#year").val()) {
-    formData.append("year", $("#year").val());
-  }
-
-   formData.append("gender", $("#gender").val());
-
-   formData.append("skills", JSON.stringify(skills));
+   //formData.append("skills", JSON.stringify(skills));
 
    if (! $("#location-field").hasClass('errorClass') && ! $("#map").hasClass('errorClass')) {
 
     $.post({
       type: "POST",
-      url: "/settings/profile/",
+      url: "/create/club/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
         var status = response["status"];
-        if (status === "success") { location.replace("/user/"+response["username"]+"/"); }
+        if (status === "success") { location.replace("/club/"+handle+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});
@@ -58,8 +45,3 @@ $(document).on("click", "#save-button", function() {
 
      }
   });
-
-
-$(document).on("click", "#edit-associate-image-upload", function() {
-  $("#upload").click();
-});
