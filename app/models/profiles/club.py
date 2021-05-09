@@ -15,17 +15,23 @@ class Club(db.Model, Base, locationBase):
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
 
-    profile_pic_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
-    profile_pic = db.relationship("Photo", foreign_keys=[profile_pic_id])
+    profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
 
     def __init__(self, **kwargs):
-        super(Club, self).__init__(**kwargs)
+        super(Club, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         # do custom initialization here
-        members = kwargs.get(members) or []
+        members = kwargs["members"]
         self.group = Group(members=members)
         for user in members:
             user.clubs.append(self)
-        self.profile_pic = Photo(path=f"/static/profiles/clubs/{self.handle}/profile_pic", replacement="/static/images/defaults/club.jpg")
+        self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/clubs/{self.handle}/", replacement="/static/images/club.jpg")
+
+    def delete(self):
+        for m in self.group.members:
+            m.clubs.remove(self)
+        if self.exists_in_db:
+            db.session.delete(self)
 
     def __repr__(self):
         return "<Club {}>".format(self.handle)

@@ -5,7 +5,7 @@ __pycache__/
 
 # profile specific static files
 app/static/profiles/users/*
-app/static/profiles/groups/*
+app/static/profiles/clubs/*
 app/static/profiles/projects/*
 
 # C extensions

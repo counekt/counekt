@@ -1,11 +1,9 @@
-$(document).on("click", "#create-club", function() {
+$(document).on("click", "#save-button", function() {
    
    //var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    
    var formData = new FormData();
    formData.append('photo', $("#upload").prop('files')[0]);
-
-   formData.append("handle", $("#handle-field").val());
 
    formData.append("name", $("#name-field").val());
 
@@ -27,7 +25,7 @@ $(document).on("click", "#create-club", function() {
 
     $.post({
       type: "POST",
-      url: "/create/club/",
+      url: "/club/"+handle+"/edit/",
       data: formData,
       processData: false,
       contentType: false,

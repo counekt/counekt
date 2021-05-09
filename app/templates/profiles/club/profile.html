@@ -4,13 +4,13 @@
   <div id="profile-top" class="floater container">
     <div id="profile-left">
       <div id="profile-image">
-        <a href="/user/{{user.username}}/photo/">
-        <img alt draggable="false" id="profile-image-content" src="{{ user.profile_photo.src }}">
+        <a href="/club/{{club.handle}}/photo/">
+        <img alt draggable="false" id="profile-image-content" src="{{ club.profile_photo.src }}">
         </a>
       </div>
       <div id="profile-left-bottom">
         <p class="title is-4 selectable" style="color:black"><b>{{ club.name }}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">@{{ club.username }}</p>
+        <p class="subtitle is-5 selectable" style="color:gray">!{{ club.handle }}</p>
       </div>
     </div>
 
@@ -34,29 +34,28 @@
               </button>
               {% endwith %}
             {% else %}
-              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
+              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Club</button>
               {% endif %}
           </div>
           <br style="clear: both;">
         </div>
         <div id="profile-bio" class="selectable">
-        <p style="color:black"> {% if user.bio %}{{user.bio}}{% endif %} </p>
+        <p style="color:black"> {% if club.description %}{{club.description}}{% endif %} </p>
         </div>
       </div>
       <div id="profile-right-bottom">
-        <div id="profile-birthdate" style="color: black;">
-          <span class="icon is-small"><i class="fa fa-birthday-cake" aria-hidden="true"></i></span><span class="selectable">{{user.birthdate.year}}-{{user.birthdate.month}}-{{user.birthdate.day}}</span>
-        </div>
-        {% if user.address %}
+        {% if club.address %}
         <div id="profile-address">
-          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{user.address}}</span>
+          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{club.address}}</span>
         </div>
         {% endif %}
       </div>
     </div>
     <br style="clear: both;">
   </div>
-  {% if user.skills.all() %}
+  <!-- 
+  {% raw %}
+  {% if club.skills.all() %}
   <div id="profile-skills" class="container">
     {% for skillrow in skillrows %}
     <div class="profile-skill-row">
@@ -67,66 +66,72 @@
     {% endfor %}
   </div>
   {% endif %}
+  {% endraw  %}
+  -->
   <div id="profile-tabs" class="container">
     <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
   <ul>
     <li class="is-active" data-content="#profile-allies">
       <a>
-        <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
-        <span class="tabtext">Allies</span>
+        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+        <span class="tabtext">Members</span>
       </a>
     </li>
     <li data-content="#profile-clubs">
       <a>
-        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
-        <span class="tabtext">Clubs</span>
+        <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
+        <span class="tabtext">Roles</span>
       </a>
     </li>
     <li data-content="#profile-projects">
       <a>
-        <span class="icon is-small"><i class="fas fa-pencil-alt" aria-hidden="true"></i></span>
-        <span class="tabtext">Projects</span>
+        <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
+        <span class="tabtext">Comms</span>
       </a>
     </li>
   </ul>
 </div>
  <div id="profile-tabs-content">
     <div id="profile-allies" class="profile-associate">
-      {% for ally in user.allies %}
+      {% for member in club.group.members %}
       <div class="subprofile box">
         <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="/user/{{ally.username}}">
-            <img alt draggable="false" class="subprofile-image-content" src="{{ally.profile_photo.src}}">
+        <a class="subprofile-image" href="/user/{{member.username}}">
+            <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
         </a>
       </div>
         <div class="subprofile-content">
-          <a class="subprofile-identity" href="/user/{{ally.username}}">
-            <span class="subprofile-name selectable"><b>{% if ally.name %}{{ally.name}}{% else %}{{ally.username}}{% endif %}</b></span>
+          <a class="subprofile-identity" href="/user/{{member.username}}">
+            <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
             <br>
-            <span class="subprofile-username selectable">@{{ally.username}}</span>
+            <span class="subprofile-username selectable">@{{member.username}}</span>
           </a>
           <br>
-        <span class="subprofile-bio selectable" maxlenght="30">{% if ally.bio %}{{ally.bio}}{% endif %}</span>
+        <span class="subprofile-bio selectable" maxlenght="30">{% if member.bio %}{{member.bio}}{% endif %}</span>
       </div>
       </div>
       {% endfor %}
-      {% if user==current_user %}
-      <a href="/explore/"><div class="add-specific-button"><span>Add ally</span></div></a>
+      {% if current_user and "remember to define something here" %}
+      <a href="/explore/"><div class="add-specific-button"><span>Add member</span></div></a>
       {% endif %}
     </div>
     <div id="profile-clubs" class="profile-associate vanish">
+      {% raw %}
       {% for club in user.clubs %}
       {% endfor %}
       {% if user==current_user %}
       <div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
       {% endif %}
+      {% endraw %}
     </div>
     <div id="profile-projects" class="profile-associate vanish">
+      {% raw %}
       {% for project in user.projects %}
       {% endfor %}
       {% if user==current_user %}
       <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
       {% endif %}
+      {% endraw %}
     </div>
  </div>
   </div>
@@ -134,36 +139,36 @@
 
 {% endblock %}
 
-
 {% block modal %}
-{% if request.url_rule.endpoint == 'profiles.edit_user' %}
-{% include "profiles/user/edit.html" %}
-{% elif request.url_rule.endpoint == 'profiles.user_photo' %}
+{% if request.url_rule.endpoint == 'profiles.edit_club' %}
+{% include "profiles/club/edit.html" %}
+{% elif request.url_rule.endpoint == 'profiles.club_photo' %}
+{% with photo_src=club.profile_photo.src %}
 {% include "profiles/user/photo.html" %}
-{% elif request.url_rule.endpoint == 'profiles.create_club' %}
-{% include "profiles/club/create.html" %}
-{% elif request.url_rule.endpoint == 'profiles.create_project' %}
-{% include "profiles/project/create.html" %}
+{% endwith %}
 {% endif %}
 
 {% endblock %}
 
 {% block scripts %}
+<!-- Probably good for now to have this below-->
+
 <link rel="stylesheet" href="/static/css/profiles/user/profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
-<link rel="stylesheet" href="/static/css/profiles/user/edit.css">
-<link rel="stylesheet" href="/static/css/profiles/user/photo.css">
+<link rel="stylesheet" href="/static/css/profiles/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<!-- Probably good for now to have this below-->
 <script src="/static/js/profiles/user/profile.js"></script>
-<script src="/static/js/profiles/user/edit.js"></script>
-<script src="/static/js/profiles/club/create.js"></script>
-<script src="/static/js/profiles/project/create.js"></script>
+<script src="/static/js/profiles/club/profile.js"></script>
+<script src="/static/js/profiles/club/edit.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
+
+  var handle = "{{club.handle}}";
 
   function makeConnectButtonDefault() {
     $('#connect-button').addClass('is-info');
@@ -218,10 +223,10 @@ $("#connect-button").hover(
 
 </script>
 <script type="text/javascript">
-  var username = "{{user.username}}";
+  var handle = "{{club.handle}}";
 
   function load_map_js() {
-  var map = L.map('map').setView({% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
+  var map = L.map('map').setView({% if club.latitude and club.longitude %}[{{club.latitude}}, {{club.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
          
          //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
          layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -240,8 +245,8 @@ map.on('click', function(e){
 
 var marker;
 
-{% if current_user.latitude and current_user.longitude %}
-  marker = new L.marker([{{current_user.latitude}}, {{current_user.longitude}}]).addTo(markerGroup);
+{% if club.latitude and club.longitude %}
+  marker = new L.marker([{{club.latitude}}, {{club.longitude}}]).addTo(markerGroup);
 {% endif %}
 
 window.getLatLng = function() {
@@ -368,66 +373,49 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_club','profiles.create_project']  %}
+{% if request.url_rule.endpoint in ['profiles.edit_club','profiles.create_club','profiles.create_project']  %}
 load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
-    redirect({id:"user-photo"},"Profile photo", "/user/{{user.username}}/photo/", changeToPhoto);
+    redirect({id:"club-photo"},"Profile photo", "/club/{{club.handle}}/photo/", changeToPhoto);
       e.preventDefault();
   });
 
 
   $(document).on('click', '#edit-button', function(e) {
-    redirect({id:"edit-user"},"Edit profile", "/settings/profile/", changeToEdit);
-    e.preventDefault();
-  });
-
-   $(document).on('click', '#create-club-button', function(e) {
-    redirect({id:"create-club"},"Create club", "/create/club/", changeToCreateClub);
-    e.preventDefault();
-  });
-
-     $(document).on('click', '#create-project-button', function(e) {
-    redirect({id:"create-project"},"Create project", "/create/project/", changeToCreateProject);
+    redirect({id:"edit-club"},"Edit profile", "/club/"+handle+"/edit/", changeToEdit);
     e.preventDefault();
   });
 
 $(document).on('click', '.close', function() {
-  redirect({id:"user-profile"}, "Profile photo", "/user/{{user.username}}/", changeToProfile);
+  redirect({id:"club-profile"}, "Profile", "/club/{{club.handle}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {
-    redirect({id:"user-profile"}, "Profile", "/user/{{user.username}}/", changeToProfile);
+    redirect({id:"club-profile"}, "Profile", "/club/{{club.handle}}/", changeToProfile);
 });
 
 $(window).on("popstate", function() {
-  if (window.history.state.id == "edit-user") {
+  if (window.history.state.id == "edit-club") {
     changeToEdit()
   }
-  else if (window.history.state.id == "user-profile") {
+  else if (window.history.state.id == "club-profile") {
     changeToProfile();
   }
 
-  else if (window.history.state.id == "user-photo") {
+  else if (window.history.state.id == "club-photo") {
     changeToPhoto();
   }
 
-  else if (window.history.state.id == "create-club") {
-    changeToCreateClub();
-  }
-
-  else if (window.history.state.id == "create-project") {
-    changeToCreateProject();
-  }
 
 });
 
 function changeToEdit() {
   $("#modal-box").append(`
-    {% include "profiles/user/edit.html" %}`);
+    {% include "profiles/club/edit.html" %}`);
   load_map_js();
   $(document.body).addClass('noscroll');
 }
@@ -439,7 +427,7 @@ function changeToProfile() {
 
 function changeToPhoto() {
   $("#modal-box").append(`
-    {% with photo_src=user.profile_photo.src %}
+    {% with photo_src=club.profile_photo.src %}
     {% include "photo.html" %}
     {% endwith %}
     `);
@@ -447,31 +435,12 @@ function changeToPhoto() {
 }
 
 
-function changeToCreateClub() {
-    $("#modal-box").append(`
-    {% include "profiles/club/create.html" %}`);
-  load_map_js();
-  $(document.body).addClass('noscroll');
-}
-
-function changeToCreateProject() {
-    $("#modal-box").append(`
-    {% include "profiles/project/create.html" %}`);
-  load_map_js();
-  $(document.body).addClass('noscroll');
-}
-
-
-{% if request.url_rule.endpoint == 'profiles.edit_user' %}
-window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
-{% elif request.url_rule.endpoint == 'profiles.user_photo' %}
-window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
-{% elif request.url_rule.endpoint == 'profiles.create_club' %}
-window.history.replaceState({id:"create-club"},"Create club", "/create/club/");
-{% elif request.url_rule.endpoint == 'profiles.create_project' %}
-window.history.replaceState({id:"create-project"},"Create project", "/create/project/");
+{% if request.url_rule.endpoint == 'profiles.edit_club' %}
+window.history.replaceState({id:"edit-club"},"Edit profile", "/club/{{club.handle}}/edit/");
+{% elif request.url_rule.endpoint == 'profiles.club_photo' %}
+window.history.replaceState({id:"club-photo"},"Profile photo", "/club/{{club.handle}}/");
 {% else %}
-window.history.replaceState({id:"user-profile"},"Profile", "./");
+window.history.replaceState({id:"club-profile"},"Profile", "./");
 {% endif %}
 </script>
 {% endblock %}

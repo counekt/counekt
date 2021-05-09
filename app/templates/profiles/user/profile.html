@@ -72,13 +72,13 @@
   <ul>
     <li class="is-active" data-content="#profile-allies">
       <a>
-        <span class="icon is-small"><i class="fas fa-user" aria-hidden="true"></i></span>
+        <span class="icon is-small"><i class="fas fa-user-friends" aria-hidden="true"></i></span>
         <span class="tabtext">Allies</span>
       </a>
     </li>
     <li data-content="#profile-clubs">
       <a>
-        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+        <span class="icon is-small"><i class="fas fa-users" aria-hidden="true"></i></span>
         <span class="tabtext">Clubs</span>
       </a>
     </li>
@@ -116,6 +116,22 @@
     </div>
     <div id="profile-clubs" class="profile-associate vanish">
       {% for club in user.clubs %}
+      <div class="subprofile box">
+        <div class="subprofile-image-wrap">
+        <a class="subprofile-image" href="/club/{{club.handle}}">
+            <img alt draggable="false" class="subprofile-image-content" src="{{club.profile_photo.src}}">
+        </a>
+      </div>
+        <div class="subprofile-content">
+          <a class="subprofile-identity" href="/club/{{club.handle}}">
+            <span class="subprofile-name selectable"><b>{% if club.name %}{{club.name}}{% else %}{{club.handle}}{% endif %}</b></span>
+            <br>
+            <span class="subprofile-username selectable">!{{club.handle}}</span>
+          </a>
+          <br>
+        <span class="subprofile-bio selectable" maxlenght="30">{% if club.description %}{{club.description}}{% endif %}</span>
+      </div>
+      </div>
       {% endfor %}
       {% if user==current_user %}
       <div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
@@ -134,12 +150,13 @@
 
 {% endblock %}
 
-
 {% block modal %}
 {% if request.url_rule.endpoint == 'profiles.edit_user' %}
 {% include "profiles/user/edit.html" %}
 {% elif request.url_rule.endpoint == 'profiles.user_photo' %}
-{% include "profiles/user/photo.html" %}
+{% with photo_src = user.profile_photo.src %}
+{% include "photo.html" %}
+{% endwith %}
 {% elif request.url_rule.endpoint == 'profiles.create_club' %}
 {% include "profiles/club/create.html" %}
 {% elif request.url_rule.endpoint == 'profiles.create_project' %}
@@ -152,7 +169,7 @@
 <link rel="stylesheet" href="/static/css/profiles/user/profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/user/edit.css">
-<link rel="stylesheet" href="/static/css/profiles/user/photo.css">
+<link rel="stylesheet" href="/static/css/profiles/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/user/edit.js"></script>
@@ -396,7 +413,7 @@ load_map_js();
   });
 
 $(document).on('click', '.close', function() {
-  redirect({id:"user-profile"}, "Profile photo", "/user/{{user.username}}/", changeToProfile);
+  redirect({id:"user-profile"}, "Profile", "/user/{{user.username}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {

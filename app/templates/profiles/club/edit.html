@@ -7,7 +7,7 @@
           <i class="fa fa-times"></i>
         </span>
       </a>
-      <p class="modal-card-title" id="header">Create Group</p>
+      <p class="modal-card-title" id="header">Edit Club</p>
       <button class="button is-info is-normal is-rounded" id="save-button">
         <span>Save</span>
       </button>
@@ -15,8 +15,8 @@
   <section class="modal-card-body has-text-centered">
 
   <div id="edit-associate-image">
-      <img draggable="false" id="edit-associate-image-content" src="{{ user.profile_photo.src }}">
-      <input type="file"  accept="image/*" name="image" id="upload" onchange="loadFile(event)" style="display: none;">
+      <img draggable="false" id="edit-associate-image-content" src="{{ club.profile_photo.src }}">
+      <input type="file"  accept="image/*" name="image" id="upload" onchange="loadImage(event, '#edit-associate-image-content')" style="display: none;">
     <button class="button is-large is-white" id="edit-associate-image-upload">
     <span class="icon is-medium">
       <i class="fa fa-camera-retro"></i>
@@ -27,24 +27,34 @@
   <div>
     <div id="name">
       <h1><b>Name</b></h1>
-      <input class="input has-fixed-size" placeholder="Add your Group's name" id="name-field" value="{% if group.name %}{{group.name}}{% else %}{{group.username}}{% endif %}"></input>
+      <input class="input has-fixed-size" placeholder="Add your Club's name" id="name-field" value="{% if club.name %}{{club.name}}{% else %}{{club.handle}}{% endif %}"></input>
     </div>
       <div id="feedback-name" class="feedback">
         <div class="message"></div>
       </div>
       <br id="name-anchor">
-    <div id="bio">
+    <div id="description">
       <h1><b>Description</b></h1>
-      <textarea class="textarea has-fixed-size" placeholder="Add your description" id="description-field" rows="3" maxlength="160"></textarea>
+      <textarea class="textarea has-fixed-size" placeholder="Add your Club's description" id="description-field" rows="3" maxlength="160">{% if club.description %}{{club.description}}{% endif %}</textarea>
     </div>
       <div id="feedback-description" class="feedback">
         <div class="message"></div>
       </div>
       <br id="description-anchor">
 
+    <h1><b>Public</b></h1>
+    <label class="switch">
+      <input type="checkbox" id="public" {% if club.public %}checked{% endif %}>
+      <span class="slider round"></span>
+    </label>
+    <div id="feedback-public" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="public-anchor">
+
     <h1><b>Show location</b></h1>
     <label class="switch">
-      <input type="checkbox" id="show-location">
+      <input type="checkbox" id="show-location" {% if club.show_location %}checked{% endif %}>
       <span class="slider round"></span>
     </label>
     <div id="feedback-show-location" class="feedback">
@@ -54,7 +64,7 @@
     <div id="location-settings">
       <div id="location">
         <h1><b>Location</b></h1>
-        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2"></input>
+        <input class="input has-fixed-size" placeholder="Add your Club's location" id="location-field" rows="2" {% if club.address %}value="{{ club.address }}"{% endif %}></input>
         <div id="map">
         </div>
       </div>
@@ -64,7 +74,7 @@
         <br id="location-anchor">
         <h1><b>Visible on the map</b></h1>
       <label class="switch">
-        <input type="checkbox" id="visible">
+        <input type="checkbox" id="visible" {% if club.is_visible %}checked{% endif %}>
         <span class="slider round"></span>
       </label>
       <div id="feedback-visible" class="feedback">
@@ -72,6 +82,7 @@
         </div>
         <br id="visible-anchor">
     </div>
+
   </div>
   <br>
 </div>

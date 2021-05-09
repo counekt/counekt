@@ -3,6 +3,9 @@ from app import db
 from app.models.base import Base
 from app.models.locationBase import locationBase
 from app.models.static.photo import Photo
+from app.models.profiles.group import Membership, Group
+from app.models.profiles.club import Club
+from app.models.profiles.project import Project
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func, inspect
 from datetime import date, datetime, timedelta
@@ -15,6 +18,7 @@ from hashlib import md5
 import base64
 from app import login
 import os
+
 
 allies = db.Table('allies',
                   db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
@@ -72,17 +76,16 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
+
+    memberships = db.relationship(
+        'Membership', lazy='dynamic',
+        foreign_keys='Membership.owner_id')
+
     clubs = db.relationship(
-        'Club', secondary=clubs,
-        primaryjoin=(clubs.c.user_id == id),
-        secondaryjoin=(clubs.c.club_id == id),
-        backref=db.backref('members', lazy='dynamic'), lazy='dynamic')
+        'Club', secondary=clubs, backref="members", lazy='dynamic')
 
     projects = db.relationship(
-        'Project', secondary=projects,
-        primaryjoin=(projects.c.user_id == id),
-        secondaryjoin=(projects.c.project_id == id),
-        backref=db.backref('members', lazy='dynamic'), lazy='dynamic')
+        'Project', secondary=projects, backref="members", lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -195,6 +198,6 @@ class User(UserMixin, db.Model, Base, locationBase):
             digest, size)
 
 
-@login.user_loader
+@ login.user_loader
 def load(id):
     return User.query.get(int(id))
