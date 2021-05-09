@@ -14,17 +14,17 @@ class Project(db.Model, Base, locationBase):
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
 
-    profile_pic_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
-    profile_pic = db.relationship("Photo", foreign_keys=[profile_pic_id])
+    profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
 
     parent_id = db.Column(db.Integer, db.ForeignKey('project.id'))
 
     children = db.relationship('Project', backref=db.backref("superproject", remote_side=[id]))
 
     def __init__(self, **kwargs):
-        super(Project, self).__init__(**kwargs)
+        super(Project, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         # do custom initialization here
-        members = kwargs.get(members) or []
+        members = kwargs["members"]
         self.group = Group(members=members)
         for user in members:
             user.projects.append(self)

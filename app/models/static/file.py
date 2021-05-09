@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from flask import url_for
 import app.funcs as funcs
+from flask import current_app
+from datetime import datetime
 
 
 class File():

@@ -12,15 +12,15 @@ class Group(db.Model, Base):
         foreign_keys='Membership.group_id')
 
     def __init__(self, **kwargs):
-        super(Group, self).__init__(**kwargs)
-        if kwargs.get("members"):
-            for user in members:
-                self.add_member(user)
+        super(Group, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
+        members = kwargs["members"]
+        for user in members:
+            self.add_member(user)
 
     def add_member(self, user, role=None):
         membership = Membership()
-        membership.owner = user
         membership.role = role
+        user.memberships.append(membership)
         self.memberships.append(membership)
 
     def remove_member(self, user):
@@ -48,6 +48,7 @@ class Role(db.Model, Base):
 class Membership(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    owner = db.relationship("User", foreign_keys=[owner_id])
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship("Role", foreign_keys=[role_id])

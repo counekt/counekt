@@ -34,6 +34,7 @@ $(document).on("click", "#create-project", function() {
       success(response) {
         var response = JSON.parse(response);
         var status = response["status"];
+        var handle = response["handle"];
         if (status === "success") { location.replace("/project/"+handle+"/"); }
         else{message(status, response["box_id"], true);}
         
