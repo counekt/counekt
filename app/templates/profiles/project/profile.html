@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="profile">
+  <div id="profile-top" class="floater container">
+    <div id="profile-left">
+      <div id="profile-image">
+        <a href="/project/{{project.handle}}/photo/">
+        <img alt draggable="false" id="profile-image-content" src="{{ project.profile_photo.src }}">
+        </a>
+      </div>
+      <div id="profile-left-bottom">
+        <p class="title is-4 selectable" style="color:black"><b>{{ project.name }}</b></p>
+        <p class="subtitle is-5 selectable" style="color:gray">£{{ project.handle }}</p>
+      </div>
+    </div>
+
+    <div id="profile-right">
+      <div id="profile-right-top">
+        <div id="profile-bar" class="field">
+          <div id="profile-bar-content">
+            {% if project not in current_user.projects %}
+            <!--
+            {% raw %}
+              <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+              {% with request_sent = models.UserToClubRequest.query.filter_by(type='join', sender=current_user, receiver=user).first(), request_received = models.ClubToUserRequest.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_joined = project in current_user.projects %}
+              <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_connected %}
+                  {% include 'profiles/user/connect-button/connected.html' %}
+                {% elif request_sent %}
+                  {% include 'profiles/user/connect-button/pending.html' %}
+                {% elif request_received %}
+                  {% include 'profiles/user/connect-button/accept.html' %}
+                {% else %}
+                  {% include 'profiles/user/connect-button/default.html' %}
+                {% endif %}
+              </button>
+              {% endwith %}
+              {% endraw %}
+               -->
+               <button class="button is-info is-inverted" id="join-button">Join</button>
+            {% else %}
+              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Project</button>
+              {% endif %}
+          </div>
+          <br style="clear: both;">
+        </div>
+        <div id="profile-bio" class="selectable">
+        <p style="color:black"> {% if project.description %}{{project.description}}{% endif %} </p>
+        </div>
+      </div>
+      <div id="profile-right-bottom">
+        {% if project.address %}
+        <div id="profile-address">
+          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{project.address}}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <br style="clear: both;">
+  </div>
+  <!-- 
+  {% raw %}
+  {% if project.skills.all() %}
+  <div id="profile-skills" class="container">
+    {% for skillrow in skillrows %}
+    <div class="profile-skill-row">
+    {% for skill in skillrow %}
+      <div class="profile-skill" style="color: {{skill_aspects[skill.title]['color']}}; background-color: {{skill_aspects[skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
+    {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endraw  %}
+  -->
+  <div id="profile-tabs" class="container">
+    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
+  <ul>
+    <li class="is-active" data-content="#profile-allies">
+      <a>
+        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+        <span class="tabtext">Members</span>
+      </a>
+    </li>
+    <li data-content="#profile-projects">
+      <a>
+        <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
+        <span class="tabtext">Roles</span>
+      </a>
+    </li>
+    <li data-content="#profile-projects">
+      <a>
+        <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
+        <span class="tabtext">Comms</span>
+      </a>
+    </li>
+  </ul>
+</div>
+ <div id="profile-tabs-content">
+    <div id="profile-allies" class="profile-associate">
+      {% for member in project.group.members %}
+      <div class="subprofile box">
+        <div class="subprofile-image-wrap">
+        <a class="subprofile-image" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
+            <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
+        </a>
+      </div>
+        <div class="subprofile-content">
+          <a class="subprofile-identity" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
+            <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
+            <br>
+            <span class="subprofile-username selectable">@{{member.username}}</span>
+          </a>
+          <br>
+        <span class="subprofile-bio selectable" maxlenght="30">{% if member.bio %}{{member.bio}}{% endif %}</span>
+      </div>
+      </div>
+      {% endfor %}
+      {% if current_user and "remember to define something here" %}
+      <a href="/explore/"><div class="add-specific-button"><span>Add member</span></div></a>
+      {% endif %}
+    </div>
+    <div id="profile-projects" class="profile-associate vanish">
+      {% raw %}
+      {% for project in user.projects %}
+      {% endfor %}
+      {% if user==current_user %}
+      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
+      {% endif %}
+      {% endraw %}
+    </div>
+    <div id="profile-projects" class="profile-associate vanish">
+      {% raw %}
+      {% for project in user.projects %}
+      {% endfor %}
+      {% if user==current_user %}
+      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
+      {% endif %}
+      {% endraw %}
+    </div>
+ </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block modal %}
+{% if request.url_rule.endpoint == 'profiles.edit_project' %}
+{% include "profiles/project/edit.html" %}
+{% elif request.url_rule.endpoint == 'profiles.project_photo' %}
+{% with photo_src=project.profile_photo.src %}
+{% include "profiles/user/photo.html" %}
+{% endwith %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Probably good for now to have this below-->
+
+<link rel="stylesheet" href="/static/css/profiles/user/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/edit.css">
+<link rel="stylesheet" href="/static/css/profiles/photo.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<!-- Probably good for now to have this below-->
+<script src="/static/js/profiles/user/profile.js"></script>
+<script src="/static/js/profiles/project/profile.js"></script>
+<script src="/static/js/profiles/project/edit.js"></script>
+<script src="/static/js/profiles/configure-skills.js"></script>
+<script src="/static/js/feedback.js"></script>
+<script src="/static/js/load-image.js"></script>
+<script src="/static/js/datepicker.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script type="text/javascript">
+
+  var handle = "{{project.handle}}";
+
+  function makeConnectButtonDefault() {
+    $('#connect-button').addClass('is-info');
+    $('#connect-button').removeClass('is-light').removeClass('is-link');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/default.html' %}`);
+    $('#connect-button').data('type', 'default');
+    $('#connect-button').removeClass('is-danger');
+    
+  }
+
+  function makeConnectButtonPending() {
+    $('#connect-button').toggleClass('is-info is-light');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+    $('#connect-button').data('type', 'pending');
+    $('#connect-button').addClass('calm');
+  }
+
+  function makeConnectButtonConnected() {
+    $('#connect-button').toggleClass('is-success is-info');
+    $('#connect-button').html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+    $('#connect-button').data('type', 'connected');
+    $('#connect-button').addClass('calm');
+  }
+
+$("#connect-button").hover(
+  function() {
+        if ($(this).data('type') == 'connected' && !$(this).hasClass('calm')) {
+          $(this).addClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/disconnect.html' %}`);
+        }
+        else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
+          $(this).addClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/undo.html' %}`);
+
+    }
+  }, function() {
+        if ($(this).data('type') == 'connected') {
+          $(this).removeClass('is-danger');
+          $(this).html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+          $(this).removeClass('calm');
+
+        }
+        else if ($(this).data('type') == 'pending') {
+          $(this).removeClass('is-danger');
+          $(this).removeClass('calm');
+          $(this).html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+
+        }
+  }
+);
+ 
+
+</script>
+<script type="text/javascript">
+  var handle = "{{project.handle}}";
+
+  function load_map_js() {
+  var map = L.map('map').setView({% if project.latitude and project.longitude %}[{{project.latitude}}, {{project.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
+         
+         //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
+         layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+            subdomains: 'abcd',
+            maxZoom: 13,
+            minZoom: 2
+         }).addTo(map);
+         // Create additional Control placeholders
+var markerGroup = L.layerGroup().addTo(map);
+
+map.on('click', function(e){
+    placeMarker(e.latlng);
+    getAddress(e.latlng);
+});
+
+var marker;
+
+{% if project.latitude and project.longitude %}
+  marker = new L.marker([{{project.latitude}}, {{project.longitude}}]).addTo(markerGroup);
+{% endif %}
+
+window.getLatLng = function() {
+  return(marker.getLatLng());
+}
+
+window.markerIsPlaced = function() {
+  if (marker) {
+    return(true);
+  }
+  return(false);
+}
+
+function placeMarker(latlng, zoom_all_in=false) {
+  markerGroup.clearLayers();
+    marker = new L.marker(latlng).addTo(markerGroup);
+    if (zoom_all_in) {
+      map.flyTo(latlng, 13);
+    }
+    else {
+    map.flyTo(latlng, map.getZoom());
+    }
+    //map.flyTo(latlng, Math.min(13,map.getZoom()+1));
+    //map.flyTo(latlng, 13);
+    //if(map.getZoom()===2){map.flyTo(e.latlng, 13);}else{map.flyTo(e.latlng, map.getZoom());}
+    console.log(latlng);
+}
+
+  function addControlPlaceholders(map) {
+    var corners = map._controlCorners,
+        l = 'leaflet-',
+        container = map._controlContainer;
+
+    function createCorner(vSide, hSide) {
+        var className = l + vSide + ' ' + l + hSide;
+
+        corners[vSide + hSide] = L.DomUtil.create('div', className, container);
+    }
+
+    createCorner('verticalcenter', 'left');
+    createCorner('verticalcenter', 'right');
+}
+
+addControlPlaceholders(map);
+
+// Change the position of the Zoom Control to a newly created placeholder.
+map.zoomControl.setPosition('bottomright');
+
+// You can also put other controls in the same placeholder.
+
+var proIcon = L.icon({
+    iconUrl: 'static/images/pro-pic.png',
+
+    iconSize:     [25, 25], // size of the icon
+    iconAnchor:   [12.5, 12.5], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-2, 0] // point from which the popup should open relative to the iconAnchor
+});
+
+function getAddress(latlng) {
+  console.log(latlng);
+  var formData = new FormData();
+  formData.append('lat', latlng.lat);
+  formData.append('lng', latlng.lng);
+  $.post({
+      type: "POST",
+      url: "/get/address/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {stopErrorAlert("location-field");
+  stopErrorAlert("map");$("#location-field").val(response["address"])}
+        else{console.log("WUUUT"); $("#location-field").val(""); alertError("map");}
+        
+      }});
+}
+
+function getCoordinates() {
+  var formData = new FormData();
+  formData.append('address', $("#location-field").val());
+  $.post({
+      type: "POST",
+      url: "/get/coordinates/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {stopErrorAlert("location-field");
+  stopErrorAlert("map");placeMarker([response["lat"],response["lng"]]);}
+        else{console.log("WWW");alertError("location-field");}
+      }});
+}
+
+$(document).on('focusout', '#location-field', function() {
+  console.log("coord");
+  getCoordinates();
+});
+
+$('#location-field').keypress(function(event){
+  if(event.keyCode == 13){
+    console.log("coord");
+    getCoordinates();
+  }
+});
+
+$('#show-location').change(function() {
+        if($(this).is(":checked")) {
+            console.log("checked");
+          $('#location-settings').removeClass("vanish");
+        }
+        else {
+           console.log("unchecked");
+          $('#location-settings').addClass("vanish");
+        }
+       });
+
+if(!$('#show-location').is(":checked")) {
+  $('#location-settings').addClass("vanish");
+  }
+
+}
+
+{% if request.url_rule.endpoint in ['profiles.edit_project','profiles.create_project','profiles.create_project']  %}
+load_map_js();
+{% endif %}
+</script>
+<script type="text/javascript">
+
+  $(document).on('click', '#profile-image a', function(e) {
+    redirect({id:"project-photo"},"Profile photo", "/£{{project.handle}}/photo/", changeToPhoto);
+      e.preventDefault();
+  });
+
+
+  $(document).on('click', '#edit-button', function(e) {
+    redirect({id:"edit-project"},"Edit profile", "/£"+handle+"/edit/", changeToEdit);
+    e.preventDefault();
+  });
+
+$(document).on('click', '.close', function() {
+  redirect({id:"project-profile"}, "Profile", "/£{{project.handle}}/", changeToProfile);
+});
+
+$(document).on('click', '.modal-background', function() {
+    redirect({id:"project-profile"}, "Profile", "/£{{project.handle}}/", changeToProfile);
+});
+
+$(window).on("popstate", function() {
+  if (window.history.state.id == "edit-project") {
+    changeToEdit()
+  }
+  else if (window.history.state.id == "project-profile") {
+    changeToProfile();
+  }
+
+  else if (window.history.state.id == "project-photo") {
+    changeToPhoto();
+  }
+
+
+});
+
+function changeToEdit() {
+  $("#modal-box").append(`
+    {% include "profiles/project/edit.html" %}`);
+  load_map_js();
+  $(document.body).addClass('noscroll');
+}
+
+function changeToProfile() {
+  $("#modal-box").empty();
+  $(document.body).removeClass('noscroll');
+}
+
+function changeToPhoto() {
+  $("#modal-box").append(`
+    {% with photo_src=project.profile_photo.src %}
+    {% include "photo.html" %}
+    {% endwith %}
+    `);
+  $(document.body).addClass('noscroll');
+}
+
+
+{% if request.url_rule.endpoint == 'profiles.edit_project' %}
+window.history.replaceState({id:"edit-project"},"Edit profile", "/£{{project.handle}}/edit/");
+{% elif request.url_rule.endpoint == 'profiles.project_photo' %}
+window.history.replaceState({id:"project-photo"},"Profile photo", "/£{{project.handle}}/");
+{% else %}
+window.history.replaceState({id:"project-profile"},"Profile", "./");
+{% endif %}
+</script>
+{% endblock %}

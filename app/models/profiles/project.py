@@ -28,7 +28,14 @@ class Project(db.Model, Base, locationBase):
         self.group = Group(members=members)
         for user in members:
             user.projects.append(self)
-        self.profile_pic = Photo(path=f"/static/profiles/projects/{self.handle}/profile_pic", replacement="/static/images/defaults/project.png")
+        self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/projects/{self.handle}/", replacement="/static/images/project.jpg")
+
+    def delete(self):
+        for m in self.group.members:
+            m.clubs.remove(self)
+        if self.exists_in_db:
+            db.session.delete(self.group)
+            db.session.delete(self)
 
     def __repr__(self):
         return "<Project {}>".format(self.handle)

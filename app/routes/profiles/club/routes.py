@@ -93,6 +93,7 @@ def create_club():
 
 
 @ bp.route("/club/<handle>/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/", methods=["GET", "POST"])
 def club(handle):
     club = models.Club.query.filter_by(handle=handle).first()
     if not club or (not club.public and not current_user in club.group.members):
@@ -175,7 +176,6 @@ def edit_club(handle):
             if not skill.title in skills:
                 db.session.delete(skill)
         """
-        current_user.clubs.append(club)
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]

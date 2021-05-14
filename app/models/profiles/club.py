@@ -31,6 +31,7 @@ class Club(db.Model, Base, locationBase):
         for m in self.group.members:
             m.clubs.remove(self)
         if self.exists_in_db:
+            db.session.delete(self.group)
             db.session.delete(self)
 
     def __repr__(self):

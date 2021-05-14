@@ -13,6 +13,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 
 
 @ bp.route("/user/<username>/", methods=["GET", "POST"])
+@ bp.route("/@<username>/", methods=["GET", "POST"])
 def user(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:

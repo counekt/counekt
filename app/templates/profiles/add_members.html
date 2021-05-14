@@ -1,0 +1,38 @@
+<div class="modal is-active">
+<div class="modal-background"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Add members</p>
+      <button class="button is-info is-normal is-rounded" id="save-button">
+        <span>Invite selected</span>
+      </button>
+  </header>
+  <section class="modal-card-body has-text-centered">
+
+  <div id="image">
+      <img draggable="false" id="image-content" src="{{ project.profile_photo.src }}">
+  </button>
+  </div>
+  <br>
+  <div>
+      <h1><b>Members</b></h1>
+      <textarea class="textarea has-fixed-size" placeholder="Add your Project's members" id="description-field" rows="3" maxlength="160">{% if project.description %}{{project.description}}{% endif %}</textarea>
+    </div>
+      <div id="feedback-members" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="members-anchor">
+
+    </div>
+
+  </div>
+  <br>
+</div>
+</section>
+</div>
+</div>
