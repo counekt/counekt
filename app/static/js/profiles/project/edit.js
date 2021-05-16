@@ -25,7 +25,7 @@ $(document).on("click", "#save-button", function() {
 
     $.post({
       type: "POST",
-      url: "/€"+handle+"/edit/",
+      url: "/£"+handle+"/edit/",
       data: formData,
       processData: false,
       contentType: false,
@@ -33,7 +33,7 @@ $(document).on("click", "#save-button", function() {
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { location.replace("/€"+handle+"/"); }
+        if (status === "success") { location.replace("/£"+handle+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});

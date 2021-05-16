@@ -93,6 +93,7 @@ def create_club():
 
 
 @ bp.route("/club/<handle>/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/", methods=["GET", "POST"])
 def club(handle):
     club = models.Club.query.filter_by(handle=handle).first()
     if not club or (not club.public and not current_user in club.group.members):
@@ -175,8 +176,20 @@ def edit_club(handle):
             if not skill.title in skills:
                 db.session.delete(skill)
         """
-        current_user.clubs.append(club)
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+
+
+@ bp.route("/club/<handle>/members/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/members/", methods=["GET", "POST"])
+@login_required
+def club_add_members(handle):
+    if not handle:
+        abort(404)
+    club = models.Club.query.filter_by(handle=handle).first()
+    if not club:
+        abort(404)
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)

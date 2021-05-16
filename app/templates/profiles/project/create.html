@@ -7,7 +7,7 @@
           <i class="fa fa-times"></i>
         </span>
       </a>
-      <p class="modal-card-title" id="header">Create Project</p>
+      <p class="modal-card-title" id="header">Create Club</p>
       <button class="button is-info is-normal is-rounded" id="create-project">
         <span>Save</span>
       </button>
@@ -16,7 +16,7 @@
 
   <div id="edit-associate-image">
       <img draggable="false" id="edit-associate-image-content" src="{{ url_for('static', filename='images/project.jpg') }}">
-      <input type="file"  accept="image/*" name="image" id="upload" onchange="loadFile(event)" style="display: none;">
+      <input type="file"  accept="image/*" name="image" id="upload" onchange="loadImage(event, '#edit-associate-image-content')" style="display: none;">
     <button class="button is-large is-white" id="edit-associate-image-upload">
     <span class="icon is-medium">
       <i class="fa fa-camera-retro"></i>
@@ -29,13 +29,13 @@
       <h1><b>Handle</b></h1>
         <div class="field has-addons">
           <p class="control">
-          <a class="button is-static">@</a>
+          <a class="button is-static">£</a>
           </p>
           <p class="control" style="width:100%;">
           <input class="input has-fixed-size" placeholder="Add your Project's handle" id="handle-field"></input>
           </p>
         </div>
-      </div>
+    </div>
       <div id="feedback-handle" class="feedback">
         <div class="message"></div>
       </div>
@@ -57,7 +57,7 @@
       </div>
       <br id="description-anchor">
 
-      <h1><b>Public</b></h1>
+    <h1><b>Public</b></h1>
     <label class="switch">
       <input type="checkbox" id="public">
       <span class="slider round"></span>
@@ -79,7 +79,7 @@
     <div id="location-settings">
       <div id="location">
         <h1><b>Location</b></h1>
-        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2"></input>
+        <input class="input has-fixed-size" placeholder="Add your Project's location" id="location-field" rows="2"></input>
         <div id="map">
         </div>
       </div>
@@ -97,6 +97,7 @@
         </div>
         <br id="visible-anchor">
     </div>
+
   </div>
   <br>
 </div>

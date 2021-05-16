@@ -1,6 +1,6 @@
 $(document).on("click", "#create-project", function() {
    
-   //var skills = $(".skill-title").map(functin() { return $(this).text();}).get();
+   //var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    
    var formData = new FormData();
    formData.append('photo', $("#upload").prop('files')[0]);
@@ -35,7 +35,7 @@ $(document).on("click", "#create-project", function() {
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { location.replace("/project/"+handle+"/"); }
+        if (status === "success") { location.replace("/£"+handle+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});
@@ -46,3 +46,7 @@ $(document).on("click", "#create-project", function() {
 
      }
   });
+
+$(document).on("click", "#edit-associate-image-upload", function() {
+  $("#upload").click();
+});

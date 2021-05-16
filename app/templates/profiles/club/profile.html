@@ -10,7 +10,7 @@
       </div>
       <div id="profile-left-bottom">
         <p class="title is-4 selectable" style="color:black"><b>{{ club.name }}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">!{{ club.handle }}</p>
+        <p class="subtitle is-5 selectable" style="color:gray">€{{ club.handle }}</p>
       </div>
     </div>
 
@@ -101,12 +101,12 @@
       {% for member in club.group.members %}
       <div class="subprofile box">
         <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="/user/{{member.username}}">
+        <a class="subprofile-image" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
             <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
         </a>
       </div>
         <div class="subprofile-content">
-          <a class="subprofile-identity" href="/user/{{member.username}}">
+          <a class="subprofile-identity" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
             <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
             <br>
             <span class="subprofile-username selectable">@{{member.username}}</span>
@@ -117,7 +117,7 @@
       </div>
       {% endfor %}
       {% if current_user and "remember to define something here" %}
-      <a href="/explore/"><div class="add-specific-button"><span>Add member</span></div></a>
+      <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
       {% endif %}
     </div>
     <div id="profile-clubs" class="profile-associate vanish">
@@ -149,8 +149,10 @@
 {% include "profiles/club/edit.html" %}
 {% elif request.url_rule.endpoint == 'profiles.club_photo' %}
 {% with photo_src=club.profile_photo.src %}
-{% include "profiles/user/photo.html" %}
+{% include "profiles/photo.html" %}
 {% endwith %}
+{% elif request.url_rule.endpoint == 'profiles.club_add_members' %}
+{% include "profiles/add-members.html" %}
 {% endif %}
 
 {% endblock %}
@@ -170,6 +172,7 @@
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
+<script src="/static/js/profiles/add-members.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
@@ -378,29 +381,34 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_club','profiles.create_club','profiles.create_project']  %}
+{% if request.url_rule.endpoint in ['profiles.edit_club']  %}
 load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
-    redirect({id:"club-photo"},"Profile photo", "/club/{{club.handle}}/photo/", changeToPhoto);
+    redirect({id:"club-photo"},"Profile photo", "/€{{club.handle}}/photo/", changeToPhoto);
       e.preventDefault();
   });
 
 
   $(document).on('click', '#edit-button', function(e) {
-    redirect({id:"edit-club"},"Edit profile", "/club/"+handle+"/edit/", changeToEdit);
+    redirect({id:"edit-club"},"Edit club", "/€"+handle+"/edit/", changeToEdit);
+    e.preventDefault();
+  });
+
+  $(document).on('click', '#members-button', function(e) {
+    redirect({id:"club-members"},"Club members", "/€"+handle+"/members/", changeToMembers);
     e.preventDefault();
   });
 
 $(document).on('click', '.close', function() {
-  redirect({id:"club-profile"}, "Profile", "/club/{{club.handle}}/", changeToProfile);
+  redirect({id:"club-profile"}, "Profile", "/€{{club.handle}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {
-    redirect({id:"club-profile"}, "Profile", "/club/{{club.handle}}/", changeToProfile);
+    redirect({id:"club-profile"}, "Profile", "/€{{club.handle}}/", changeToProfile);
 });
 
 $(window).on("popstate", function() {
@@ -413,6 +421,10 @@ $(window).on("popstate", function() {
 
   else if (window.history.state.id == "club-photo") {
     changeToPhoto();
+  }
+
+  else if (window.history.state.id == "club-add-members") {
+    changeToMembers();
   }
 
 
@@ -439,11 +451,18 @@ function changeToPhoto() {
   $(document.body).addClass('noscroll');
 }
 
+function changeToMembers() {
+  $("#modal-box").append(`
+    {% include "profiles/add-members.html" %}`);
+  $(document.body).addClass('noscroll');
+}
 
 {% if request.url_rule.endpoint == 'profiles.edit_club' %}
-window.history.replaceState({id:"edit-club"},"Edit profile", "/club/{{club.handle}}/edit/");
+window.history.replaceState({id:"edit-club"},"Edit club", "/€{{club.handle}}/edit/");
 {% elif request.url_rule.endpoint == 'profiles.club_photo' %}
-window.history.replaceState({id:"club-photo"},"Profile photo", "/club/{{club.handle}}/");
+window.history.replaceState({id:"club-photo"},"Profile photo", "/€{{club.handle}}/");
+{% elif request.url_rule.endpoint == 'profiles.club_members' %}
+window.history.replaceState({id:"club-add-members"},"Club add members", "/€{{club.handle}}/add-members/");
 {% else %}
 window.history.replaceState({id:"club-profile"},"Profile", "./");
 {% endif %}

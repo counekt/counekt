@@ -35,7 +35,7 @@ $(document).on("click", "#create-club", function() {
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { location.replace("/club/"+handle+"/"); }
+        if (status === "success") { location.replace("/€"+handle+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});

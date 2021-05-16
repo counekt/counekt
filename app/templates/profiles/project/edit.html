@@ -1,0 +1,91 @@
+<div class="modal is-active">
+<div class="modal-background"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Edit Project</p>
+      <button class="button is-info is-normal is-rounded" id="save-button">
+        <span>Save</span>
+      </button>
+  </header>
+  <section class="modal-card-body has-text-centered">
+
+  <div id="edit-associate-image">
+      <img draggable="false" id="edit-associate-image-content" src="{{ project.profile_photo.src }}">
+      <input type="file"  accept="image/*" name="image" id="upload-image" onchange="loadImage(event, '#edit-associate-image-content')" style="display: none;">
+    <button class="button is-large is-white" id="edit-associate-image-upload">
+    <span class="icon is-medium">
+      <i class="fa fa-camera-retro"></i>
+    </span>
+  </button>
+  </div>
+  <br>
+  <div>
+    <div id="name">
+      <h1><b>Name</b></h1>
+      <input class="input has-fixed-size" placeholder="Add your Project's name" id="name-field" value="{% if project.name %}{{project.name}}{% else %}{{project.handle}}{% endif %}"></input>
+    </div>
+      <div id="feedback-name" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="name-anchor">
+    <div id="description">
+      <h1><b>Description</b></h1>
+      <textarea class="textarea has-fixed-size" placeholder="Add your Project's description" id="description-field" rows="3" maxlength="160">{% if project.description %}{{project.description}}{% endif %}</textarea>
+    </div>
+      <div id="feedback-description" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="description-anchor">
+
+    <h1><b>Public</b></h1>
+    <label class="switch">
+      <input type="checkbox" id="public" {% if project.public %}checked{% endif %}>
+      <span class="slider round"></span>
+    </label>
+    <div id="feedback-public" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="public-anchor">
+
+    <h1><b>Show location</b></h1>
+    <label class="switch">
+      <input type="checkbox" id="show-location" {% if project.show_location %}checked{% endif %}>
+      <span class="slider round"></span>
+    </label>
+    <div id="feedback-show-location" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="show-location-anchor">
+    <div id="location-settings">
+      <div id="location">
+        <h1><b>Location</b></h1>
+        <input class="input has-fixed-size" placeholder="Add your Project's location" id="location-field" rows="2" {% if project.address %}value="{{ project.address }}"{% endif %}></input>
+        <div id="map">
+        </div>
+      </div>
+        <div id="feedback-location" class="feedback">
+          <div class="message"></div>
+        </div>
+        <br id="location-anchor">
+        <h1><b>Visible on the map</b></h1>
+      <label class="switch">
+        <input type="checkbox" id="visible" {% if project.is_visible %}checked{% endif %}>
+        <span class="slider round"></span>
+      </label>
+      <div id="feedback-visible" class="feedback">
+          <div class="message"></div>
+        </div>
+        <br id="visible-anchor">
+    </div>
+
+  </div>
+  <br>
+</div>
+</section>
+</div>
+</div>
