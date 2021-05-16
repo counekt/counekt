@@ -117,7 +117,7 @@
       </div>
       {% endfor %}
       {% if current_user and "remember to define something here" %}
-      <a href="/explore/"><div class="add-specific-button"><span>Add member</span></div></a>
+      <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
       {% endif %}
     </div>
     <div id="profile-projects" class="profile-associate vanish">
@@ -151,6 +151,8 @@
 {% with photo_src=project.profile_photo.src %}
 {% include "profiles/user/photo.html" %}
 {% endwith %}
+{% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
+{% include "profiles/add-members.html" %}
 {% endif %}
 
 {% endblock %}
@@ -170,6 +172,8 @@
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
+<script src="/static/js/profiles/add-members.js"></script>
+
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
@@ -391,7 +395,12 @@ load_map_js();
 
 
   $(document).on('click', '#edit-button', function(e) {
-    redirect({id:"edit-project"},"Edit profile", "/£"+handle+"/edit/", changeToEdit);
+    redirect({id:"edit-project"},"Edit project", "/£"+handle+"/edit/", changeToEdit);
+    e.preventDefault();
+  });
+
+  $(document).on('click', '#members-button', function(e) {
+    redirect({id:"project-members"},"Project members", "/£"+handle+"/members/", changeToMembers);
     e.preventDefault();
   });
 
@@ -413,6 +422,10 @@ $(window).on("popstate", function() {
 
   else if (window.history.state.id == "project-photo") {
     changeToPhoto();
+  }
+
+  else if (window.history.state.id == "project-add-members") {
+    changeToMembers();
   }
 
 
@@ -439,11 +452,19 @@ function changeToPhoto() {
   $(document.body).addClass('noscroll');
 }
 
+function changeToMembers() {
+  $("#modal-box").append(`
+    {% include "profiles/add-members.html" %}`);
+  $(document.body).addClass('noscroll');
+}
+
 
 {% if request.url_rule.endpoint == 'profiles.edit_project' %}
-window.history.replaceState({id:"edit-project"},"Edit profile", "/£{{project.handle}}/edit/");
+window.history.replaceState({id:"edit-project"},"Edit project", "/£{{project.handle}}/edit/");
 {% elif request.url_rule.endpoint == 'profiles.project_photo' %}
 window.history.replaceState({id:"project-photo"},"Profile photo", "/£{{project.handle}}/");
+{% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
+window.history.replaceState({id:"project-add-members"},"Project add members", "/£{{project.handle}}/add-members/");
 {% else %}
 window.history.replaceState({id:"project-profile"},"Profile", "./");
 {% endif %}

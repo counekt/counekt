@@ -44,6 +44,7 @@ def edit_user():
         skills = eval(flask_request.form.get("skills"))
 
         file = flask_request.files.get("photo")
+        print(file)
 
         if not name:
             return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})

@@ -3,7 +3,7 @@ $(document).on("click", "#save-button", function() {
    //var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    
    var formData = new FormData();
-   formData.append('photo', $("#upload").prop('files')[0]);
+   formData.append('photo', $("#upload-image").prop('files').reverse()[0]);
 
    formData.append("name", $("#name-field").val());
 
@@ -46,5 +46,5 @@ $(document).on("click", "#save-button", function() {
   });
 
 $(document).on("click", "#edit-associate-image-upload", function() {
-  $("#upload").click();
+  $("#upload-image").click();
 });

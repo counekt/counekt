@@ -117,7 +117,7 @@
       </div>
       {% endfor %}
       {% if current_user and "remember to define something here" %}
-      <a href="/explore/"><div class="add-specific-button"><span>Add member</span></div></a>
+      <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
       {% endif %}
     </div>
     <div id="profile-clubs" class="profile-associate vanish">
@@ -149,8 +149,10 @@
 {% include "profiles/club/edit.html" %}
 {% elif request.url_rule.endpoint == 'profiles.club_photo' %}
 {% with photo_src=club.profile_photo.src %}
-{% include "profiles/user/photo.html" %}
+{% include "profiles/photo.html" %}
 {% endwith %}
+{% elif request.url_rule.endpoint == 'profiles.club_add_members' %}
+{% include "profiles/add-members.html" %}
 {% endif %}
 
 {% endblock %}
@@ -170,6 +172,7 @@
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
+<script src="/static/js/profiles/add-members.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
@@ -378,7 +381,7 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_club','profiles.create_club','profiles.create_project']  %}
+{% if request.url_rule.endpoint in ['profiles.edit_club']  %}
 load_map_js();
 {% endif %}
 </script>
@@ -391,7 +394,12 @@ load_map_js();
 
 
   $(document).on('click', '#edit-button', function(e) {
-    redirect({id:"edit-club"},"Edit profile", "/€"+handle+"/edit/", changeToEdit);
+    redirect({id:"edit-club"},"Edit club", "/€"+handle+"/edit/", changeToEdit);
+    e.preventDefault();
+  });
+
+  $(document).on('click', '#members-button', function(e) {
+    redirect({id:"club-members"},"Club members", "/€"+handle+"/members/", changeToMembers);
     e.preventDefault();
   });
 
@@ -413,6 +421,10 @@ $(window).on("popstate", function() {
 
   else if (window.history.state.id == "club-photo") {
     changeToPhoto();
+  }
+
+  else if (window.history.state.id == "club-add-members") {
+    changeToMembers();
   }
 
 
@@ -439,11 +451,18 @@ function changeToPhoto() {
   $(document.body).addClass('noscroll');
 }
 
+function changeToMembers() {
+  $("#modal-box").append(`
+    {% include "profiles/add-members.html" %}`);
+  $(document.body).addClass('noscroll');
+}
 
 {% if request.url_rule.endpoint == 'profiles.edit_club' %}
-window.history.replaceState({id:"edit-club"},"Edit profile", "/€{{club.handle}}/edit/");
+window.history.replaceState({id:"edit-club"},"Edit club", "/€{{club.handle}}/edit/");
 {% elif request.url_rule.endpoint == 'profiles.club_photo' %}
 window.history.replaceState({id:"club-photo"},"Profile photo", "/€{{club.handle}}/");
+{% elif request.url_rule.endpoint == 'profiles.club_members' %}
+window.history.replaceState({id:"club-add-members"},"Club add members", "/€{{club.handle}}/add-members/");
 {% else %}
 window.history.replaceState({id:"club-profile"},"Profile", "./");
 {% endif %}

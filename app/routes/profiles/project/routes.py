@@ -181,3 +181,16 @@ def edit_project(handle):
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/project/profile.html", project=project, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+
+
+@ bp.route("/project/<handle>/members/", methods=["GET", "POST"])
+@ bp.route("/£<handle>/members/", methods=["GET", "POST"])
+@login_required
+def project_add_members(handle):
+    if not handle:
+        abort(404)
+    project = models.Project.query.filter_by(handle=handle).first()
+    if not project:
+        abort(404)
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/project/profile.html", project=project, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
