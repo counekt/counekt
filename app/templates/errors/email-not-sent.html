@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Email Not Sent{% endblock %}
+{% block content %}
+  <p class="title is-3">500 Email Not Sent</p>
+  <p class="subtitle is-4">The email service failed to send the email. The administrators have been notified. Sorry for the inconvenience!</p>
+
+  <p class="subtitle is-5 has-text-weight-bold"><a href="{{ url_for('auth.register') }}">Back</a></p>
+{% endblock %}

@@ -1,0 +1,27 @@
+#select-connections {
+  margin-top: 5px;
+  overflow: auto;
+  border: 1px solid lightgray;
+}
+
+#add-members-field {
+  text-align: left;
+  word-wrap: break-word;
+  height: auto;
+  min-height: 75px;
+}
+
+#add-members-field:focus-within {
+ border: 1px solid #3273dc;
+ box-shadow:0 0 0 0.125em rgba(50,115,220,.25);
+}
+
+#add-members-text-field.placeholder:empty:before{
+    content:attr(data-text);
+    color:#C8C8C8;
+
+}
+
+#add-members-text-field:focus {
+    outline: 0px solid transparent;
+}

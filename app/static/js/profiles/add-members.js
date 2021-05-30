@@ -9,7 +9,7 @@ function sendProjectInvites() {
 
     $.post({
       type: "POST",
-      url: "/£"+handle+"/",
+      url: "/£"+handle+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
@@ -29,7 +29,7 @@ function sendClubInvites() {
 
     $.post({
       type: "POST",
-      url: "/€"+handle+"/",
+      url: "/€"+handle+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
@@ -52,7 +52,7 @@ function updatePlaceholder() {
   }
 }
 
-function get_connections_from_text() {
+function get_allies_from_text() {
   var text = $("#add-members-text-field").text();
   var already_chosen = $("#add-member-tags-container").children().toArray().map( element => $(element).data('username'));
   if (text.length > 0) {
@@ -61,16 +61,16 @@ function get_connections_from_text() {
     formData.append('already_chosen', JSON.stringify(already_chosen));
     $.post({
       type: "POST",
-      url: "/get/connections/",
+      url: "/get/allies/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
-        var connections = response["connections"];
+        var allies = response["allies"];
         $('#select-connections').empty();
-        connections.forEach( function (profile, index) {
-         $("#select-connections").append('<div valign="top" class="row profile-bigBox" data-username="'+profile.username+'" data-name="'+profile.name+'"><div class="profile-column profile-leftBox" ><img class="image" src="' + profile.profile_pic + '"></div><div class="profile-column profile-rightBox"><h1><b>'+ profile.name +'</b></h1>');
+        allies.forEach( function (ally, index) {
+         $("#select-connections").append('<div valign="top" class="row profile-bigBox" data-username="'+ally.username+'" data-name="'+ally.name+'"><div class="profile-column profile-leftBox" ><img class="image" src="' + ally.profile_pic + '"></div><div class="profile-column profile-rightBox"><h1><b>'+ ally.name +'</b></h1>');
         });
         if (!$('#select-connections').is(':empty')){
         $('#select-connections').removeClass("vanish");
@@ -90,7 +90,7 @@ function get_connections_from_text() {
 }
 
 $("#add-members-text-field").on('input', function() {
-    get_connections_from_text();
+    get_allies_from_text();
 });
 
 $(document).on("click", "#add-members-field", function() {
