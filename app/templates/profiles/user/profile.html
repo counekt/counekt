@@ -93,22 +93,9 @@
  <div id="profile-tabs-content">
     <div id="profile-allies" class="profile-associate">
       {% for ally in user.allies %}
-      <div class="subprofile box">
-        <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="/user/{{ally.username}}">
-            <img alt draggable="false" class="subprofile-image-content" src="{{ally.profile_photo.src}}">
-        </a>
-      </div>
-        <div class="subprofile-content">
-          <a class="subprofile-identity" href="/user/{{ally.username}}">
-            <span class="subprofile-name selectable"><b>{% if ally.name %}{{ally.name}}{% else %}{{ally.username}}{% endif %}</b></span>
-            <br>
-            <span class="subprofile-username selectable">@{{ally.username}}</span>
-          </a>
-          <br>
-        <span class="subprofile-bio selectable" maxlenght="30">{% if ally.bio %}{{ally.bio}}{% endif %}</span>
-      </div>
-      </div>
+        {% with profile=ally %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
       {% endfor %}
       {% if user==current_user %}
       <a href="/explore/"><div class="add-specific-button"><span>Add ally</span></div></a>
@@ -116,22 +103,9 @@
     </div>
     <div id="profile-clubs" class="profile-associate vanish">
       {% for club in user.clubs %}
-      <div class="subprofile box">
-        <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="{{url_for('profiles.club', handle=club.handle)}}">
-            <img alt draggable="false" class="subprofile-image-content" src="{{club.profile_photo.src}}">
-        </a>
-      </div>
-        <div class="subprofile-content">
-          <a class="subprofile-identity" href="{{url_for('profiles.club', handle=club.handle)}}">
-            <span class="subprofile-name selectable"><b>{% if club.name %}{{club.name}}{% else %}{{club.handle}}{% endif %}</b></span>
-            <br>
-            <span class="subprofile-username selectable">€{{club.handle}}</span>
-          </a>
-          <br>
-        <span class="subprofile-bio selectable" maxlenght="30">{% if club.description %}{{club.description}}{% endif %}</span>
-      </div>
-      </div>
+        {% with profile=club %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
       {% endfor %}
       {% if user==current_user %}
       <div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
@@ -139,22 +113,9 @@
     </div>
     <div id="profile-projects" class="profile-associate vanish">
       {% for project in user.projects %}
-      <div class="subprofile box">
-        <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="{{url_for('profiles.project', handle=project.handle)}}">
-            <img alt draggable="false" class="subprofile-image-content" src="{{project.profile_photo.src}}">
-        </a>
-      </div>
-        <div class="subprofile-content">
-          <a class="subprofile-identity" href="{{url_for('profiles.project', handle=project.handle)}}">
-            <span class="subprofile-name selectable"><b>{% if project.name %}{{project.name}}{% else %}{{project.handle}}{% endif %}</b></span>
-            <br>
-            <span class="subprofile-username selectable">£{{project.handle}}</span>
-          </a>
-          <br>
-        <span class="subprofile-bio selectable" maxlenght="30">{% if project.description %}{{project.description}}{% endif %}</span>
-      </div>
-      </div>
+        {% with profile=project %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
       {% endfor %}
       {% if user==current_user %}
       <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>

@@ -30,10 +30,12 @@ def get_coordinates():
 def get_allies():
     if flask_request.method == 'POST':
         text = flask_request.form.get("text")
+        print(text)
         already_chosen = eval(flask_request.form.get("already_chosen"))
         allies = current_user.get_allies_from_text(text, already_chosen).limit(10).all()
-        formatted_allies = [{"username": profile.username, "name": profile.name, "profile_pic": profile.profile_pic.src} for ally in allies]
-        return json.dumps({'allies': formatted_allies})
+        formatted_allies = [{"username": ally.username, "name": ally.name, "bio": ally.bio, "photo_src": ally.profile_photo.src, "symbol": ally.symbol} for ally in allies]
+        print(formatted_allies)
+        return json.dumps({'status': 'success', 'allies': formatted_allies})
 
 
 @ bp.route("/get/address/", methods=["POST"])

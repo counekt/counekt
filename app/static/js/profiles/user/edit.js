@@ -55,7 +55,7 @@ $(document).on("click", "#save-button", function() {
      }
      else {
        $(".errorClass").effect("shake", {direction: "right", times: 2, distance: 8}, 350);
-       document.getElementById("#map").scrollIntoView(false);
+       document.getElementById("map").scrollIntoView(false);
 
      }
   });

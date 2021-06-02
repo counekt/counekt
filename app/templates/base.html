@@ -43,6 +43,11 @@
     {% endif %}
     </div>
     <div id="modal-box">{% block modal %}{% endblock %}</div>
+    <script type="text/javascript">
+        function miniprofile(name="",identifier="", bio="", href="",photo_src="",symbol="") {
+            return `{% include 'profiles/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>

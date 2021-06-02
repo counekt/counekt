@@ -197,6 +197,18 @@ class User(UserMixin, db.Model, Base, locationBase):
         return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
             digest, size)
 
+    @property
+    def symbol(self):
+        return "@"
+
+    @property
+    def href(self):
+        return url_for("profiles.user", username=self.username)
+
+    @hybrid_property
+    def identifier(self):
+        return self.username
+
     def get_allies_from_text(self, text, already_chosen=None):
         query = self.allies.filter(func.lower(User.name).like(f'%{text.lower()}%'))
         if already_chosen:

@@ -5,7 +5,7 @@ $(document).on("click", "#send-invites-button", function() {
 function sendProjectInvites() {
   var formData = new FormData();
 
-   formData.append("members", JSON.stringify($("#add-member-tags-container").children().toArray().map( element => $(element).data('username'))));
+   formData.append("members", JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username'))));
 
     $.post({
       type: "POST",
@@ -25,7 +25,7 @@ function sendProjectInvites() {
 function sendClubInvites() {
   var formData = new FormData();
 
-   formData.append("members", JSON.stringify($("add-#member-tags-container").children().toArray().map( element => $(element).data('username'))));
+   formData.append("members", JSON.stringify($("add-#members-tags-container").children().toArray().map( element => $(element).data('username'))));
 
     $.post({
       type: "POST",
@@ -43,8 +43,8 @@ function sendClubInvites() {
 }
 
 function updatePlaceholder() {
-  console.log($("#add-member-tags-container").children().length);
-  if ($("#add-member-tags-container").children().length == 0) {
+  console.log($("#add-members-tags-container").children().length);
+  if ($("#add-members-tags-container").children().length == 0) {
     $("#add-members-text-field").addClass('placeholder');
 }
   else {
@@ -54,7 +54,7 @@ function updatePlaceholder() {
 
 function get_allies_from_text() {
   var text = $("#add-members-text-field").text();
-  var already_chosen = $("#add-member-tags-container").children().toArray().map( element => $(element).data('username'));
+  var already_chosen = $("#add-members-tags-container").children().toArray().map( element => $(element).data('username'));
   if (text.length > 0) {
     var formData = new FormData();
     formData.append('text', text);
@@ -70,7 +70,7 @@ function get_allies_from_text() {
         var allies = response["allies"];
         $('#select-connections').empty();
         allies.forEach( function (ally, index) {
-         $("#select-connections").append('<div valign="top" class="row profile-bigBox" data-username="'+ally.username+'" data-name="'+ally.name+'"><div class="profile-column profile-leftBox" ><img class="image" src="' + ally.profile_pic + '"></div><div class="profile-column profile-rightBox"><h1><b>'+ ally.name +'</b></h1>');
+         $("#select-connections").append(miniprofile(ally.name,ally.username,ally.bio,"",ally.photo_src,ally.symbol,"True"));
         });
         if (!$('#select-connections').is(':empty')){
         $('#select-connections').removeClass("vanish");
@@ -89,6 +89,10 @@ function get_allies_from_text() {
   }
 }
 
+function updateScroll(){
+      document.getElementById("add-members-tags-container").scrollIntoView(false);
+}
+
 $("#add-members-text-field").on('input', function() {
     get_allies_from_text();
 });
@@ -101,9 +105,9 @@ $(document).on("click", "#add-members-field", function() {
 function add_member(name, username) {
   $("#add-members-text-field").focus();
   $("#add-members-text-field").text("");
-  $("#add-member-tags-container").append('<div class="profile tag is-medium" data-username="'+username+'"><span>'+name+'</span><span class="icon remove-member"><a class="delete"></a></span></div>')
+  $("#add-members-tags-container").append('<div class="profile tag is-medium" data-username="'+username+'"><span>'+name+'</span><span class="icon remove-member"><a class="delete"></a></span></div>')
   updatePlaceholder();
-  get_connections_from_text();
+  get_allies_from_text();
 }
 
 $(document).on("click", function(e) {
@@ -129,11 +133,11 @@ $(document).on("click", ".remove-member", function() {
 });
 
 
-$(document).on('keydown', '#add-members-text-field', function(event) {
+$('#add-members-text-field').keypress(function(event) {
     var key = event.keyCode || event.charCode;
 
     if (key == 8 && $("#add-members-text-field").text().length == 0){
-        $("#add-member-tags-container").children().last().remove();
+        $("#add-members-tags-container").children().last().remove();
       }
 
     if (key == 13 || key == 9 || key == 10) {
