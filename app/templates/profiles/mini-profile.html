@@ -1,6 +1,6 @@
 <!-- This template can also be used with javascript. Just include it with jinja and use the method called .replace to fill in the below variables.
  -->
-<div class="subprofile box">
+<div class="subprofile box" data-name="{% if profile %}{% if profile.name %}{{profile.name}}{% else %}{{profile.username}}{% endif %}{% else %}\\name//{% endif %}" data-identifier="{% if profile %}{{profile.identifier}}{% else %}\\identifier//{% endif %}">
         <div class="subprofile-image-wrap">
         <a class="subprofile-image" {% if not without_link %}href="{% if profile %}{{profile.href}}{% else %}\\href//{% endif %}"{% endif %}>
             <img alt draggable="false" class="subprofile-image-content" src="{% if profile %}{{profile.profile_photo.src}}{% else %}\\photo_src//{% endif %}">

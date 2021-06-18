@@ -1,9 +1,12 @@
+function load_add_members_js() {
+
 $(document).on("click", "#send-invites-button", function() {
    sendInvites();
   });
 
 function sendProjectInvites() {
   var formData = new FormData();
+  console.log("SENDING");
 
    formData.append("members", JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username'))));
 
@@ -121,8 +124,8 @@ $(document).on("click", "#add-members-button", function() {
   get_connections_from_text();
 });
 
-$(document).on("click", ".profile-bigBox", function() {
-  add_member(name=$(this).data('name'),username=$(this).data('username'));
+$(document).on("click", "#select-connections .subprofile.box", function() {
+  add_member(name=$(this).data('name'),username=$(this).data('identifier'));
 });
 
 
@@ -158,3 +161,4 @@ $(document).on('mouseover', '.profile-bigBox', function() {
 $(document).on('mouseleave', '.profile-bigBox', function() {
   $(this).removeClass('hovered');
 });
+}

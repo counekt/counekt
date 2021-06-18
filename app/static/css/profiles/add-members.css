@@ -25,3 +25,7 @@
 #add-members-text-field:focus {
     outline: 0px solid transparent;
 }
+
+.profile.tag {
+  max-width: 100px;
+}
