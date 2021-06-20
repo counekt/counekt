@@ -18,7 +18,7 @@
       <div id="profile-right-top">
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
-            {% if user != current_user %}
+            {% if user != current_user and current_user.is_authenticated %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
               {% with request_sent = models.UserToUserRequest.query.filter_by(type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
               <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
