@@ -3,6 +3,26 @@ from app import mail
 from flask import current_app
 from threading import Thread
 import smtplib
+import socket
+
+
+class PropagatingThread(Thread):
+    def run(self):
+        self.exc = None
+        try:
+            if hasattr(self, '_Thread__target'):
+                # Thread uses name mangling prior to Python 3.
+                self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+            else:
+                self.ret = self._target(*self._args, **self._kwargs)
+        except BaseException as e:
+            self.exc = e
+
+    def join(self):
+        super(PropagatingThread, self).join()
+        if self.exc:
+            raise self.exc from RuntimeError('Exception in thread')
+        return self.ret
 
 
 def send_async_email(app, msg):
@@ -19,17 +39,8 @@ def send_email(subject, sender, recipients, text_body, html_body,
         for attachment in attachments:
             msg.attach(*attachment)
     if sync:
-        try:
-            mail.send(msg)
-            return True
-        except smtplib.SMTPException as e:
-            current_app.logger.error(e.message)
-            return False
+        mail.send(msg)
     else:
-        try:
-            Thread(target=send_async_email,
-                   args=(current_app._get_current_object(), msg)).start()
-            return True
-        except smtplib.SMTPException as e:
-            current_app.logger.error(e.message)
-            return False
+        thread = PropagatingThread(target=send_async_email, args=(current_app._get_current_object(), msg))
+        thread.start()
+        thread.join()

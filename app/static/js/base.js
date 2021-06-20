@@ -29,3 +29,12 @@ function unload(_delay) {
      window.location = url;
    }
  }
+
+ function flash(c,bgc,txt, delay=1500){
+ $("#flash").stop(stopAll=true);
+ $("#flash").css('color', c);
+ $("#flash").css('background-color', bgc);
+ $("#flash").animate({ opacity: 1, queue: false });
+ $("#flash").children().text(txt);
+ $("#flash").delay(delay).animate({ opacity: 0, queue: false });
+}

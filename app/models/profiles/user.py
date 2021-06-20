@@ -115,6 +115,7 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     def has_skills(self, titles):
         return all([title in [skill.title for skill in self.skills.all()] for title in titles])
+
     @ property
     def age(self):
         return funcs.get_age(self.birthdate)
@@ -195,6 +196,25 @@ class User(UserMixin, db.Model, Base, locationBase):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
         return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
             digest, size)
+
+    @property
+    def symbol(self):
+        return "@"
+
+    @property
+    def href(self):
+        return url_for("profiles.user", username=self.username)
+
+    @hybrid_property
+    def identifier(self):
+        return self.username
+
+    def get_allies_from_text(self, text, already_chosen=None):
+        query = self.allies.filter(func.lower(User.name).like(f'%{text.lower()}%'))
+        if already_chosen:
+            for username in already_chosen:
+                query = query.filter(User.username != username)
+        return query
 
 
 @ login.user_loader

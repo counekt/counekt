@@ -125,7 +125,7 @@
       {% for club in user.clubs %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
+      <div class="add-specific-button" id="create-club-button"><span>Add role</span></div>
       {% endif %}
       {% endraw %}
     </div>
@@ -134,7 +134,7 @@
       {% for project in user.projects %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
+      <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
       {% endif %}
       {% endraw %}
     </div>
@@ -160,9 +160,11 @@
 {% block scripts %}
 <!-- Probably good for now to have this below-->
 
-<link rel="stylesheet" href="/static/css/profiles/user/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
+<link rel="stylesheet" href="/static/css/profiles/add-members.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profiles/user/profile.js"></script>
@@ -175,6 +177,11 @@
 <script src="/static/js/profiles/add-members.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
+
+  function sendInvites() {
+    sendClubInvites();
+  }
+
 
   var handle = "{{club.handle}}";
 
@@ -386,6 +393,14 @@ load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
+  function load_addMembers_js() {
+
+  }
+{% if request.url_rule.endpoint in ['profiles.club_add_members']  %}
+load_addMembers_js();
+{% endif %}
+</script>
+<script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
     redirect({id:"club-photo"},"Profile photo", "/€{{club.handle}}/photo/", changeToPhoto);
@@ -423,7 +438,7 @@ $(window).on("popstate", function() {
     changeToPhoto();
   }
 
-  else if (window.history.state.id == "club-add-members") {
+  else if (window.history.state.id == "club-members") {
     changeToMembers();
   }
 
@@ -454,6 +469,7 @@ function changeToPhoto() {
 function changeToMembers() {
   $("#modal-box").append(`
     {% include "profiles/add-members.html" %}`);
+  load_add_members_js()
   $(document.body).addClass('noscroll');
 }
 

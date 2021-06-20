@@ -73,6 +73,9 @@ $.post({
         console.log(response);
         var response = JSON.parse(response);
         var status = response["status"];
+        var display = response["display"];
+        var msg = response["msg"];
+        if (display === "flash") {flash("#ffff","#ff3366", msg)}
         if (status === "success") {
 
             if (window._step == "step-1") {
@@ -91,10 +94,11 @@ $.post({
             }
 
          }
-        else if (status === "error") {
+        else if (status === "reload") {
           window.location.reload();
         }
-        else{message(status, response["box_ids"], true);}
+        
+        else if(response["box_ids"]) {message(status, response["box_ids"], true);}
 
       }});
 }

@@ -26,6 +26,18 @@ def get_coordinates():
         return json.dumps({'status': 'success', 'lat': location.latitude, 'lng': location.longitude})
 
 
+@ bp.route("/get/allies/", methods=["POST"])
+def get_allies():
+    if flask_request.method == 'POST':
+        text = flask_request.form.get("text")
+        print(text)
+        already_chosen = eval(flask_request.form.get("already_chosen"))
+        allies = current_user.get_allies_from_text(text, already_chosen).limit(10).all()
+        formatted_allies = [{"username": ally.username, "name": ally.name, "bio": ally.bio, "photo_src": ally.profile_photo.src, "symbol": ally.symbol} for ally in allies]
+        print(formatted_allies)
+        return json.dumps({'status': 'success', 'allies': formatted_allies})
+
+
 @ bp.route("/get/address/", methods=["POST"])
 def get_address():
     if flask_request.method == 'POST':

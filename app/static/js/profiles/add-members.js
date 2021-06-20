@@ -1,15 +1,18 @@
+function load_add_members_js() {
+
 $(document).on("click", "#send-invites-button", function() {
    sendInvites();
   });
 
 function sendProjectInvites() {
   var formData = new FormData();
+  console.log("SENDING");
 
-   formData.append("members", JSON.stringify($("#add-member-tags-container").children().toArray().map( element => $(element).data('username'))));
+   formData.append("members", JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username'))));
 
     $.post({
       type: "POST",
-      url: "/£"+handle+"/",
+      url: "/£"+handle+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
@@ -25,11 +28,11 @@ function sendProjectInvites() {
 function sendClubInvites() {
   var formData = new FormData();
 
-   formData.append("members", JSON.stringify($("add-#member-tags-container").children().toArray().map( element => $(element).data('username'))));
+   formData.append("members", JSON.stringify($("add-#members-tags-container").children().toArray().map( element => $(element).data('username'))));
 
     $.post({
       type: "POST",
-      url: "/€"+handle+"/",
+      url: "/€"+handle+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
@@ -43,8 +46,8 @@ function sendClubInvites() {
 }
 
 function updatePlaceholder() {
-  console.log($("#add-member-tags-container").children().length);
-  if ($("#add-member-tags-container").children().length == 0) {
+  console.log($("#add-members-tags-container").children().length);
+  if ($("#add-members-tags-container").children().length == 0) {
     $("#add-members-text-field").addClass('placeholder');
 }
   else {
@@ -52,25 +55,25 @@ function updatePlaceholder() {
   }
 }
 
-function get_connections_from_text() {
+function get_allies_from_text() {
   var text = $("#add-members-text-field").text();
-  var already_chosen = $("#add-member-tags-container").children().toArray().map( element => $(element).data('username'));
+  var already_chosen = $("#add-members-tags-container").children().toArray().map( element => $(element).data('username'));
   if (text.length > 0) {
     var formData = new FormData();
     formData.append('text', text);
     formData.append('already_chosen', JSON.stringify(already_chosen));
     $.post({
       type: "POST",
-      url: "/get/connections/",
+      url: "/get/allies/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
-        var connections = response["connections"];
+        var allies = response["allies"];
         $('#select-connections').empty();
-        connections.forEach( function (profile, index) {
-         $("#select-connections").append('<div valign="top" class="row profile-bigBox" data-username="'+profile.username+'" data-name="'+profile.name+'"><div class="profile-column profile-leftBox" ><img class="image" src="' + profile.profile_pic + '"></div><div class="profile-column profile-rightBox"><h1><b>'+ profile.name +'</b></h1>');
+        allies.forEach( function (ally, index) {
+         $("#select-connections").append(miniprofile(ally.name,ally.username,ally.bio,"",ally.photo_src,ally.symbol,"True"));
         });
         if (!$('#select-connections').is(':empty')){
         $('#select-connections').removeClass("vanish");
@@ -89,8 +92,12 @@ function get_connections_from_text() {
   }
 }
 
+function updateScroll(){
+      document.getElementById("add-members-tags-container").scrollIntoView(false);
+}
+
 $("#add-members-text-field").on('input', function() {
-    get_connections_from_text();
+    get_allies_from_text();
 });
 
 $(document).on("click", "#add-members-field", function() {
@@ -101,9 +108,9 @@ $(document).on("click", "#add-members-field", function() {
 function add_member(name, username) {
   $("#add-members-text-field").focus();
   $("#add-members-text-field").text("");
-  $("#add-member-tags-container").append('<div class="profile tag is-medium" data-username="'+username+'"><span>'+name+'</span><span class="icon remove-member"><a class="delete"></a></span></div>')
+  $("#add-members-tags-container").append('<div class="profile tag is-medium" data-username="'+username+'"><span>'+name+'</span><span class="icon remove-member"><a class="delete"></a></span></div>')
   updatePlaceholder();
-  get_connections_from_text();
+  get_allies_from_text();
 }
 
 $(document).on("click", function(e) {
@@ -117,8 +124,8 @@ $(document).on("click", "#add-members-button", function() {
   get_connections_from_text();
 });
 
-$(document).on("click", ".profile-bigBox", function() {
-  add_member(name=$(this).data('name'),username=$(this).data('username'));
+$(document).on("click", "#select-connections .subprofile.box", function() {
+  add_member(name=$(this).data('name'),username=$(this).data('identifier'));
 });
 
 
@@ -129,11 +136,11 @@ $(document).on("click", ".remove-member", function() {
 });
 
 
-$(document).on('keydown', '#add-members-text-field', function(event) {
+$('#add-members-text-field').keypress(function(event) {
     var key = event.keyCode || event.charCode;
 
     if (key == 8 && $("#add-members-text-field").text().length == 0){
-        $("#add-member-tags-container").children().last().remove();
+        $("#add-members-tags-container").children().last().remove();
       }
 
     if (key == 13 || key == 9 || key == 10) {
@@ -154,3 +161,4 @@ $(document).on('mouseover', '.profile-bigBox', function() {
 $(document).on('mouseleave', '.profile-bigBox', function() {
   $(this).removeClass('hovered');
 });
+}

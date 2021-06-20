@@ -1,9 +1,11 @@
 from app import db
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from app.models.profiles.group import Group
 from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
 import app.funcs as funcs
+from flask import url_for
 
 
 class Club(db.Model, Base, locationBase):
@@ -33,6 +35,18 @@ class Club(db.Model, Base, locationBase):
         if self.exists_in_db:
             db.session.delete(self.group)
             db.session.delete(self)
+
+    @property
+    def symbol(self):
+        return "€"
+
+    @property
+    def href(self):
+        return url_for("profiles.club", handle=self.handle)
+
+    @hybrid_property
+    def identifier(self):
+        return self.handle
 
     def __repr__(self):
         return "<Club {}>".format(self.handle)

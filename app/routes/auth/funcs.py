@@ -72,11 +72,10 @@ def send_auth_email(user, sender):
         token = user.refresh_token()
     else:
         token = user.get_token()
-    sent = send_email('[CTW] Activate your account',
-                      sender=sender,
-                      recipients=[user.email],
-                      text_body=render_template('email/auth.txt',
-                                                user=user, token=token),
-                      html_body=render_template('email/auth.html',
-                                                user=user, token=token))
-    return sent
+    send_email('[CTW] Activate your account',
+               sender=sender,
+               recipients=[user.email],
+               text_body=render_template('email/auth.txt',
+                                         user=user, token=token),
+               html_body=render_template('email/auth.html',
+                                         user=user, token=token))

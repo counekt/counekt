@@ -2,11 +2,12 @@
 from flask import redirect, url_for, render_template, abort, request, current_app
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import app.routes.auth.funcs as funcs
-from app.routes.errors.custom import token_is_expired_error
+from app.routes.errors.custom import token_is_expired_error, email_not_sent_error
 from app import db, models
 from app.routes.auth import bp
 import json
 from datetime import date
+import smtplib
 
 
 @ bp.route("/register/", methods=['GET', 'POST'])
@@ -65,9 +66,10 @@ def register():
             user = models.User(username=username, email=email, gender=gender)
             user.set_password(password)
             user.set_birthdate(date(month=int(month), day=int(day), year=int(year)))
-            sent = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
-            if not sent:
-                return json.dumps({'status': 'error'})
+            try:
+                funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+            except smtplib.SMTPException as e:
+                return json.dumps({'status': 'Email not sent', 'msg': 'Error: Email Not Sent', 'display': "flash"})
             db.session.add(user)
             db.session.commit()
             return json.dumps({'status': 'success'})
@@ -82,9 +84,10 @@ def register():
                 return json.dumps({'status': 'error'})
             if user.token_is_expired:
                 return token_is_expired_error(token=user.token)
-            sent = funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
-            if not sent:
-                return json.dumps({'status': 'error'})
+            try:
+                funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+            except smtplib.SMTPException as e:
+                return json.dumps({'status': 'Email not sent', 'msg': 'Error: Email Not Sent', 'display': "flash"})
             return json.dumps({'status': 'success'})
 
         return json.dumps({'status': 'error'})

@@ -125,7 +125,7 @@
       {% for project in user.projects %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
+      <div class="add-specific-button" id="create-project-button"><span>Add Role</span></div>
       {% endif %}
       {% endraw %}
     </div>
@@ -134,7 +134,7 @@
       {% for project in user.projects %}
       {% endfor %}
       {% if user==current_user %}
-      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
+      <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
       {% endif %}
       {% endraw %}
     </div>
@@ -161,11 +161,14 @@
 <!-- Probably good for now to have this below-->
 
 <link rel="stylesheet" href="/static/css/profiles/user/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
+<link rel="stylesheet" href="/static/css/profiles/add-members.css">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
-<script src="/static/js/profiles/user/profile.js"></script>
+<script src="/static/js/profiles/profile.js"></script>
 <script src="/static/js/profiles/project/profile.js"></script>
 <script src="/static/js/profiles/project/edit.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
@@ -176,6 +179,10 @@
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
+
+  function sendInvites() {
+    sendProjectInvites();
+  }
 
   var handle = "{{project.handle}}";
 
@@ -455,6 +462,7 @@ function changeToPhoto() {
 function changeToMembers() {
   $("#modal-box").append(`
     {% include "profiles/add-members.html" %}`);
+    load_add_members_js();
   $(document.body).addClass('noscroll');
 }
 
