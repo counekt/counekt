@@ -4,28 +4,6 @@ $(document).on("click", "#send-invites-button", function() {
    sendInvites();
   });
 
-function sendProjectInvites() {
-  var formData = new FormData();
-  console.log("SENDING");
-
-   formData.append("members", JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username'))));
-
-    $.post({
-      type: "POST",
-      url: "/£"+handle+"/members/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
-        var status = response["status"];
-        if (status === "Successfully saved") { location.replace("/£"+response["handle"]+"/"); }
-        else{message(status, response["box_id"], true);}
-        
-      }});
-}
-
-
 
 function updatePlaceholder() {
   console.log($("#add-members-tags-container").children().length);

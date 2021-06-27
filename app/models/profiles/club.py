@@ -15,6 +15,7 @@ viewers = db.Table('club_viewers',
 
 class Club(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True, unique=True)
+    symbol = "€"
     handle = db.Column(db.String, index=True, unique=True)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
     group = db.relationship("Group", foreign_keys=[group_id])
@@ -51,10 +52,6 @@ class Club(db.Model, Base, locationBase):
         if self.exists_in_db:
             db.session.delete(self.group)
             db.session.delete(self)
-
-    @property
-    def symbol(self):
-        return "€"
 
     @property
     def href(self):

@@ -182,8 +182,8 @@ def edit_club(handle):
     return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
-@ bp.route("/club/<handle>/members/", methods=["GET", "POST"])
-@ bp.route("/€<handle>/members/", methods=["GET", "POST"])
+@ bp.route("/club/<handle>/members/", methods=["GET"])
+@ bp.route("/€<handle>/members/", methods=["GET"])
 @login_required
 def club_add_members(handle):
     if not handle:
@@ -191,13 +191,6 @@ def club_add_members(handle):
     club = models.Club.query.filter_by(handle=handle).first()
     if not club:
         abort(404)
-
-    if flask_request.method == "POST":
-        members = json.loads(flask_request.form.get("members"))
-        for username in members:
-            user = models.Club.query.filter_by(handle=handle).first()
-            club.add_member(m)
-        return json.dumps({'status': 'success', 'members': members, 'handle':handle})
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)

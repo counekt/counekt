@@ -93,6 +93,37 @@ def invite_to_club(handle):
         db.session.commit()
         return json.dumps({'status': 'success', 'handle':handle})
 
+@ bp.route("/project/<handle>/invite/", methods=["POST"])
+@ bp.route("/£<handle>/invite/", methods=["POST"])
+def invite_to_project(handle):
+    project = models.Project.query.filter_by(handle=handle).first()
+    if flask_request.method == 'POST':
+        usernames = json.loads(flask_request.form.get("usernames"))
+        for username in usernames:
+            user = models.User.query.filter_by(username=username).first()
+            sent_request = models.ProjectToUserRequest.query.filter_by(type="invite", sender=project, receiver=user).first()
+            received_request = models.UserToProjectRequest.query.filter_by(type="join", receiver=user, sender=project).first()
+            if flask_request.form.get("do") and not sent_request and not received_request:
+                request = models.ProjectToUserRequest(type="invite", sender=project, receiver=user)
+                db.session.add(request)
+            elif flask_request.form.get("accept") and received_request:
+                received_request.accept()
+            elif flask_request.form.get("undo") and sent_request:
+                sent_request.regret()
+        db.session.commit()
+        return json.dumps({'status': 'success', 'handle':handle})
+
+@ bp.route("/project/<handle>/exit/", methods=["POST"])
+@ bp.route("/£<handle>/exit/", methods=["POST"])
+def exit_from_project(handle):
+    """
+    if flask_request.form.get("disconnect"):
+            project.remove_member(user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+    """
+    pass
+
 @ bp.route("/club/<handle>/exit/", methods=["POST"])
 @ bp.route("/€<handle>/exit/", methods=["POST"])
 def exit_from_club(handle):
