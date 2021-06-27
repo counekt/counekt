@@ -12,7 +12,7 @@ function sendProjectInvites() {
 
     $.post({
       type: "POST",
-      url: "/£"+handle+"/invite/",
+      url: "/£"+handle+"/members/",
       data: formData,
       processData: false,
       contentType: false,
@@ -25,25 +25,7 @@ function sendProjectInvites() {
       }});
 }
 
-function sendClubInvites() {
-  var formData = new FormData();
 
-   formData.append("members", JSON.stringify($("add-#members-tags-container").children().toArray().map( element => $(element).data('username'))));
-
-    $.post({
-      type: "POST",
-      url: "/€"+handle+"/invite/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
-        var status = response["status"];
-        if (status === "Successfully saved") { location.replace("/€"+response["handle"]+"/"); }
-        else{message(status, response["box_id"], true);}
-        
-      }});
-}
 
 function updatePlaceholder() {
   console.log($("#add-members-tags-container").children().length);
@@ -161,4 +143,5 @@ $(document).on('mouseover', '.profile-bigBox', function() {
 $(document).on('mouseleave', '.profile-bigBox', function() {
   $(this).removeClass('hovered');
 });
+
 }

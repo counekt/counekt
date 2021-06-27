@@ -178,10 +178,6 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
-  function sendInvites() {
-    sendClubInvites();
-  }
-
 
   var handle = "{{club.handle}}";
 
@@ -393,11 +389,34 @@ load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
-  function load_addMembers_js() {
-
+  function sendInvites() {
+    sendClubInvites();
   }
+
+function sendClubInvites() {
+  var formData = new FormData();
+    var usernames = JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username')));
+    console.log(usernames);
+   formData.append("usernames", usernames);
+   formData.append("do", true)
+
+    $.post({
+      type: "POST",
+      url: "/€"+handle+"/invite/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") { location.replace("/€"+response["handle"]+"/"); }
+        else{message(status, response["box_id"], true);}
+        
+      }});
+}
+
 {% if request.url_rule.endpoint in ['profiles.club_add_members']  %}
-load_addMembers_js();
+load_add_members_js();
 {% endif %}
 </script>
 <script type="text/javascript">

@@ -96,7 +96,7 @@ def create_project():
 @ bp.route("/£<handle>/", methods=["GET", "POST"])
 def project(handle):
     project = models.Project.query.filter_by(handle=handle).first()
-    if not project or (not project.public and not current_user in project.group.members):
+    if not project or (not project.public and not current_user in project.group.members) and not current_user in project.viewers:
         abort(404)
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
     return render_template("profiles/project/profile.html", project=project, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)

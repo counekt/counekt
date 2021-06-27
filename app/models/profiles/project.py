@@ -6,6 +6,10 @@ from app.models.base import Base
 from app.models.locationBase import locationBase
 from flask import url_for
 
+viewers = db.Table('project_viewers',
+                    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+                    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+                    )
 
 class Project(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +19,9 @@ class Project(db.Model, Base, locationBase):
     name = db.Column(db.String)
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
+
+    viewers = db.relationship(
+        'User', secondary=viewers, lazy='dynamic')
 
     profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
