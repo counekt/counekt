@@ -18,13 +18,12 @@
       <div id="profile-right-top">
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
-            {% if club not in current_user.clubs %}
-            <!--
-            {% raw %}
+            <div id="profile-bar-content">
+            {% if user != current_user and current_user.is_authenticated %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.UserToClubRequest.query.filter_by(type='join', sender=current_user, receiver=user).first(), request_received = models.ClubToUserRequest.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_joined = club in current_user.clubs %}
-              <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
-                {% if is_connected %}
+              {% with request_sent = models.UserToUserRequest.query.filter_by(type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
+              <button id="connect-button" class="button {% if is_allied %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_allied %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_allied %}
                   {% include 'profiles/user/connect-button/connected.html' %}
                 {% elif request_sent %}
                   {% include 'profiles/user/connect-button/pending.html' %}
@@ -35,11 +34,8 @@
                 {% endif %}
               </button>
               {% endwith %}
-              {% endraw %}
-               -->
-               <button class="button is-info is-inverted" id="join-button">Join</button>
             {% else %}
-              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Club</button>
+              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
               {% endif %}
           </div>
           <br style="clear: both;">
@@ -177,10 +173,6 @@
 <script src="/static/js/profiles/add-members.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
-
-  function sendInvites() {
-    sendClubInvites();
-  }
 
 
   var handle = "{{club.handle}}";
@@ -393,11 +385,34 @@ load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
-  function load_addMembers_js() {
-
+  function sendInvites() {
+    sendClubInvites();
   }
+
+function sendClubInvites() {
+  var formData = new FormData();
+    var usernames = JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username')));
+    console.log(usernames);
+   formData.append("usernames", usernames);
+   formData.append("do", true)
+
+    $.post({
+      type: "POST",
+      url: "/€"+handle+"/invite/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") { location.replace("/€"+response["handle"]+"/"); }
+        else{message(status, response["box_id"], true);}
+        
+      }});
+}
+
 {% if request.url_rule.endpoint in ['profiles.club_add_members']  %}
-load_addMembers_js();
+load_add_members_js();
 {% endif %}
 </script>
 <script type="text/javascript">

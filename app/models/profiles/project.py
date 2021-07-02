@@ -6,15 +6,23 @@ from app.models.base import Base
 from app.models.locationBase import locationBase
 from flask import url_for
 
+viewers = db.Table('project_viewers',
+                    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+                    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+                    )
 
 class Project(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
+    symbol = "£"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
     group = db.relationship("Group", foreign_keys=[group_id])
     handle = db.Column(db.String, index=True, unique=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
+
+    viewers = db.relationship(
+        'User', secondary=viewers, lazy='dynamic')
 
     profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
@@ -32,16 +40,20 @@ class Project(db.Model, Base, locationBase):
             user.projects.append(self)
         self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/projects/{self.handle}/", replacement="/static/images/project.jpg")
 
+    def add_member(self, user):
+        self.group.members.append(user)
+        user.clubs.append(self)
+
+    def remove_member(self, user):
+        self.group.members.remove(user)
+        user.clubs.remove(self)
+
     def delete(self):
         for m in self.group.members:
             m.clubs.remove(self)
         if self.exists_in_db:
             db.session.delete(self.group)
             db.session.delete(self)
-
-    @property
-    def symbol(self):
-        return "£"
 
     @property
     def href(self):

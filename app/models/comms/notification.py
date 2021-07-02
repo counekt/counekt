@@ -20,7 +20,7 @@ class Notification(db.Model, Base):
             receiver.notifications.append(self)
 
     def __repr__(self):
-        return "<Notification {}>".format(self.get_data().get('title'))
+        return "<Notification {}>".format(self.get_data().get('type'))
 
     def get_data(self):
         return json.loads(str(self.payload_json))
