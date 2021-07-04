@@ -19,11 +19,10 @@
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
             {% if club not in current_user.clubs %}
-              <!--{% raw %}-->
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.UserToClubRequest.query.filter_by(type='join', sender=current_user, receiver=user).first(), request_received = models.ClubToUserRequest.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_joined = club in current_user.clubs %}
-              <button id="connected-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
-                {% if is_connected %}
+              {% with request_sent = models.UserToClubRequest.query.filter_by(type='join', sender=current_user, receiver=club).first(), request_received = models.ClubToUserRequest.query.filter_by(type='connect', sender=club, receiver=current_user).first(), is_joined = club in current_user.clubs %}
+              <button id="join-button" class="button {% if is_joined %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_joined %}joined{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_joined %}
                   {% include 'profiles/join-button/connected.html' %}
                 {% elif request_sent %}
                   {% include 'profiles/join-button/pending.html' %}
@@ -34,7 +33,6 @@
                 {% endif %}
               </button>
               {% endwith %}
-              <!--{% endraw %}-->
               <!--<button class="button is-info is-inverted" id="join-button">Join</button>-->
             {% else %}
               <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Club</button>
