@@ -1,0 +1,106 @@
+#background {
+	padding-top: 50px;
+	padding-bottom: 0px;
+}
+
+#messages-box {
+	min-height: 700px;
+	max-width: calc(598px);
+	margin-bottom: 0px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	padding-bottom: 500px;
+}
+
+#messages-title {
+	color:black;
+	text-align: center;
+}
+
+#messages-top {
+	height: 45px;
+}
+
+.msg {
+	margin: 0px !important;
+	border-radius:0px !important;
+}
+
+.msg.unread {
+	background-color: rgb(230,235,255);
+}
+
+.msg:hover {
+	background-color: whitesmoke;
+  	 cursor: pointer;
+  	 transition: 0.3s;
+}
+
+.msg.unread:hover {
+	background-color: rgb(225,230,255);
+}
+
+.msg-content {
+	display: inline-block;
+}
+
+.msg-icon {
+	vertical-align: top;
+	margin-right: 10px;
+}
+
+.splitter {
+	margin: 0;
+	height: 0px;
+	border-bottom: 1px #edf0f2 solid;
+	margin: auto;
+}
+
+.profile-name {
+}
+
+.profile-name:hover {
+	text-decoration: underline;
+}
+
+.profile-image-content:hover {
+	-webkit-filter: brightness(85%);
+  	 filter: brightness(85%);
+  	 cursor: pointer;
+}
+
+
+.profile-image {
+	width: 32px;
+	height: 32px;
+	display: inline-block;
+	line-height: 20px;
+	vertical-align: bottom;
+}
+
+.profile-image-content {
+	width: 100%;
+	border-radius: 100%;
+	transition: 0.3s;
+	vertical-align: bottom;
+}
+
+@media (max-width:500px) {
+  #messages-box {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+  	background-color: rgba(255,255,255,0.75);
+  	padding-right: 0;
+  	padding-left: 0;
+}
+
+#background {
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+}
+
+}
