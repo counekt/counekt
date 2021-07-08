@@ -94,8 +94,8 @@ class UserToClubRequest(db.Model, RequestBase, Base):
 
     def _do(self):
         if self.type == "join":
-            self.receiver.group.add_member(self.sender)
-            self.sender.clubs.append(self.receiver)
+            self.receiver.viewers.remove(self.sender)
+            self.receiver.add_member(self.sender)
 
     def __repr__(self):
         return "<UserToClubRequest {}>".format(self.type)
@@ -122,8 +122,8 @@ class UserToProjectRequest(db.Model, RequestBase, Base):
 
     def _do(self):
         if self.type == "join":
-            self.receiver.group.add_member(self.sender)
-            self.sender.projects.append(self.receiver)
+            self.receiver.viewers.remove(self.sender)
+            self.receiver.add_member(self.sender)
 
     def __repr__(self):
         return "<UserToProjectRequest {}>".format(self.type)

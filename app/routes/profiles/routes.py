@@ -88,10 +88,6 @@ def invite_to_club(handle):
             if flask_request.form.get("do") and not sent_request and not received_request:
                 request = models.ClubToUserRequest(type="invite", sender=club, receiver=user)
                 db.session.add(request)
-            elif flask_request.form.get("accept") and received_request:
-                received_request.accept()
-            elif flask_request.form.get("undo") and sent_request:
-                sent_request.regret()
         db.session.commit()
         return json.dumps({'status': 'success', 'handle':handle})
 
