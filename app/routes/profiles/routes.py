@@ -77,6 +77,8 @@ def connect(username):
 @ bp.route("/€<handle>/invite/", methods=["POST"])
 def invite_to_club(handle):
     club = models.Club.query.filter_by(handle=handle).first()
+    if club not in current_user.clubs:
+        abort(404)
     if flask_request.method == 'POST':
         usernames = json.loads(flask_request.form.get("usernames"))
         for username in usernames:
@@ -93,10 +95,32 @@ def invite_to_club(handle):
         db.session.commit()
         return json.dumps({'status': 'success', 'handle':handle})
 
+@login_required
+@ bp.route("/join/club/<handle>/", methods=["POST"])
+@ bp.route("/join/€<handle>/", methods=["POST"])
+def join_club(handle):
+    club = models.Club.query.filter_by(handle=handle).first()
+    
+    if flask_request.method == 'POST':
+        received_request = models.ClubToUserRequest.query.filter_by(type="invite", sender=club, receiver=current_user).first()
+        sent_request = models.UserToClubRequest.query.filter_by(type="join", receiver=current_user, sender=club).first()
+        if flask_request.form.get("do") and not sent_request and not received_request:
+            request = models.UserToClubRequest(type="join", sender=current_user, receiver=club)
+            db.session.add(request)
+        elif flask_request.form.get("accept") and received_request:
+            received_request.accept()
+        elif flask_request.form.get("undo") and sent_request:
+            sent_request.regret()
+        db.session.commit()
+        return json.dumps({'status': 'success', 'handle':handle})
+
+
 @ bp.route("/project/<handle>/invite/", methods=["POST"])
 @ bp.route("/£<handle>/invite/", methods=["POST"])
 def invite_to_project(handle):
     project = models.Project.query.filter_by(handle=handle).first()
+    if project not in current_user.project:
+        abort(404)
     if flask_request.method == 'POST':
         usernames = json.loads(flask_request.form.get("usernames"))
         for username in usernames:
