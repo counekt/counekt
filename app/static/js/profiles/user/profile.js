@@ -6,6 +6,19 @@ $(document).on('click', 'ul li', function() {
 
 });
 
+$(document).on('click', '#more-details-button', function() {
+    if ($('#more-details-dropdown').hasClass('is-active')) {
+      $('#more-details-dropdown').removeClass('is-active');
+    }
+    else {
+      $('#more-details-dropdown').addClass('is-active');
+    }
+  });
+
+$('#more-details-button').focusout(function() {
+  $('#more-details-dropdown').removeClass('is-active');
+});
+
 $(document).on('click', '#connect-button', function() {
 	console.log($(this).data('type'));
 	if ($(this).data('type') == "default") {
