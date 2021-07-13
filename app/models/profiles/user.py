@@ -116,6 +116,10 @@ class User(UserMixin, db.Model, Base, locationBase):
     def has_skills(self, titles):
         return all([title in [skill.title for skill in self.skills.all()] for title in titles])
 
+    @property
+    def dname(self):
+        return self.name or self.username
+
     @ property
     def age(self):
         return funcs.get_age(self.birthdate)

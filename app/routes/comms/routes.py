@@ -7,6 +7,14 @@ from app.routes.comms import bp
 @login_required
 @ bp.route("/messages/", methods=["GET", "POST"])
 def messages():
-    #messages = models.Message.query.filter_by(handle=handle).first()
+    #convos = models.Convo.query.filter_by(handle=handle).first()
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
     return render_template("comms/messages.html", navbar=True, background=True, size="medium", models=models)
+
+@login_required
+@ bp.route("/message/<username>/", methods=["GET", "POST"])
+def message(username):
+    user = models.User.query.filter_by(username=username).first()
+    if not user:
+        abort(404)
+    return render_template("comms/message.html", user=user, navbar=True, background=True, size="medium", models=models)
