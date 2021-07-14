@@ -17,4 +17,7 @@ def message(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
         abort(404)
-    return render_template("comms/message.html", user=user, navbar=True, background=True, size="medium", models=models)
+    convo = models.Convo.query.filter(models.Convo.member_count==2,models.Convo.members.contains(user), models.Convo.members.contains(current_user))
+
+    print(convo)
+    return render_template("comms/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)

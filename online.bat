@@ -1,0 +1,1 @@
+set DATABASE_URL=postgresql://postgres:M0t1v4t10n@ctw-dev.c1sybrhbini4.us-east-2.rds.amazonaws.com:5432/postgres

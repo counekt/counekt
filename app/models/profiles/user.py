@@ -20,6 +20,11 @@ from app import login
 import os
 
 
+convos = db.Table('convos',
+                  db.Column('convo_id', db.Integer, db.ForeignKey('convo.id')),
+                  db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+                  )
+
 allies = db.Table('allies',
                   db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
                   db.Column('right_id', db.Integer, db.ForeignKey('user.id'))
@@ -86,6 +91,9 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     projects = db.relationship(
         'Project', secondary=projects, backref="members", lazy='dynamic')
+    
+    convos = db.relationship(
+        'Convo', secondary=convos, backref="members", lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
