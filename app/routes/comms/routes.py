@@ -7,9 +7,8 @@ from app.routes.comms import bp
 @login_required
 @ bp.route("/messages/", methods=["GET", "POST"])
 def messages():
-    #convos = models.Convo.query.filter_by(handle=handle).first()
-    #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("comms/messages.html", navbar=True, background=True, size="medium", models=models)
+    convos = current_user.convos
+    return render_template("comms/messages.html", navbar=True, background=True, size="medium", models=models, convos = convos)
 
 @login_required
 @ bp.route("/message/<username>/", methods=["GET", "POST"])
@@ -21,3 +20,9 @@ def message(username):
 
     print(convo)
     return render_template("comms/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
+
+@login_required
+@ bp.route("/convo/<id>/", methods=["GET", "POST"])
+def conversation(id):
+    convo = models.Convo.query.get(id)
+    return render_template("comms/message.html", convo=convo, navbar=True, background=True, size="medium", models=models)
