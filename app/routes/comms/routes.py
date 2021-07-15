@@ -3,6 +3,8 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 import json
 from app import db, models
 from app.routes.comms import bp
+from sqlalchemy import func, inspect
+
 
 @login_required
 @ bp.route("/messages/", methods=["GET", "POST"])
@@ -16,9 +18,8 @@ def message(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
         abort(404)
-    convo = models.Convo.query.filter(models.Convo.member_count==2,models.Convo.members.contains(user), models.Convo.members.contains(current_user))
-
-    print(convo)
+    # Get the dialogue between current_user and user if it exists
+    convo = models.Convo.query.join(models.Convo.members).group_by(models.Convo.id).having(func.count()==2).filter(models.Convo.members.contains(user), models.Convo.members.contains(current_user))
     return render_template("comms/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
 
 @login_required
