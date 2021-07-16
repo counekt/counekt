@@ -17,8 +17,22 @@
 	text-align: center;
 }
 
+#msg-icon {
+	margin-right: 15px;
+	color: #238cd1;
+}
+
+#messages-subtitle {
+	color:darkgrey;
+	text-align: center;
+}
+
 #messages-top {
 	height: 45px;
+}
+
+#sep-line {
+	margin-top: 27.5px;
 }
 
 .msg {

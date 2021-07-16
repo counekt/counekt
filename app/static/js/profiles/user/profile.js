@@ -6,6 +6,26 @@ $(document).on('click', 'ul li', function() {
 
 });
 
+
+
+$(document).on('click', '#more-details-button', function() {
+    if ($('#more-details-dropdown').hasClass('is-active')) {
+      $('#more-details-dropdown').removeClass('is-active');
+    }
+    else {
+      $('#more-details-dropdown').addClass('is-active');
+    }
+  });
+
+
+$(document).click(function(event) { 
+  var $target = $(event.target);
+  if(!$target.closest('#more-details-dropdown').length && 
+  $('#more-details-dropdown').is(":visible")) {
+    $('#more-details-dropdown').removeClass('is-active');;
+  }        
+});
+
 $(document).on('click', '#connect-button', function() {
 	console.log($(this).data('type'));
 	if ($(this).data('type') == "default") {

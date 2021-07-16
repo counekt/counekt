@@ -1,6 +1,6 @@
 from app import db
 from app.models.base import Base
-
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class Group(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,7 +26,7 @@ class Group(db.Model, Base):
     def remove_member(self, user):
         self.memberships.filter_by(owner=user).delete()
 
-    @property
+    @hybrid_property
     def members(self):
         return [m.owner for m in self.memberships]
 
