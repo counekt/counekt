@@ -4,6 +4,15 @@
 }
 
 #messages-box {
+	padding: 0px;
+	width: 	100%;
+	max-width: calc(598px);
+	display: 	inline-block;
+}
+
+#messages-content {
+	padding: 10px;
+	width: 	100%;
 	min-height: 700px;
 	max-width: calc(598px);
 	margin-bottom: 0px;
@@ -92,11 +101,71 @@
 	vertical-align: bottom;
 }
 
+
+
 .profile-image-content {
 	width: 100%;
 	border-radius: 100%;
 	transition: 0.3s;
 	vertical-align: bottom;
+}
+
+
+
+#message-field {
+  width: 100%;
+  height: 46px;
+  margin: auto;
+  float:right;
+  display:flex;
+  bottom: 0;
+  position: absolute; 
+}
+
+#send {
+  float:right;
+  height:48px;
+  width: 70px;
+  padding: 0px;
+  flex-grow: 0;
+}
+
+#send-button {
+  width: 70px;
+  height: 48px;
+  border-radius: 0;
+  border: solid lightgray 1px;
+  border-left: 0px;
+  border-bottom-right-radius: 10px;
+}
+
+#field {
+  float:left;
+  height:48px;
+  width: 83%;
+  padding: 0px;
+  flex-grow: 1;
+}
+
+#text-field {
+  box-shadow: none;
+  border-color: lightgray;
+  height:48px;
+  width: 100%;
+  border-radius: 0;
+  border-bottom-left-radius: 10px;
+}
+
+#text-field:focus {
+  outline-style: none;
+  box-shadow: none;
+  border-color: lightgray;
+}
+
+#text-field:hover {
+  outline-style: none;
+  box-shadow: none;
+  border-color: lightgray;
 }
 
 @media (max-width:500px) {

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
-<div id="messages-box" class="floater container">
+<div id="messages-box" class="container floater">
+<div id="messages-content">
   <div id="messages-top">
     <p class="title selectable" id="messages-title"><span class="icon is-small" id="msg-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span><span class="text">{{user.dname}}</span></p>
     <p class="subtitle selectable" id="messages-subtitle">@{{user.username}}</p>
   </div>
   <hr id="sep-line" style="background-color:darkgray;">
-</div>
   <div id="messages">
   	{% for msg in messages %}
     {% with data = msg.get_data() %}
@@ -26,6 +26,22 @@
     {% endwith %}
     {% endfor %}
   </div>
+</div>
+ <div class="control" id="message-field">
+        <div id="field">
+  <textarea class="textarea has-fixed-size" placeholder="Type a message..." id="text-field" rows="1"></textarea> 
+</div>
+<div id="send">
+  <button class="button is-link is-medium is-inverted" id="send-button">
+    <span class="icon is-medium">
+      <span class="fa-2x">
+      <i class="fa fa-long-arrow-right"></i>
+    </span>
+    </span>
+  </button>
+</div>
+</div>
+</div>
 {% endblock content %}
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/messages.css">
