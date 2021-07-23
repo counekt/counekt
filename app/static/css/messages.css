@@ -134,8 +134,8 @@
   width: 70px;
   height: 48px;
   border-radius: 0;
-  border: solid lightgray 1px;
-  border-left: 0px;
+  border: solid whitesmoke 0px;
+  border-left-width: 1px;
   border-bottom-right-radius: 10px;
 }
 
@@ -153,6 +153,7 @@
   height:48px;
   width: 100%;
   border-radius: 0;
+  border-width: 0px;
   border-bottom-left-radius: 10px;
 }
 

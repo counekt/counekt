@@ -36,3 +36,4 @@ class Config(object):
     BUCKET = getenv('BUCKET')
     AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_KEY = getenv("AWS_SECRET_KEY")
+    SQLALCHEMY_POOL_SIZE=25

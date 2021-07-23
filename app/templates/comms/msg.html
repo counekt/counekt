@@ -1,0 +1,12 @@
+<div href="{% if msg %}{{msg.sender.href}}{% else %}\\href//{% endif %}" data-id="{% if msg %}{{msg.id}}{% else %}\\id//{% endif %}" class="message">
+      <div class="msg box {% if msg %}{% if not msg.seen %}unread{% endif %}{% else %}\\unread//{% endif %}">
+          <div class="msg-content">
+              <a class="profile-image" href="{% if msg %}{{msg.sender.href}}{% else %}\\href//{% endif %}">
+                <img alt draggable="false" class="profile-image-content" src="{% if msg %}{{msg.sender.profile_photo.src}}{% else %}\\photo_src//{% endif %}">
+              </a>
+              <br>
+              <a class="profile-name" href="{% if msg %}{{msg.sender.href}}{% else %}\\href//{% endif %}"><b>{% if msg %}{{msg.sender.dname}}{% else %}\\dname//{% endif %}</b></a>
+              <span class="selectable">{% if msg %}{{msg.text}}{% else %}\\text//{% endif %}</span>
+          </div>
+      </div>
+</div>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Feedback</p>
+<div class="container floater">
+	<div id="create-feedback"></div>
+	<div id="search-filter"></div>
+	{% for fb in feedback %}
+			{% include 'comms/fb.html' %}
+	{% endfor %}
+</div>
+
+{% endblock %}
