@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Wall</p>
+<div class="container floater">
+	<div id="create-post"></div>
+	<div id="search-filter"></div>
+	{% for p in posts %}
+		{% include 'comms/post.html' %}
+	{% endfor %}
+</div>
+
+{% endblock %}

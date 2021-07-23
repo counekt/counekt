@@ -8,23 +8,11 @@
   </div>
   <hr id="sep-line" style="background-color:darkgray;">
   <div id="messages">
-  	{% for msg in messages %}
-    {% with data = msg.get_data() %}
-    <a href="{{data.get('href')}}">
-      <div class="msg box {% if not msg.seen %}unread{% endif %}" data-id="{{msg.id}}">
-        <span class="msg-icon icon" style="color: {{data.get('color')}};"><i class="fas fa-lg {{data.get('icon')}}"></i></span>
-          <div class="msg-content">
-              <a class="profile-image" href="{{data.get('href')}}">
-              <img alt draggable="false" class="profile-image-content" src="{{data.get('sender-photo')}}">
-              </a>
-              <br>
-              <a class="profile-name" href="{{data.get('href')}}"><b>{% if data.get('sender-name') %}{{data.get('sender-name')}}{% elif data.get('sender-username') %}{{data.get('sender-username')}}{% else %}{{data.get('sender-handle')}}{% endif %}</b></a>
-              <span class="selectable">{{data.get('message')}}</span>
-        </div>
-      </div>
-    </a>
-    {% endwith %}
-    {% endfor %}
+    {% if convo %}
+    	{% for msg in convo.messages %}
+        {% include 'comms/msg.html' %}
+      {% endfor %}
+    {% endif %}
   </div>
 </div>
  <div class="control" id="message-field">
@@ -45,5 +33,18 @@
 {% endblock content %}
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/messages.css">
+<script type="text/javascript">
+  var username = "{{user.username}}";
+  function msg_template(dname="", href="",sender="",unread="", id="", text="") {
+            if (sender == "current_user") {
+              var photo_src = '{{current_user.profile_photo.src}}';
+            }
+            else if (sender == "user") {
+              var photo_src = '{{user.profile_photo.src}}';
+            }
+            return `{% include 'comms/msg.html' %}`.replaceAll('\\dname//', dname).replaceAll('\\href//', href).replaceAll('\\photo_src//',photo_src).replaceAll('\\unread//',unread).replaceAll('\\id//',id).replaceAll('\\text//',text);
+        }
+
+</script>
 <script src="/static/js/comms/message.js"></script>
 {% endblock %}
