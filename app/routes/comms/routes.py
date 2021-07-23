@@ -11,7 +11,7 @@ from sqlalchemy import func, inspect
 @ bp.route("/messages/", methods=["GET", "POST"])
 def messages():
     convos = current_user.convos
-    return render_template("comms/messages.html", navbar=True, background=True, size="medium", models=models, convos = convos)
+    return render_template("comms/messages/messages.html", navbar=True, background=True, size="medium", models=models, convos = convos)
 
 @login_required
 @ bp.route("/message/<username>/", methods=["GET", "POST"])
@@ -60,7 +60,7 @@ def message(username):
             convo.members.append(user)
             db.session.commit()
             return json.dumps({'status': 'success'})
-    return render_template("comms/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
+    return render_template("comms/messages/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/get/messages/<username>/", methods=["POST"])
@@ -88,8 +88,14 @@ def conversation(id):
 
 @ bp.route("/feedback/", methods=["GET", "POST"])
 def feedback():
-    return render_template("comms/feedback.html", navbar=True, background=True, size="medium", models=models)
+    return render_template("comms/feedback/feedback.html", navbar=True, background=True, size="medium", models=models)
+
+@ bp.route("/feedback/submit/", methods=["GET", "POST"])
+def submit_feedback():
+    return render_template("comms/feedback/submit.html", navbar=True, background=True, size="medium", models=models)
+
 
 @ bp.route("/wall/", methods=["GET", "POST"])
 def wall():
-    return render_template("comms/wall.html", navbar=True, background=True, size="medium", models=models)
+    #posts = current_user
+    return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models)

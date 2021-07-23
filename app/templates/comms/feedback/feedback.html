@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Feedback</p>
+<div class="container floater" style="text-align: center;">
+	<!-- Create feedback -->
+	<div style="display: inline-block;">
+		<figure class="image is-48x48" style="width:40px;height: 40px; float: left; margin-right: 5px;">
+				<img class="is-rounded" src="{{current_user.profile_photo.src}}">
+			</figure>
+		<div class="field is-expanded has-addons" style="float:right;">
+                  <p class="control">
+                    <input id="create-feedback" class="input" type="location" placeholder='Create feedback'>
+                  </p>
+                </div>
+	</div>
+	<div id="search-filter"></div>
+	{% for fb in feedback %}
+			{% include 'comms/fb.html' %}
+	{% endfor %}
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript">
+	$("#create-feedback").on('focus', function() {
+		window.location.href = "/feedback/submit/";
+	});
+</script>
+{% endblock %}
