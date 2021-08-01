@@ -2,22 +2,7 @@
 {% block content %}
 <p class="title selectable" style="margin: auto;margin-bottom: 10px;">Feedback</p>
 <div class="container floater" style="text-align: center;">
-	<!-- Create feedback -->
-	<div style="display: flex; width:100%; margin-bottom: 10px;">
-		<figure class="image is-48x48" style="width:40px;height: 40px; float: left; margin-right: 5px;">
-				<img class="is-rounded" src="{{current_user.profile_photo.src}}">
-			</figure>
-		<div class="field is-expanded has-addons" style="float:right; width: 100%;">
-                  <p class="control has-icons-left" style="width: 100%;">
-                    <input id="create-feedback" class="input" type="location" placeholder='Create feedback'>
-                    <span class="icon is-small is-left">
-	                    	<i class="fa fa-pencil"></i>
-	                  	</span>
-                  </p>
-      </div>
-  </div>
-
-    <!-- Filter feedback -->
+	<!-- Filter feedback -->
     <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto;">
     <div class="field is-expanded has-addons" style="float:left; margin-right: 10px;">
     			<p class="control has-icons-left">
@@ -58,43 +43,7 @@
   </p>
     </div>
    </div>
-		{% for fb in feedback %}
-			{% include 'comms/feedback/fb.html' %}
-		{% endfor %}
+
+		{% include 'comms/feedback/fb.html' %}
 </div>
-
-{% endblock %}
-{% block scripts %}
-<script type="text/javascript">
-	$("#create-feedback").on('focus', function() {
-		window.location.href = "/feedback/submit/";
-	});
-
-	$(".fb-search-b").on('click', function() {
-		var $clicked = $(this);
-		var clicked	= this;
-		$(".fb-search-b").each(function() {
-			var $this = $(this);
-			if (this != clicked) {
-			$this.attr('data-active', "false");
-				$this.removeClass($this.data('on'));
-			}
-		})
-		
-		console.log($clicked.attr('data-active'));
-		if ($clicked.attr('data-active') == "true") {
-					$clicked.attr('data-active', "false");
-					$clicked.removeClass($clicked.data('on'));
-					console.log("DDED");
-
-		}
-		else {
-			console.log("ADASASD");
-		$clicked.attr('data-active', "true");
-		$clicked.addClass($clicked.data('on'));
-	}
-
-
-	})
-</script>
 {% endblock %}

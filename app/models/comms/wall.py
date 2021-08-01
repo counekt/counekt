@@ -4,7 +4,7 @@ from time import time
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 import json
 from sqlalchemy.ext.declarative import declared_attr
-
+from datetime import datetime
 
 posts = db.Table('posts',
                   db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
@@ -18,13 +18,22 @@ class Wall(Base, db.Model):
 
 class Media:
 
+	def __init__(self, **kwargs):
+		super(Media, self).__init__(**kwargs)
+		self.creation_datetime = datetime.utcnow()
+	
 	@declared_attr
 	def author_id(self):
-		author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+		return db.Column(db.Integer, db.ForeignKey('user.id'))
+
+	@declared_attr
+	def author(self):
+		return db.relationship('User',foreign_keys=[self.author_id])
 	
 	creation_datetime = db.Column(db.DateTime, index=True)
 	title = db.Column(db.String)
 	content = db.Column(db.Text)
+	public = db.Column(db.Boolean, default=False)
 
 	@declared_attr
 	def upvotes(self):

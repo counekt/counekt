@@ -5,9 +5,13 @@ from time import time
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 import json
 
-class Feedback(Media, Base):
-	id = db.Column(db.Integer, primary_key=True)
+class Feedback(Media, Base, db.Model):
 
-	replies = db.relationship('Feedback', backref='to', lazy='dynamic',
-        foreign_keys='Feedback.to_id')
+	def __init__(self, **kwargs):
+		print(kwargs)
+		super(Feedback, self).__init__(**kwargs)
+
+	id = db.Column(db.Integer, primary_key=True)
 	to_id = db.Column(db.Integer, db.ForeignKey('feedback.id'))
+	replies = db.relationship('Feedback', lazy='dynamic',
+        remote_side=[to_id])
