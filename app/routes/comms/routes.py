@@ -11,7 +11,7 @@ from sqlalchemy import func, inspect
 @ bp.route("/messages/", methods=["GET", "POST"])
 def messages():
     convos = current_user.convos
-    return render_template("comms/messages.html", navbar=True, background=True, size="medium", models=models, convos = convos)
+    return render_template("comms/messages/messages.html", navbar=True, background=True, size="medium", models=models, convos = convos)
 
 @login_required
 @ bp.route("/message/<username>/", methods=["GET", "POST"])
@@ -60,7 +60,7 @@ def message(username):
             convo.members.append(user)
             db.session.commit()
             return json.dumps({'status': 'success'})
-    return render_template("comms/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
+    return render_template("comms/messages/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/get/messages/<username>/", methods=["POST"])
@@ -88,8 +88,47 @@ def conversation(id):
 
 @ bp.route("/feedback/", methods=["GET", "POST"])
 def feedback():
-    return render_template("comms/feedback.html", navbar=True, background=True, size="medium", models=models)
+    feedback = models.Feedback.query.limit(10)
+    return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models)
+
+@ bp.route("/feedback/<fb_id>/", methods=["GET", "POST"])
+def feedback_id(fb_id):
+    fb = models.Feedback.query.get(fb_id)
+    if not fb:
+        abort(404)
+    return render_template("comms/feedback/feedback_id.html", fb=fb, navbar=True, background=True, size="medium", models=models)
+
+
+@login_required
+@ bp.route("/feedback/submit/", methods=["GET", "POST"])
+def submit_feedback():
+    if flask_request.method == 'POST':
+        action = flask_request.form.get("action")
+        title = flask_request.form.get("title")
+        text = flask_request.form.get("text")
+        print(title)
+        print(text)
+
+        if action == "submit":
+            if title:
+                fb = models.Feedback(title=title,content=text,author=current_user, public=True)
+                db.session.add(fb)
+                db.session.commit()
+                return json.dumps({'status': 'success', 'id':fb.id})
+            return json.dumps({'status': 'error'})
+
+        if action == "save":
+            if title or text:
+                fb = models.Feedback(title=title,content=text,author=current_user, public=False)
+                db.session.add(fb)
+                db.session.commit()
+                return json.dumps({'status': 'success'})
+            return json.dumps({'status': 'error'})
+
+    return render_template("comms/feedback/submit.html", navbar=True, background=True, size="medium", models=models)
+
 
 @ bp.route("/wall/", methods=["GET", "POST"])
 def wall():
-    return render_template("comms/wall.html", navbar=True, background=True, size="medium", models=models)
+    #posts = current_user
+    return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models)
