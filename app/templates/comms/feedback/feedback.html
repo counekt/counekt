@@ -58,9 +58,11 @@
   </p>
     </div>
    </div>
+   	<div style="margin-top: 10px;">
 		{% for fb in feedback %}
 			{% include 'comms/feedback/fb.html' %}
 		{% endfor %}
+	</div>
 </div>
 
 {% endblock %}
@@ -97,4 +99,13 @@
 
 	})
 </script>
+<style type="text/css">
+	.fb:not(:last-child) {
+		margin-bottom: 10px;
+	}
+
+	.ballot-item:not(:last-child) {
+		margin-bottom: 5px;
+	}
+</style>
 {% endblock %}
