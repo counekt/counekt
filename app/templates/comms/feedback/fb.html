@@ -1,21 +1,23 @@
 <div class="fb subprofile box" style="text-align: left;">
-<div class="ballot" style="width: 30px;">
-	<button class="button transition is-small ballot-item" style="margin-bottom: 5px;">
-      <span class="icon">
-        <i class="fas fa-caret-up"></i>
+<div class="ballot">
+	<button class="button transition is-small ballot-item is-inverted is-dark vote upvote" data-on="is-info">
+      <span class="icon is-medium">
+        <i class="fas fa-caret-up fa-2x"></i>
       </span>
     </button>
-    <button class="button transition is-small is-static ballot-item" style="width: 30px;">
+    <button class="button transition is-small is-static ballot-item">
       <span class="text">
         {{fb.upvotes.count()-fb.downvotes.count()}}
       </span>
     </button>
-    <button class="button transition is-small ballot-item">
-      <span class="icon">
-        <i class="fas fa-caret-down"></i>
+    <button class="button transition is-small ballot-item is-dark is-inverted vote downvote" data-on="is-danger">
+      <span class="icon is-medium">
+        <i class="fas fa-caret-down fa-2x"></i>
       </span>
     </button>
 </div>
+<div class="fb-content">
 <p class="title is-4" style="color:black;">{{fb.title}}</p>
-<p class="text">{{fb.content}}</p>
+<p class="subtitle is-6 text" style="color:black;">{{fb.content}}</p>
+</div>
 </div>
