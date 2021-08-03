@@ -58,9 +58,11 @@
   </p>
     </div>
    </div>
+   	<div style="margin-top: 10px;">
 		{% for fb in feedback %}
 			{% include 'comms/feedback/fb.html' %}
 		{% endfor %}
+	</div>
 </div>
 
 {% endblock %}
@@ -95,6 +97,94 @@
 	}
 
 
-	})
+	});
+
+	$(".vote").on('click', function() {
+		var $clicked = $(this);
+		var clicked	= this;
+		$clicked.closest('.ballot').find('.vote').each(function() {
+			var $this = $(this);
+			if (this != clicked) {
+			$this.attr('data-active', "false");
+				$this.removeClass($this.data('on'));
+			}
+		});
+		
+		console.log($clicked.attr('data-active'));
+		if ($clicked.attr('data-active') == "true") {
+					$clicked.attr('data-active', "false");
+					$clicked.removeClass($clicked.data('on'));
+					console.log("DDED");
+
+		}
+		else {
+		$clicked.attr('data-active', "true");
+		$clicked.addClass($clicked.data('on'));
+	}});
+
+
+	function like() {
+		
+	}
+
+
+	function dislike() {
+
+	}
+
+	function unlike() {
+
+	}
+
+	function undislike() {
+
+	}
+
 </script>
+<style type="text/css">
+	.fb:not(:last-child) {
+		margin-bottom: 10px;
+	}
+
+	.ballot-item:not(:last-child) {
+		margin-bottom: 0px;
+	}
+
+/*
+	.ballot-item span i {
+		height: 18px;
+	}
+*/
+	button.ballot-item {
+		height: 20px;
+		width: 	20px;
+		padding-left: 10px;
+		padding-right: 10px;
+		border-width: 0px;
+
+	}
+
+	.ballot {
+		width: 20px;
+		display: inline-block;
+		position: relative;
+		margin-right: 10px;
+		margin-left: 4px;
+	}
+
+	.fb {
+		clear: both;
+		padding: 7px;
+		height: 80px;
+
+	}
+
+	.fb-content {
+		vertical-align:top;
+		margin-top: 10px;
+				display: inline-block;
+
+	}
+
+</style>
 {% endblock %}

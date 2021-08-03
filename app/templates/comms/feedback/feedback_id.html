@@ -2,48 +2,6 @@
 {% block content %}
 <p class="title selectable" style="margin: auto;margin-bottom: 10px;">Feedback</p>
 <div class="container floater" style="text-align: center;">
-	<!-- Filter feedback -->
-    <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto;">
-    <div class="field is-expanded has-addons" style="float:left; margin-right: 10px;">
-    			<p class="control has-icons-left">
-                    <input id="search-feedback" class="input" type="location" placeholder='Search feedback'>
-                    <span class="icon is-small is-left">
-	                    	<i class="fa fa-search"></i>
-	                  	</span>
-           </p>
-       </div>
-    <div class="field is-grouped">
-    	<p class="control">
-    <button class="button transition fb-search-b" data-on="is-danger is-light" data-active="false">
-      <span id="cog" class="icon">
-        <i class="fas fa-fire-alt"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b" data-on="is-warning is-light" data-active="false">
-      <span id="cog" class="icon">
-        <i class="fas fa-medal"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b" data-on="is-success is-light" data-active="false">
-      <span id="cog" class="icon">
-        <i class="fas fa-seedling"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b" data-on="is-link is-light" data-active="false">
-      <span id="cog" class="icon">
-        <i class="fas fa-rocket"></i>
-      </span>
-    </button>
-  </p>
-    </div>
-   </div>
-
 		{% include 'comms/feedback/fb.html' %}
 </div>
 {% endblock %}

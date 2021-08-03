@@ -35,18 +35,19 @@ class Media:
 	content = db.Column(db.Text)
 	public = db.Column(db.Boolean, default=False)
 
-	@declared_attr
-	def upvotes(self):
-		db.relationship('Vote')
-
-	@declared_attr
-	def downvotes(self):
-		db.relationship('Vote')
-
 class Vote:
 	id = db.Column(db.Integer, primary_key=True)
-	upvote = db.Column(db.Boolean)
-	voter = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+	@declared_attr
+	def voter_id(self):
+		return db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+class PostUpvote(Vote,db.Model):
+	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+
+class PostDownvote(Vote,db.Model):
+	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
 class Post(Media,Base,db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -54,3 +55,7 @@ class Post(Media,Base,db.Model):
 	replies = db.relationship('Post', backref=db.backref("to", remote_side=[id]), lazy='dynamic',
         foreign_keys='Post.to_id')
 	to_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+	upvotes = db.relationship('PostUpvote', backref='post', lazy='dynamic',
+        foreign_keys='PostUpvote.post_id')
+	downvotes = db.relationship('PostDownvote', backref='post', lazy='dynamic',
+        foreign_keys='PostDownvote.post_id')
