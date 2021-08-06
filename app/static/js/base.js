@@ -38,3 +38,22 @@ function unload(_delay) {
  $("#flash").children().text(txt);
  $("#flash").delay(delay).animate({ opacity: 0, queue: false });
 }
+
+function post(url, success, args) {
+    var formData = new FormData();
+    console.log(args);
+    console.log(args.keys);
+    Object.keys(args).forEach((key,index) => {
+        formData.append(key,args[key]);
+    });
+    
+    $.post({
+        type: "POST",
+        url: url,
+        data: formData,
+        processData: false,
+        contentType: false,
+        success
+    });
+  
+  }

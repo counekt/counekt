@@ -42,6 +42,9 @@ class Vote:
 	def voter_id(self):
 		return db.Column(db.Integer, db.ForeignKey('user.id'))
 
+	@declared_attr
+	def voter(self):
+		return db.relationship('User',foreign_keys=[self.voter_id])
 
 class PostUpvote(Vote,db.Model):
 	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))

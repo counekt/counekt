@@ -88,6 +88,30 @@ def conversation(id):
 
 @ bp.route("/feedback/", methods=["GET", "POST"])
 def feedback():
+    if flask_request.method == 'POST':
+        fb_id = flask_request.form.get("fb_id")
+        action = flask_request.form.get("action")
+        fb = models.Feedback.query.get(fb_id)
+        print(fb_id)
+        print(action)
+        print(fb)
+        if action == "upvote":
+            fb.upvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "downvote":
+            fb.downvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "unupvote":
+            fb.unupvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "undownvote":
+            fb.undownvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        return json.dumps({'status': 'error'})
     feedback = models.Feedback.query.limit(10)
     return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models)
 
