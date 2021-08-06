@@ -133,6 +133,25 @@ def invite_to_project(handle):
         db.session.commit()
         return json.dumps({'status': 'success', 'handle':handle})
 
+@login_required
+@ bp.route("/join/project/<handle>/", methods=["POST"])
+@ bp.route("/join/£<handle>/", methods=["POST"])
+def join_project(handle):
+    project = models.Project.query.filter_by(handle=handle).first()
+    
+    if flask_request.method == 'POST':
+        received_request = models.ProjectToUserRequest.query.filter_by(type="invite", sender=project, receiver=current_user).first()
+        sent_request = models.UserToProjectRequest.query.filter_by(type="join", receiver=project, sender=current_user).first()
+        if flask_request.form.get("do") and not sent_request and not received_request:
+            request = models.UserToProjectRequest(type="join", receiver=project, sender=current_user)
+            db.session.add(request)
+        elif flask_request.form.get("accept") and received_request:
+            received_request.accept()
+        elif flask_request.form.get("undo") and sent_request:
+            sent_request.regret()
+        db.session.commit()
+        return json.dumps({'status': 'success', 'handle':handle})
+
 @ bp.route("/project/<handle>/exit/", methods=["POST"])
 @ bp.route("/£<handle>/exit/", methods=["POST"])
 def exit_from_project(handle):

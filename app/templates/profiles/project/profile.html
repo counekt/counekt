@@ -19,13 +19,11 @@
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
             {% if project not in current_user.projects %}
-
-            {% raw %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.UserToClubRequest.query.filter_by(type='join', sender=current_user, receiver=user).first(), request_received = models.ClubToUserRequest.query.filter_by(type='connect', sender=user, receiver=current_user).first(), is_joined = project in current_user.projects %}
-              <button id="connect-button" class="button {% if is_connected %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_connected %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
-                {% if is_connected %}
-                  {% include 'profiles/join-button/connected.html' %}
+              {% with request_sent = models.UserToProjectRequest.query.filter_by(type='join', sender=current_user, receiver=project).first(), request_received = models.ProjectToUserRequest.query.filter_by(type='invite', sender=project, receiver=current_user).first(), is_joined = project in current_user.projects %}
+              <button id="join-button" class="button {% if is_joined %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_joined %}joined{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_joined %}
+                  {% include 'profiles/join-button/joined.html' %}
                 {% elif request_sent %}
                   {% include 'profiles/join-button/pending.html' %}
                 {% elif request_received %}
@@ -35,11 +33,10 @@
                 {% endif %}
               </button>
               {% endwith %}
-              {% endraw %}
-              
-               <button class="button is-info is-inverted" id="join-button">Join</button>
-            {% else %}
-              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Project</button>
+              {% endif %}
+
+              {% if current_user in project.group.members and project.group.member_has_role(member=current_user, role_title="Master") %}
+                <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Project</button>
               {% endif %}
           </div>
           <br style="clear: both;">
@@ -160,7 +157,7 @@
 {% block scripts %}
 <!-- Probably good for now to have this below-->
 
-<link rel="stylesheet" href="/static/css/profiles/user/profile.css">
+<link rel="stylesheet" href="/static/css/profiles/profile.css">
 <link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
@@ -168,7 +165,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
-<script src="/static/js/profiles/profile.js"></script>
+<script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/project/profile.js"></script>
 <script src="/static/js/profiles/project/edit.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
@@ -183,33 +180,33 @@
   var handle = "{{project.handle}}";
 
   function makeConnectButtonDefault() {
-    $('#connect-button').addClass('is-info');
-    $('#connect-button').removeClass('is-light').removeClass('is-link');
-    $('#connect-button').html(`{% include 'profiles/join-button/default.html' %}`);
-    $('#connect-button').data('type', 'default');
-    $('#connect-button').removeClass('is-danger');
+    $('#join-button').addClass('is-info');
+    $('#join-button').removeClass('is-light').removeClass('is-link');
+    $('#join-button').html(`{% include 'profiles/join-button/default.html' %}`);
+    $('#join-button').data('type', 'default');
+    $('#join-button').removeClass('is-danger');
     
   }
 
   function makeConnectButtonPending() {
-    $('#connect-button').toggleClass('is-info is-light');
-    $('#connect-button').html(`{% include 'profiles/join-button/pending.html' %}`);
-    $('#connect-button').data('type', 'pending');
-    $('#connect-button').addClass('calm');
+    $('#join-button').toggleClass('is-info is-light');
+    $('#join-button').html(`{% include 'profiles/join-button/pending.html' %}`);
+    $('#join-button').data('type', 'pending');
+    $('#join-button').addClass('calm');
   }
 
   function makeConnectButtonConnected() {
-    $('#connect-button').toggleClass('is-success is-info');
-    $('#connect-button').html(`{% include 'profiles/join-button/connected.html' %}`);
-    $('#connect-button').data('type', 'connected');
-    $('#connect-button').addClass('calm');
+    $('#join-button').toggleClass('is-success is-info');
+    $('#join-button').html(`{% include 'profiles/join-button/joined.html' %}`);
+    $('#join-button').data('type', 'joined');
+    $('#join-button').addClass('calm');
   }
 
-$("#connect-button").hover(
+$("#join-button").hover(
   function() {
-        if ($(this).data('type') == 'connected' && !$(this).hasClass('calm')) {
+        if ($(this).data('type') == 'joined' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/join-button/disconnect.html' %}`);
+          $(this).html(`{% include 'profiles/join-button/leave.html' %}`);
         }
         else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
@@ -217,9 +214,9 @@ $("#connect-button").hover(
 
     }
   }, function() {
-        if ($(this).data('type') == 'connected') {
+        if ($(this).data('type') == 'joined') {
           $(this).removeClass('is-danger');
-          $(this).html(`{% include 'profiles/join-button/connected.html' %}`);
+          $(this).html(`{% include 'profiles/join-button/joined.html' %}`);
           $(this).removeClass('calm');
 
         }
