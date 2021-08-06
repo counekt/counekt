@@ -9,15 +9,17 @@ $(document).on('click', 'ul li', function() {
 $(document).on('click', '#join-button', function() {
 	console.log($(this).data('type'));
 	if ($(this).data('type') == "default") {
+    console.log("ok");
 		connect();
 	}
 
 	else if ($(this).data('type') == "pending"){
+    console.log("ha");
 		undoConnect();
 	}
 
 	else if ($(this).data('type') == "accept"){
-    console.log();
+    console.log("ho");
 		acceptConnect();
 	}
 
@@ -31,16 +33,21 @@ $(document).on('click', '#join-button', function() {
 function connect() {
   var formData = new FormData();
    formData.append('do', true);
+   console.log("yo");
   $.post({
       type: "POST",
-      url: "/join/club/"+handle+"/",
+      url: "/join/project/"+handle+"/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
+        console.log("yo");
         var response = JSON.parse(response);
+        console.log("yo");
         var status = response["status"];
+        console.log("yo");
         if (status === "success") {
+          console.log("yo");
           makeConnectButtonPending();
         }
       }});
@@ -51,7 +58,7 @@ function undoConnect() {
    formData.append('undo', true);
   $.post({
       type: "POST",
-      url: "/join/club/"+handle+"/",
+      url: "/join/project/"+handle+"/",
       data: formData,
       processData: false,
       contentType: false,
@@ -69,7 +76,7 @@ function disconnect() {
    formData.append('disconnect', true);
   $.post({
       type: "POST",
-      url: "/join/club/"+handle+"/",
+      url: "/join/project/"+handle+"/",
       data: formData,
       processData: false,
       contentType: false,
@@ -87,7 +94,7 @@ function acceptConnect() {
   formData.append('accept', true);
   $.post({
       type: "POST",
-      url: "/join/club/"+handle+"/",
+      url: "/join/project/"+handle+"/",
       data: formData,
       processData: false,
       contentType: false,
