@@ -35,6 +35,47 @@ class Media:
 	content = db.Column(db.Text)
 	public = db.Column(db.Boolean, default=False)
 
+	@hybrid_property
+	def age(self):
+		return datetime.utcnow() - self.creation_datetime
+
+	@hybrid_property
+	def age_in_minutes(self):
+		return self.age / 60
+
+	@hybrid_property
+	def vote_count(self):
+		return self.upvotes.count() + self.downvotes.count()
+
+	@hybrid_property
+	def vote_ratio(self):
+		return self.upvotes.count()/self.vote_count
+
+	@classmethod
+	def hot(cls, query=None):
+		query = query if query else cls.query
+		return query(func.max(cls.vote_count/cls.age_in_minutes)).scalar()
+
+	@classmethod
+	def best(cls, query=None):
+		query = query if query else cls.query
+		return query(func.max(cls.vote_ratio)).scalar()
+
+	@classmethod
+	def new(cls, query=None):
+		query = query if query else cls.query
+		return query.order_by(cls.creation_datetime.desc())
+
+	@classmethod
+	def top(cls, query=None):
+		query = query if query else cls.query
+		return query(func.max(cls.vote_count)).scalar()
+
+	@classmethod
+	def search(cls, text, query=None):
+		query = query if query else cls.query
+		return query.filter(cls.title.ilike(f'%{text}%') or cls.content.ilike(f'%{text}%'))
+
 class Vote:
 	id = db.Column(db.Integer, primary_key=True)
 

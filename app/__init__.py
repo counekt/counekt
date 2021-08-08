@@ -9,10 +9,10 @@ from flask_migrate import Migrate
 from geopy import Nominatim
 from flask_mail import Mail
 import boto3
-
+from app.query import CustomQuery
 
 geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
-db = SQLAlchemy()
+db = SQLAlchemy(query_class=CustomQuery)
 migrate = Migrate()
 mail = Mail()
 

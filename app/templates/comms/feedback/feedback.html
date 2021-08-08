@@ -63,6 +63,23 @@
 			{% include 'comms/feedback/fb.html' %}
 		{% endfor %}
 	</div>
+	{% if page_count > 0 %}
+<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+  <a class="pagination-previous" {% if page == 1 %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page-1}) }}"{% endif %}>Previous</a>
+  <a class="pagination-next" {% if page == p_count %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page+1}) }}"{% endif %}>Next page</a>
+  <ul class="pagination-list">
+    <li><a class="pagination-link" aria-label="Goto page 1"{% if page == 1 %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':1}) }}"{% endif %}>1</a></li>
+    <li><span class="pagination-ellipsis"></span></li>
+    <li><a class="pagination-link" aria-label="Goto page {{page-1}}" {% if page == 1 %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page-1}) }}"{% endif %}>{{page-1}}</a></li>
+    <li><a class="pagination-link is-current" aria-label="Page {{page}}" aria-current="page">{{page}}</a></li>
+    <li><a class="pagination-link" aria-label="Goto page {{page+1}}"{% if page == page_count %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page+1}) }}"{% endif %}>{{page+1}}</a></li>
+    <li><span class="pagination-ellipsis"></span></li>
+    <li><a class="pagination-link" aria-label="Goto page {{page_count}}" {% if page == page_count %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page_count}) }}"{% endif %}>{{page_count}}</a></li>
+  </ul>
+</nav>
+{% else %}
+<p class="subtitle is-1" id="no-results">No search results...</p>
+{% endif %}
 </div>
 
 {% endblock %}
@@ -121,7 +138,7 @@
 	}
 
 	function upvote(fb_id) {
-		post("/feedback/", function (response) {
+		post("/feedback/vote/", function (response) {
 			var response = JSON.parse(response)["status"];
       refreshBallot();
 			$clicked.attr('data-active', "true");
@@ -138,7 +155,7 @@
 	}
 
 	function downvote(fb_id) {
-		post("/feedback/", function (response) {
+		post("/feedback/vote/", function (response) {
 			var response = JSON.parse(response)["status"];
       refreshBallot();
 			$clicked.attr('data-active', "true");
@@ -153,7 +170,7 @@
 	}
 
 	function unupvote(fb_id) {
-		post("/feedback/", function (response) {
+		post("/feedback/vote/", function (response) {
 			var response = JSON.parse(response)["status"];
       refreshBallot();
 			$clicked.attr('data-active', "false");
@@ -163,7 +180,7 @@
 	}
 
 	function undownvote(fb_id) {
-		post("/feedback/", function (response) {
+		post("/feedback/vote/", function (response) {
 			var response = JSON.parse(response)["status"];
       refreshBallot();
 			$clicked.attr('data-active', "false");
@@ -199,6 +216,23 @@
 
 </script>
 <style type="text/css">
+
+	.pagination {
+		margin-top: 10px;
+		color: black;
+	}
+
+	.pagination-link, .pagination-previous, .pagination-next {
+	background-color: white;
+}
+
+.pagination-ellipsis {
+
+	color: black;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
 	.fb:not(:last-child) {
 		margin-bottom: 10px;
 	}

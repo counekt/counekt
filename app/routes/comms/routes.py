@@ -5,6 +5,8 @@ import json
 from app import db, models
 from app.routes.comms import bp
 from sqlalchemy import func, inspect
+import app.routes.comms.funcs as funcs
+from urllib.parse import urlencode
 
 
 @login_required
@@ -88,32 +90,54 @@ def conversation(id):
 
 @ bp.route("/feedback/", methods=["GET", "POST"])
 def feedback():
+
     if flask_request.method == 'POST':
-        fb_id = flask_request.form.get("fb_id")
-        action = flask_request.form.get("action")
-        fb = models.Feedback.query.get(fb_id)
-        print(fb_id)
-        print(action)
-        print(fb)
-        if action == "upvote":
-            fb.upvote(voter=current_user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        elif action == "downvote":
-            fb.downvote(voter=current_user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        elif action == "unupvote":
-            fb.unupvote(voter=current_user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        elif action == "undownvote":
-            fb.undownvote(voter=current_user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        return json.dumps({'status': 'error'})
-    feedback = models.Feedback.query.limit(10)
-    return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models)
+
+        search = request.form.get("search")
+        by = request.form.get("by")
+        p = request.form.get("p")
+        
+        params = {}
+
+        if search:
+            params.update('search',search)
+
+        if by:
+            params.update('by',by)
+
+        if p:
+            params.update('p',p)
+
+        return json.dumps({'status': 'success', 'path': "feedback"+urlencode(params)})
+
+    if flask_request.method == 'GET':
+        # Get q strings to provide search from url
+        q_search = flask_request.args.get('search')
+        q_by = flask_request.args.get('by')
+        q_p = flask_request.args.get('p')
+
+        # Make sure q_p is an integer
+        if q_p is None:
+            q_p = 1
+        elif not q_p.isdigit():
+            abort(404)
+
+        query = models.Feedback.search(q_search) if q_search else models.Feedback.query
+
+        if q_by == "hot":
+            query = models.Feedback.hot(query=query)
+        elif q_by == "best":
+            query = models.Feedback.best(query=query)
+        elif q_by == "new":
+            query = models.Feedback.new(query=query)
+        elif q_by == "hot":
+            query = models.Feedback.hot(query=query)
+
+        feedback, page_count = query.custom_paginate(page=int(q_p), per_page=5, return_page_count=True)
+        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=min(int(q_p),page_count))
+
+
+
 
 @ bp.route("/feedback/<fb_id>/", methods=["GET", "POST"])
 def feedback_id(fb_id):
@@ -150,6 +174,60 @@ def submit_feedback():
             return json.dumps({'status': 'error'})
 
     return render_template("comms/feedback/submit.html", navbar=True, background=True, size="medium", models=models)
+
+@ bp.route("/feedback/vote/", methods=["POST"])
+def vote_feedback():
+    if flask_request.method == 'POST':
+        fb_id = flask_request.form.get("fb_id")
+        action = flask_request.form.get("action")
+        fb = models.Feedback.query.get(fb_id)
+        print(fb_id)
+        print(action)
+        print(fb)
+        if action == "upvote":
+            fb.upvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "downvote":
+            fb.downvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "unupvote":
+            fb.unupvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "undownvote":
+            fb.undownvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        return json.dumps({'status': 'error'})
+
+@ bp.route("/post/vote/", methods=["POST"])
+def vote_post():
+    if flask_request.method == 'POST':
+        post_id = flask_request.form.get("post_id")
+        action = flask_request.form.get("action")
+        post = models.Post.query.get(post_id)
+        print(post_id)
+        print(action)
+        print(post)
+        if action == "upvote":
+            post.upvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "downvote":
+            post.downvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "unupvote":
+            post.unupvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        elif action == "undownvote":
+            post.undownvote(voter=current_user)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        return json.dumps({'status': 'error'})
 
 
 @ bp.route("/wall/", methods=["GET", "POST"])
