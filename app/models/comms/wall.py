@@ -4,7 +4,10 @@ from time import time
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 import json
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import or_
 from datetime import datetime
+from sqlalchemy import func, inspect, case, extract
+
 
 posts = db.Table('posts',
                   db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
@@ -35,31 +38,42 @@ class Media:
 	content = db.Column(db.Text)
 	public = db.Column(db.Boolean, default=False)
 
+	@property
+	def hotness(self, now=datetime.utcnow()):
+		return (self.upvotes.count()+self.downvotes.count())/max(1, (now - self.creation_datetime).total_seconds()+self.upvotes.count()+self.downvotes.count())
+
 	@hybrid_property
 	def age(self):
 		return datetime.utcnow() - self.creation_datetime
 
 	@hybrid_property
-	def age_in_minutes(self):
-		return self.age / 60
-
-	@hybrid_property
-	def vote_count(self):
-		return self.upvotes.count() + self.downvotes.count()
+	def age_in_minutes(self, now=datetime.utcnow()):
+		return func.trunc(extract('epoch',now)-extract('epoch', self.creation_datetime)/60)
 
 	@hybrid_property
 	def vote_ratio(self):
-		return self.upvotes.count()/self.vote_count
+		return func.count(self.upvotes)/case([(self.total_votes>0,self.total_votes)],else_=1)
+
+	@hybrid_property
+	def total_votes(self):
+		return func.count(self.downvotes)+func.count(self.upvotes)
 
 	@classmethod
 	def hot(cls, query=None):
 		query = query if query else cls.query
-		return query(func.max(cls.vote_count/cls.age_in_minutes)).scalar()
+		relationships = inspect(cls).relationships
+		upvote_class = relationships["upvotes"].entity.class_
+		downvote_class = relationships["downvotes"].entity.class_
+		return query.outerjoin(upvote_class, downvote_class).group_by(cls.id).order_by((cls.total_votes/case([(cls.age_in_minutes>0,cls.age_in_minutes)],else_=1)).desc())
 
 	@classmethod
 	def best(cls, query=None):
 		query = query if query else cls.query
-		return query(func.max(cls.vote_ratio)).scalar()
+		relationships = inspect(cls).relationships
+		upvote_class = relationships["upvotes"].entity.class_
+		downvote_class = relationships["downvotes"].entity.class_
+		return query.outerjoin(upvote_class, downvote_class).group_by(cls.id).order_by(cls.vote_ratio.desc())
+
 
 	@classmethod
 	def new(cls, query=None):
@@ -69,12 +83,15 @@ class Media:
 	@classmethod
 	def top(cls, query=None):
 		query = query if query else cls.query
-		return query(func.max(cls.vote_count)).scalar()
+		relationships = inspect(cls).relationships
+		upvote_class = relationships["upvotes"].entity.class_
+		downvote_class = relationships["downvotes"].entity.class_
+		return query.outerjoin(upvote_class, downvote_class).group_by(cls.id).order_by((func.count(cls.upvotes)+func.count(cls.downvotes)).desc())
 
 	@classmethod
 	def search(cls, text, query=None):
 		query = query if query else cls.query
-		return query.filter(cls.title.ilike(f'%{text}%') or cls.content.ilike(f'%{text}%'))
+		return query.filter(or_(cls.title.ilike(f'%{text}%'),cls.content.ilike(f'%{text}%')))
 
 class Vote:
 	id = db.Column(db.Integer, primary_key=True)

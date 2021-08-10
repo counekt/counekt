@@ -21,7 +21,7 @@
     <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto;">
     <div class="field is-expanded has-addons" style="float:left; margin-right: 10px;">
     			<p class="control has-icons-left">
-                    <input id="search-feedback" class="input" type="location" placeholder='Search feedback'>
+                    <input id="search-feedback" class="input" type="location" placeholder='Search feedback' {% if search %}value="{{search}}"{% endif %}>
                     <span class="icon is-small is-left">
 	                    	<i class="fa fa-search"></i>
 	                  	</span>
@@ -29,28 +29,28 @@
        </div>
     <div class="field is-grouped">
     	<p class="control">
-    <button class="button transition fb-search-b" data-on="is-danger is-light" data-active="false">
+    <button class="button transition fb-search-b {% if by == 'hot' %}is-danger is-light{% endif %}" data-on="is-danger is-light" data-name="hot" {% if by == 'hot' %}data-active="true"{% else %}data-active="false"{% endif %}>
       <span id="cog" class="icon">
         <i class="fas fa-fire-alt"></i>
       </span>
     </button>
   </p>
   <p class="control">
-    <button class="button transition fb-search-b" data-on="is-warning is-light" data-active="false">
+    <button class="button transition fb-search-b {% if by == 'best' %}is-warning is-light{% endif %}" data-on="is-warning is-light" data-name="best" {% if by == 'best' %}data-active="true"{% else %}data-active="false"{% endif %}>
       <span id="cog" class="icon">
         <i class="fas fa-medal"></i>
       </span>
     </button>
   </p>
   <p class="control">
-    <button class="button transition fb-search-b" data-on="is-success is-light" data-active="false">
+    <button class="button transition fb-search-b {% if by == 'new' %}is-success is-light{% endif %}" data-on="is-success is-light" data-name="new" {% if by == 'new' %}data-active="true"{% else %}data-active="false"{% endif %}>
       <span id="cog" class="icon">
         <i class="fas fa-seedling"></i>
       </span>
     </button>
   </p>
   <p class="control">
-    <button class="button transition fb-search-b" data-on="is-link is-light" data-active="false">
+    <button class="button transition fb-search-b {% if by == 'top' %}is-link is-light{% endif %}" data-on="is-link is-light" data-name="top" {% if by == 'top' %}data-active="true"{% else %}data-active="false"{% endif %}>
       <span id="cog" class="icon">
         <i class="fas fa-rocket"></i>
       </span>
@@ -111,6 +111,8 @@
 			console.log("ADASASD");
 		$clicked.attr('data-active', "true");
 		$clicked.addClass($clicked.data('on'));
+		searchFeedback();
+
 	}
 
 
@@ -139,7 +141,8 @@
 
 	function upvote(fb_id) {
 		post("/feedback/vote/", function (response) {
-			var response = JSON.parse(response)["status"];
+			var status = JSON.parse(response)["status"];
+			if (status === "success") {
       refreshBallot();
 			$clicked.attr('data-active', "true");
 			$clicked.addClass($clicked.data('on'))
@@ -148,15 +151,16 @@
 			}
 			else {
 				$counter.text(parseInt($counter.text())+1);
-
 			}
+		}
 		},{'action':'upvote','fb_id':fb_id});
  	
 	}
 
 	function downvote(fb_id) {
 		post("/feedback/vote/", function (response) {
-			var response = JSON.parse(response)["status"];
+			var status = JSON.parse(response)["status"];
+			if (status === "success") {
       refreshBallot();
 			$clicked.attr('data-active', "true");
 			$clicked.addClass($clicked.data('on'));
@@ -166,26 +170,31 @@
 			else {
 				$counter.text(parseInt($counter.text())-1);
 			}
+		}
 		},{'action':'downvote','fb_id':fb_id});
 	}
 
 	function unupvote(fb_id) {
 		post("/feedback/vote/", function (response) {
-			var response = JSON.parse(response)["status"];
+			var status = JSON.parse(response)["status"];
+			if (status === "success") {
       refreshBallot();
 			$clicked.attr('data-active', "false");
 			$clicked.removeClass($clicked.data('on'));
-			$counter.text(parseInt($counter.text())-1); 
+			$counter.text(parseInt($counter.text())-1);
+			}
 		},{'action':'unupvote','fb_id':fb_id});
 	}
 
 	function undownvote(fb_id) {
 		post("/feedback/vote/", function (response) {
-			var response = JSON.parse(response)["status"];
+			var status = JSON.parse(response)["status"];
+			if (status === "success") {
       refreshBallot();
 			$clicked.attr('data-active', "false");
 			$clicked.removeClass($clicked.data('on'));
 			$counter.text(parseInt($counter.text())+1); 
+		}
 		},{'action':'undownvote','fb_id':fb_id});
 	}
 
@@ -211,6 +220,31 @@
 		});
 
 
+
+$('#search-feedback').keypress(function(event){
+  if(event.keyCode == 13){
+    searchFeedback();
+  }
+});
+
+function simplify(value) {
+	if (value == undefined) {
+		return "";
+	}
+	return value;
+}
+
+function searchFeedback() {
+	post("/feedback/", function (response) {
+			var response = JSON.parse(response);
+			var status = response["status"];
+			if (status === "success") {
+				document.location.href = response["path"];
+			}
+			
+			
+		},{'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name'))});
+}
 
 
 
