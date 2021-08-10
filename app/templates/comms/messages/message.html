@@ -42,7 +42,7 @@
             else if (sender == "user") {
               var photo_src = '{{user.profile_photo.src}}';
             }
-            return `{% include 'comms/msg.html' %}`.replaceAll('\\dname//', dname).replaceAll('\\href//', href).replaceAll('\\photo_src//',photo_src).replaceAll('\\unread//',unread).replaceAll('\\id//',id).replaceAll('\\text//',text);
+            return `{% include 'comms/messages/msg.html' %}`.replaceAll('\\dname//', dname).replaceAll('\\href//', href).replaceAll('\\photo_src//',photo_src).replaceAll('\\unread//',unread).replaceAll('\\id//',id).replaceAll('\\text//',text);
         }
 
 </script>

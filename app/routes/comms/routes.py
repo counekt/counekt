@@ -4,7 +4,6 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 import json
 from app import db, models
 from app.routes.comms import bp
-from sqlalchemy import func, inspect
 import app.routes.comms.funcs as funcs
 from urllib.parse import urlencode
 
@@ -18,9 +17,7 @@ def messages():
 @login_required
 @ bp.route("/message/<username>/", methods=["GET", "POST"])
 def message(username):
-    user = models.User.query.filter_by(username=username).first()
-    if not user:
-        abort(404)
+    user = models.User.query.filter_by(username=username).first_or_404()
     # Get the dialogue between current_user and user if it exists
     convo = models.Convo.get_dialogue(user, current_user)
     if flask_request.method == "POST":
@@ -67,9 +64,7 @@ def message(username):
 
 @ bp.route("/get/messages/<username>/", methods=["POST"])
 def get_messages(username):
-    user = models.User.query.filter_by(username=username).first()
-    if not user:
-        abort(404)
+    user = models.User.query.filter_by(username=username).first_or_404()
     # Get the dialogue between current_user and user if it exists
     convo = models.Convo.get_dialogue(user, current_user)
     if flask_request.method == 'POST':
@@ -85,7 +80,7 @@ def get_messages(username):
 @login_required
 @ bp.route("/convo/<id>/", methods=["GET", "POST"])
 def conversation(id):
-    convo = models.Convo.query.get(id)
+    convo = models.Convo.query.filter_by(id=id).first_or_404()
     return render_template("comms/message.html", convo=convo, navbar=True, background=True, size="medium", models=models)
 
 @ bp.route("/feedback/", methods=["GET", "POST"])
@@ -93,34 +88,30 @@ def feedback():
 
     if flask_request.method == 'POST':
 
-        search = request.form.get("search")
-        by = request.form.get("by")
-        p = request.form.get("p")
+        search = flask_request.form.get("search")
+        by = flask_request.form.get("by")
+        p = flask_request.form.get("p")
         
         params = {}
-
         if search:
-            params.update('search',search)
+            params.update({'search':search})
 
         if by:
-            params.update('by',by)
+            params.update({'by':by})
 
         if p:
-            params.update('p',p)
+            params.update({'p':p})
 
-        return json.dumps({'status': 'success', 'path': "feedback"+urlencode(params)})
+        path =  "/feedback?"+urlencode(params)
+        print(path)
+
+        return json.dumps({'status': 'success', 'path': path})
 
     if flask_request.method == 'GET':
         # Get q strings to provide search from url
         q_search = flask_request.args.get('search')
         q_by = flask_request.args.get('by')
-        q_p = flask_request.args.get('p')
-
-        # Make sure q_p is an integer
-        if q_p is None:
-            q_p = 1
-        elif not q_p.isdigit():
-            abort(404)
+        q_p = flask_request.args.get('p', 1, type=int)
 
         query = models.Feedback.search(q_search) if q_search else models.Feedback.query
 
@@ -133,17 +124,18 @@ def feedback():
         elif q_by == "hot":
             query = models.Feedback.hot(query=query)
 
-        feedback, page_count = query.custom_paginate(page=int(q_p), per_page=5, return_page_count=True)
-        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=min(int(q_p),page_count))
+        feedback, page_count = query.custom_paginate(page=q_p, per_page=5, return_page_count=True)
+        page = min(page_count,max(1,q_p))
+
+
+        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=page,by=q_by,search=q_search)
 
 
 
 
 @ bp.route("/feedback/<fb_id>/", methods=["GET", "POST"])
 def feedback_id(fb_id):
-    fb = models.Feedback.query.get(fb_id)
-    if not fb:
-        abort(404)
+    fb = models.Feedback.query.filter_by(id=id).first_or_404()
     return render_template("comms/feedback/feedback_id.html", fb=fb, navbar=True, background=True, size="medium", models=models)
 
 

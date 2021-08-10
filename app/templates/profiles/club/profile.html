@@ -72,19 +72,19 @@
   <div id="profile-tabs" class="container">
     <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
   <ul>
-    <li class="is-active" data-content="#profile-allies">
+    <li class="is-active" data-content="#profile-members">
       <a>
         <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
         <span class="tabtext">Members</span>
       </a>
     </li>
-    <li data-content="#profile-clubs">
+    <li data-content="#profile-roles">
       <a>
         <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
         <span class="tabtext">Roles</span>
       </a>
     </li>
-    <li data-content="#profile-projects">
+    <li data-content="#profile-comms">
       <a>
         <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
         <span class="tabtext">Comms</span>
@@ -93,7 +93,7 @@
   </ul>
 </div>
  <div id="profile-tabs-content">
-    <div id="club-members" class="profile-associate">
+    <div id="profile-members" class="profile-associate">
       {% for member in club.group.members %}
       <div class="subprofile box">
         <div class="subprofile-image-wrap">
@@ -116,7 +116,7 @@
       <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
       {% endif %}
     </div>
-    <div id="profile-clubs" class="profile-associate vanish">
+    <div id="profile-roles" class="profile-associate vanish">
       
       {% for role in club.roles %}
       {% endfor %}
@@ -124,7 +124,7 @@
       <div class="add-specific-button" id="create-club-button"><span>Add role</span></div>
       {% endif %}
     </div>
-    <div id="profile-projects" class="profile-associate vanish">
+    <div id="profile-comms" class="profile-associate vanish">
       {% if user==current_user and current_user in club.group.members %}
       <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
       {% endif %}
