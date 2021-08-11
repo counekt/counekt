@@ -1,25 +1,23 @@
-{% with is_upvoted = fb.is_upvoted(current_user), is_downvoted = fb.is_downvoted(current_user) %}
-<div class="fb subprofile box" style="text-align: left;" data-id="{{fb.id}}">
+<div class="fb subprofile box" style="text-align: left;" data-id="{% if fb %}{{fb.id}}{% else %}\\id//{% endif %}">
 <div class="ballot">
-	<button class="button transition is-small ballot-item is-inverted is-dark vote upvote {% if is_upvoted %}is-info{% endif %}" data-on="is-info" {% if is_upvoted %}data-active="true"{% endif %}>
+	<button class="button transition is-small ballot-item is-inverted is-dark vote upvote {% if is_upvoted %}is-info{% else %}\\upvote_button_class//{% endif %}" data-on="is-info" data-active="{% if is_upvoted %}true{% else %}\\upvote_button_active//{% endif %}">
       <span class="icon is-medium">
         <i class="fas fa-caret-up fa-2x"></i>
       </span>
     </button>
     <button class="button transition is-small is-static ballot-item counter">
       <span class="text">
-        {{fb.upvotes.count()-fb.downvotes.count()}}
+        {% if fb %}{{fb.upvotes.count()-fb.downvotes.count()}}{% else %}\\votes//{% endif %}
       </span>
     </button>
-    <button class="button transition is-small ballot-item is-dark is-inverted vote downvote {% if is_downvoted %}is-danger{% endif %}" data-on="is-danger" {% if is_downvoted %}data-active="true"{% endif %}>
+    <button class="button transition is-small ballot-item is-dark is-inverted vote downvote {% if is_downvoted %}is-danger{% else %}\\downvote_button_class//{% endif %}" data-on="is-danger" data-active="{% if is_downvoted %}true{% else %}\\downvote_button_active//{% endif %}">
       <span class="icon is-medium">
         <i class="fas fa-caret-down fa-2x"></i>
       </span>
     </button>
 </div>
 <div class="fb-content">
-<p class="title is-4" style="color:black;">{{fb.title}}</p>
-<p class="subtitle is-6 text" style="color:black;">{{fb.content}}</p>
+<p class="title is-4" style="color:black;">{% if fb %}{{fb.title}}{% else %}\\title//{% endif %}</p>
+<p class="subtitle is-6 text" style="color:black;">{% if fb %}{{fb.content}}{% else %}\\content//{% endif %}</p>
 </div>
 </div>
-{% endwith %}

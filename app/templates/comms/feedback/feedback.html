@@ -58,23 +58,23 @@
   </p>
     </div>
    </div>
-   	<div style="margin-top: 10px;">
+   	<div style="margin-top: 10px;" id="fb-container">
 		{% for fb in feedback %}
-			{% include 'comms/feedback/fb.html' %}
+			{% include 'comms/feedback/fb-jinja.html' %}
 		{% endfor %}
 	</div>
 	{% if page_count > 0 %}
 <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-  <a class="pagination-previous" {% if page == 1 %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page-1}) }}"{% endif %}>Previous</a>
-  <a class="pagination-next" {% if page == p_count %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page+1}) }}"{% endif %}>Next page</a>
+  <button class="pagination-previous previous" {% if page == 1 %}disabled{% else %}data-page="{{page-1}}"{% endif %}>Previous</button>
+  <button class="pagination-next next" {% if page == p_count %}disabled{% else %}data-page="{{page+1}}"{% endif %}>Next page</button>
   <ul class="pagination-list">
-    <li><a class="pagination-link" aria-label="Goto page 1"{% if page == 1 %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':1}) }}"{% endif %}>1</a></li>
+    <li><button class="pagination-link min" aria-label="Goto page 1"{% if page == 1 %}disabled{% else %}data-page="1"{% endif %}>1</button></li>
     <li><span class="pagination-ellipsis"></span></li>
-    <li><a class="pagination-link" aria-label="Goto page {{page-1}}" {% if page == 1 %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page-1}) }}"{% endif %}>{{page-1}}</a></li>
-    <li><a class="pagination-link is-current" aria-label="Page {{page}}" aria-current="page">{{page}}</a></li>
-    <li><a class="pagination-link" aria-label="Goto page {{page+1}}"{% if page == page_count %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page+1}) }}"{% endif %}>{{page+1}}</a></li>
+    <li><button class="pagination-link previous" aria-label="Goto page {{max(1,page-1)}}" {% if page == 1 %}disabled{% else %}data-page="{{max(1,page-1)}}"{% endif %}>{{max(1,page-1)}}</button></li>
+    <li><button class="pagination-link is-current" aria-label="Page {{page}}" aria-current="page">{{page}}</button></li>
+    <li><button class="pagination-link next" aria-label="Goto page {{min(page+1,page_count)}}"{% if page == page_count %}disabled{% else %}data-page="{{min(page+1,page_count)}}"{% endif %}>{{min(page+1,page_count)}}</button></li>
     <li><span class="pagination-ellipsis"></span></li>
-    <li><a class="pagination-link" aria-label="Goto page {{page_count}}" {% if page == page_count %}disabled{% else %}href="{{ funcs.edit_querystr(request.base_url,{'p':page_count}) }}"{% endif %}>{{page_count}}</a></li>
+    <li><button class="pagination-link max" aria-label="Goto page {{page_count}}" {% if page == page_count %}disabled{% else %}data-page="{{page_count}}"{% endif %}>{{page_count}}</button></li>
   </ul>
 </nav>
 {% else %}
@@ -85,9 +85,29 @@
 {% endblock %}
 {% block scripts %}
 <script type="text/javascript">
+
+	window.history.replaceState({'search':"{{search}}", 'by': "{{by}}", 'page':{{page}} },"Feedback", "{{request.full_path}}");
+
 	$("#create-feedback").on('focus', function() {
 		window.location.href = "/feedback/submit/";
 	});
+
+	function clearSearchBy() {
+		$(".fb-search-b").each(function() {
+			var $this = $(this);
+			$this.attr('data-active', "false");
+				$this.removeClass($this.data('on'));
+		})
+	}
+
+	function changeSearchBy(by) {
+		$(".fb-search-b").each(function() {
+			var $this = $(this);
+		if ($this.data('name') != by) {
+			$this.attr('data-active', "false");
+				$this.removeClass($this.data('on'));
+	}});
+}
 
 	$(".fb-search-b").on('click', function() {
 		var $clicked = $(this);
@@ -98,14 +118,15 @@
 			$this.attr('data-active', "false");
 				$this.removeClass($this.data('on'));
 			}
-		})
+		});
 		
 		console.log($clicked.attr('data-active'));
 		if ($clicked.attr('data-active') == "true") {
+			/*
 					$clicked.attr('data-active', "false");
 					$clicked.removeClass($clicked.data('on'));
 					console.log("DDED");
-
+			*/
 		}
 		else {
 			console.log("ADASASD");
@@ -118,7 +139,8 @@
 
 	});
 
-	$(".vote").on('click', function() {
+	$('#fb-container').on('click', '.vote', function() {
+		console.log("WOOP");
 		var $clicked = $(this);
 		var $fb = $clicked.closest('.fb');
 		var $counter = $fb.find('.counter').find('span');
@@ -219,13 +241,98 @@
 
 		});
 
+	function changePagination(page,page_count) {
+		console.log("changepag");
+		console.log(page); console.log(page_count);
+		var $min = $('.pagination-link.min');
+		var $previous_link = $('.pagination-link.previous');
+		var $previous = $('.pagination-previous');
+		var $current = $('.pagination-link.is-current');
+		var $next = $('.pagination-next.next');
+		var $next_link = $('.pagination-link.next');
 
+		var $max = $('.pagination-link.max');
+
+		$previous_link.attr('data-page',Math.max(1,page-1)).text(Math.max(1,page-1));
+		$previous.attr('data-page',Math.max(1,page-1));
+		$current.attr('data-page',page).text(page);
+		$next.attr('data-page',Math.min(page+1,page_count));
+		$next_link.attr('data-page',Math.min(page+1,page_count)).text(Math.min(page+1,page_count));
+		$max.attr('data-page',page_count).text(page_count);
+		if (page >= page_count) {
+			console.log("max overflow");
+			$min.prop('disabled', false);
+			$previous_link.prop('disabled', false);
+			$previous.prop('disabled', false);
+			$next.prop('disabled', true);
+			$next_link.prop('disabled', true);
+			$max.prop('disabled', true);
+
+		}
+
+		else if (page <= 1) {
+			console.log("max underflow");
+			$min.prop('disabled', true);
+			$previous_link.prop('disabled', true);
+			$previous.prop('disabled', true);
+			$next.prop('disabled', false);
+			$next_link.prop('disabled', false);
+
+			$max.prop('disabled', false);
+		}
+
+		else {
+			console.log("normal");
+			$min.prop('disabled', false);
+			$previous_link.prop('disabled', false);
+			$previous.prop('disabled', false);
+			$next.prop('disabled', false);
+			$next_link.prop('disabled', false);
+			$max.prop('disabled', false);
+		}
+
+	}
+
+$('.pagination-link,.pagination-next,.pagination-previous').on('click', function() {
+	if ($(this).is(':disabled') == false) {
+	var state = window.history.state;
+	searchFeedback(state.search,state.by,$(this).attr('data-page'));
+}
+});
 
 $('#search-feedback').keypress(function(event){
   if(event.keyCode == 13){
     searchFeedback();
   }
 });
+
+$(window).on("popstate", function() {
+    changeTo();
+});
+
+// on history change; change search and page
+
+function changeTo() {
+  var state = window.history.state;
+
+  if (state.search) {$('#search-feedback').val(state.search)}
+  	  if (state.by) {
+  	  	changeSearchBy(state.by);
+  	  	var $b = $('.fb-search-b[data-name="'+state.by+'"]');
+  	  	$b.attr('data-active', "true");
+		$b.addClass($b.data('on'));
+	}
+  if (state.page) { 
+
+  }
+
+  searchFeedback(state.search, state.by, state.page);
+
+}
+
+function clearPage() {
+	$("#fb-container").empty();
+}
 
 function simplify(value) {
 	if (value == undefined) {
@@ -234,17 +341,39 @@ function simplify(value) {
 	return value;
 }
 
-function searchFeedback() {
+function searchFeedback(search,by,page=1,do_redirect=true) {
+
+	var searchObject = {'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name')), 'page':page};
 	post("/feedback/", function (response) {
 			var response = JSON.parse(response);
 			var status = response["status"];
 			if (status === "success") {
-				document.location.href = response["path"];
-			}
+
+				//document.location.href = response["path"];
+        redirect(searchObject, "Feedback", response["path"], function(){
+        	
+        	var feedback = response["feedback"];
+        	clearPage();
+        	feedback.forEach(function(fb) {
+        		$("#fb-container").append(minimedia(fb.id,fb.title,fb.content,fb.upvotes,fb.downvotes,fb.is_upvoted,fb.is_downvoted));
+        	});
+        	changePagination(page,response["page_count"]);
+
+        });
+
+        
+      }
+
+			
+
+			},searchObject);
+
 			
 			
-		},{'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name'))});
-}
+		}
+
+
+
 
 
 

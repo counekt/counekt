@@ -90,7 +90,7 @@ def feedback():
 
         search = flask_request.form.get("search")
         by = flask_request.form.get("by")
-        p = flask_request.form.get("p")
+        page = flask_request.form.get("page", 1, type=int)
         
         params = {}
         if search:
@@ -99,36 +99,23 @@ def feedback():
         if by:
             params.update({'by':by})
 
-        if p:
-            params.update({'p':p})
+        if page:
+            params.update({'page':page})
+
 
         path =  "/feedback?"+urlencode(params)
-        print(path)
-
-        return json.dumps({'status': 'success', 'path': path})
+        feedback, page_count = models.Feedback.search_by(search,by).custom_paginate(page=page, per_page=5, return_page_count=True)
+        page = min(page_count,max(1,page))
+        return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":fb.title, "content":fb.content,"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user), "is_downvoted":fb.is_downvoted(current_user)} for fb in feedback], 'page':page, 'page_count':page_count})
 
     if flask_request.method == 'GET':
         # Get q strings to provide search from url
         q_search = flask_request.args.get('search')
-        q_by = flask_request.args.get('by')
-        q_p = flask_request.args.get('p', 1, type=int)
-
-        query = models.Feedback.search(q_search) if q_search else models.Feedback.query
-
-        if q_by == "hot":
-            query = models.Feedback.hot(query=query)
-        elif q_by == "best":
-            query = models.Feedback.best(query=query)
-        elif q_by == "new":
-            query = models.Feedback.new(query=query)
-        elif q_by == "hot":
-            query = models.Feedback.hot(query=query)
-
-        feedback, page_count = query.custom_paginate(page=q_p, per_page=5, return_page_count=True)
-        page = min(page_count,max(1,q_p))
-
-
-        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=page,by=q_by,search=q_search)
+        q_by = flask_request.args.get('by', 'top', type=str)
+        q_page = flask_request.args.get('page', 1, type=int)
+        feedback, page_count = models.Feedback.search_by(q_search,q_by).custom_paginate(page=q_page, per_page=5, return_page_count=True)
+        page = min(page_count,max(1,q_page))
+        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=page,by=q_by,search=q_search, max=max,min=min)
 
 
 

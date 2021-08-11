@@ -41,8 +41,6 @@ function unload(_delay) {
 
 function post(url, success, args) {
     var formData = new FormData();
-    console.log(args);
-    console.log(args.keys);
     Object.keys(args).forEach((key,index) => {
         formData.append(key,args[key]);
     });
