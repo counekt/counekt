@@ -1,0 +1,30 @@
+<nav class="pagination is-centered" role="navigation" aria-label="pagination" style="margin-bottom:0px;">
+  <button class="pagination-previous previous" {% if page <= 1 %}disabled{% else %}data-page="{{page-1}}"{% endif %}>Previous</button>
+  <button class="pagination-next next" {% if page >= page_count %}disabled{% else %}data-page="{{page+1}}"{% endif %}>Next page</button>
+  <ul class="pagination-list">
+    <li><button class="pagination-link min" aria-label="Goto page 1"{% if page <= 1 %}disabled{% else %}data-page="{{min(1,page)}}"{% endif %}>{{min(1,page)}}</button></li>
+    <li><span class="pagination-ellipsis" style="color:gray;">&hellip;</span></li>
+    <li><button class="pagination-link previous" aria-label="Goto page {{max(0,page-1)}}" {% if page <= 1 %}disabled{% else %}data-page="{{max(0,page-1)}}"{% endif %}>{{max(0,page-1)}}</button></li>
+    <li><button class="pagination-link is-current" aria-label="Page {{page}}" aria-current="page">{{page}}</button></li>
+    <li><button class="pagination-link next" aria-label="Goto page {{min(page+1,page_count)}}"{% if page == page_count %}disabled{% else %}data-page="{{min(page+1,page_count)}}"{% endif %}>{{min(page+1,page_count)}}</button></li>
+    <li><span class="pagination-ellipsis" style="color:gray;">&hellip;</span></li>
+    <li><button class="pagination-link max" aria-label="Goto page {{page_count}}" {% if page == page_count %}disabled{% else %}data-page="{{page_count}}"{% endif %}>{{page_count}}</button></li>
+  </ul>
+</nav>
+<!-- 
+{% raw %}
+<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+  <button class="pagination-previous previous" {% if page %}{% if page >= 1 %}disabled{% else %}data-page="{{page-1}}"{% endif %}{% else %}\\previous_data//{% endif %}>Previous</button>
+  <button class="pagination-next next" {% if page %}{% if page == p_count %}disabled{% else %}data-page="{{page+1}}"{% endif %}{% else %}\\next_data//{% endif %}>Next page</button>
+  <ul class="pagination-list">
+    <li><button class="pagination-link min" aria-label="Goto page 1" {% if page %}{% if page >= 1 %}disabled{% else %}data-page="1"{% endif %}{% else %}\\first_data//{% endif %}>1</button></li>
+    <li><span class="pagination-ellipsis"></span></li>
+    <li><button class="pagination-link previous" aria-label="Goto page {% if page and page_count %}{{max(1,page-1)}}{% else %}\\page//{% endif %}" {% if page %}{% if page == 1 %}disabled{% else %}data-page="{{max(1,page-1)}}"{% endif %}{% else %}\\previous_data//{% endif %}>{% if page != None and page_count != None %}{{max(1,page-1)}}{% else %}\\page//{% endif %}</button></li>
+    <li><button class="pagination-link is-current" aria-label="Page {% if page %}{{page}}{% else %}\\page//{% endif %}" aria-current="page">{% if page %}{{page}}{% else %}\\page//{% endif %}</button></li>
+    <li><button class="pagination-link next" aria-label="Goto page {% if page and page_count %}{{min(page+1,page_count)}}{% else %}\\next//{% endif %}" {% if page %}{% if page == page_count %}disabled{% else %}data-page="{{min(page+1,page_count)}}"{% endif %}{% else %}\\next_data//{% endif %}>{% if page != None and page_count != None %}{{min(page+1,page_count)}}{% else %}\\next//{% endif %}</button></li>
+    <li><span class="pagination-ellipsis"></span></li>
+    <li><button class="pagination-link max" aria-label="Goto page {% if page_count %}{{page_count}}{% else %}\\page_count//{% endif %}" {% if page %}{% if page == page_count %}disabled{% else %}data-page="{{page_count}}"{% endif %}{% else %}\\max_data//{% endif %}>{% if page_count != None %}{{page_count}}{% else %}\\page_count//{% endif %}</button></li>
+  </ul>
+</nav>
+{% endraw %}
+-->

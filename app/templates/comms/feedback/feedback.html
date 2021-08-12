@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <p class="title selectable" style="margin: auto;margin-bottom: 10px;">Feedback</p>
-<div class="container floater" style="text-align: center;">
+<div class="container floater" style="text-align: center; height:636px; ">
 	<!-- Create feedback -->
 	<div style="display: flex; width:100%; margin-bottom: 10px;">
 		<figure class="image is-48x48" style="width:40px;height: 40px; float: left; margin-right: 5px;">
@@ -59,27 +59,18 @@
     </div>
    </div>
    	<div style="margin-top: 10px;" id="fb-container">
+   	{% if page_count > 0 %}
+
 		{% for fb in feedback %}
 			{% include 'comms/feedback/fb-jinja.html' %}
 		{% endfor %}
+
+		{% else %}
+			<p class="subtitle is-1" id="no-results">No search results...</p>
+		{% endif %}
+
 	</div>
-	{% if page_count > 0 %}
-<nav class="pagination is-centered" role="navigation" aria-label="pagination">
-  <button class="pagination-previous previous" {% if page == 1 %}disabled{% else %}data-page="{{page-1}}"{% endif %}>Previous</button>
-  <button class="pagination-next next" {% if page == p_count %}disabled{% else %}data-page="{{page+1}}"{% endif %}>Next page</button>
-  <ul class="pagination-list">
-    <li><button class="pagination-link min" aria-label="Goto page 1"{% if page == 1 %}disabled{% else %}data-page="1"{% endif %}>1</button></li>
-    <li><span class="pagination-ellipsis"></span></li>
-    <li><button class="pagination-link previous" aria-label="Goto page {{max(1,page-1)}}" {% if page == 1 %}disabled{% else %}data-page="{{max(1,page-1)}}"{% endif %}>{{max(1,page-1)}}</button></li>
-    <li><button class="pagination-link is-current" aria-label="Page {{page}}" aria-current="page">{{page}}</button></li>
-    <li><button class="pagination-link next" aria-label="Goto page {{min(page+1,page_count)}}"{% if page == page_count %}disabled{% else %}data-page="{{min(page+1,page_count)}}"{% endif %}>{{min(page+1,page_count)}}</button></li>
-    <li><span class="pagination-ellipsis"></span></li>
-    <li><button class="pagination-link max" aria-label="Goto page {{page_count}}" {% if page == page_count %}disabled{% else %}data-page="{{page_count}}"{% endif %}>{{page_count}}</button></li>
-  </ul>
-</nav>
-{% else %}
-<p class="subtitle is-1" id="no-results">No search results...</p>
-{% endif %}
+		{% include 'comms/feedback/pagination.html' %}
 </div>
 
 {% endblock %}
@@ -380,9 +371,22 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 </script>
 <style type="text/css">
 
+	#background {}
+
 	.pagination {
 		margin-top: 10px;
 		color: black;
+	}
+
+	#no-results {
+		color: gray;
+		height: 100%;
+		line-height: 420px;
+  text-align: center;
+	}
+
+	#fb-container {
+		height: 447px;
 	}
 
 	.pagination-link, .pagination-previous, .pagination-next {
