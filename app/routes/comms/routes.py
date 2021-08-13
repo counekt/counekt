@@ -106,7 +106,7 @@ def feedback():
         path =  "/feedback?"+urlencode(params)
         feedback, page_count = models.Feedback.search_by(search,by).custom_paginate(page=page, per_page=5, return_page_count=True)
         page = min(page_count,max(0,page))
-        return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":fb.title, "content":fb.content,"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user), "is_downvoted":fb.is_downvoted(current_user)} for fb in feedback], 'page':page, 'page_count':page_count})
+        return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":str(fb.title), "content":str(fb.content),"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user), "is_downvoted":fb.is_downvoted(current_user)} for fb in feedback], 'page':page, 'page_count':page_count})
 
     if flask_request.method == 'GET':
         # Get q strings to provide search from url

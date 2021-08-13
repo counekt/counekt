@@ -306,7 +306,7 @@ $(window).on("popstate", function() {
 function changeTo() {
   var state = window.history.state;
 
-  if (state.search) {$('#search-feedback').val(state.search)}
+  if (state.search) {$('#search-feedback').val(simplify(state.search))}
   	  if (state.by) {
   	  	changeSearchBy(state.by);
   	  	var $b = $('.fb-search-b[data-name="'+state.by+'"]');
@@ -434,6 +434,7 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 		clear: both;
 		padding: 7px;
 		height: 80px;
+		display: flex;
 
 	}
 
@@ -441,6 +442,14 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 		vertical-align:top;
 		margin-top: 10px;
 				display: inline-block;
+				flex-grow: 1;
+				  overflow: hidden;
+	}
+
+	.fb-content .subtitle {
+		text-overflow: ellipsis;
+				  white-space: nowrap;
+				  				  overflow: hidden;
 
 	}
 
