@@ -63,6 +63,14 @@
             }
             return `{% include 'comms/feedback/fb.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active).replaceAll('\\href//',href);
         }
+
+        function infoLoader() {
+            return `{% include 'info-loader.html' %}`;
+        }
+
+        function noResults() {
+            return `{% include 'no-results.html' %}`;
+        }
         /*
         {% raw %}
         function paginationBar(page=1,page_count=1) {
