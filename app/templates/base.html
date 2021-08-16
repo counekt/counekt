@@ -47,6 +47,53 @@
         function miniprofile(name="",identifier="", bio="", href="",photo_src="",symbol="") {
             return `{% include 'profiles/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
         }
+
+        function minimedia(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false,href="") {
+            var upvote_button_class = "";
+            var upvote_button_active = "false";
+            var downvote_button_class = "";
+            var downvote_button_active = "false";
+            if (is_upvoted) {
+                var upvote_button_class = "is-info";
+                var upvote_button_active = "true";
+            }
+            if (is_downvoted) {
+                var downvote_button_class = "is-danger";
+                var downvote_button_active = "true";
+            }
+            return `{% include 'comms/feedback/fb.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active).replaceAll('\\href//',href);
+        }
+        /*
+        {% raw %}
+        function paginationBar(page=1,page_count=1) {
+            var first_data = "disabled";
+            var previous_data = "disabled";
+            var next_data = "disabled";
+            var max_data = "disabled";
+
+            if (page >= page_count) {
+                first_data = "";
+                previous_data = "data-page='"+Math.max(1,page-1)+"'";
+            }
+
+            else if (page <= 1) {
+                next_data = "data-page='"+Math.min(page+1)+"'";
+                max_data = "data-page='"+page_count+"'";
+            }
+
+            else {
+                first_data = "";
+                previous_data = "data-page='"+Math.max(1,page-1)+"'";
+                next_data = "data-page='"+Math.min(page+1)+"'";
+                max_data = "data-page='"+page_count+"'";
+            }
+
+             return `{% include 'comms/feedback/pagination.html' %}`.replaceAll('\\page//', page).replaceAll('\\page_count//', page_count).replaceAll('\\first_data//',first_data).replaceAll('\\previous//',Math.max(page-1,1)).replaceAll('\\next//',Math.min(page+1,page_count)).replaceAll('\\previous_data//',previous_data).replaceAll('\\next_data//',next_data).replaceAll('\\max_data//',max_data);
+         
+         
+        }
+        {% endraw %}
+        */
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>

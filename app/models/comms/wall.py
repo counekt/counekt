@@ -93,6 +93,14 @@ class Media:
 		query = query if query else cls.query
 		return query.filter(or_(cls.title.ilike(f'%{text}%'),cls.content.ilike(f'%{text}%')))
 
+	@classmethod
+	def search_by(cls, search, by, query=None):
+		query = query if query else cls.query
+		query = cls.search(search) if search else query
+		return {"hot":cls.hot(query=query),"best":cls.best(query=query),"new":cls.new(query=query),"hot":cls.hot(query=query)}.get(by) or query
+
+        
+
 class Vote:
 	id = db.Column(db.Integer, primary_key=True)
 

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Query, query
+from sqlalchemy import func
 
 class CustomQuery(Query):
 
@@ -23,4 +24,4 @@ class CustomQuery(Query):
 
     # Returns the amount of pages when split into pages of 'per_page' rows per page.
     def page_count(self, per_page=5):
-        return  (lambda n: int(n / per_page) if (n / per_page).is_integer() else int(n / per_page) + 1)(self.count())
+        return  (lambda x,X : X//x if X%x == 0 else X//x + 1)(per_page, self.count())
