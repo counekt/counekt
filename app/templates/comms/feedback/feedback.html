@@ -66,7 +66,7 @@
 		{% endfor %}
 
 		{% else %}
-			<p class="subtitle is-1" id="no-results">No search results...</p>
+			{% include 'no-results.html' %}
 		{% endif %}
 
 	</div>
@@ -354,9 +354,18 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 				
         	var feedback = response["feedback"];
         	clearPage();
+        	if (feedback.length > 0) {
+        		        		console.log("feedback");
+
+        		        		console.log(feedback);
+
         	feedback.forEach(function(fb) {
         		$("#fb-container").append(minimedia(fb.id,fb.title,fb.content,fb.upvotes,fb.downvotes,fb.is_upvoted,fb.is_downvoted));
         	});
+        	} else {
+        		$("#fb-container").append(noResults());
+        		console.log("no feedback");
+        	}
         	changePagination(page,response["page_count"]);
         
       }
