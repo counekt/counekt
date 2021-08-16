@@ -3,11 +3,11 @@
   <button class="pagination-next next" {% if page >= page_count %}disabled{% else %}data-page="{{page+1}}"{% endif %}>Next page</button>
   <ul class="pagination-list">
     <li><button class="pagination-link min" aria-label="Goto page 1"{% if page <= 1 %}disabled{% else %}data-page="{{min(1,page)}}"{% endif %}>{{min(1,page)}}</button></li>
-    <li><span class="pagination-ellipsis" style="color:gray;">&hellip;</span></li>
+    <li class="pagination-space"><span class="pagination-ellipsis" style="color:gray;">&hellip;</span></li>
     <li><button class="pagination-link previous" aria-label="Goto page {{max(0,page-1)}}" {% if page <= 1 %}disabled{% else %}data-page="{{max(0,page-1)}}"{% endif %}>{{max(0,page-1)}}</button></li>
     <li><button class="pagination-link is-current" aria-label="Page {{page}}" aria-current="page">{{page}}</button></li>
     <li><button class="pagination-link next" aria-label="Goto page {{min(page+1,page_count)}}"{% if page == page_count %}disabled{% else %}data-page="{{min(page+1,page_count)}}"{% endif %}>{{min(page+1,page_count)}}</button></li>
-    <li><span class="pagination-ellipsis" style="color:gray;">&hellip;</span></li>
+    <li class="pagination-space"><span class="pagination-ellipsis" style="color:gray;">&hellip;</span></li>
     <li><button class="pagination-link max" aria-label="Goto page {{page_count}}" {% if page == page_count %}disabled{% else %}data-page="{{page_count}}"{% endif %}>{{page_count}}</button></li>
   </ul>
 </nav>
