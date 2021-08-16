@@ -109,6 +109,7 @@ def feedback():
         return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":str(fb.title), "content":str(fb.content),"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user), "is_downvoted":fb.is_downvoted(current_user)} for fb in feedback], 'page':page, 'page_count':page_count})
 
     if flask_request.method == 'GET':
+        print(flask_request.full_path, flask_request.url)
         # Get q strings to provide search from url
         q_search = flask_request.args.get('search')
         q_by = flask_request.args.get('by', 'top', type=str)

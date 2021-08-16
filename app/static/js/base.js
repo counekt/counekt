@@ -18,7 +18,7 @@ function unload(_delay) {
      window.history.pushState("", "", url);
  }
 
- function redirect(object, title, url, what) {
+ function redirect(object, title, url, what=function() {}) {
    if (window.history.pushState) {
     // supported.
     window.history.pushState(object, title, url);

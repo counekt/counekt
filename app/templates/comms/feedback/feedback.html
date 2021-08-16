@@ -76,8 +76,7 @@
 {% endblock %}
 {% block scripts %}
 <script type="text/javascript">
-
-	window.history.replaceState({'search':"{{search}}", 'by': "{{by}}", 'page':{{page}} },"Feedback", "{{request.full_path}}");
+		redirect({'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
 
 	$("#create-feedback").on('focus', function() {
 		window.location.href = "/feedback/submit/";
@@ -235,6 +234,7 @@
 	function changePagination(page,page_count) {
 		console.log("changepag");
 		console.log(page); console.log(page_count);
+		page = Math.min(page, page_count);
 		var $min = $('.pagination-link.min');
 		var $previous_link = $('.pagination-link.previous');
 		var $previous = $('.pagination-previous');
@@ -243,14 +243,15 @@
 		var $next_link = $('.pagination-link.next');
 
 		var $max = $('.pagination-link.max');
-
-		$previous_link.attr('data-page',Math.max(1,page-1)).text(Math.max(1,page-1));
-		$previous.attr('data-page',Math.max(1,page-1));
+		$min.text(Math.min(page,1));
+		$max.text(Math.max(0,page));
+		$previous_link.attr('data-page',Math.max(0,page-1)).text(Math.max(0,page-1));
+		$previous.attr('data-page',Math.max(0,page-1));
 		$current.attr('data-page',page).text(page);
 		$next.attr('data-page',Math.min(page+1,page_count));
 		$next_link.attr('data-page',Math.min(page+1,page_count)).text(Math.min(page+1,page_count));
 		$max.attr('data-page',page_count).text(page_count);
-		if (page >= page_count) {
+		if (page >= page_count && page > 1) {
 			console.log("max overflow");
 			$min.prop('disabled', false);
 			$previous_link.prop('disabled', false);
@@ -259,6 +260,15 @@
 			$next_link.prop('disabled', true);
 			$max.prop('disabled', true);
 
+		}
+
+		else if (page == page_count && page <= 1) {
+			$min.prop('disabled', true);
+			$previous_link.prop('disabled', true);
+			$previous.prop('disabled', true);
+			$next.prop('disabled', true);
+			$next_link.prop('disabled', true);
+			$max.prop('disabled', true);
 		}
 
 		else if (page <= 1) {
@@ -271,6 +281,8 @@
 
 			$max.prop('disabled', false);
 		}
+
+		
 
 		else {
 			console.log("normal");
@@ -306,20 +318,14 @@ $(window).on("popstate", function() {
 function changeTo() {
   var state = window.history.state;
 
-  if (state.search) {$('#search-feedback').val(simplify(state.search))}
-  	  if (state.by) {
-  	  	changeSearchBy(state.by);
-  	  	var $b = $('.fb-search-b[data-name="'+state.by+'"]');
-  	  	$b.attr('data-active', "true");
-		$b.addClass($b.data('on'));
-	}
-  if (state.page) { 
-
-  }
-
-  searchFeedback(state.search, state.by, state.page);
-
+  $('#search-feedback').val(simplify(state.search));
+  changeSearchBy(state.by);
+  var $b = $('.fb-search-b[data-name="'+state.by+'"]');
+  $b.attr('data-active', "true");
+	$b.addClass($b.data('on'));
+  searchFeedback(state.search, state.by, state.page, do_redirect=false);
 }
+
 
 function clearPage() {
 	$("#fb-container").empty();
@@ -340,18 +346,16 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 			var status = response["status"];
 			if (status === "success") {
 
-				//document.location.href = response["path"];
-        redirect(searchObject, "Feedback", response["path"], function(){
-        	
+				if (do_redirect) {redirect(searchObject, "Feedback", response["path"], function(){});}
+				 else { window.history.replaceState(searchObject,"Feedback", response["path"]);}
+          
+				
         	var feedback = response["feedback"];
         	clearPage();
         	feedback.forEach(function(fb) {
         		$("#fb-container").append(minimedia(fb.id,fb.title,fb.content,fb.upvotes,fb.downvotes,fb.is_upvoted,fb.is_downvoted));
         	});
         	changePagination(page,response["page_count"]);
-
-        });
-
         
       }
 
