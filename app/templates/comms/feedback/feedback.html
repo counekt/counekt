@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Feedback</p>
-<div class="container floater" style="text-align: center; min-height:636px; ">
+<div class="container floater" style="text-align: center; min-height:636px; margin: 0 auto;">
 	<!-- Create feedback -->
 	<div style="display: flex; width:100%; margin-bottom: 10px;">
 		<figure class="image is-48x48" style="width:40px;height: 40px; float: left; margin-right: 5px;">
@@ -19,7 +18,7 @@
 
     <!-- Filter feedback -->
     <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto; display: flex;">
-    <div class="field is-expanded has-addons" style="float:left; margin-right: 10px; flex-shrink: 1;">
+    <div class="field is-expanded has-addons" style="float:left; margin: 0; margin-right: 10px; flex-shrink: 1;">
     			<p class="control has-icons-left" style="min-width: 50px;">
                     <input id="search-feedback" class="input" type="location" placeholder='Search feedback' {% if search %}value="{{search}}"{% endif %}>
                     <span class="icon is-small is-left">
@@ -135,8 +134,10 @@
 		var $fb = $clicked.closest('.fb');
 		var $counter = $fb.find('.counter').find('span');
 		var $ballot = $fb.find('.ballot');
-		var is_upvoted = $ballot.find('.upvote').attr('data-active') === "true";
-		var is_downvoted = $ballot.find('.downvote').attr('data-active') === "true";
+		var $upvote = $ballot.find('.upvote');
+		var $downvote = $ballot.find('.downvote');
+		var is_upvoted = $upvote.attr('data-active') === "true";
+		var is_downvoted = $downvote.attr('data-active') === "true";
 		var fb_id = $fb.data('id');
 		var clicked	= this;
 
@@ -152,60 +153,100 @@
 	}
 
 	function upvote(fb_id) {
-		post("/feedback/vote/", function (response) {
-			var status = JSON.parse(response)["status"];
-			if (status === "success") {
-      refreshBallot();
-			$clicked.attr('data-active', "true");
-			$clicked.addClass($clicked.data('on'))
-			if (is_downvoted) {
+		refreshBallot();
+		$clicked.attr('data-active', "true");
+		$clicked.addClass($clicked.data('on'))
+		if (is_downvoted) {
 			$counter.text(parseInt($counter.text())+2);
 			}
 			else {
 				$counter.text(parseInt($counter.text())+1);
-			}
 		}
+		post("/feedback/vote/", function (response) {
+			var status = JSON.parse(response)["status"];
+			if (status === "success") {
+      
+
+			}
+			else {
+				refreshBallot()
+				if (is_downvoted) {
+					$counter.text(parseInt($counter.text())-2);
+					}
+			else {
+				$counter.text(parseInt($counter.text())-1);
+				$downvote.attr('data-active', "true");
+				$downvote.addClass($downvote.data('on'));
+		}
+			}
 		},{'action':'upvote','fb_id':fb_id});
  	
 	}
 
 	function downvote(fb_id) {
+		refreshBallot();
+		$clicked.attr('data-active', "true");
+		$clicked.addClass($clicked.data('on'));
+		if (is_upvoted) {
+		$counter.text(parseInt($counter.text())-2);
+		}
+		else {
+			$counter.text(parseInt($counter.text())-1);
+		}
 		post("/feedback/vote/", function (response) {
 			var status = JSON.parse(response)["status"];
 			if (status === "success") {
-      refreshBallot();
-			$clicked.attr('data-active', "true");
-			$clicked.addClass($clicked.data('on'));
+      
+		}
+		else {
+			refreshBallot();
+			// if *was upvoted before
 			if (is_upvoted) {
-			$counter.text(parseInt($counter.text())-2);
+				$counter.text(parseInt($counter.text())+2);
+				$upvote.attr('data-active', "true");
+				$upvote.addClass($upvote.data('on'));
 			}
 			else {
-				$counter.text(parseInt($counter.text())-1);
+				$counter.text(parseInt($counter.text())+1);
 			}
+
 		}
 		},{'action':'downvote','fb_id':fb_id});
 	}
 
 	function unupvote(fb_id) {
+	 	refreshBallot();
+		$clicked.attr('data-active', "false");
+		$clicked.removeClass($clicked.data('on'));
+		$counter.text(parseInt($counter.text())-1);
 		post("/feedback/vote/", function (response) {
 			var status = JSON.parse(response)["status"];
 			if (status === "success") {
-      refreshBallot();
-			$clicked.attr('data-active', "false");
-			$clicked.removeClass($clicked.data('on'));
-			$counter.text(parseInt($counter.text())-1);
+     
+			}
+			else {
+				// do upvote again
+				$clicked.attr('data-active', "true");
+				$clicked.addClass($clicked.data('on'));
+				$counter.text(parseInt($counter.text())+1);
 			}
 		},{'action':'unupvote','fb_id':fb_id});
 	}
 
 	function undownvote(fb_id) {
+		refreshBallot();
+		$clicked.attr('data-active', "false");
+		$clicked.removeClass($clicked.data('on'));
+		$counter.text(parseInt($counter.text())+1);
 		post("/feedback/vote/", function (response) {
 			var status = JSON.parse(response)["status"];
 			if (status === "success") {
-      refreshBallot();
-			$clicked.attr('data-active', "false");
-			$clicked.removeClass($clicked.data('on'));
-			$counter.text(parseInt($counter.text())+1); 
+       
+		}
+		else {
+			$clicked.attr('data-active', "true");
+			$clicked.addClass($clicked.data('on'));
+			$counter.text(parseInt($counter.text())-1);
 		}
 		},{'action':'undownvote','fb_id':fb_id});
 	}
@@ -380,13 +421,21 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 
 
 
+$(".ballot").hover(function(){
+	  $(this).closest('.fb').removeClass('hoverable');
+}, function(){
+	  $(this).closest('.fb').addClass('hoverable');
+});
 
 
 
 </script>
 <style type="text/css">
 
-	#background {}
+	#background {
+		padding-top: 40px;
+		padding-bottom: 40px;
+	}
 
 	.pagination {
 		margin-top: 10px;
@@ -446,12 +495,30 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 	}
 
 	.fb {
+		transition: 0.3s;
 		clear: both;
 		padding: 7px;
 		height: 80px;
 		display: flex;
-
 	}
+
+	.fb.hoverable:active:hover {
+		background-color: rgba(245,245,245,1);
+
+}
+
+.fb.hoverable:hover {
+	background-color: rgba(250,250,250,1);
+  	 cursor: pointer;
+}
+
+.fb .ballot button.vote:not(:hover) {
+	background-color: transparent;
+}
+
+.fb:hover .ballot button.counter {
+	background-color: rgb(240,240,240);
+}
 
 	.fb-content {
 		vertical-align:top;
@@ -477,6 +544,23 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 	}
 
 }
+
+	@media (max-width:500px) {
+  .floater {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+}
+
+#background {
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+}
+}
+
 	@media (max-width:370px) {
 
 		.pagination-space {
