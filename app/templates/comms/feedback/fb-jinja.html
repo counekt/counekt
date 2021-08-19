@@ -1,0 +1,3 @@
+{% with is_upvoted = fb.is_upvoted(current_user), is_downvoted = fb.is_downvoted(current_user) %}
+	{% include 'comms/feedback/fb.html' %}
+{% endwith %}

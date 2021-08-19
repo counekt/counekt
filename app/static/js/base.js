@@ -18,7 +18,7 @@ function unload(_delay) {
      window.history.pushState("", "", url);
  }
 
- function redirect(object, title, url, what) {
+ function redirect(object, title, url, what=function() {}) {
    if (window.history.pushState) {
     // supported.
     window.history.pushState(object, title, url);
@@ -41,8 +41,6 @@ function unload(_delay) {
 
 function post(url, success, args) {
     var formData = new FormData();
-    console.log(args);
-    console.log(args.keys);
     Object.keys(args).forEach((key,index) => {
         formData.append(key,args[key]);
     });
