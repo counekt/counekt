@@ -72,70 +72,72 @@
   -->
   <div id="profile-tabs" class="container">
     <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
-  <ul>
-    <li class="is-active" data-content="#profile-allies">
-      <a>
-        <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
-        <span class="tabtext">Members</span>
-      </a>
-    </li>
-    <li data-content="#profile-projects">
-      <a>
-        <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
-        <span class="tabtext">Roles</span>
-      </a>
-    </li>
-    <li data-content="#profile-projects">
-      <a>
-        <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
-        <span class="tabtext">Comms</span>
-      </a>
-    </li>
-  </ul>
-</div>
- <div id="profile-tabs-content">
-    <div id="profile-allies" class="profile-associate">
-      {% for member in project.group.members %}
-      <div class="subprofile box">
-        <div class="subprofile-image-wrap">
-        <a class="subprofile-image" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
-            <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
-        </a>
-      </div>
-        <div class="subprofile-content">
-          <a class="subprofile-identity" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
-            <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
-            <br>
-            <span class="subprofile-username selectable">@{{member.username}}</span>
+      <ul>
+        <li class="is-active" data-content="#profile-allies">
+          <a>
+            <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
+            <span class="tabtext">Members</span>
           </a>
-          <br>
-        <span class="subprofile-bio selectable" maxlenght="30">{% if member.bio %}{{member.bio}}{% endif %}</span>
-      </div>
-      </div>
-      {% endfor %}
-      {% if current_user and "remember to define something here" %}
-      <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
-      {% endif %}
+        </li>
+        <li data-content="#profile-projects">
+          <a>
+            <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
+            <span class="tabtext">Roles</span>
+          </a>
+        </li>
+        <li data-content="#profile-projects">
+          <a>
+            <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
+            <span class="tabtext">Comms</span>
+          </a>
+        </li>
+      </ul>
     </div>
-    <div id="profile-projects" class="profile-associate vanish">
-      {% raw %}
-      {% for project in user.projects %}
-      {% endfor %}
-      {% if user==current_user %}
-      <div class="add-specific-button" id="create-project-button"><span>Add Role</span></div>
-      {% endif %}
-      {% endraw %}
+    {% if current_user in project.group.members %}
+    <div id="profile-tabs-content">
+        <div id="profile-allies" class="profile-associate">
+          {% for member in project.group.members %}
+          <div class="subprofile box">
+            <div class="subprofile-image-wrap">
+            <a class="subprofile-image" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
+                <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
+            </a>
+          </div>
+            <div class="subprofile-content">
+              <a class="subprofile-identity" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
+                <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
+                <br>
+                <span class="subprofile-username selectable">@{{member.username}}</span>
+              </a>
+              <br>
+            <span class="subprofile-bio selectable" maxlenght="30">{% if member.bio %}{{member.bio}}{% endif %}</span>
+          </div>
+          </div>
+          {% endfor %}
+          {% if current_user and "remember to define something here" %}
+          <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
+          {% endif %}
+        </div>
+        <div id="profile-projects" class="profile-associate vanish">
+          {% raw %}
+          {% for project in user.projects %}
+          {% endfor %}
+          {% if user==current_user %}
+          <div class="add-specific-button" id="create-project-button"><span>Add Role</span></div>
+          {% endif %}
+          {% endraw %}
+        </div>
+        <div id="profile-projects" class="profile-associate vanish">
+          {% raw %}
+          {% for project in user.projects %}
+          {% endfor %}
+          {% if user==current_user %}
+          <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
+          {% endif %}
+          {% endraw %}
+        </div>
     </div>
-    <div id="profile-projects" class="profile-associate vanish">
-      {% raw %}
-      {% for project in user.projects %}
-      {% endfor %}
-      {% if user==current_user %}
-      <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
-      {% endif %}
-      {% endraw %}
-    </div>
- </div>
+    {% endif %}
   </div>
 </div>
 
@@ -150,6 +152,8 @@
 {% endwith %}
 {% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
 {% include "profiles/add-members.html" %}
+{% elif request.url_rule.endpoint == 'profiles.club_add_roles' %}
+{% include "profiles/add-roles.html" %}
 {% endif %}
 
 {% endblock %}
@@ -162,7 +166,7 @@
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
 <link rel="stylesheet" href="/static/css/profiles/add-members.css">
-
+<link rel="stylesheet" href="/static/css/profiles/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profiles/user/profile.js"></script>
@@ -435,6 +439,11 @@ load_add_members_js();
     e.preventDefault();
   });
 
+  $(document).on('click', '#roles-button', function(e) {
+    redirect({id:"club-roles"},"Club Roles Permission", "/€"+handle+"/roles/", changeRoles);
+    e.preventDefault();
+  });
+
 $(document).on('click', '.close', function() {
   redirect({id:"project-profile"}, "Profile", "/£{{project.handle}}/", changeToProfile);
 });
@@ -457,6 +466,10 @@ $(window).on("popstate", function() {
 
   else if (window.history.state.id == "project-add-members") {
     changeToMembers();
+  }
+
+  else if (window.history.state.id == "club-roles") {
+    changeRoles();
   }
 
 
@@ -490,6 +503,13 @@ function changeToMembers() {
   $(document.body).addClass('noscroll');
 }
 
+function changeRoles() {
+  $("#modal-box").append(`
+    {% include "profiles/add-roles.html" %}`);
+  load_add_members_js()
+  $(document.body).addClass('noscroll');
+}
+
 
 {% if request.url_rule.endpoint == 'profiles.edit_project' %}
 window.history.replaceState({id:"edit-project"},"Edit project", "/£{{project.handle}}/edit/");
@@ -497,6 +517,8 @@ window.history.replaceState({id:"edit-project"},"Edit project", "/£{{project.ha
 window.history.replaceState({id:"project-photo"},"Profile photo", "/£{{project.handle}}/");
 {% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
 window.history.replaceState({id:"project-add-members"},"Project add members", "/£{{project.handle}}/add-members/");
+{% elif request.url_rule.endpoint == 'profiles.club_roles' %}
+window.history.replaceState({id:"club-add-roles"},"Club add roles", "/€{{club.handle}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"project-profile"},"Profile", "./");
 {% endif %}

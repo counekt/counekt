@@ -1,0 +1,60 @@
+.buttons-top, .buttons-down{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.button-square{
+    position: relative;
+    margin: 5px;
+}
+
+.button-square> .card__input{
+    position: absolute;
+    margin: 0px 0px -10px -60px;
+    width : 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.button-square> .icon-box{
+    background-color: #fff;
+    width : 120px;
+    height : 90px;
+    border: 2px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.button-square> .icon-box> h5{
+    color: #B0B0B0;
+    margin-top:5px; 
+    font-size: 15px;
+    text-align: center;
+}
+
+.button-square>.icon-box>span>i{
+    text-align: center;
+    font-size: 25px;
+}
+
+.button-square> .card__input:checked ~ .icon-box{
+    border: 3px solid rgb(0, 127, 255);
+    box-shadow: 0 0 5px rgba(33, 156, 243, .5),
+                0 0 5px rgba(33, 156, 243, .5),
+                0 0 5px rgba(33, 156, 243, .5),
+                inset 0 0 5px rgba(33, 156, 243, 1);
+}
+
+.button-square> .card__input:checked ~ .icon-box > span > i{
+    color: rgb(0, 127, 255);
+    text-shadow: 0 0 5px rgba(33, 156, 243, 1),
+                0 0 5px rgba(33, 156, 243, 1),
+                
+}
+
+.button-square> .card__input:checked ~ .icon-box > h5{
+    color: #000;
+}

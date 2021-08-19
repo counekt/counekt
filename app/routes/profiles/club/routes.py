@@ -194,3 +194,16 @@ def club_add_members(handle):
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+
+@ bp.route("/club/<handle>/roles/", methods=["GET"])
+@ bp.route("/€<handle>/roles/", methods=["GET"])
+@login_required
+def club_add_roles(handle):
+    if not handle:
+        abort(404)
+    club = models.Club.query.filter_by(handle=handle).first()
+    if not club:
+        abort(404)
+
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)

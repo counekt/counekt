@@ -19,7 +19,6 @@
 #add-members-text-field.placeholder:empty:before{
     content:attr(data-text);
     color:#C8C8C8;
-
 }
 
 #add-members-text-field:focus {

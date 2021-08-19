@@ -1,3 +1,4 @@
+from app.routes.profiles.routes import notifications
 from app import db
 from app.models.base import Base
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -30,6 +31,20 @@ class Group(db.Model, Base):
         except:
             return False
 
+    def has_permission(self, member, permission):
+        try:
+            membership = self.memberships.any(owner=member).first()
+            return membership.role.permission == True
+        except:
+            return False
+
+    def member_got_permission(self, members, permission):
+        membersAllowed = []
+        for member in members:
+            if self.has_permission(member, permission):
+                membersAllowed.append(member)
+        return membersAllowed
+
     def remove_member(self, user):
         self.memberships.filter_by(owner=user).delete()
 
@@ -47,6 +62,14 @@ class Role(db.Model, Base):
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
     group = db.relationship("Group", back_populates="roles", foreign_keys=[group_id])
     holders = db.relationship('Membership', back_populates="role")
+    notifications = db.Column(db.Boolean, default=False)
+    answerInvite = db.Column(db.Boolean, default=False)
+    rejectPeople = db.Column(db.Boolean, default=False)
+    roleCreator = db.Column(db.Boolean, default=False)
+    changePeopleRoles = db.Column(db.Boolean, default=False)
+    editPage = db.Column(db.Boolean, default=False)
+    privatePostCreator = db.Column(db.Boolean, default=False)
+    publicPostCreator = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return "<Role {}>".format(self.title)
@@ -62,3 +85,5 @@ class Membership(db.Model, Base):
 
     def __repr__(self):
         return "<Membership {}>".format(self.role)
+
+
