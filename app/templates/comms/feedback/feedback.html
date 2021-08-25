@@ -58,24 +58,34 @@
     </div>
    </div>
    	<div style="margin-top: 10px;" id="fb-container">
-   	{% if page_count > 0 %}
-
-		{% for fb in feedback %}
-			{% include 'comms/feedback/fb-jinja.html' %}
-		{% endfor %}
-
+   	{% if post %}
+   		{% include 'comms/feedback/post.html' %}
 		{% else %}
-			{% include 'no-results.html' %}
+			{% if page_count > 0 %}
+
+			{% for fb in feedback %}
+				{% include 'comms/feedback/fb-jinja.html' %}
+			{% endfor %}
+
+			{% else %}
+				{% include 'no-results.html' %}
+			{% endif %}
 		{% endif %}
 
 	</div>
+		{% if not post %}
 		{% include 'comms/feedback/pagination.html' %}
+		{% endif %}
 </div>
 
 {% endblock %}
 {% block scripts %}
 <script type="text/javascript">
-		redirect({'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
+		{% if post %}
+		redirect({'is_search':false, "Feedback Post", "{{url}}"});
+		{% else %}
+		redirect({'is_search':true, 'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
+		{% endif %}
 
 	$("#create-feedback").on('focus', function() {
 		window.location.href = "/feedback/submit/";
@@ -358,13 +368,17 @@ $(window).on("popstate", function() {
 
 function changeTo() {
   var state = window.history.state;
-
-  $('#search-feedback').val(simplify(state.search));
-  changeSearchBy(state.by);
-  var $b = $('.fb-search-b[data-name="'+state.by+'"]');
-  $b.attr('data-active', "true");
-	$b.addClass($b.data('on'));
-  searchFeedback(state.search, state.by, state.page, do_redirect=false);
+  if (state.is_search == true) {
+	  $('#search-feedback').val(simplify(state.search));
+	  changeSearchBy(state.by);
+	  var $b = $('.fb-search-b[data-name="'+state.by+'"]');
+	  $b.attr('data-active', "true");
+		$b.addClass($b.data('on'));
+	  searchFeedback(state.search, state.by, state.page, do_redirect=false);
+	}
+	else {
+		goToIndividualFeedback(state.feedback_id,do_redirect=false);
+	}
 }
 
 
@@ -379,19 +393,24 @@ function simplify(value) {
 	return value;
 }
 
-function searchFeedback(search,by,page=1,do_redirect=true) {
-
-	var searchObject = {'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name')), 'page':page};
+function displayLoading() {
 	clearPage();
 	$("#fb-container").append(infoLoader());
+}
+
+function searchFeedback(search,by,page=1,do_redirect=true) {
+
+	var searchObject = {'is_search':true,'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name')), 'page':page};
+	var params = new URLSearchParams({ foo: "1", bar: "2" });
+	var path = `/feedback/?${params.toString()}`;
+	if (do_redirect) {redirect(searchObject, "Feedback", path, function(){});}
+				 else { window.history.replaceState(searchObject,"Feedback", path);}
+	clearPage();
+	displayLoading();
 	post("/feedback/", function (response) {
 			var response = JSON.parse(response);
 			var status = response["status"];
 			if (status === "success") {
-
-				if (do_redirect) {redirect(searchObject, "Feedback", response["path"], function(){});}
-				 else { window.history.replaceState(searchObject,"Feedback", response["path"]);}
-          
 				
         	var feedback = response["feedback"];
         	clearPage();
@@ -420,13 +439,48 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 		}
 
 
+$(document).on('click', '.fb', function(e) {
+	var $target = $(e.target);
+	// if click not on ballot
+	if (!$('.ballot').has($target).length && !$target.hasClass('ballot')) {
+			var feedback_id = $(this).data('id');
+			goToIndividualFeedback(feedback_id);
 
+	}
+  
+});
+
+function goToIndividualFeedback(feedback_id, do_redirect=true) {
+				var pageObject = {'is_search':false,'feedback_id':feedback_id};
+			if (do_redirect) {redirect(pageObject, "Feedback Post", "/feedback/"+feedback_id+"/", function(){});}
+				 else { window.history.replaceState(pageObject,"Feedback Post", "/feedback/"+feedback_id+"/");}
+			displayLoading();
+			$('.pagination').remove();
+			post("/feedback/"+feedback_id+"/", function (response) {
+			var response = JSON.parse(response);
+			var status = response["status"];
+			if (status === "success") {
+				var post = response["post"];
+				clearPage();
+				$("#fb-container").append(media(post.id,post.title,post.content,post.upvotes,post.downvotes,post.is_upvoted,post.is_downvoted));
+
+			}},{});
+	
+}
+
+$(document).on('mouseenter','.ballot', function (event) {
+	$(this).closest('.fb').removeClass('hoverable');
+}).on('mouseleave','.ballot',  function(){
+	$(this).closest('.fb').addClass('hoverable');
+});
+
+/*
 $(".ballot").hover(function(){
 	  $(this).closest('.fb').removeClass('hoverable');
 }, function(){
 	  $(this).closest('.fb').addClass('hoverable');
 });
-
+*/
 
 
 </script>
@@ -502,6 +556,14 @@ $(".ballot").hover(function(){
 		display: flex;
 	}
 
+	.post {
+		transition: 0.3s;
+		clear: both;
+		padding: 7px;
+		height: 100%;
+		display: flex;
+	}
+
 	.fb.hoverable:active:hover {
 		background-color: rgba(245,245,245,1);
 
@@ -519,6 +581,11 @@ $(".ballot").hover(function(){
 .fb:hover .ballot button.counter {
 	background-color: rgb(240,240,240);
 }
+
+.fb:active:hover .ballot button.counter {
+	background-color: rgb(235,235,235);
+}
+
 
 	.fb-content {
 		vertical-align:top;

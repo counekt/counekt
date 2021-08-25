@@ -48,6 +48,22 @@
             return `{% include 'profiles/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
         }
 
+        function media(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false) {
+            var upvote_button_class = "";
+            var upvote_button_active = "false";
+            var downvote_button_class = "";
+            var downvote_button_active = "false";
+            if (is_upvoted) {
+                var upvote_button_class = "is-info";
+                var upvote_button_active = "true";
+            }
+            if (is_downvoted) {
+                var downvote_button_class = "is-danger";
+                var downvote_button_active = "true";
+            }
+            return `{% include 'comms/feedback/post.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active);
+        }
+
         function minimedia(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false,href="") {
             var upvote_button_class = "";
             var upvote_button_active = "false";
@@ -71,7 +87,7 @@
         function noResults() {
             return `{% include 'no-results.html' %}`;
         }
-        /*
+        // fix this below function!
         {% raw %}
         function paginationBar(page=1,page_count=1) {
             var first_data = "disabled";
@@ -79,7 +95,7 @@
             var next_data = "disabled";
             var max_data = "disabled";
 
-            if (page >= page_count) {
+            if (page <= page_count) {
                 first_data = "";
                 previous_data = "data-page='"+Math.max(1,page-1)+"'";
             }
@@ -101,7 +117,7 @@
          
         }
         {% endraw %}
-        */
+        
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
