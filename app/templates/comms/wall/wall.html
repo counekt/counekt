@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Wall</p>
 <div class="container floater">
-	<div id="create-post"></div>
-	<div id="search-filter"></div>
+	{% with what='post' %}	
+	{% include 'comms/create-bar.html' %}
+    {% include 'comms/search-filter-bar.html' %}
+	{% endwith %}
 	{% for p in posts %}
 		{% include 'comms/post.html' %}
 	{% endfor %}
 </div>
 
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/comms/search-filter-bar.js') }}"></script>
 {% endblock %}

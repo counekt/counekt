@@ -1,0 +1,41 @@
+<!-- Filter feedback -->
+    <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto; display: flex;">
+    <div class="field is-expanded has-addons" style="float:left; margin: 0; margin-right: 10px; flex-shrink: 1;">
+    			<p class="control has-icons-left" style="min-width: 50px;">
+                    <input id="search-bar-input" class="input" type="location" placeholder='Search {% if what %}{{what}}{% endif %}' {% if search %}value="{{search}}"{% endif %}>
+                    <span class="icon is-small is-left">
+	                    	<i class="fa fa-search"></i>
+	                  	</span>
+           </p>
+       </div>
+    <div class="field is-grouped">
+    	<p class="control">
+    <button class="button transition search-filter-bar-b {% if by == 'hot' %}is-danger is-light{% endif %}" data-on="is-danger is-light" data-name="hot" {% if by == 'hot' %}data-active="true"{% else %}data-active="false"{% endif %}>
+      <span id="cog" class="icon">
+        <i class="fas fa-fire-alt"></i>
+      </span>
+    </button>
+  </p>
+  <p class="control">
+    <button class="button transition search-filter-bar-b {% if by == 'best' %}is-warning is-light{% endif %}" data-on="is-warning is-light" data-name="best" {% if by == 'best' %}data-active="true"{% else %}data-active="false"{% endif %}>
+      <span id="cog" class="icon">
+        <i class="fas fa-medal"></i>
+      </span>
+    </button>
+  </p>
+  <p class="control">
+    <button class="button transition search-filter-bar-b {% if by == 'new' %}is-success is-light{% endif %}" data-on="is-success is-light" data-name="new" {% if by == 'new' %}data-active="true"{% else %}data-active="false"{% endif %}>
+      <span id="cog" class="icon">
+        <i class="fas fa-seedling"></i>
+      </span>
+    </button>
+  </p>
+  <p class="control">
+    <button class="button transition search-filter-bar-b {% if by == 'top' %}is-link is-light{% endif %}" data-on="is-link is-light" data-name="top" {% if by == 'top' %}data-active="true"{% else %}data-active="false"{% endif %}>
+      <span id="cog" class="icon">
+        <i class="fas fa-rocket"></i>
+      </span>
+    </button>
+  </p>
+    </div>
+   </div>
