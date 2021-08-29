@@ -122,10 +122,11 @@ def feedback():
 
 @ bp.route("/feedback/<fb_id>/", methods=["GET", "POST"])
 def feedback_post(fb_id):
+    print(fb_id)
     post = models.Feedback.query.filter_by(id=fb_id).first_or_404()
     if flask_request.method == 'POST':
         return json.dumps({'status': 'success', "post":{"id":post.id, "title":str(post.title), "content":str(post.content),"upvotes":post.upvotes.count(),"downvotes":post.downvotes.count(), "is_upvoted":post.is_upvoted(current_user), "is_downvoted":post.is_downvoted(current_user)}})
-    return render_template("comms/feedback/feedback.html", post=post, navbar=True, background=True, size="medium", models=models, url=flask_request.url)
+    return render_template("comms/feedback/feedback.html", post=post, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
 
 
 @login_required

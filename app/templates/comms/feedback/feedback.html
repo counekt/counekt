@@ -59,7 +59,7 @@
    </div>
    	<div style="margin-top: 10px;" id="fb-container">
    	{% if post %}
-   		{% include 'comms/feedback/post.html' %}
+   		{% include 'comms/feedback/post-jinja.html' %}
 		{% else %}
 			{% if page_count > 0 %}
 
@@ -73,16 +73,18 @@
 		{% endif %}
 
 	</div>
+		<div id="pagination-container">
 		{% if not post %}
 		{% include 'comms/feedback/pagination.html' %}
 		{% endif %}
+	</div>
 </div>
 
 {% endblock %}
 {% block scripts %}
 <script type="text/javascript">
 		{% if post %}
-		redirect({'is_search':false, "Feedback Post", "{{url}}"});
+		redirect({'is_search':false},"Feedback Post", "{{url}}");
 		{% else %}
 		redirect({'is_search':true, 'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
 		{% endif %}
@@ -141,7 +143,7 @@
 	$('#fb-container').on('click', '.vote', function() {
 		console.log("WOOP");
 		var $clicked = $(this);
-		var $fb = $clicked.closest('.fb');
+		var $fb = $clicked.closest('.ctw-media');
 		var $counter = $fb.find('.counter').find('span');
 		var $ballot = $fb.find('.ballot');
 		var $upvote = $ballot.find('.upvote');
@@ -283,6 +285,9 @@
 		});
 
 	function changePagination(page,page_count) {
+		if ($('#pagination-container').children().length == 0) {
+			$('#pagination-container').append(paginationBar());
+		}
 		console.log("changepag");
 		console.log(page); console.log(page_count);
 		page = Math.min(page, page_count);
@@ -349,6 +354,9 @@
 
 $('.pagination-link,.pagination-next,.pagination-previous').on('click', function() {
 	if ($(this).is(':disabled') == false) {
+		console.log("woot");
+		$('.pagination-link.is-current,.pagination-next.is-current,.pagination-previous.is-current').removeClass('is-current');
+		$(this).addClass('is-current');
 	var state = window.history.state;
 	searchFeedback(state.search,state.by,$(this).attr('data-page'));
 }
@@ -398,10 +406,20 @@ function displayLoading() {
 	$("#fb-container").append(infoLoader());
 }
 
-function searchFeedback(search,by,page=1,do_redirect=true) {
+function getSearch() {
+	return $('#search-feedback').val();
+}
 
-	var searchObject = {'is_search':true,'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name')), 'page':page};
-	var params = new URLSearchParams({ foo: "1", bar: "2" });
+function getBy() {
+	return simplify($('.fb-search-b[data-active="true"]').data('name'));
+}
+
+function searchFeedback(search=getSearch(),by=getBy(),page=1,do_redirect=true) {
+	console.log(search);
+	console.log(by);
+	console.log(page);
+	var searchObject = {'is_search':true,'search':search, 'by': by, 'page':page};
+	var params = new URLSearchParams({ 'search': search, 'by': by, 'page':page });
 	var path = `/feedback/?${params.toString()}`;
 	if (do_redirect) {redirect(searchObject, "Feedback", path, function(){});}
 				 else { window.history.replaceState(searchObject,"Feedback", path);}
@@ -455,7 +473,7 @@ function goToIndividualFeedback(feedback_id, do_redirect=true) {
 			if (do_redirect) {redirect(pageObject, "Feedback Post", "/feedback/"+feedback_id+"/", function(){});}
 				 else { window.history.replaceState(pageObject,"Feedback Post", "/feedback/"+feedback_id+"/");}
 			displayLoading();
-			$('.pagination').remove();
+			$('#pagination-container').empty();
 			post("/feedback/"+feedback_id+"/", function (response) {
 			var response = JSON.parse(response);
 			var status = response["status"];
@@ -562,6 +580,44 @@ $(".ballot").hover(function(){
 		padding: 7px;
 		height: 100%;
 		display: flex;
+	}
+
+	.post .fb-content .title {
+		font-size: 30px;
+	}
+
+	.post .fb-content .subtitle {
+		font-size: 20px;
+	}
+
+
+	.post .ballot button.ballot-item {
+		height: 30px;
+		width: 	30px;
+		padding-left: 10px;
+		padding-right: 10px;
+		border-width: 0px;
+		margin-bottom: 5px;
+
+	}
+
+
+	.post .ballot button.ballot-item:not(.vote) {
+		
+		font-size: 16px;
+
+	}
+
+	.post .ballot .vote {
+		font-size: 18px;
+	}
+
+	.post .ballot {
+		width: 30px;
+		display: inline-block;
+		position: relative;
+		margin-right: 15px;
+		margin-left: 4px;
 	}
 
 	.fb.hoverable:active:hover {

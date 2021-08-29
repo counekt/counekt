@@ -88,35 +88,11 @@
             return `{% include 'no-results.html' %}`;
         }
         // fix this below function!
-        {% raw %}
-        function paginationBar(page=1,page_count=1) {
-            var first_data = "disabled";
-            var previous_data = "disabled";
-            var next_data = "disabled";
-            var max_data = "disabled";
-
-            if (page <= page_count) {
-                first_data = "";
-                previous_data = "data-page='"+Math.max(1,page-1)+"'";
-            }
-
-            else if (page <= 1) {
-                next_data = "data-page='"+Math.min(page+1)+"'";
-                max_data = "data-page='"+page_count+"'";
-            }
-
-            else {
-                first_data = "";
-                previous_data = "data-page='"+Math.max(1,page-1)+"'";
-                next_data = "data-page='"+Math.min(page+1)+"'";
-                max_data = "data-page='"+page_count+"'";
-            }
-
-             return `{% include 'comms/feedback/pagination.html' %}`.replaceAll('\\page//', page).replaceAll('\\page_count//', page_count).replaceAll('\\first_data//',first_data).replaceAll('\\previous//',Math.max(page-1,1)).replaceAll('\\next//',Math.min(page+1,page_count)).replaceAll('\\previous_data//',previous_data).replaceAll('\\next_data//',next_data).replaceAll('\\max_data//',max_data);
-         
-         
+        {% if request.url_rule.endpoint in ['comms.feedback', 'comms.feedback_post']  %}
+        function paginationBar() {
+             return `{% include 'comms/feedback/basic-pagination.html' %}`;
         }
-        {% endraw %}
+        {% endif %}
         
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
