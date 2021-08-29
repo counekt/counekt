@@ -214,5 +214,4 @@ def vote_post():
 
 @ bp.route("/wall/", methods=["GET", "POST"])
 def wall():
-    #posts = current_user
-    return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models)
+    return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models, wall=None)
