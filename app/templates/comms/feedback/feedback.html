@@ -1,62 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container floater" style="text-align: center; min-height:636px; margin: 0 auto;">
-	<!-- Create feedback -->
-	<div style="display: flex; width:100%; margin-bottom: 10px;">
-		<figure class="image is-48x48" style="width:40px;height: 40px; float: left; margin-right: 5px;">
-				<img class="is-rounded" src="{{current_user.profile_photo.src}}">
-			</figure>
-		<div class="field is-expanded has-addons" style="float:right; width: 100%;">
-                  <p class="control has-icons-left" style="width: 100%;">
-                    <input id="create-feedback" class="input" type="location" placeholder='Create feedback'>
-                    <span class="icon is-small is-left">
-	                    	<i class="fa fa-pencil"></i>
-	                  	</span>
-                  </p>
-      </div>
-  </div>
-
-    <!-- Filter feedback -->
-    <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto; display: flex;">
-    <div class="field is-expanded has-addons" style="float:left; margin: 0; margin-right: 10px; flex-shrink: 1;">
-    			<p class="control has-icons-left" style="min-width: 50px;">
-                    <input id="search-feedback" class="input" type="location" placeholder='Search feedback' {% if search %}value="{{search}}"{% endif %}>
-                    <span class="icon is-small is-left">
-	                    	<i class="fa fa-search"></i>
-	                  	</span>
-           </p>
-       </div>
-    <div class="field is-grouped">
-    	<p class="control">
-    <button class="button transition fb-search-b {% if by == 'hot' %}is-danger is-light{% endif %}" data-on="is-danger is-light" data-name="hot" {% if by == 'hot' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-fire-alt"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b {% if by == 'best' %}is-warning is-light{% endif %}" data-on="is-warning is-light" data-name="best" {% if by == 'best' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-medal"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b {% if by == 'new' %}is-success is-light{% endif %}" data-on="is-success is-light" data-name="new" {% if by == 'new' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-seedling"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b {% if by == 'top' %}is-link is-light{% endif %}" data-on="is-link is-light" data-name="top" {% if by == 'top' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-rocket"></i>
-      </span>
-    </button>
-  </p>
-    </div>
-   </div>
+{% with what='feedback' %}	
+		{% include 'comms/create-bar.html' %}
+    {% include 'comms/search-filter-bar.html' %}
+{% endwith %}
    	<div style="margin-top: 10px;" id="fb-container">
    	{% if post %}
    		{% include 'comms/feedback/post-jinja.html' %}
@@ -83,13 +31,15 @@
 {% endblock %}
 {% block scripts %}
 <script type="text/javascript">
+	if (!window.history.state) {
 		{% if post %}
 		redirect({'is_search':false},"Feedback Post", "{{url}}");
 		{% else %}
 		redirect({'is_search':true, 'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
 		{% endif %}
+	}
 
-	$("#create-feedback").on('focus', function() {
+	$("#create-bar-input").on('focus', function() {
 		window.location.href = "/feedback/submit/";
 	});
 
@@ -362,7 +312,7 @@ $('.pagination-link,.pagination-next,.pagination-previous').on('click', function
 }
 });
 
-$('#search-feedback').keypress(function(event){
+$('#search-bar-input').keypress(function(event){
   if(event.keyCode == 13){
     searchFeedback();
   }
@@ -377,7 +327,7 @@ $(window).on("popstate", function() {
 function changeTo() {
   var state = window.history.state;
   if (state.is_search == true) {
-	  $('#search-feedback').val(simplify(state.search));
+	  $('#search-bar-input').val(simplify(state.search));
 	  changeSearchBy(state.by);
 	  var $b = $('.fb-search-b[data-name="'+state.by+'"]');
 	  $b.attr('data-active', "true");
@@ -407,7 +357,7 @@ function displayLoading() {
 }
 
 function getSearch() {
-	return $('#search-feedback').val();
+	return $('#search-bar-input').val();
 }
 
 function getBy() {
@@ -469,6 +419,7 @@ $(document).on('click', '.fb', function(e) {
 });
 
 function goToIndividualFeedback(feedback_id, do_redirect=true) {
+			console.log(feedback_id);
 				var pageObject = {'is_search':false,'feedback_id':feedback_id};
 			if (do_redirect) {redirect(pageObject, "Feedback Post", "/feedback/"+feedback_id+"/", function(){});}
 				 else { window.history.replaceState(pageObject,"Feedback Post", "/feedback/"+feedback_id+"/");}
@@ -651,7 +602,7 @@ $(".ballot").hover(function(){
 				  overflow: hidden;
 	}
 
-	.fb-content .subtitle {
+	.fb .fb-content .subtitle {
 		text-overflow: ellipsis;
 				  white-space: nowrap;
 				  				  overflow: hidden;
