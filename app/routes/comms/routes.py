@@ -109,22 +109,24 @@ def feedback():
         return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":str(fb.title), "content":str(fb.content),"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user), "is_downvoted":fb.is_downvoted(current_user)} for fb in feedback], 'page':page, 'page_count':page_count})
 
     if flask_request.method == 'GET':
-        print(flask_request.full_path, flask_request.url)
         # Get q strings to provide search from url
         q_search = flask_request.args.get('search')
         q_by = flask_request.args.get('by', 'top', type=str)
         q_page = flask_request.args.get('page', 1, type=int)
         feedback, page_count = models.Feedback.search_by(q_search,q_by).custom_paginate(page=q_page, per_page=5, return_page_count=True)
         page = min(page_count,max(0,q_page))
-        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=page,by=q_by,search=q_search, max=max,min=min)
+        return render_template("comms/feedback/feedback.html", feedback=feedback, navbar=True, background=True, size="medium", models=models, enumerate=enumerate, funcs=funcs, page_count=page_count,page=page,by=q_by,search=q_search, max=max,min=min, url=flask_request.url)
 
 
 
 
 @ bp.route("/feedback/<fb_id>/", methods=["GET", "POST"])
-def feedback_id(fb_id):
-    fb = models.Feedback.query.filter_by(id=id).first_or_404()
-    return render_template("comms/feedback/feedback_id.html", fb=fb, navbar=True, background=True, size="medium", models=models)
+def feedback_post(fb_id):
+    print(fb_id)
+    post = models.Feedback.query.filter_by(id=fb_id).first_or_404()
+    if flask_request.method == 'POST':
+        return json.dumps({'status': 'success', "post":{"id":post.id, "title":str(post.title), "content":str(post.content),"upvotes":post.upvotes.count(),"downvotes":post.downvotes.count(), "is_upvoted":post.is_upvoted(current_user), "is_downvoted":post.is_downvoted(current_user)}})
+    return render_template("comms/feedback/feedback.html", post=post, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
 
 
 @login_required
@@ -212,5 +214,4 @@ def vote_post():
 
 @ bp.route("/wall/", methods=["GET", "POST"])
 def wall():
-    #posts = current_user
-    return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models)
+    return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models, wall=None)

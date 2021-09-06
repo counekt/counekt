@@ -1,0 +1,3 @@
+{% with is_upvoted = post.is_upvoted(current_user), is_downvoted = post.is_downvoted(current_user) %}
+	{% include 'comms/feedback/post.html' %}
+{% endwith %}

@@ -1,137 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container floater" style="text-align: center; min-height:636px; margin: 0 auto;">
-	<!-- Create feedback -->
-	<div style="display: flex; width:100%; margin-bottom: 10px;">
-		<figure class="image is-48x48" style="width:40px;height: 40px; float: left; margin-right: 5px;">
-				<img class="is-rounded" src="{{current_user.profile_photo.src}}">
-			</figure>
-		<div class="field is-expanded has-addons" style="float:right; width: 100%;">
-                  <p class="control has-icons-left" style="width: 100%;">
-                    <input id="create-feedback" class="input" type="location" placeholder='Create feedback'>
-                    <span class="icon is-small is-left">
-	                    	<i class="fa fa-pencil"></i>
-	                  	</span>
-                  </p>
-      </div>
-  </div>
-
-    <!-- Filter feedback -->
-    <div class="is-centered" style="background-color: #ffff; border-radius: 10px; clear: both; padding: 5px; margin: auto; display: flex;">
-    <div class="field is-expanded has-addons" style="float:left; margin: 0; margin-right: 10px; flex-shrink: 1;">
-    			<p class="control has-icons-left" style="min-width: 50px;">
-                    <input id="search-feedback" class="input" type="location" placeholder='Search feedback' {% if search %}value="{{search}}"{% endif %}>
-                    <span class="icon is-small is-left">
-	                    	<i class="fa fa-search"></i>
-	                  	</span>
-           </p>
-       </div>
-    <div class="field is-grouped">
-    	<p class="control">
-    <button class="button transition fb-search-b {% if by == 'hot' %}is-danger is-light{% endif %}" data-on="is-danger is-light" data-name="hot" {% if by == 'hot' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-fire-alt"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b {% if by == 'best' %}is-warning is-light{% endif %}" data-on="is-warning is-light" data-name="best" {% if by == 'best' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-medal"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b {% if by == 'new' %}is-success is-light{% endif %}" data-on="is-success is-light" data-name="new" {% if by == 'new' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-seedling"></i>
-      </span>
-    </button>
-  </p>
-  <p class="control">
-    <button class="button transition fb-search-b {% if by == 'top' %}is-link is-light{% endif %}" data-on="is-link is-light" data-name="top" {% if by == 'top' %}data-active="true"{% else %}data-active="false"{% endif %}>
-      <span id="cog" class="icon">
-        <i class="fas fa-rocket"></i>
-      </span>
-    </button>
-  </p>
-    </div>
-   </div>
+{% with what='feedback' %}	
+		{% include 'comms/create-bar.html' %}
+    {% include 'comms/search-filter-bar.html' %}
+{% endwith %}
    	<div style="margin-top: 10px;" id="fb-container">
-   	{% if page_count > 0 %}
-
-		{% for fb in feedback %}
-			{% include 'comms/feedback/fb-jinja.html' %}
-		{% endfor %}
-
+   	{% if post %}
+   		{% include 'comms/feedback/post-jinja.html' %}
 		{% else %}
-			{% include 'no-results.html' %}
+			{% if page_count > 0 %}
+
+			{% for fb in feedback %}
+				{% include 'comms/feedback/fb-jinja.html' %}
+			{% endfor %}
+
+			{% else %}
+				{% include 'no-results.html' %}
+			{% endif %}
 		{% endif %}
 
 	</div>
+		<div id="pagination-container">
+		{% if not post %}
 		{% include 'comms/feedback/pagination.html' %}
+		{% endif %}
+	</div>
 </div>
 
 {% endblock %}
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/comms/search-filter-bar.js') }}"></script>
 <script type="text/javascript">
-		redirect({'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
+	if (!window.history.state) {
+		{% if post %}
+		redirect({'is_search':false},"Feedback Post", "{{url}}");
+		{% else %}
+		redirect({'is_search':true, 'search':"{% if search %}{{search}}{% endif %}", 'by': "{% if by %}{{by}}{% endif %}", 'page':{{page}} },"Feedback", "{{url}}");
+		{% endif %}
+	}
 
-	$("#create-feedback").on('focus', function() {
+	$("#create-bar-input").on('focus', function() {
 		window.location.href = "/feedback/submit/";
 	});
 
-	function clearSearchBy() {
-		$(".fb-search-b").each(function() {
-			var $this = $(this);
-			$this.attr('data-active', "false");
-				$this.removeClass($this.data('on'));
-		})
-	}
-
-	function changeSearchBy(by) {
-		$(".fb-search-b").each(function() {
-			var $this = $(this);
-		if ($this.data('name') != by) {
-			$this.attr('data-active', "false");
-				$this.removeClass($this.data('on'));
-	}});
-}
-
-	$(".fb-search-b").on('click', function() {
-		var $clicked = $(this);
-		var clicked	= this;
-		$(".fb-search-b").each(function() {
-			var $this = $(this);
-			if (this != clicked) {
-			$this.attr('data-active', "false");
-				$this.removeClass($this.data('on'));
-			}
-		});
-		
-		console.log($clicked.attr('data-active'));
-		if ($clicked.attr('data-active') == "true") {
-			/*
-					$clicked.attr('data-active', "false");
-					$clicked.removeClass($clicked.data('on'));
-					console.log("DDED");
-			*/
-		}
-		else {
-			console.log("ADASASD");
-		$clicked.attr('data-active', "true");
-		$clicked.addClass($clicked.data('on'));
-		searchFeedback();
-
-	}
-
-
-	});
+	$(".search-filter-bar-b").on('click', function() {
+				searchFeedback();
+});
+	
 
 	$('#fb-container').on('click', '.vote', function() {
 		console.log("WOOP");
 		var $clicked = $(this);
-		var $fb = $clicked.closest('.fb');
+		var $fb = $clicked.closest('.ctw-media');
 		var $counter = $fb.find('.counter').find('span');
 		var $ballot = $fb.find('.ballot');
 		var $upvote = $ballot.find('.upvote');
@@ -273,6 +194,9 @@
 		});
 
 	function changePagination(page,page_count) {
+		if ($('#pagination-container').children().length == 0) {
+			$('#pagination-container').append(paginationBar());
+		}
 		console.log("changepag");
 		console.log(page); console.log(page_count);
 		page = Math.min(page, page_count);
@@ -339,12 +263,15 @@
 
 $('.pagination-link,.pagination-next,.pagination-previous').on('click', function() {
 	if ($(this).is(':disabled') == false) {
+		console.log("woot");
+		$('.pagination-link.is-current,.pagination-next.is-current,.pagination-previous.is-current').removeClass('is-current');
+		$(this).addClass('is-current');
 	var state = window.history.state;
 	searchFeedback(state.search,state.by,$(this).attr('data-page'));
 }
 });
 
-$('#search-feedback').keypress(function(event){
+$('#search-bar-input').keypress(function(event){
   if(event.keyCode == 13){
     searchFeedback();
   }
@@ -358,13 +285,17 @@ $(window).on("popstate", function() {
 
 function changeTo() {
   var state = window.history.state;
-
-  $('#search-feedback').val(simplify(state.search));
-  changeSearchBy(state.by);
-  var $b = $('.fb-search-b[data-name="'+state.by+'"]');
-  $b.attr('data-active', "true");
-	$b.addClass($b.data('on'));
-  searchFeedback(state.search, state.by, state.page, do_redirect=false);
+  if (state.is_search == true) {
+	  $('#search-bar-input').val(simplify(state.search));
+	  changeSearchBy(state.by);
+	  var $b = $('.search-filter-bar-b[data-name="'+state.by+'"]');
+	  $b.attr('data-active', "true");
+		$b.addClass($b.data('on'));
+	  searchFeedback(state.search, state.by, state.page, do_redirect=false);
+	}
+	else {
+		goToIndividualFeedback(state.feedback_id,do_redirect=false);
+	}
 }
 
 
@@ -372,26 +303,26 @@ function clearPage() {
 	$("#fb-container").empty();
 }
 
-function simplify(value) {
-	if (value == undefined) {
-		return "";
-	}
-	return value;
-}
-
-function searchFeedback(search,by,page=1,do_redirect=true) {
-
-	var searchObject = {'search':$('#search-feedback').val(), 'by': simplify($('.fb-search-b[data-active="true"]').data('name')), 'page':page};
+function displayLoading() {
 	clearPage();
 	$("#fb-container").append(infoLoader());
+}
+
+function searchFeedback(search=getSearch(),by=getBy(),page=1,do_redirect=true) {
+	console.log(search);
+	console.log(by);
+	console.log(page);
+	var searchObject = {'is_search':true,'search':search, 'by': by, 'page':page};
+	var params = new URLSearchParams({ 'search': search, 'by': by, 'page':page });
+	var path = `/feedback/?${params.toString()}`;
+	if (do_redirect) {redirect(searchObject, "Feedback", path, function(){});}
+				 else { window.history.replaceState(searchObject,"Feedback", path);}
+	clearPage();
+	displayLoading();
 	post("/feedback/", function (response) {
 			var response = JSON.parse(response);
 			var status = response["status"];
 			if (status === "success") {
-
-				if (do_redirect) {redirect(searchObject, "Feedback", response["path"], function(){});}
-				 else { window.history.replaceState(searchObject,"Feedback", response["path"]);}
-          
 				
         	var feedback = response["feedback"];
         	clearPage();
@@ -420,13 +351,49 @@ function searchFeedback(search,by,page=1,do_redirect=true) {
 		}
 
 
+$(document).on('click', '.fb', function(e) {
+	var $target = $(e.target);
+	// if click not on ballot
+	if (!$('.ballot').has($target).length && !$target.hasClass('ballot')) {
+			var feedback_id = $(this).data('id');
+			goToIndividualFeedback(feedback_id);
 
+	}
+  
+});
+
+function goToIndividualFeedback(feedback_id, do_redirect=true) {
+			console.log(feedback_id);
+				var pageObject = {'is_search':false,'feedback_id':feedback_id};
+			if (do_redirect) {redirect(pageObject, "Feedback Post", "/feedback/"+feedback_id+"/", function(){});}
+				 else { window.history.replaceState(pageObject,"Feedback Post", "/feedback/"+feedback_id+"/");}
+			displayLoading();
+			$('#pagination-container').empty();
+			post("/feedback/"+feedback_id+"/", function (response) {
+			var response = JSON.parse(response);
+			var status = response["status"];
+			if (status === "success") {
+				var post = response["post"];
+				clearPage();
+				$("#fb-container").append(media(post.id,post.title,post.content,post.upvotes,post.downvotes,post.is_upvoted,post.is_downvoted));
+
+			}},{});
+	
+}
+
+$(document).on('mouseenter','.ballot', function (event) {
+	$(this).closest('.fb').removeClass('hoverable');
+}).on('mouseleave','.ballot',  function(){
+	$(this).closest('.fb').addClass('hoverable');
+});
+
+/*
 $(".ballot").hover(function(){
 	  $(this).closest('.fb').removeClass('hoverable');
 }, function(){
 	  $(this).closest('.fb').addClass('hoverable');
 });
-
+*/
 
 
 </script>
@@ -502,6 +469,52 @@ $(".ballot").hover(function(){
 		display: flex;
 	}
 
+	.post {
+		transition: 0.3s;
+		clear: both;
+		padding: 7px;
+		height: 100%;
+		display: flex;
+	}
+
+	.post .fb-content .title {
+		font-size: 30px;
+	}
+
+	.post .fb-content .subtitle {
+		font-size: 20px;
+	}
+
+
+	.post .ballot button.ballot-item {
+		height: 30px;
+		width: 	30px;
+		padding-left: 10px;
+		padding-right: 10px;
+		border-width: 0px;
+		margin-bottom: 5px;
+
+	}
+
+
+	.post .ballot button.ballot-item:not(.vote) {
+		
+		font-size: 16px;
+
+	}
+
+	.post .ballot .vote {
+		font-size: 18px;
+	}
+
+	.post .ballot {
+		width: 30px;
+		display: inline-block;
+		position: relative;
+		margin-right: 15px;
+		margin-left: 4px;
+	}
+
 	.fb.hoverable:active:hover {
 		background-color: rgba(245,245,245,1);
 
@@ -520,6 +533,11 @@ $(".ballot").hover(function(){
 	background-color: rgb(240,240,240);
 }
 
+.fb:active:hover .ballot button.counter {
+	background-color: rgb(235,235,235);
+}
+
+
 	.fb-content {
 		vertical-align:top;
 		margin-top: 10px;
@@ -528,7 +546,7 @@ $(".ballot").hover(function(){
 				  overflow: hidden;
 	}
 
-	.fb-content .subtitle {
+	.fb .fb-content .subtitle {
 		text-overflow: ellipsis;
 				  white-space: nowrap;
 				  				  overflow: hidden;

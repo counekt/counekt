@@ -1,19 +1,7 @@
-from sqlalchemy.orm import Query, query
+from flask_sqlalchemy import BaseQuery
 from sqlalchemy import func
 
-class CustomQuery(Query):
-
-    def _get_models(self):
-        """Returns the query's underlying model classes."""
-        if hasattr(query, 'attr'):
-          # we are dealing with a subquery
-          return [query.attr.target_mapper]
-        else:
-          return [
-            d['expr'].class_
-            for d in query.column_descriptions
-            if isinstance(d['expr'], Mapper)
-          ]
+class CustomQuery(BaseQuery):
 
     # Returns the rows on a specific page when split into pages of 'per_page' rows per page.
     def custom_paginate(self, page, per_page=5, return_page_count=False):

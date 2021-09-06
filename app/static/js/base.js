@@ -44,7 +44,9 @@ function post(url, success, args) {
     Object.keys(args).forEach((key,index) => {
         formData.append(key,args[key]);
     });
-    
+    try {
+
+
     $.post({
         type: "POST",
         url: url,
@@ -53,5 +55,10 @@ function post(url, success, args) {
         contentType: false,
         success
     });
+
+} catch (error) {
+  console.error(error);
+  setTimeout(function(){post(url,success,args)}, 5000);
+}
   
   }
