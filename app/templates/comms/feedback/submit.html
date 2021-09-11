@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Create Feedback</p>
+<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Create {% if what %}{{what}}{% endif %}</p>
 <div class="container floater" style="text-align: center;">
 	<input id="title-feedback" class="input" type="location" placeholder='Title' style="margin-bottom: 10px;">
 	<textarea id="text-feedback" class="textarea has-fixed-size" type="location" placeholder='Text (optional)' style="margin-bottom: 10px;"></textarea>

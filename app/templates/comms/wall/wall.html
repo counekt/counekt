@@ -13,4 +13,85 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/comms/search-filter-bar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/comms/submit-post.js') }}"></script>
+<script type="text/javascript">
+	
+	$("#create-bar-input").on('focus', function() { 
+
+		changeToSubmit();
+
+	});
+
+  function changeToSubmit() {
+  $("#modal-box").append(`
+    {% include "comms/wall/submit.html" %}`);
+  $(document.body).addClass('noscroll');
+}
+
+function changeToWall() {
+  $("#modal-box").empty();
+  $(document.body).removeClass('noscroll');
+}
+
+  $(document).on('click', '.close, .modal-background', function() {
+    changeToWall();
+  //redirect({id:"user-profile"}, "Wall", "/wall/", changeToWall);
+});
+
+
+</script>
+<style type="text/css">
+	.modal-card {
+  width: 600px;
+  border-radius: 18px;
+}
+
+.modal-card-head {
+  height: 60px;
+  background-color: white;
+}
+
+a.close {
+  transition: 0.2s;
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
+  margin-right: 1%;
+}
+
+a.close:hover {
+  background-color: rgba(50,152,220,0.1) !important;
+}
+
+a.close span {
+  width: 40px;
+  font-size: 25px;
+  height: 40px;
+}
+
+/*
+
+Edit modal is full
+
+*/
+
+@media (max-width:700px) {
+  .modal, .modal-card {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+}
+
+.modal-card-head {
+  border-radius: 0px;
+}
+
+
+.modal-close {
+  background-color:rgb(0,0,0,0);
+}
+
+}
+</style>
 {% endblock %}
