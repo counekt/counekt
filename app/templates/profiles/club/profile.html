@@ -415,6 +415,9 @@ function sendClubInvites() {
 {% if request.url_rule.endpoint in ['profiles.club_add_members']  %}
 load_add_members_js();
 {% endif %}
+{% if request.url_rule.endpoint in ['profiles.club_add_roles']  %}
+load_add_roles_js();
+{% endif %}
 </script>
 <script type="text/javascript">
 
