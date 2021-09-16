@@ -15,16 +15,18 @@
 <script src="{{ url_for('static', filename='js/comms/search-filter-bar.js') }}"></script>
 <script src="{{ url_for('static', filename='js/comms/submit-post.js') }}"></script>
 <script type="text/javascript">
-	
-	$("#create-bar-input").on('focus', function() { 
 
-		changeToSubmit();
+  $(document).on('focus', "#create-bar-input", function() { 
+    console.log("DWEDEWDW");
+    changeToSubmit();
 
-	});
+  });
 
   function changeToSubmit() {
+    console.log("SD");
   $("#modal-box").append(`
     {% include "comms/wall/submit.html" %}`);
+  load_submit_js()
   $(document.body).addClass('noscroll');
 }
 
@@ -37,8 +39,6 @@ function changeToWall() {
     changeToWall();
   //redirect({id:"user-profile"}, "Wall", "/wall/", changeToWall);
 });
-
-
 </script>
 <style type="text/css">
 	.modal-card {

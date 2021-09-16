@@ -1,3 +1,4 @@
+function load_submit_js() {
 $(document).on('input',"#title-input",function(){
 	console.log("JNDJWENDWED");
 		console.log($("#title-input").val());
@@ -28,7 +29,7 @@ $(document).on('input',"#title-input",function(){
 
  function submit() {
  	var formData = new FormData();
- 	formData.append('wall',wall);
+ 	formData.append('wall',wall_id);
  	formData.append('title',$("#title-input").val());
  	formData.append('content',$("#content-input").val());
 	$.post({
@@ -44,9 +45,9 @@ $(document).on('input',"#title-input",function(){
         	var feedback_id = response["id"]; 
       		flash('#ffff','#3abb8','Your Post was sent', delay=1500);
 
-      		setTimeout(function() {
-      			document.location.href = "/feedback/"+feedback_id+"/";
-      		},1500);
+      		/*setTimeout(function() {
+      			document.location.href = "/wall/"+"/";
+      		},1500);*/
         }
 
         else {
@@ -58,5 +59,5 @@ $(document).on('input',"#title-input",function(){
 }
 
 $(document).on('click', "#submit-button", submit);
-
+}
 
