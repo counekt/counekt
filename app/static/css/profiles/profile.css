@@ -80,6 +80,20 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 
 }
 
+#private{
+	font-size: 30px;
+	font-style: normal;
+	text-align: center;
+	color: black;
+	margin-top: 30%;
+	font-weight: bolder;
+}
+
+#private> img{
+	width: 5%;
+	height: auto;
+}
+
 .profile-skill:hover {
 	-webkit-filter: brightness(87.5%);
   	 filter: brightness(87.5%);
