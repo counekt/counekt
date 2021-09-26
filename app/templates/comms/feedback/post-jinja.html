@@ -1,0 +1,10 @@
+{% if current_user.is_authenticated %}
+{% with is_upvoted = post.is_upvoted(current_user), is_downvoted = post.is_downvoted(current_user) %}
+	{% include 'comms/feedback/post.html' %}
+{% endwith %}
+{% else %}
+{% with is_upvoted = False, is_downvoted = False %}
+
+		{% include 'comms/feedback/post.html' %}
+{% endwith %}
+{% endif %}

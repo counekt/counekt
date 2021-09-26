@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="title selectable" style="margin: auto;margin-bottom: 10px;">Create {% if what %}{{what}}{% endif %}</p>
+<div class="container floater" style="text-align: center;">
+	<input id="title-feedback" class="input" type="location" placeholder='Title' style="margin-bottom: 10px;">
+	<textarea id="text-feedback" class="textarea has-fixed-size" type="location" placeholder='Text (optional)' style="margin-bottom: 10px;"></textarea>
+	
+		<div class="field is-grouped" style="float: right;">
+			<p class="control">	
+				<button id="save-draft-button" class="button transition is-light is-info is-outlined" disabled>
+				      <span class="text">
+				        Save draft
+				      </span>
+			    	</button>
+		    </p>
+		    <p class="control">
+				<button id="submit-button" class="button transition is-link" disabled>
+			      <span class="text">
+			        Submit
+			      </span>
+		    	</button>
+		    </p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript">
+	$("#title-feedback").on('input',function(){
+		console.log($("#title-feedback").val());
+		if ($("#title-feedback").val().length === 0) {
+		$("#submit-button").prop("disabled", true);
+		if ($("#text-feedback").val().length === 0) {
+			$("#save-draft-button").prop("disabled", true);
+		}
+		}
+		else {
+			$("#submit-button").prop("disabled", false);
+			$("#save-draft-button").prop("disabled", false);
+		}
+});
+	$("#text-feedback").on('input',function(){ 
+		if ($("#text-feedback").val().length === 0) {
+			if ($("#title-feedback").val().length === 0) { 
+				$("#submit-button").prop("disabled", true);
+				$("#save-draft-button").prop("disabled", true);
+			}
+		}
+
+		else {
+				$("#save-draft-button").prop("disabled", false);
+		}
+
+	});
+
+ function submitFeedback() {
+ 	var formData = new FormData();
+ 	formData.append('action','submit');
+ 	formData.append('title',$("#title-feedback").val());
+ 	formData.append('text',$("#text-feedback").val());
+	$.post({
+      type: "POST",
+      url: "/feedback/submit/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+      	var response = JSON.parse(response);
+        var status = response["status"]; 
+        if (status == "success") {
+        	var feedback_id = response["id"]; 
+      		flash('#ffff','#3abb8','Feedback submitted', delay=1500);
+
+      		setTimeout(function() {
+      			document.location.href = "/feedback/"+feedback_id+"/";
+      		},1500);
+        }
+
+        else {
+        	flash('#ffff','#f14668',status, delay=1500);
+        }
+
+      }
+  });
+}
+
+$("#submit-button").on('click', submitFeedback);
+
+
+</script>
+{% endblock %}

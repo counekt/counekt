@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="messages-box" class="container floater">
+<div id="messages-content">
+  <div id="messages-top">
+    <p class="title selectable" id="messages-title"><span class="icon is-small" id="msg-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span><span class="text">{{user.dname}}</span></p>
+    <p class="subtitle selectable" id="messages-subtitle">@{{user.username}}</p>
+  </div>
+  <hr id="sep-line" style="background-color:darkgray;">
+  <div id="messages">
+    {% if convo %}
+    	{% for msg in convo.messages %}
+        {% include 'comms/messages/msg.html' %}
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+ <div class="control" id="message-field">
+        <div id="field">
+  <textarea class="textarea has-fixed-size" placeholder="Type a message..." id="text-field" rows="1"></textarea> 
+</div>
+<div id="send">
+  <button class="button is-link is-medium is-inverted" id="send-button">
+    <span class="icon is-medium">
+      <span class="fa-2x">
+      <i class="fa fa-long-arrow-right"></i>
+    </span>
+    </span>
+  </button>
+</div>
+</div>
+</div>
+{% endblock content %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/messages.css">
+<script type="text/javascript">
+  var username = "{{user.username}}";
+  function msg_template(dname="", href="",sender="",unread="", id="", text="") {
+            if (sender == "current_user") {
+              var photo_src = '{{current_user.profile_photo.src}}';
+            }
+            else if (sender == "user") {
+              var photo_src = '{{user.profile_photo.src}}';
+            }
+            return `{% include 'comms/messages/msg.html' %}`.replaceAll('\\dname//', dname).replaceAll('\\href//', href).replaceAll('\\photo_src//',photo_src).replaceAll('\\unread//',unread).replaceAll('\\id//',id).replaceAll('\\text//',text);
+        }
+
+</script>
+<script src="/static/js/comms/message.js"></script>
+{% endblock %}

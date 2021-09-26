@@ -1,0 +1,190 @@
+#background {
+	padding-top: 50px;
+	padding-bottom: 0px;
+}
+
+#messages-box {
+	padding: 0px;
+	width: 	100%;
+	max-width: calc(598px);
+	display: 	inline-block;
+}
+
+#messages-content {
+	padding: 10px;
+	width: 	100%;
+	min-height: 700px;
+	max-width: calc(598px);
+	margin-bottom: 0px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	padding-bottom: 500px;
+}
+
+#messages-title {
+	color:black;
+	text-align: center;
+}
+
+#msg-icon {
+	margin-right: 15px;
+	color: #238cd1;
+}
+
+#messages-subtitle {
+	color:darkgrey;
+	text-align: center;
+}
+
+#messages-top {
+	height: 45px;
+}
+
+#sep-line {
+	margin-top: 27.5px;
+}
+
+.msg {
+	margin: 0px !important;
+	border-radius:0px !important;
+}
+
+.msg.unread {
+	background-color: rgb(230,235,255);
+}
+
+.msg:hover {
+	background-color: whitesmoke;
+  	 cursor: pointer;
+  	 transition: 0.3s;
+}
+
+.msg.unread:hover {
+	background-color: rgb(225,230,255);
+}
+
+.msg-content {
+	display: inline-block;
+}
+
+.msg-icon {
+	vertical-align: top;
+	margin-right: 10px;
+}
+
+.splitter {
+	margin: 0;
+	height: 0px;
+	border-bottom: 1px #edf0f2 solid;
+	margin: auto;
+}
+
+.profile-name {
+}
+
+.profile-name:hover {
+	text-decoration: underline;
+}
+
+.profile-image-content:hover {
+	-webkit-filter: brightness(85%);
+  	 filter: brightness(85%);
+  	 cursor: pointer;
+}
+
+
+.profile-image {
+	width: 32px;
+	height: 32px;
+	display: inline-block;
+	line-height: 20px;
+	vertical-align: bottom;
+}
+
+
+
+.profile-image-content {
+	width: 100%;
+	border-radius: 100%;
+	transition: 0.3s;
+	vertical-align: bottom;
+}
+
+
+
+#message-field {
+  width: 100%;
+  height: 46px;
+  margin: auto;
+  float:right;
+  display:flex;
+  bottom: 0;
+  position: absolute; 
+}
+
+#send {
+  float:right;
+  height:48px;
+  width: 70px;
+  padding: 0px;
+  flex-grow: 0;
+}
+
+#send-button {
+  width: 70px;
+  height: 48px;
+  border-radius: 0;
+  border: solid whitesmoke 0px;
+  border-left-width: 1px;
+  border-bottom-right-radius: 10px;
+}
+
+#field {
+  float:left;
+  height:48px;
+  width: 83%;
+  padding: 0px;
+  flex-grow: 1;
+}
+
+#text-field {
+  box-shadow: none;
+  border-color: lightgray;
+  height:48px;
+  width: 100%;
+  border-radius: 0;
+  border-width: 0px;
+  border-bottom-left-radius: 10px;
+}
+
+#text-field:focus {
+  outline-style: none;
+  box-shadow: none;
+  border-color: lightgray;
+}
+
+#text-field:hover {
+  outline-style: none;
+  box-shadow: none;
+  border-color: lightgray;
+}
+
+@media (max-width:500px) {
+  #messages-box {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+  	background-color: rgba(255,255,255,0.75);
+  	padding-right: 0;
+  	padding-left: 0;
+}
+
+#background {
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+}
+
+}

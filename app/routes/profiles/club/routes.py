@@ -96,8 +96,8 @@ def create_club():
 @ bp.route("/€<handle>/", methods=["GET", "POST"])
 def club(handle):
     club = models.Club.query.filter_by(handle=handle).first()
-    if not club or (not club.public and not current_user in club.group.members) and not current_user in club.viewers:
-        abort(404)
+    #if not club or (not club.public and not current_user in club.group.members) and not current_user in club.viewers:
+        #abort(404)
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
     return render_template("profiles/club/profile.html", club=club, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
 

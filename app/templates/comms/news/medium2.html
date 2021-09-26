@@ -1,0 +1,39 @@
+<article class="media" style="color:  black;">
+  <div class="media-left">
+    <figure class="image is-64x64" style="width:40px;height: 40px; float: left; margin-right: 5px;">
+        <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.href}}{% else %}\\href//{% endif %}"{% endif %}>
+        <img class="is-rounded" src="{{medium.organisation.profile_photo_src}}">
+          </a>
+      </figure>
+  </div>
+  <div class="media-content">
+    <div class="content">
+      <p>
+        <strong>{{medium.organisation.name}}</strong> <small>{{medium.organisation.symbol}}{{medium.organisation.handle}}</small> <small>(by <b>{{medium.author.name}}</b>)</small> <small>{{medium.age}}</small>
+        <br>
+        <strong><big>{{medium.title}}</big></strong>
+        <br>
+        {{medium.content}}
+      </p>
+    </div>
+    <nav class="level is-mobile">
+      <div class="level-left">
+        <span class="level-item medium-reply">
+          <a class="medium-reply-interact"><span class="icon is-small"><i class="fas fa-reply"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">7</span></a>
+        </span>
+        <span class="level-item medium-quote">
+          <a class="medium-quote-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">2</span></a>
+        </span>
+        <span class="level-item medium-love">
+          <a class="medium-love-interact"><span class="icon is-small"><i class="far fa-heart"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">45</span></a>
+        </span>
+      </div>
+    </nav>
+  </div>
+  <div class="media-right">
+    <button class="button is-rounded" style="background-color:  rgba( 10, 10, 10, 0.2); border: 0 solid black; color: white; width:  25px !important; height: 25px;"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+  </div>
+</article>

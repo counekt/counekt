@@ -94,8 +94,8 @@ class UserToClubRequest(db.Model, RequestBase, Base):
 
     def _do(self):
         if self.type == "join":
-            self.receiver.group.add_member(self.sender)
-            self.sender.clubs.append(self.receiver)
+            self.receiver.viewers.remove(self.sender)
+            self.receiver.add_member(self.sender)
 
     def __repr__(self):
         return "<UserToClubRequest {}>".format(self.type)
@@ -122,8 +122,8 @@ class UserToProjectRequest(db.Model, RequestBase, Base):
 
     def _do(self):
         if self.type == "join":
-            self.receiver.group.add_member(self.sender)
-            self.sender.projects.append(self.receiver)
+            self.receiver.viewers.remove(self.sender)
+            self.receiver.add_member(self.sender)
 
     def __repr__(self):
         return "<UserToProjectRequest {}>".format(self.type)
@@ -143,8 +143,8 @@ class UserToProjectRequest(db.Model, RequestBase, Base):
 
 
 class ProjectToUserRequest(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('club.id', ondelete='CASCADE'))
-    sender = db.relationship("Club", foreign_keys=[sender_id])
+    sender_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
+    sender = db.relationship("Project", foreign_keys=[sender_id])
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     receiver = db.relationship("User", foreign_keys=[receiver_id])
 
@@ -158,7 +158,7 @@ class ProjectToUserRequest(db.Model, RequestBase, Base):
             self.sender.add_member(self.receiver)
 
     def __repr__(self):
-        return "<UserToClubRequest {}>".format(self.type)
+        return "<UserToProjectRequest {}>".format(self.type)
 
     def get_notification_payload_json(self):
         return {"invite": {"type":"invite","color": "#3298dc",
@@ -199,3 +199,4 @@ class ClubToUserRequest(db.Model, RequestBase, Base):
                            "sender-photo": self.sender.profile_photo.src,
                            "href":f"/€{self.sender.handle}/"
                            }}.get(self.type)
+                           

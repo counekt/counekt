@@ -18,25 +18,25 @@
       <div id="profile-right-top">
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
-            <div id="profile-bar-content">
-            {% if user != current_user and current_user.is_authenticated %}
+            {% if club not in current_user.clubs %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.UserToUserRequest.query.filter_by(type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
-              <button id="connect-button" class="button {% if is_allied %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_allied %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
-                {% if is_allied %}
-                  {% include 'profiles/user/connect-button/connected.html' %}
+              {% with request_sent = models.UserToClubRequest.query.filter_by(type='join', sender=current_user, receiver=club).first(), request_received = models.ClubToUserRequest.query.filter_by(type='invite', sender=club, receiver=current_user).first(), is_joined = club in current_user.clubs %}
+              <button id="join-button" class="button {% if is_joined %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_joined %}joined{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
+                {% if is_joined %}
+                  {% include 'profiles/join-button/joined.html' %}
                 {% elif request_sent %}
-                  {% include 'profiles/user/connect-button/pending.html' %}
+                  {% include 'profiles/join-button/pending.html' %}
                 {% elif request_received %}
-                  {% include 'profiles/user/connect-button/accept.html' %}
+                  {% include 'profiles/join-button/accept.html' %}
                 {% else %}
-                  {% include 'profiles/user/connect-button/default.html' %}
+                  {% include 'profiles/join-button/default.html' %}
                 {% endif %}
               </button>
               {% endwith %}
+              <!--<button class="button is-info is-inverted" id="join-button">Join</button>-->
             {% else %}
-              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit profile</button>
-              {% endif %}
+              <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Club</button>
+            {% endif %}
           </div>
           <br style="clear: both;">
         </div>
@@ -72,19 +72,19 @@
   <div id="profile-tabs" class="container">
     <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
   <ul>
-    <li class="is-active" data-content="#profile-allies">
+    <li class="is-active" data-content="#profile-members">
       <a>
         <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
         <span class="tabtext">Members</span>
       </a>
     </li>
-    <li data-content="#profile-clubs">
+    <li data-content="#profile-roles">
       <a>
         <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
         <span class="tabtext">Roles</span>
       </a>
     </li>
-    <li data-content="#profile-projects">
+    <li data-content="#profile-comms">
       <a>
         <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
         <span class="tabtext">Comms</span>
@@ -93,7 +93,7 @@
   </ul>
 </div>
  <div id="profile-tabs-content">
-    <div id="profile-allies" class="profile-associate">
+    <div id="profile-members" class="profile-associate">
       {% for member in club.group.members %}
       <div class="subprofile box">
         <div class="subprofile-image-wrap">
@@ -112,27 +112,22 @@
       </div>
       </div>
       {% endfor %}
-      {% if current_user and "remember to define something here" %}
+      {% if current_user in club.group.members and club.group.member_has_role(member=current_user, role_title="Master") %}
       <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
       {% endif %}
     </div>
-    <div id="profile-clubs" class="profile-associate vanish">
-      {% raw %}
-      {% for club in user.clubs %}
+    <div id="profile-roles" class="profile-associate vanish">
+      
+      {% for role in club.roles %}
       {% endfor %}
-      {% if user==current_user %}
+      {% if user==current_user and current_user in club.group.members %}
       <div class="add-specific-button" id="create-club-button"><span>Add role</span></div>
       {% endif %}
-      {% endraw %}
     </div>
-    <div id="profile-projects" class="profile-associate vanish">
-      {% raw %}
-      {% for project in user.projects %}
-      {% endfor %}
-      {% if user==current_user %}
+    <div id="profile-comms" class="profile-associate vanish">
+      {% if user==current_user and current_user in club.group.members %}
       <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
       {% endif %}
-      {% endraw %}
     </div>
  </div>
   </div>
@@ -178,50 +173,50 @@
   var handle = "{{club.handle}}";
 
   function makeConnectButtonDefault() {
-    $('#connect-button').addClass('is-info');
-    $('#connect-button').removeClass('is-light').removeClass('is-link');
-    $('#connect-button').html(`{% include 'profiles/user/connect-button/default.html' %}`);
-    $('#connect-button').data('type', 'default');
-    $('#connect-button').removeClass('is-danger');
+    $('#join-button').addClass('is-info');
+    $('#join-button').removeClass('is-light').removeClass('is-link');
+    $('#join-button').html(`{% include 'profiles/join-button/default.html' %}`);
+    $('#join-button').data('type', 'default');
+    $('#join-button').removeClass('is-danger');
     
   }
 
   function makeConnectButtonPending() {
-    $('#connect-button').toggleClass('is-info is-light');
-    $('#connect-button').html(`{% include 'profiles/user/connect-button/pending.html' %}`);
-    $('#connect-button').data('type', 'pending');
-    $('#connect-button').addClass('calm');
+    $('#join-button').toggleClass('is-info is-light');
+    $('#join-button').html(`{% include 'profiles/join-button/pending.html' %}`);
+    $('#join-button').data('type', 'pending');
+    $('#join-button').addClass('calm');
   }
 
   function makeConnectButtonConnected() {
-    $('#connect-button').toggleClass('is-success is-info');
-    $('#connect-button').html(`{% include 'profiles/user/connect-button/connected.html' %}`);
-    $('#connect-button').data('type', 'connected');
-    $('#connect-button').addClass('calm');
+    $('#join-button').toggleClass('is-success is-info');
+    $('#join-button').html(`{% include 'profiles/join-button/joined.html' %}`);
+    $('#join-button').data('type', 'joined');
+    $('#join-button').addClass('calm');
   }
 
-$("#connect-button").hover(
+$("#join-button").hover(
   function() {
-        if ($(this).data('type') == 'connected' && !$(this).hasClass('calm')) {
+        if ($(this).data('type') == 'joined' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/user/connect-button/disconnect.html' %}`);
+          $(this).html(`{% include 'profiles/join-button/leave.html' %}`);
         }
         else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/user/connect-button/undo.html' %}`);
+          $(this).html(`{% include 'profiles/join-button/undo.html' %}`);
 
     }
   }, function() {
-        if ($(this).data('type') == 'connected') {
+        if ($(this).data('type') == 'joined') {
           $(this).removeClass('is-danger');
-          $(this).html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+          $(this).html(`{% include 'profiles/join-button/joined.html' %}`);
           $(this).removeClass('calm');
 
         }
         else if ($(this).data('type') == 'pending') {
           $(this).removeClass('is-danger');
           $(this).removeClass('calm');
-          $(this).html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+          $(this).html(`{% include 'profiles/join-button/pending.html' %}`);
 
         }
   }
@@ -393,8 +388,8 @@ function sendClubInvites() {
   var formData = new FormData();
     var usernames = JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username')));
     console.log(usernames);
-   formData.append("usernames", usernames);
-   formData.append("do", true)
+    formData.append("usernames", usernames);
+    formData.append("do", true)
 
     $.post({
       type: "POST",
