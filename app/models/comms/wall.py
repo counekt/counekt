@@ -9,15 +9,15 @@ from datetime import datetime
 from sqlalchemy import func, inspect, case, extract
 
 
-posts = db.Table('posts',
-                  db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
+media = db.Table('media',
+                  db.Column('medium_id', db.Integer, db.ForeignKey('medium.id')),
                   db.Column('wall_id', db.Integer, db.ForeignKey('wall.id'))
                   )
 
 class Wall(Base, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	posts = db.relationship(
-	    'Post', secondary=posts, backref="walls", lazy='dynamic')
+	media = db.relationship(
+	    'Medium', secondary=media, backref="walls", lazy='dynamic')
 
 class Media:
 
@@ -99,7 +99,7 @@ class Media:
 		query = cls.search(search) if search else query
 		return {"hot":cls.hot(query=query),"best":cls.best(query=query),"new":cls.new(query=query),"hot":cls.hot(query=query)}.get(by) or query
 
-        
+       
 
 class Vote:
 	id = db.Column(db.Integer, primary_key=True)
@@ -112,19 +112,28 @@ class Vote:
 	def voter(self):
 		return db.relationship('User',foreign_keys=[self.voter_id])
 
-class PostUpvote(Vote,db.Model):
-	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+class MediumHeart(Vote,db.Model):
+	medium_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
 
-class PostDownvote(Vote,db.Model):
-	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-
-class Post(Media,Base,db.Model):
+class Medium(Media,Base,db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 
-	replies = db.relationship('Post', backref=db.backref("to", remote_side=[id]), lazy='dynamic',
-        foreign_keys='Post.to_id')
-	to_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-	upvotes = db.relationship('PostUpvote', backref='post', lazy='dynamic',
-        foreign_keys='PostUpvote.post_id')
-	downvotes = db.relationship('PostDownvote', backref='post', lazy='dynamic',
-        foreign_keys='PostDownvote.post_id')
+	replies = db.relationship('Medium', backref=db.backref("to", remote_side=[id]), lazy='dynamic',
+        foreign_keys='Medium.to_id')
+	to_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
+	hearts = db.relationship('MediumHeart', backref='medium', lazy='dynamic',
+        foreign_keys='MediumHeart.medium_id')
+
+	def is_loved(self, voter):
+		return bool(Medium.query.filter_by(medium=self,voter=voter).first())
+
+	def love(self, voter):
+		if not self.is_loved(voter):
+			self.love(voter=voter)
+			self.hearts.append(MediumHeart(medium=self,voter=voter))
+
+	def unlove(self, voter):
+		heart = MediumHeart.query.filter_by(medium=self,voter=voter).first()
+		if heart:
+			self.hearts.remove(heart)
+			db.session.delete(heart)
