@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container floater">
-	{% with what='post' %}	
+	{% with what='post', by='hot' %}	
 	{% include 'comms/create-bar.html' %}
     {% include 'comms/search-filter-bar.html' %}
 	{% endwith %}

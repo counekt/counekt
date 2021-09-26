@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container floater" style="text-align: center; min-height:636px; margin: 0 auto;">
-{% with what='feedback' %}	
+{% with what='feedback' %}
+	{% if current_user.is_authenticated %}
 		{% include 'comms/create-bar.html' %}
+	{% endif %}
     {% include 'comms/search-filter-bar.html' %}
 {% endwith %}
    	<div style="margin-top: 10px;" id="fb-container">

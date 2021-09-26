@@ -106,7 +106,7 @@ def feedback():
         path =  "/feedback?"+urlencode(params)
         feedback, page_count = models.Feedback.search_by(search,by).custom_paginate(page=page, per_page=5, return_page_count=True)
         page = min(page_count,max(0,page))
-        return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":str(fb.title), "content":str(fb.content),"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user), "is_downvoted":fb.is_downvoted(current_user)} for fb in feedback], 'page':page, 'page_count':page_count})
+        return json.dumps({'status': 'success', 'path': path, 'feedback':[{"id":fb.id,"title":str(fb.title), "content":str(fb.content),"upvotes":fb.upvotes.count(),"downvotes":fb.downvotes.count(), "is_upvoted":fb.is_upvoted(current_user) if current_user.is_authenticated else False, "is_downvoted":fb.is_downvoted(current_user) if current_user.is_authenticated else False} for fb in feedback], 'page':page, 'page_count':page_count})
 
     if flask_request.method == 'GET':
         # Get q strings to provide search from url
@@ -125,7 +125,7 @@ def feedback_post(fb_id):
     print(fb_id)
     post = models.Feedback.query.filter_by(id=fb_id).first_or_404()
     if flask_request.method == 'POST':
-        return json.dumps({'status': 'success', "post":{"id":post.id, "title":str(post.title), "content":str(post.content),"upvotes":post.upvotes.count(),"downvotes":post.downvotes.count(), "is_upvoted":post.is_upvoted(current_user), "is_downvoted":post.is_downvoted(current_user)}})
+        return json.dumps({'status': 'success', "post":{"id":post.id, "title":str(post.title), "content":str(post.content),"upvotes":post.upvotes.count(),"downvotes":post.downvotes.count(), "is_upvoted":post.is_upvoted(current_user) if current_user.is_authenticated else False, "is_downvoted":post.is_downvoted(current_user) if current_user.is_authenticated else False}})
     return render_template("comms/feedback/feedback.html", post=post, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
 
 
@@ -211,6 +211,11 @@ def vote_post():
             return json.dumps({'status': 'success'})
         return json.dumps({'status': 'error'})
 
+
+@ bp.route("/news/", methods=["GET", "POST"])
+def news():
+    media = [{"is_liked":True,"author":{"name":"Frederik Walther Liberoth Christoffersen", "username":"frederik", "symbol":"@"},"organisation":{"symbol":"£","name":"Twitter", "handle": "twitter", "profile_photo_src":"https://pbs.twimg.com/profile_images/1354479643882004483/Btnfm47p_400x400.jpg"},"likes": 47, "is_liked":True, "title":"New Progress", "content":"Today, we just launched Twitter spaces! How cool!"}]*5
+    return render_template("comms/news/feed.html", navbar=True, background=True, size="medium", models=models, media=media)
 
 @ bp.route("/wall/", methods=["GET", "POST"])
 def wall():
