@@ -34,7 +34,7 @@
               </button>
               {% endwith %}
               <!--<button class="button is-info is-inverted" id="join-button">Join</button>-->
-            {% else %}
+            {% elif club.group.member_has_permission(current_user,"permissionToEditPage") %}
               <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Club</button>
             {% endif %}
           </div>

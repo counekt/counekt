@@ -35,7 +35,7 @@
               {% endwith %}
               {% endif %}
 
-              {% if current_user in project.group.members and 'project.group.member_has_role(member=current_user, role_title="Master")' %}
+              {% if project.group.member_has_permission(current_user,"permissionToEditPage") %}
                 <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Idea</button>
               {% endif %}
           </div>
