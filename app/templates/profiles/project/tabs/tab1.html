@@ -1,0 +1,8 @@
+{% for collaborator in project.group.members %}
+      {% with profile=collaborator %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
+      {% endfor %}
+{% if current_user in project.group.members and project.group.member_has_role(member=current_user, role_title="Master") %}
+      <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
+{% endif %}

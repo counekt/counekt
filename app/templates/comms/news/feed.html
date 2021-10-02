@@ -25,7 +25,9 @@ function changeToFeed() {
 
   $(document).on('click', '.medium-love-interact', function() {
     $this = $(this);
-    $this.find('span i').toggleClass('far fas');
+    $icon = $this.find('span i');
+    $icon.toggleClass('far fas');
+    
     $this.closest('.level-item').toggleClass('active inactive');
 
   });

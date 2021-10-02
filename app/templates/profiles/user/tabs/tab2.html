@@ -1,0 +1,9 @@
+{% for club in user.clubs %}
+        {% with profile=club %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
+{% endfor %}
+
+{% if user==current_user %}
+<div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
+{% endif %}

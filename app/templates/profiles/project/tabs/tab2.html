@@ -1,0 +1,7 @@
+{% for role in project.roles %}
+
+{% endfor %}
+      
+{% if current_user in project.group.members %}
+<div class="add-specific-button" id="create-role-button"><span>Add role</span></div>
+{% endif %}
