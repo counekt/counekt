@@ -1,0 +1,11 @@
+<div style="margin-top: 10px;" id="flex-stream">
+	{% if media %}
+	{% for medium in media %}
+		{% with is_liked=medium.is_liked %}
+		<div class="container floater">
+		{% include 'comms/news/medium2.html' %}
+		</div>
+		{% endwith %}
+	{% endfor %}
+	{% endif %}
+</div>

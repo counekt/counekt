@@ -35,8 +35,8 @@
               {% endwith %}
               {% endif %}
 
-              {% if current_user in project.group.members and project.group.member_has_role(member=current_user, role_title="Master") %}
-                <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Project</button>
+              {% if current_user in project.group.members and 'project.group.member_has_role(member=current_user, role_title="Master")' %}
+                <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Idea</button>
               {% endif %}
           </div>
           <br style="clear: both;">
@@ -70,76 +70,8 @@
   {% endif %}
   {% endraw  %}
   -->
-  <div id="profile-tabs" class="container">
-    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
-      <ul>
-        <li class="is-active" data-content="#profile-allies">
-          <a>
-            <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
-            <span class="tabtext">Members</span>
-          </a>
-        </li>
-        <li data-content="#profile-projects">
-          <a>
-            <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
-            <span class="tabtext">Roles</span>
-          </a>
-        </li>
-        <li data-content="#profile-projects">
-          <a>
-            <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
-            <span class="tabtext">Comms</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-    {% if current_user in project.group.members %}
-    <div id="profile-tabs-content">
-        <div id="profile-allies" class="profile-associate">
-          {% for member in project.group.members %}
-          <div class="subprofile box">
-            <div class="subprofile-image-wrap">
-            <a class="subprofile-image" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
-                <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
-            </a>
-          </div>
-            <div class="subprofile-content">
-              <a class="subprofile-identity" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
-                <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
-                <br>
-                <span class="subprofile-username selectable">@{{member.username}}</span>
-              </a>
-              <br>
-            <span class="subprofile-bio selectable" maxlenght="30">{% if member.bio %}{{member.bio}}{% endif %}</span>
-          </div>
-          </div>
-          {% endfor %}
-          {% if current_user and "remember to define something here" %}
-          <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
-          {% endif %}
-        </div>
-        <div id="profile-projects" class="profile-associate vanish">
-          {% raw %}
-          {% for project in user.projects %}
-          {% endfor %}
-          {% if user==current_user %}
-          <div class="add-specific-button" id="create-project-button"><span>Add Role</span></div>
-          {% endif %}
-          {% endraw %}
-        </div>
-        <div id="profile-projects" class="profile-associate vanish">
-          {% raw %}
-          {% for project in user.projects %}
-          {% endfor %}
-          {% if user==current_user %}
-          <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
-          {% endif %}
-          {% endraw %}
-        </div>
-    </div>
-    {% endif %}
-  </div>
-</div>
+
+{% include "profiles/project/tabs/tabs.html" %}
 
 {% endblock %}
 

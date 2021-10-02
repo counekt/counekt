@@ -52,6 +52,7 @@ html {
 #background {
 		background: url('/static/images/alps.jpg');
 		background-size: cover;
+		 background-attachment: fixed;
 		display: flex;
   		flex-direction: column;
   		-webkit-user-select: none; /* Safari */        

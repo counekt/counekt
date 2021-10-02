@@ -69,73 +69,8 @@
   {% endif %}
   {% endraw  %}
   -->
-  <div id="profile-tabs" class="container">
-    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
-    <ul>
-      <li class="is-active" data-content="#profile-members">
-        <a>
-          <span class="icon is-small"><i class="fas fa-group" aria-hidden="true"></i></span>
-          <span class="tabtext">Members</span>
-        </a>
-      </li>
-      <li data-content="#profile-roles">
-        <a>
-          <span class="icon is-small"><i class="fab fa-black-tie" aria-hidden="true"></i></span>
-          <span class="tabtext">Roles</span>
-        </a>
-      </li>
-      <li data-content="#profile-comms">
-        <a>
-          <span class="icon is-small"><i class="fas fa-wifi" aria-hidden="true"></i></span>
-          <span class="tabtext">Comms</span>
-        </a>
-      </li>
-    </ul>
-    </div>
-    {%if current_user in club.group.members %}
-    <div id="profile-tabs-content">
-        <div id="profile-allies" class="profile-associate">
-          {% for member in club.group.members %}
-          <div class="subprofile box">
-            <div class="subprofile-image-wrap">
-            <a class="subprofile-image" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
-                <img alt draggable="false" class="subprofile-image-content" src="{{member.profile_photo.src}}">
-            </a>
-          </div>
-            <div class="subprofile-content">
-              <a class="subprofile-identity" href="{{url_for('profiles.user',username=member.username) | replace('%40', '@')}}">
-                <span class="subprofile-name selectable"><b>{% if member.name %}{{member.name}}{% else %}{{member.username}}{% endif %}</b></span>
-                <br>
-                <span class="subprofile-username selectable">@{{member.username}}</span>
-              </a>
-              <br>
-            <span class="subprofile-bio selectable" maxlenght="30">{% if member.bio %}{{member.bio}}{% endif %}</span>
-          </div>
-          </div>
-          {% endfor %}
-          {% if current_user in club.group.members %} <!--and club.group.member_has_role(member=current_user, role_title="Master")-->
-          <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
-          {% endif %}
-        </div>
-        <div id="profile-roles" class="profile-associate vanish">
-          
-          <!--{% for role in club.roles %}
-          {% endfor %}-->
-          {% if current_user in club.group.members %}
-          <a id="roles-button"><div class="add-specific-button" id="create-club-button"><span>Add role</span></div></a>
-          {% endif %}
-        </div>
-        <div id="profile-projects" class="profile-associate vanish">
-          {% if current_user in club.group.members %}
-          <div class="add-specific-button" id="create-project-button"><span>Add comm</span></div>
-          {% endif %}
-        </div>
-    </div>
-    {% else %}
-      <h3 id="private"><img src="../../../static/images/padlockClose.png"/> This is a private club</h3>
-    {% endif %}
-  </div>
-</div>
+
+{% include "profiles/club/tabs/tabs.html" %}
 
 {% endblock %}
 
