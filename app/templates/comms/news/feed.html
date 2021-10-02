@@ -25,13 +25,31 @@ function changeToFeed() {
 
   $(document).on('click', '.medium-love-interact', function() {
     $this = $(this);
-    $this.find('span i').toggleClass('far fas');
+    $icon = $this.find('span i');
+    $icon.toggleClass('far fas');
+    
     $this.closest('.level-item').toggleClass('active inactive');
 
   });
 
 </script>
 <style type="text/css">
+
+  .identity {
+      color: rgba(0, 0, 0, 0.5);
+      transition: 0.3s;
+  }
+
+  .identity:hover {
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .author:hover, .organisation:hover {
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+  }
+
+
 
   .level-item {
     transition: 0.1s;
@@ -46,7 +64,7 @@ function changeToFeed() {
   }
 
   .medium-reply:hover {
-    color: hsl(217, 71%, 53%);
+    color: hsl(217, 80%, 60%);
   }
 
   .medium-quote:hover {

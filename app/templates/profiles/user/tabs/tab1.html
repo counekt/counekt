@@ -1,0 +1,8 @@
+{% for ally in user.allies %}
+        {% with profile=ally %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
+{% endfor %}
+      {% if user==current_user %}
+      <a href="/explore/"><div class="add-specific-button"><span>Add ally</span></div></a>
+{% endif %}

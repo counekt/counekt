@@ -1,16 +1,17 @@
-<article class="media" style="color:  black;">
+<article class="media" style="color:  black;" data-id="{{medium.id}}">
   <div class="media-left">
     <figure class="image is-64x64" style="width:40px;height: 40px; float: left; margin-right: 5px;">
         <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.href}}{% else %}\\href//{% endif %}"{% endif %}>
-        <img class="is-rounded" src="{{medium.organisation.profile_photo_src}}">
+        <img class="is-rounded medium-image-content" src="{{medium.organisation.profile_photo_src}}">
           </a>
       </figure>
   </div>
   <div class="media-content">
     <div class="content">
+      <p class="identity">
+        <span class="organisation"><strong class="organisation-name">{{medium.organisation.name}}</strong> <small class="organisation-handle">{{medium.organisation.symbol}}{{medium.organisation.handle}}</small></span> <small>(by <b class="author">{{medium.author.name}}</b>)</small> <small>{{medium.age}}</small>
+      </p>
       <p>
-        <strong>{{medium.organisation.name}}</strong> <small>{{medium.organisation.symbol}}{{medium.organisation.handle}}</small> <small>(by <b>{{medium.author.name}}</b>)</small> <small>{{medium.age}}</small>
-        <br>
         <strong><big>{{medium.title}}</big></strong>
         <br>
         {{medium.content}}

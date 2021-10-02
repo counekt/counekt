@@ -90,63 +90,8 @@
     {% endfor %}
   </div>
   {% endif %}
-  <div id="profile-tabs" class="container">
-    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
-  <ul>
-    <li class="is-active" data-content="#profile-allies">
-      <a>
-        <span class="icon is-small"><i class="fas fa-user-friends" aria-hidden="true"></i></span>
-        <span class="tabtext">Allies</span>
-      </a>
-    </li>
-    <li data-content="#profile-clubs">
-      <a>
-        <span class="icon is-small"><i class="fas fa-users" aria-hidden="true"></i></span>
-        <span class="tabtext">Clubs</span>
-      </a>
-    </li>
-    <li data-content="#profile-projects">
-      <a>
-        <span class="icon is-small"><i class="fas fa-pencil-alt" aria-hidden="true"></i></span>
-        <span class="tabtext">Ideas</span>
-      </a>
-    </li>
-  </ul>
-</div>
- <div id="profile-tabs-content">
-    <div id="profile-allies" class="profile-associate">
-      {% for ally in user.allies %}
-        {% with profile=ally %}
-        {% include 'profiles/mini-profile.html' %}
-        {% endwith %}
-      {% endfor %}
-      {% if user==current_user %}
-      <a href="/explore/"><div class="add-specific-button"><span>Add ally</span></div></a>
-      {% endif %}
-    </div>
-    <div id="profile-clubs" class="profile-associate vanish">
-      {% for club in user.clubs %}
-        {% with profile=club %}
-        {% include 'profiles/mini-profile.html' %}
-        {% endwith %}
-      {% endfor %}
-      {% if user==current_user %}
-      <div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
-      {% endif %}
-    </div>
-    <div id="profile-projects" class="profile-associate vanish">
-      {% for project in user.projects %}
-        {% with profile=project %}
-        {% include 'profiles/mini-profile.html' %}
-        {% endwith %}
-      {% endfor %}
-      {% if user==current_user %}
-      <div class="add-specific-button" id="create-project-button"><span>Create project</span></div>
-      {% endif %}
-    </div>
- </div>
-  </div>
-</div>
+
+{% include "profiles/user/tabs/tabs.html" %}
 
 {% endblock %}
 

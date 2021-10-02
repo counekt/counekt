@@ -1,0 +1,9 @@
+{% for project in user.projects %}
+        {% with profile=project %}
+        {% include 'profiles/mini-profile.html' %}
+        {% endwith %}
+{% endfor %}
+      
+{% if user==current_user %}
+<div class="add-specific-button" id="create-project-button"><span>Create Idea</span></div>
+{% endif %}
