@@ -44,6 +44,21 @@
 	display: inline-block;
 }
 
+.button-answers{
+	display: inline-block;
+	margin-left: 30%;
+	font-size: 25px;
+}
+
+.fa-check-circle{
+	margin-right: 3px;
+	color: green;
+}
+
+.fa-times-circle{
+	color: red;
+}
+
 .notif-icon {
 	vertical-align: top;
 	margin-right: 10px;

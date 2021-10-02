@@ -70,6 +70,7 @@
   {% endif %}
   {% endraw  %}
   -->
+
 {% include "profiles/project/tabs/tabs.html" %}
 
 {% endblock %}
@@ -83,6 +84,8 @@
 {% endwith %}
 {% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
 {% include "profiles/add-members.html" %}
+{% elif request.url_rule.endpoint == 'profiles.club_add_roles' %}
+{% include "profiles/add-roles.html" %}
 {% endif %}
 
 {% endblock %}
@@ -95,7 +98,7 @@
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
 <link rel="stylesheet" href="/static/css/profiles/add-members.css">
-
+<link rel="stylesheet" href="/static/css/profiles/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profiles/user/profile.js"></script>
@@ -368,6 +371,11 @@ load_add_members_js();
     e.preventDefault();
   });
 
+  $(document).on('click', '#roles-button', function(e) {
+    redirect({id:"club-roles"},"Club Roles Permission", "/€"+handle+"/roles/", changeRoles);
+    e.preventDefault();
+  });
+
 $(document).on('click', '.close', function() {
   redirect({id:"project-profile"}, "Profile", "/£{{project.handle}}/", changeToProfile);
 });
@@ -390,6 +398,10 @@ $(window).on("popstate", function() {
 
   else if (window.history.state.id == "project-add-members") {
     changeToMembers();
+  }
+
+  else if (window.history.state.id == "club-roles") {
+    changeRoles();
   }
 
 
@@ -423,6 +435,13 @@ function changeToMembers() {
   $(document.body).addClass('noscroll');
 }
 
+function changeRoles() {
+  $("#modal-box").append(`
+    {% include "profiles/add-roles.html" %}`);
+  load_add_members_js()
+  $(document.body).addClass('noscroll');
+}
+
 
 {% if request.url_rule.endpoint == 'profiles.edit_project' %}
 window.history.replaceState({id:"edit-project"},"Edit project", "/£{{project.handle}}/edit/");
@@ -430,6 +449,8 @@ window.history.replaceState({id:"edit-project"},"Edit project", "/£{{project.ha
 window.history.replaceState({id:"project-photo"},"Profile photo", "/£{{project.handle}}/");
 {% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
 window.history.replaceState({id:"project-add-members"},"Project add members", "/£{{project.handle}}/add-members/");
+{% elif request.url_rule.endpoint == 'profiles.club_roles' %}
+window.history.replaceState({id:"club-add-roles"},"Club add roles", "/€{{club.handle}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"project-profile"},"Profile", "./");
 {% endif %}

@@ -69,6 +69,7 @@
   {% endif %}
   {% endraw  %}
   -->
+
 {% include "profiles/club/tabs/tabs.html" %}
 
 {% endblock %}
@@ -82,6 +83,8 @@
 {% endwith %}
 {% elif request.url_rule.endpoint == 'profiles.club_add_members' %}
 {% include "profiles/add-members.html" %}
+{% elif request.url_rule.endpoint == 'profiles.club_add_roles' %}
+{% include "profiles/add-roles.html" %}
 {% endif %}
 
 {% endblock %}
@@ -94,6 +97,7 @@
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
 <link rel="stylesheet" href="/static/css/profiles/add-members.css">
+<link rel="stylesheet" href="/static/css/profiles/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profiles/user/profile.js"></script>
@@ -104,6 +108,7 @@
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
 <script src="/static/js/profiles/add-members.js"></script>
+<script src="/static/js/profiles/add-roles.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
@@ -347,6 +352,9 @@ function sendClubInvites() {
 {% if request.url_rule.endpoint in ['profiles.club_add_members']  %}
 load_add_members_js();
 {% endif %}
+{% if request.url_rule.endpoint in ['profiles.club_add_roles']  %}
+load_add_roles_js();
+{% endif %}
 </script>
 <script type="text/javascript">
 
@@ -363,6 +371,11 @@ load_add_members_js();
 
   $(document).on('click', '#members-button', function(e) {
     redirect({id:"club-members"},"Club members", "/€"+handle+"/members/", changeToMembers);
+    e.preventDefault();
+  });
+
+  $(document).on('click', '#roles-button', function(e) {
+    redirect({id:"club-roles"},"Club Roles Permission", "/€"+handle+"/roles/", changeRoles);
     e.preventDefault();
   });
 
@@ -388,6 +401,10 @@ $(window).on("popstate", function() {
 
   else if (window.history.state.id == "club-members") {
     changeToMembers();
+  }
+
+  else if (window.history.state.id == "club-roles") {
+    changeRoles();
   }
 
 
@@ -421,12 +438,21 @@ function changeToMembers() {
   $(document.body).addClass('noscroll');
 }
 
+function changeRoles() {
+  $("#modal-box").append(`
+    {% include "profiles/add-roles.html" %}`);
+  load_add_roles_js()
+  $(document.body).addClass('noscroll');
+}
+
 {% if request.url_rule.endpoint == 'profiles.edit_club' %}
 window.history.replaceState({id:"edit-club"},"Edit club", "/€{{club.handle}}/edit/");
 {% elif request.url_rule.endpoint == 'profiles.club_photo' %}
 window.history.replaceState({id:"club-photo"},"Profile photo", "/€{{club.handle}}/");
 {% elif request.url_rule.endpoint == 'profiles.club_members' %}
 window.history.replaceState({id:"club-add-members"},"Club add members", "/€{{club.handle}}/add-members/");
+{% elif request.url_rule.endpoint == 'profiles.club_roles' %}
+window.history.replaceState({id:"club-add-roles"},"Club add roles", "/€{{club.handle}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"club-profile"},"Profile", "./");
 {% endif %}

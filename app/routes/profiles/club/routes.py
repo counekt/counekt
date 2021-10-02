@@ -194,3 +194,37 @@ def club_add_members(handle):
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+
+@ bp.route("/club/<handle>/roles/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/roles/", methods=["GET", "POST"])
+@login_required
+def club_add_roles(handle):
+    if not handle:
+        abort(404)
+    club = models.Club.query.filter_by(handle=handle).first()
+
+    if not club:
+        abort(404)
+
+    if flask_request.method == "POST":
+        name = flask_request.form.get("name")
+        permissionToReceiveNotifications = flask_request.form.get("permissionToReceiveNotifications",type = bool)
+        permissionToAnswerInvite = flask_request.form.get("permissionToAnswerInvite",type = bool)
+        permissionToRejectPeople = flask_request.form.get("permissionToRejectPeople",type = bool)
+        permissionToCreateRoles = flask_request.form.get("permissionToCreateRoles",type = bool)
+        permissionToChangePeopleRoles = flask_request.form.get("permissionToChangePeopleRoles",type = bool)
+        permissionToEditPage = flask_request.form.get("permissionToEditPage",type = bool)
+        permissionToCreatePrivatePosts = flask_request.form.get("permissionToCreatePrivatePosts",type = bool)
+        permissionToCreatePublicPosts = flask_request.form.get("permissionToCreatePublicPosts",type = bool)
+
+        if not name:
+            return json.dumps({'status': 'error'})
+
+        role = models.Role(title = name, permissionToReceiveNotifications = permissionToReceiveNotifications, permissionToAnswerInvite = permissionToAnswerInvite, permissionToRejectPeople = permissionToRejectPeople, permissionToCreateRoles = permissionToCreateRoles, permissionToChangePeopleRoles = permissionToChangePeopleRoles, permissionToEditPage = permissionToEditPage, permissionToCreatePrivatePosts = permissionToCreatePrivatePosts, permissionToCreatePublicPosts = permissionToCreatePublicPosts)
+        club.group.roles.append(role)
+        db.session.commit()
+        return json.dumps({'status': 'success'})
+    
+
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/club/profile.html", club=club, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
