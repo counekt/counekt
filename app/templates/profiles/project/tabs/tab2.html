@@ -2,6 +2,6 @@
 
 {% endfor %}
       
-{% if current_user in project.group.members %}
+{% if project.group.member_has_permission(current_user,"permissionToCreateRoles") %}
 <div class="add-specific-button" id="create-role-button"><span>Add role</span></div>
 {% endif %}

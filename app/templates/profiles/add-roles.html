@@ -27,13 +27,16 @@
             </div>
 
             <!--
+              {% raw %}
             <select id="list" onchange="getSelectedValue();">
               {% for member in club.group.member %}
                 {% if member_has_role(self, member, NULL) %}
                   <option value="{{member}}">{{member.username}}</option> 
                 {% endif %}
               {% endfor %}
-            </select>-->
+            </select>
+            {% endraw %}
+          -->
             
             <br>
             <div class="buttons-top">

@@ -35,7 +35,7 @@
               {% endwith %}
               {% endif %}
 
-              {% if current_user in project.group.members and 'project.group.member_has_role(member=current_user, role_title="Master")' %}
+              {% if project.group.member_has_permission(current_user,"permissionToEditPage") %}
                 <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Idea</button>
               {% endif %}
           </div>
@@ -101,6 +101,7 @@
 <link rel="stylesheet" href="/static/css/profiles/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
+<script src="/static/js/profiles/profile.js"></script>
 <script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/project/profile.js"></script>
 <script src="/static/js/profiles/project/edit.js"></script>

@@ -15,8 +15,10 @@ class Group(db.Model, Base):
     def __init__(self, **kwargs):
         super(Group, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         members = kwargs["members"]
+        master_role = Role(title="Master", permissionToReceiveNotifications=True,permissionToAnswerInvite=True,permissionToRejectPeople=True,permissionToCreateRoles=True,permissionToChangePeopleRoles=True,permissionToEditPage=True,permissionToCreatePrivatePosts=True,permissionToCreatePublicPosts=True)
+        self.roles.append(master_role)
         for user in members:
-            self.add_member(user)
+            self.add_member(user, role=master_role)
 
     def add_member(self, user, role=None):
         membership = Membership()
@@ -25,25 +27,23 @@ class Group(db.Model, Base):
         self.memberships.append(membership)
 
     def member_has_role(self, member, role_title):
-        try:
-            membership = self.memberships.any(owner=member).first()
+        if member in self.members:
+            membership = self.memberships.filter_by(owner=member).first()
             return membership.role.title == role_title
-        except:
-            return False
+        return False
+    def member_change_role(self, member, role):
+        if member in self.members:
+            membership = self.memberships.filter_by(owner=member).first()
+            membership.role = role
 
-    def has_permission(self, member, permission):
-        try:
-            membership = self.memberships.any(owner=member).first()
-            return membership.role.permission == True
-        except:
-            return False
+    def member_has_permission(self, member, permission):
+        if member in self.members:
+            membership = self.memberships.filter_by(owner=member).first()
+            return getattr(membership.role,permission) == True
+        return False
 
-    def member_got_permission(self, members, permission):
-        membersAllowed = []
-        for member in members:
-            if self.has_permission(member, permission):
-                membersAllowed.append(member)
-        return membersAllowed
+    def members_with_permission(self, permission):
+        return [mship.owner for mship in self.memberships if getattr(mship.role,permission) == True]
 
     def remove_member(self, user):
         self.memberships.filter_by(owner=user).delete()

@@ -1,36 +1,44 @@
 <div id="profile-tabs" class="container">
-    <div class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
-  <ul>
-    <li class="is-active" data-content="#tab1">
-      <a>
-        <span class="icon is-small"><i class="{{tab1icon}}" aria-hidden="true"></i></span>
-        <span class="tabtext">{{tab1name}}</span>
-      </a>
-    </li>
-    <li data-content="#tab2">
-      <a>
-        <span class="icon is-small"><i class="{{tab2icon}}" aria-hidden="true"></i></span>
-        <span class="tabtext">{{tab2name}}</span>
-      </a>
-    </li>
-    <li data-content="#tab3">
-      <a>
-        <span class="icon is-small"><i class="{{tab3icon}}" aria-hidden="true"></i></span>
-        <span class="tabtext">{{tab3name}}</span>
-      </a>
-    </li>
-  </ul>
-</div>
+          <div id="profile-material-tabs" class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
+        <ul>
+          <li class="is-active" data-content="#tab1">
+            <a>
+              <span class="icon is-small"><i class="{{tab1icon}}" aria-hidden="true"></i></span>
+              <span class="tabtext">{{tab1name}}</span>
+            </a>
+          </li>
+          <li data-content="#tab2">
+            <a>
+              <span class="icon is-small"><i class="{{tab2icon}}" aria-hidden="true"></i></span>
+              <span class="tabtext">{{tab2name}}</span>
+            </a>
+          </li>
+          <li data-content="#tab3">
+            <a>
+              <span class="icon is-small"><i class="{{tab3icon}}" aria-hidden="true"></i></span>
+              <span class="tabtext">{{tab3name}}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div id="profile-hide-tabs" class="tabs is-centered is-fullwidth is-toggle is-large" style="color: black;">
+          <ul>
 
+        <li><a>
+        <span class="icon is-small"><i class="fas fa-caret-down" aria-hidden="true"></i></span>
+        <span class="tabtext">{{tabhidename}}</span>
+      </a></li>
+    </ul>
+      </div>
 <div id="profile-tabs-content">
-    <div id="tab1" class="profile-associate">
+    <div id="tab1" class="profile-tab-content vanish">
       {% include tab1contentpath %}
     </div>
-    <div id="tab2" class="profile-associate vanish">
+    <div id="tab2" class="profile-tab-content vanish">
       {% include tab2contentpath %}
     </div>
-    <div id="tab3" class="profile-associate vanish">
+    <div id="tab3" class="profile-tab-content vanish">
       {% include tab3contentpath %}
     </div>
 </div>
-  
+</div>

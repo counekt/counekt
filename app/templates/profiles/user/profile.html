@@ -92,7 +92,7 @@
   {% endif %}
 
 {% include "profiles/user/tabs/tabs.html" %}
-
+{% include 'profiles/wall.html' %}
 {% endblock %}
 
 {% block modal %}
@@ -117,6 +117,7 @@
 <link rel="stylesheet" href="/static/css/profiles/user/edit.css">
 <link rel="stylesheet" href="/static/css/profiles/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<script src="/static/js/profiles/profile.js"></script>
 <script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/user/edit.js"></script>
 <script src="/static/js/profiles/club/create.js"></script>
