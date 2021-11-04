@@ -41,9 +41,25 @@ font-family: Universe, "Helvetica Neue",sans-serif;
   	 cursor: pointer;
 }
 
+#profile-material-tabs ul li a {
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	border-bottom-width: 0px;
+	transition: 0.3s;
+}
+
+#profile-hide-tabs ul li a {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	transition: 0.3s;
+}
+
 #profile-tabs-content {
+	height: 500px;
 	padding: 10px;
 	padding-top: 0px;
+	min-height: 0px;
+	transition: 0.3s;
 }
 
 .profile-associate {
@@ -137,10 +153,9 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 
 #profile-tabs {
 	background-color: rgba(255,255,255,0.9);
-	height: 500px;
 	max-width: 750px;
 	border-radius: 5px;
-
+	margin-bottom: 10px;
 }
 
 #profile-tabs .tabs {

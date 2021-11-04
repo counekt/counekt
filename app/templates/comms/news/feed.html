@@ -1,12 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container floater">
-	{% with what='post', by="hot" %}	
-    {% include 'comms/search-filter-bar.html' %}
-	{% endwith %}
-</div>
-{% include 'comms/news/flex-stream.html' %}
-
+{% include 'comms/wall/wall-bit.html' %}
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/comms/search-filter-bar.js') }}"></script>

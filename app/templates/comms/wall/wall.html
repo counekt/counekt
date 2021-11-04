@@ -1,15 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container floater">
-	{% with what='post', by='hot' %}	
-	{% include 'comms/create-bar.html' %}
-    {% include 'comms/search-filter-bar.html' %}
-	{% endwith %}
-	{% for p in posts %}
-		{% include 'comms/post.html' %}
-	{% endfor %}
-</div>
-
+{% include 'comms/wall/wall-bit.html' %}
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/comms/search-filter-bar.js') }}"></script>
@@ -39,6 +30,15 @@ function changeToWall() {
     changeToWall();
   //redirect({id:"user-profile"}, "Wall", "/wall/", changeToWall);
 });
+
+  $(document).on('click', '.medium-love-interact', function() {
+    $this = $(this);
+    $icon = $this.find('span i');
+    $icon.toggleClass('far fas');
+    
+    $this.closest('.level-item').toggleClass('active inactive');
+
+  });
 </script>
 <style type="text/css">
 	.modal-card {

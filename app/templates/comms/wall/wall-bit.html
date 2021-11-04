@@ -1,0 +1,7 @@
+<div class="container floater">
+	{% with what='post', by='hot' %}	
+	{% include 'comms/create-bar.html' %}
+    {% include 'comms/search-filter-bar.html' %}
+	{% endwith %}
+	{% include 'comms/wall/flex-stream.html' %}
+</div>
