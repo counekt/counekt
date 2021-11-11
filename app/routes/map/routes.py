@@ -16,6 +16,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 
 
 @bp.route("/explore/")
+@bp.route("/")
 @bp.route("/map/", methods=['GET', 'POST'])
 def map():
     q_address = request.args.get('loc')
