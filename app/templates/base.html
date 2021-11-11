@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    {% block title %}
+    <title>Counekt</title>
+    {% endblock %}
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
     <meta charset="utf-8">
     <meta name="Frederik Christoffersen" content="CTW">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +20,7 @@
   </head>
   <body {% if noscroll %}class="noscroll"{% endif %}>
     <div id="loader"></div>
-  <div id="page" style="display: none;" class="noselect">
+  <div id="page" style="display: none;">
     {% if navbar %}
         {% include "navbar/navbar.html" %}
     {% elif exonavbar %}

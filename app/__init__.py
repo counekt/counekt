@@ -34,14 +34,16 @@ def create_app(config_class=Config):
         aws_secret_access_key=app.config["AWS_SECRET_KEY"]
     )
 
-    from app.routes.main import bp as main_bp
+    from app.routes.index import bp as index_bp
+    from app.routes.map import bp as map_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.api import bp as api_bp
     from app.routes.errors import bp as errors_bp
     from app.routes.profiles import bp as profiles_bp
     from app.routes.comms import bp as comms_bp
 
-    app.register_blueprint(main_bp)
+    app.register_blueprint(index_bp)
+    app.register_blueprint(map_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(errors_bp)

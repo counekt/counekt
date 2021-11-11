@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from flask import redirect, url_for, render_template, abort, request, current_app
 from app import db, models
-import app.routes.main.funcs as funcs
+import app.routes.map.funcs as funcs
 import json
 import re
 import math
 from datetime import date
 from requests import HTTPError
-from app.routes.main import bp
+from app.routes.map import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
 # ======== Routing =========================================================== #
@@ -15,10 +15,9 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 # -------- Home page ---------------------------------------------------------- #
 
 
-@bp.route("/")
 @bp.route("/explore/")
-@bp.route("/main/", methods=['GET', 'POST'])
-def main():
+@bp.route("/map/", methods=['GET', 'POST'])
+def map():
     q_address = request.args.get('loc')
     q_radius = request.args.get('rad')
     q_skill = request.args.get('ski')
@@ -49,7 +48,7 @@ def main():
         except ValueError:
             return json.dumps({'status': 'Non-valid radius', 'box_id': 'options-button'})
 
-        url = f'/main?loc={address}&rad={radius}'
+        url = f'/map?loc={address}&rad={radius}'
 
         if skill:
             if skill in current_app.config["AVAILABLE_SKILLS"]:
@@ -70,7 +69,7 @@ def main():
         info = [{"username": p.username, "profile_photo": p.profile_photo.src, "name": p.name if p.name else p.username, "lat": p.latitude, "lng": p.longitude} for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
 
-    return render_template("main.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)
+    return render_template("map.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)
 
 
 @ bp.route("/about/", methods=['GET'])

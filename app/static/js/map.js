@@ -157,7 +157,7 @@ function explore(do_redirect=true) {
 
     $.post({
       type: "POST",
-      url: "/main/",
+      url: "/map/",
       data: formData,
       processData: false,
       contentType: false,
