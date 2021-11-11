@@ -1,4 +1,4 @@
 from flask import Blueprint
-bp = Blueprint('main', __name__)
+bp = Blueprint('map', __name__)
 
 from app.routes.map import routes

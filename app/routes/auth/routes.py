@@ -13,7 +13,7 @@ import smtplib
 @ bp.route("/register/", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for("main.main"))
+        return redirect(url_for("index.index"))
 
     user = None
 
@@ -98,7 +98,7 @@ def register():
 @bp.route("/login/", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("main.main"))
+        return redirect(url_for("index.index"))
 
     if request.method == 'POST':
         username = request.form.get("username")
@@ -134,7 +134,7 @@ def logout():
 def activate(token):
     print("wawawawaw")
     if current_user.is_authenticated:
-        return redirect(url_for('main.main'))
+        return redirect(url_for('index.index'))
     user = models.User.check_token(token=token)
     print(user)
     if not user:
@@ -143,4 +143,4 @@ def activate(token):
     user.revoke_token()
     db.session.commit()
     login_user(user, remember=True)
-    return redirect(url_for('main.main'))
+    return redirect(url_for('index.index'))

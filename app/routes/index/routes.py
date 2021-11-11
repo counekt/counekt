@@ -8,4 +8,6 @@ import app.routes.index.funcs as funcs
 @bp.route("/")
 @bp.route("/index/")
 def index():
+	if current_user.is_authenticated:
+		return redirect(url_for("map.map"))
 	return render_template("index/index.html", size="medium", footer=True, navbar=True)
