@@ -7,8 +7,8 @@
   <div class="hero-body">
   	<div id="first-thing" class="columns">
   	
-    <div class="column" style="min-height: 100%;height: 100%; ">
-      <p class="title is-1 is-spaced" style="min-width: 355.5px;">
+    <div id="title-column" class="column" style="min-height: 100%;height: 100%; ">
+      <p class="title is-1 is-spaced">
         Entrepreneurial <br>infrastructure <br>for the internet.
       </p>
       <p class="subtitle">
@@ -155,6 +155,13 @@ setTimeout(function(){
 .title.is-1.is-spaced {
 font-size:  6vw !important;
 }
+
+@media screen and (min-width: 768px) {
+  .title-column {
+  min-width: 355.5px;
+}
+}
+
 @media screen and (max-width: 768px) {
 
   .title.is-1.is-spaced {
