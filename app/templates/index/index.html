@@ -5,10 +5,10 @@
 {% block content %}
 <section class="hero is-info is-fullheight" style="background-image: linear-gradient(to bottom right, navy,deepskyblue);">
   <div class="hero-body">
-  	<div class="columns" style="width:100%;">
+  	<div id="first-thing" class="columns">
   	
     <div class="column" style="min-height: 100%;height: 100%; ">
-      <p class="title is-1 is-spaced" style="min-width: 335px;">
+      <p class="title is-1 is-spaced" style="min-width: 344.5px;">
         Entrepreneurial <br>infrastructure <br>for the internet.
       </p>
       <p class="subtitle">
@@ -143,13 +143,34 @@ setTimeout(function(){
     border-radius: 12px;
     }
 
+    div.media-content {
+      overflow: hidden;
+    }
 
+#first-thing.columns {
+  margin: auto;
+  margin-top: 0px;
+}
 
-@media screen and (max-width: 380px) {
+.title.is-1.is-spaced {
+font-size:  6vw !important;
+}
+@media screen and (max-width: 751.2px) {
 
   .title.is-1.is-spaced {
-    font-size: 230%;
+     font-size: 250% !important;
   }
 }
+
+@media screen and (min-width: 1200px) {
+    .title.is-1.is-spaced {
+      font-size: 72px !important;
+  }
+  div.columns {
+    max-width:  1220px !important;
+  }
+
+}
+
 </style>
 {% endblock %}
