@@ -1,1 +1,1 @@
-from app.funcs import *
+from app.routes.funcs import *
