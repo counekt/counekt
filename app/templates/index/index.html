@@ -8,7 +8,8 @@
   	<div id="first-thing" class="columns">
   	
     <div id="title-column" class="column" style="min-height: 100%;height: 100%; ">
-      <p class="title is-1 is-spaced">
+      <p class="title is-1 is-spaced" style="white-space: nowrap;
+">
         Entrepreneurial <br>infrastructure <br>for the internet.
       </p>
       <p class="subtitle">
@@ -24,7 +25,7 @@
   <h2 class="subtitle">
     As a promising online meeting platform, <strong>Counekt</strong> seeks to provide <strong>entrepreneurs</strong> and likeminded with a <strong>flexible network</strong> as a tool to realise their <strong>ideas</strong> with. We are for the most a student <strong>startup</strong> comprised of just three friends. Two of us being from <strong>Copenhagen</strong>, Denmark and one being from <strong>Atlanta</strong>, United States - We are a <strong>global</strong> company. This is only the beginning of something <i>hopefully</i> great. 
   </h2>
-  <div class="columns">
+  <div class="columns" style="margin: auto;">
   <div class="column">
    <div class="card">
   <div class="card-image">
@@ -72,7 +73,7 @@
     </div>
 
     <div class="content">
-      The software developer behind it all.
+      The developer behind it all.
    </div>
   </div>
 </div>
@@ -156,21 +157,23 @@ setTimeout(function(){
 font-size:  6vw !important;
 }
 
-@media screen and (min-width: 768px) {
-  .title-column {
-  min-width: 355.5px;
-}
-}
 
 @media screen and (max-width: 768px) {
 
-  .title.is-1.is-spaced {
-     font-size: 46px !important;
-  }
 
   #first-thing.columns {
   margin-top: 50px;
 }
+
+.title.is-1.is-spaced {
+     font-size: 46px !important;
+  }
+}
+
+@media screen and (max-width: 420.6px) {
+  .title.is-1.is-spaced {
+     font-size: 10vw !important;
+  }
 }
 
 @media screen and (min-width: 1200px) {
