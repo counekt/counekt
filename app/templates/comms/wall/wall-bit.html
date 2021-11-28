@@ -1,6 +1,8 @@
-<div class="container floater">
-	{% with what='post', by='hot' %}	
-	{% include 'comms/create-bar.html' %}
+<div id="wall-bit" class="container floater {% if vanish %}vanish{% endif %}">
+	{% with what='post', by='hot' %}
+		{% if create_bar %}	
+		{% include 'comms/create-bar.html' %}
+		{% endif %}
     {% include 'comms/search-filter-bar.html' %}
 	{% endwith %}
 	{% include 'comms/wall/flex-stream.html' %}
