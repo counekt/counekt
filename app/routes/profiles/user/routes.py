@@ -111,10 +111,39 @@ def edit_user():
     return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
+@ bp.route("/create/medium/", methods=["GET", "POST"])
+@login_required
+def create_medium():
+    if flask_request.method == 'POST':
+        action = flask_request.form.get("action")
+        title = flask_request.form.get("title")
+        text = flask_request.form.get("text")
+        print(title)
+        print(text)
+
+        if action == "submit":
+            if title:
+                medium = models.Medium(title=title,content=text,author=current_user, public=True)
+                db.session.add(medium)
+                db.session.commit()
+                return json.dumps({'status': 'success', 'id':medium.id})
+            return json.dumps({'status': 'error'})
+
+        if action == "save":
+            if title or text:
+                medium = models.Medium(title=title,content=text,author=current_user, public=False)
+                db.session.add(medium)
+                db.session.commit()
+                return json.dumps({'status': 'success'})
+            return json.dumps({'status': 'error'})
+
+    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
+    return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
+
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
 def user_photo(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
         abort(404)
     skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", footer=True, models=models)
+    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)

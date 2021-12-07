@@ -1,0 +1,17 @@
+<div class="modal is-active">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Create {% if what %}{{what}}{% endif %}</p>
+      <button class="delete close" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <input id="title-create" class="input" type="location" placeholder='Title' style="margin-bottom: 10px;">
+      <textarea id="text-create" class="textarea has-fixed-size" type="location" placeholder='Text (optional)' style="margin-bottom: 10px;"></textarea>
+    </section>
+    <footer class="modal-card-foot" style="justify-content: flex-end;">
+      <button class="button transition is-light is-info is-outlined" id="save-draft-button" disabled>Save draft</button>
+      <button class="button transition is-link" id="submit-button" disabled>Submit</button>
+    </footer>
+  </div>
+</div>
