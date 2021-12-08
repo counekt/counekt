@@ -7,7 +7,6 @@ $(document).on('click', '#more-details-button', function() {
     }
   });
 
-
 $(document).click(function(event) { 
   var $target = $(event.target);
   if(!$target.closest('#more-details-dropdown').length && 
