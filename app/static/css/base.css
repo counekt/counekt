@@ -93,8 +93,13 @@ margin-top: 200px;
   display: none !important;
 }
 
+
 .invisible {
-	opacity: 0;
+	visibility: hidden;
+	height: 0px !important;
+	width: 0px !important;
+	position: absolute;
+	overflow: hidden;
 }
 
 .notransition {
@@ -115,6 +120,7 @@ margin-top: 200px;
 	visibility: hidden;
 }
 
+.
 
 #loader {
 	position: fixed;

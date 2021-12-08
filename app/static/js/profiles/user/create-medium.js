@@ -25,6 +25,15 @@ $(document).on('input', '#title-create', function(){
 
 	});
 
+	$(document).on({
+		mouseenter: function () {
+        //stuff to do on mouse enter
+        $(this).find($(this).attr('hidden-selector')).removeClass('invisible');
+    },
+    mouseleave: function () {
+        $(this).find($(this).attr('hidden-selector')).addClass('invisible');
+    }}, '.show-hidden-selector-on-hover')
+
  function submitCreate() {
  	var formData = new FormData();
  	formData.append('action','submit');

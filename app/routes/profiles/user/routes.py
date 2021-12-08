@@ -140,6 +140,16 @@ def create_medium():
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
 
+@ bp.route("/user/<username>/<medium_id>/", methods=["GET", "POST"])
+@ bp.route("/@<username>/<medium_id>/", methods=["GET", "POST"])
+def user_medium(username):
+    user = models.User.query.filter_by(username=username).first()
+    medium = user.media.filter_by(medium_id=medium_id)
+    if flask_request.method == 'POST':
+        return json.dumps({'status': 'success', "medium":{"id":medium.id, "title":str(medium.title), "content":str(medium.content),"upvotes":medium.upvotes.count(),"downvotes":medium.downvotes.count(), "is_upvoted":medium.is_upvoted(current_user) if current_user.is_authenticated else False, "is_downvoted":medium.is_downvoted(current_user) if current_user.is_authenticated else False}})
+    return render_template("comms/medium/by-user.html", medium=medium, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
+
+
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
 def user_photo(username):
     user = models.User.query.filter_by(username=username).first()
