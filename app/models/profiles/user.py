@@ -1,6 +1,7 @@
 from flask import current_app
 from app import db
 from app.models.base import Base
+from app.models.comms.wall import Wall
 from app.models.locationBase import locationBase
 from app.models.static.photo import Photo
 from app.models.profiles.group import Membership, Group
@@ -18,7 +19,6 @@ from hashlib import md5
 import base64
 from app import login
 import os
-
 
 convos = db.Table('convos',
                   db.Column('convo_id', db.Integer, db.ForeignKey('convo.id')),
@@ -82,6 +82,9 @@ class User(UserMixin, db.Model, Base, locationBase):
     notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
 
+    wall_id = db.Column(db.Integer, db.ForeignKey('wall.id'))
+    wall = db.relationship("Wall", foreign_keys=[wall_id])
+
     memberships = db.relationship(
         'Membership', lazy='dynamic',
         foreign_keys='Membership.owner_id')
@@ -101,6 +104,7 @@ class User(UserMixin, db.Model, Base, locationBase):
         self.creation_datetime = datetime.utcnow()
         self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/users/{self.username}/", replacement=self.gravatar)
         self.cover_photo = Photo(filename="cover_photo", path=f"static/profiles/users/{self.username}/", replacement="/static/images/alps.jpg")
+        self.wall = Wall()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

@@ -19,6 +19,10 @@ class Wall(Base, db.Model):
 	media = db.relationship(
 	    'Medium', secondary=media, backref="walls", lazy='dynamic')
 
+	def append(self, medium):
+		self.media.append(medium)
+		return medium
+
 class Media:
 
 	def __init__(self, **kwargs):

@@ -7,8 +7,8 @@ from app.models.locationBase import locationBase
 from flask import url_for
 
 viewers = db.Table('project_viewers',
-                    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-                    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+                    db.Column('project_id', db.Integer, db.ForeignKey('project.id', ondelete="cascade")),
+                    db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete="cascade"))
                     )
 
 class Project(db.Model, Base, locationBase):

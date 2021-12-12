@@ -34,26 +34,16 @@ $(document).on('input', '#title-create', function(){
         $(this).find($(this).attr('hidden-selector')).addClass('invisible');
     }}, '.show-hidden-selector-on-hover')
 
+
  function submitCreate() {
- 	var formData = new FormData();
- 	formData.append('action','submit');
- 	formData.append('title',$("#title-create").val());
- 	formData.append('text',$("#text-create").val());
-	$.post({
-      type: "POST",
-      url: "/create/medium/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
+	post("create/medium/", function(response) {
       	var response = JSON.parse(response);
         var status = response["status"]; 
         if (status == "success") {
-        	var create_id = response["id"]; 
       		flash('#ffff','#3abb8','Medium submitted', delay=1500);
 
       		setTimeout(function() {
-      			document.location.href = "/medium/"+create_id+"/";
+      			document.location.href = "/@"+response["author"]["username"]+"/medium/"+response["id"]+"/";
       		},1500);
         }
 
@@ -61,8 +51,7 @@ $(document).on('input', '#title-create', function(){
         	flash('#ffff','#f14668',status, delay=1500);
         }
 
-      }
-  });
+      }, {action:'submit',title:$("#title-create").val(),text:$("#text-create").val()};
 }
 
 $(document).on('click', "#submit-button", submitCreate);
