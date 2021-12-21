@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy import or_
 from datetime import datetime
 from sqlalchemy import func, inspect, case, extract
-
+import app.funcs as funcs
 
 media = db.Table('media',
                   db.Column('medium_id', db.Integer, db.ForeignKey('medium.id')),
@@ -36,11 +36,40 @@ class Media:
 	@declared_attr
 	def author(self):
 		return db.relationship('User',foreign_keys=[self.author_id])
-	
+
 	creation_datetime = db.Column(db.DateTime, index=True)
 	title = db.Column(db.String)
 	content = db.Column(db.Text)
 	public = db.Column(db.Boolean, default=False)
+
+	def upvote(self, voter):
+		if not self.is_upvoted(voter):
+			self.undownvote(voter=voter)
+			self.upvotes.append(cls.upvote_class(media=self,voter=voter))
+
+	def downvote(self, voter):
+		if not self.is_downvoted(voter):
+			self.unupvote(voter=voter)
+			self.downvotes.append(self.downvote_class(media=self,voter=voter))
+
+	def unupvote(self, voter):
+		upvote_ = self.upvote_class.query.filter_by(media=self,voter=voter).first()
+		if upvote_:
+			self.upvotes.remove(upvote_)
+			db.session.delete(upvote_)
+
+	def undownvote(self, voter):
+		downvote_ = self.downvote_class.query.filter_by(media=self,voter=voter).first()
+		if downvote_:
+			self.downvotes.remove(downvote_)
+			db.session.delete(downvote_)
+
+	def is_upvoted(self, voter):
+		return bool(self.upvote_class.query.filter_by(media=self,voter=voter).first())
+
+
+	def is_downvoted(self, voter):
+		return bool(self.downvote_class.query.filter_by(media=self,voter=voter).first())
 
 	@property
 	def hotness(self, now=datetime.utcnow()):
@@ -56,28 +85,37 @@ class Media:
 
 	@hybrid_property
 	def vote_ratio(self):
-		return func.count(self.upvotes)/case([(self.total_votes>0,self.total_votes)],else_=1)
+		return func.count(self.upvotes)/case([(self.count_votes()>0,self.count_votes())],else_=1)
 
-	@hybrid_property
-	def total_votes(self):
-		return func.count(self.downvotes)+func.count(self.upvotes)
+	@hybrid_method
+	def count_upvotes(self):
+		return func.count(self.upvotes)
+
+	@hybrid_method
+	def count_downvotes(self):
+		return func.count(self.downvotes)
+
+	@hybrid_method
+	def count_votes(self):
+		return self.count_upvotes() + self.count_downvotes()
+
+	@property
+	def upvote_count(self):
+		return self.upvotes.count()
+
+	@property
+	def downvote_count(self):
+		return self.downvotes.count()
 
 	@classmethod
 	def hot(cls, query=None):
 		query = query if query else cls.query
-		relationships = inspect(cls).relationships
-		upvote_class = relationships["upvotes"].entity.class_
-		downvote_class = relationships["downvotes"].entity.class_
-		return query.outerjoin(upvote_class, downvote_class).group_by(cls.id).order_by((cls.total_votes/case([(cls.age_in_minutes>0,cls.age_in_minutes)],else_=1)).desc())
+		return query.outerjoin(cls.upvote_class, cls.downvote_class).group_by(cls.id).order_by((cls.count_votes()/case([(cls.age_in_minutes>0,cls.age_in_minutes)],else_=1)).desc())
 
 	@classmethod
 	def best(cls, query=None):
 		query = query if query else cls.query
-		relationships = inspect(cls).relationships
-		upvote_class = relationships["upvotes"].entity.class_
-		downvote_class = relationships["downvotes"].entity.class_
-		return query.outerjoin(upvote_class, downvote_class).group_by(cls.id).order_by(cls.vote_ratio.desc())
-
+		return query.outerjoin(cls.upvote_class, cls.downvote_class).group_by(cls.id).order_by(cls.count_ratio.desc())
 
 	@classmethod
 	def new(cls, query=None):
@@ -87,10 +125,7 @@ class Media:
 	@classmethod
 	def top(cls, query=None):
 		query = query if query else cls.query
-		relationships = inspect(cls).relationships
-		upvote_class = relationships["upvotes"].entity.class_
-		downvote_class = relationships["downvotes"].entity.class_
-		return query.outerjoin(upvote_class, downvote_class).group_by(cls.id).order_by((func.count(cls.upvotes)+func.count(cls.downvotes)).desc())
+		return query.outerjoin(cls.upvote_class, cls.downvote_class).group_by(cls.id).order_by((func.count(cls.upvotes)+func.count(cls.downvotes)).desc())
 
 	@classmethod
 	def search(cls, text, query=None):
@@ -103,8 +138,16 @@ class Media:
 		query = cls.search(search) if search else query
 		return {"hot":cls.hot(query=query),"best":cls.best(query=query),"new":cls.new(query=query),"hot":cls.hot(query=query)}.get(by) or query
 
-       
+	@hybrid_property
+	def upvote_class(self):
+		relationships = inspect(cls).relationships
+		return relationships["upvotes"].entity.class_
 
+	@hybrid_property
+	def downvote_class(self):
+		relationships = inspect(cls).relationships
+		return relationships["downvotes"].entity.class_
+       
 class Vote:
 	id = db.Column(db.Integer, primary_key=True)
 
@@ -119,25 +162,61 @@ class Vote:
 class MediumHeart(Vote,db.Model):
 	medium_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
 
-class Medium(Media,Base,db.Model):
-	id = db.Column(db.Integer, primary_key=True)
+class MediumDownvote(Vote,db.Model):
+	medium_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
 
-	replies = db.relationship('Medium', backref=db.backref("to", remote_side=[id]), lazy='dynamic',
-        foreign_keys='Medium.to_id')
-	to_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
-	hearts = db.relationship('MediumHeart', backref='medium', lazy='dynamic',
+class Medium(Media,Base,db.Model):
+
+	def __init__(self, **kwargs):
+		super(Medium, self).__init__(**kwargs)
+
+	id = db.Column(db.Integer, primary_key=True)
+	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+	author = db.relationship("User", foreign_keys=[author_id])
+
+	quotes = db.relationship('Medium', backref=db.backref("quote_to", remote_side=[id]), lazy='dynamic',
+        foreign_keys='Medium.quote_to_id')
+
+	replies = db.relationship('Medium', backref=db.backref("reply_to", remote_side=[id]), lazy='dynamic',
+        foreign_keys='Medium.reply_to_id')
+
+	reply_to_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
+	quote_to_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
+
+	upvotes = db.relationship('MediumHeart', backref='media', lazy='dynamic',
         foreign_keys='MediumHeart.medium_id')
+	downvotes = db.relationship('MediumDownvote', backref='media', lazy='dynamic',
+        foreign_keys='MediumDownvote.medium_id')
+	
+	project_channel_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+	project_channel = db.relationship("Project", foreign_keys=[project_channel_id])
+	club_channel_id = db.Column(db.Integer, db.ForeignKey('club.id'))
+	club_channel = db.relationship("Club", foreign_keys=[club_channel_id])
 
 	def is_loved(self, voter):
-		return bool(Medium.query.filter_by(medium=self,voter=voter).first())
+		return self.is_upvoted(voter)
 
 	def love(self, voter):
-		if not self.is_loved(voter):
-			self.love(voter=voter)
-			self.hearts.append(MediumHeart(medium=self,voter=voter))
+		self.upvote(voter)
 
 	def unlove(self, voter):
-		heart = MediumHeart.query.filter_by(medium=self,voter=voter).first()
-		if heart:
-			self.hearts.remove(heart)
-			db.session.delete(heart)
+		self.unupvote(voter)
+
+	@hybrid_property
+	def count_hearts(self):
+		return self.total_upvotes()
+
+	@property
+	def heart_count(self):
+		return self.upvote_count
+
+	@property
+	def reply_count(self):
+		return self.replies.count()
+
+	@property
+	def quote_count(self):
+		return self.quotes.count()
+
+	def channel(self):
+		return self.project_channel or self.club_channel

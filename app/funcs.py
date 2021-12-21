@@ -11,6 +11,8 @@ from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
 import os
 
+def returnifelse(primary,bottleneck,secondary):
+    return primary if bottleneck else secondary
 
 def geocode(address, attempt=1, max_attempts=5):
     try:

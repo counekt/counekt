@@ -1,15 +1,27 @@
+<div class="container floater">
 <article class="media" style="color:  black;" data-id="{{medium.id}}">
   <div class="media-left">
     <figure class="image is-64x64" style="width:40px;height: 40px; float: left; margin-right: 5px;">
         <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.href}}{% else %}\\href//{% endif %}"{% endif %}>
-        <img class="is-rounded medium-image-content" src="{{medium.organisation.profile_photo_src}}">
+        {% if through_channel %}
+        <img class="is-rounded medium-image-content" src="{{medium.channel.profile_photo.src}}">
+        {% else %}
+        <img class="is-rounded medium-image-content" src="{{medium.author.profile_photo.src}}">
+        {% endif %}
           </a>
       </figure>
   </div>
   <div class="media-content">
-    <div class="content">
-      <p class="identity">
-        <span class="organisation"><strong class="organisation-name">{{medium.organisation.name}}</strong> <small class="organisation-handle">{{medium.organisation.symbol}}{{medium.organisation.handle}}</small></span> <small>(by <b class="author">{{medium.author.name}}</b>)</small> <small>{{medium.age}}</small>
+    <div class="medium-content">
+      <p class="medium-identity">
+        {% if through_channel %}
+        <span class="channel"><strong class="channel-name">{{medium.channel.dname}}</strong> <small class="channel-handle">{{medium.channel.symbol}}{{medium.channel.handle}}</small></span>
+         <small>(by <b class="author">{{medium.author.dname}}</b>)</small>
+        {% else %}
+        <span class="channel"><strong class="channel-name">{{medium.author.dname}}</strong> <small class="channel-handle">{{medium.author.symbol}}{{medium.author.username}}</small></span>
+        {% endif %}
+         <small class="creation-datetime">{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}</small>
+        
       </p>
       <p>
         <strong><big>{{medium.title}}</big></strong>
@@ -21,15 +33,15 @@
       <div class="level-left">
         <span class="level-item medium-reply">
           <a class="medium-reply-interact"><span class="icon is-small"><i class="fas fa-reply"></i></span></a>
-          <a class="number-info"><span class="text" style="margin-left: 5px;">7</span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.reply_count}}</span></a>
         </span>
         <span class="level-item medium-quote">
           <a class="medium-quote-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
-          <a class="number-info"><span class="text" style="margin-left: 5px;">2</span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.quote_count}}</span></a>
         </span>
         <span class="level-item medium-love">
           <a class="medium-love-interact"><span class="icon is-small"><i class="far fa-heart"></i></span></a>
-          <a class="number-info"><span class="text" style="margin-left: 5px;">45</span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.heart_count}}</span></a>
         </span>
       </div>
     </nav>
@@ -38,3 +50,4 @@
     <button class="button is-rounded" style="background-color:  rgba( 10, 10, 10, 0.2); border: 0 solid black; color: white; width:  25px !important; height: 25px;"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
   </div>
 </article>
+</div>

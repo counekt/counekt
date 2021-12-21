@@ -1,0 +1,317 @@
+.medium-identity {
+      color: rgba(0, 0, 0, 0.5);
+      transition: 0.3s;
+  }
+
+  .medium-identity:hover {
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .author:hover, .channel:hover {
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+  }
+
+
+
+  .level-item {
+    transition: 0.1s;
+  }
+
+  .level-item a {
+    display: inline-block;
+  }
+
+  .number-info {
+    transition: 0s !important;
+  }
+
+  .medium-reply:hover {
+    color: hsl(217, 80%, 60%);
+  }
+
+  .medium-quote:hover {
+    color: hsl(204, 86%, 53%);;
+  }
+
+  .medium-love:hover {
+    color: hsl(348, 100%, 61%);
+  }
+
+  .medium-love.active {
+    color: hsl(348, 100%, 61%);
+  }
+
+  .medium-love.active:hover {
+    color: hsl(348, 75%, 45.75%);
+  }
+
+  .number-info:hover {
+    color: black !important;
+    text-decoration: underline;
+  }
+
+  .flex-stream {
+  }
+
+
+.medium-content br {
+  display: block;
+  line-height: 0;
+  height: 0px;
+  content: " ";
+
+}
+
+.medium-org-identity {
+  color: rgb(74, 74, 74);
+  height: 43.2px;
+  line-height: 1.2em;
+  display: inline-block;
+  font-size: 15px;
+}
+
+.medium-author-identity {
+  overflow: hidden;
+  margin-top: 5px;
+  color: rgb(74, 74, 74);
+  height: 43.2px;
+  line-height: 1.2em;
+  font-size: 10px;
+  display:  inline-block;
+  text-overflow: ellipsis;
+    white-space: nowrap;
+  width:  48px;
+}
+
+.medium-org-identity .medium-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width:  48px;
+}
+
+.medium-author-identity span.medium-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+}
+
+.medium-name {
+    vertical-align: top;
+}
+
+.medium-username {
+  vertical-align: bottom;
+  color: darkgray !important;
+}
+.underlined {
+  text-decoration: underline;
+}
+
+.medium-image-content:hover {
+  -webkit-filter: brightness(85%);
+     filter: brightness(85%);
+     cursor: pointer;
+     border: solid rgba(0, 0, 0, 0.138) 0.1px;
+
+}
+
+.medium-left {
+  width:  48px;
+  box-sizing: border-box;
+  margin-right: 10px;
+}
+
+.medium-image {
+  width: 48px;
+  height: 48px;
+  display: inline-block;
+  line-height: 20px;
+  vertical-align: top;
+
+}
+
+.medium-image-content {
+  width: 100%;
+  border-radius: 100%;
+  border: solid rgba(0, 0, 0, 0.04) 0.1px;
+  transition: 0.3s;
+  vertical-align: bottom;
+}
+
+
+  .medium.hoverable:active:hover {
+    background-color: rgba(245,245,245,1);
+
+}
+
+.medium.hoverable:hover {
+  background-color: rgba(250,250,250,1);
+     cursor: pointer;
+}
+
+.medium .ballot button.vote:not(:hover) {
+  background-color: transparent;
+}
+
+.medium:hover .ballot button.counter {
+  background-color: rgb(240,240,240);
+}
+
+.medium:active:hover .ballot button.counter {
+  background-color: rgb(235,235,235);
+}
+
+
+  .medium-content {
+    vertical-align:top;
+    margin-top: 10px;
+        display: inline-block;
+        flex-grow: 1;
+          overflow: hidden;
+  }
+
+  .medium .medium-content .subtitle {
+    text-overflow: ellipsis;
+          white-space: nowrap;
+                    overflow: hidden;
+
+  }
+
+  .medium:not(:last-child) {
+    margin-bottom: 10px;
+  }
+
+  .ballot-item:not(:last-child) {
+    margin-bottom: 0px;
+  }
+
+/*
+  .ballot-item span i {
+    height: 18px;
+  }
+*/
+  button.ballot-item {
+    height: 20px;
+    width:  20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-width: 0px;
+
+  }
+
+  .medium-bottom {
+    vertical-align: bottom !important;
+    clear: left !important;
+  }
+
+  .ballot {
+    width: 20px;
+    position: relative;
+    display:  block;
+  }
+
+  .medium {
+    transition: 0.3s;
+    clear: both;
+    padding: 7px;
+    height: 100%;
+    display: flex;
+  }
+
+  .medium-focus .medium-content .title {
+    font-size: 30px;
+  }
+
+  .medium-focus .fb-content .subtitle {
+    font-size: 20px;
+  }
+
+
+  .medium-focus .ballot button.ballot-item {
+    height: 30px;
+    width:  30px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-width: 0px;
+
+  }
+
+
+  .medium-focus .ballot button.ballot-item:not(.vote) {
+    
+    font-size: 16px;
+
+  }
+
+  .medium-focus .ballot .vote {
+    font-size: 18px;
+  }
+
+  .medium-focus .ballot {
+    width: 30px;
+    display: inline-block;
+    position: relative;
+    margin-right: 15px;
+    margin-left: 4px;
+  }
+
+</style>
+<style type="text/css">
+
+  
+
+	.modal-card {
+  width: 600px;
+  border-radius: 18px;
+}
+
+.modal-card-head {
+  height: 60px;
+  background-color: white;
+}
+
+a.close {
+  transition: 0.2s;
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
+  margin-right: 1%;
+}
+
+a.close:hover {
+  background-color: rgba(50,152,220,0.1) !important;
+}
+
+a.close span {
+  width: 40px;
+  font-size: 25px;
+  height: 40px;
+}
+
+/*
+
+Edit modal is full
+
+*/
+
+@media (max-width:700px) {
+  .modal, .modal-card {
+    height: auto;
+      min-height: 100%;
+    width: 100%;
+  border-radius: 0px;
+}
+
+.modal-card-head {
+  border-radius: 0px;
+}
+
+
+.modal-close {
+  background-color:rgb(0,0,0,0);
+}
+
+}

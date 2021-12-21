@@ -36,7 +36,7 @@ $(document).on('input', '#title-create', function(){
 
 
  function submitCreate() {
-	post("create/medium/", function(response) {
+	post("/create/medium/", function(response) {
       	var response = JSON.parse(response);
         var status = response["status"]; 
         if (status == "success") {
@@ -51,7 +51,7 @@ $(document).on('input', '#title-create', function(){
         	flash('#ffff','#f14668',status, delay=1500);
         }
 
-      }, {action:'submit',title:$("#title-create").val(),text:$("#text-create").val()};
+      }, {action:'submit',title:$("#title-create").val(),text:$("#text-create").val()});
 }
 
 $(document).on('click', "#submit-button", submitCreate);

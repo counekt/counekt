@@ -6,7 +6,7 @@ from app import db, models
 from app.routes.comms import bp
 import app.routes.comms.funcs as funcs
 from urllib.parse import urlencode
-
+from datetime import datetime
 
 @login_required
 @ bp.route("/messages/", methods=["GET", "POST"])
@@ -214,7 +214,7 @@ def vote_post():
 
 @ bp.route("/news/", methods=["GET", "POST"])
 def news():
-    media = [{"is_liked":True,"author":{"name":"Frederik Walther Liberoth Christoffersen", "username":"frederik", "symbol":"@"},"organisation":{"symbol":"£","name":"Twitter", "handle": "twitter", "profile_photo_src":"https://pbs.twimg.com/profile_images/1354479643882004483/Btnfm47p_400x400.jpg"},"likes": 47, "is_liked":True, "title":"New Progress", "content":"Today, we just launched Twitter spaces! How cool!"}]*5
+    media = [{"is_liked":True,"creation_datetime":datetime(year=2003,month=7,day=25),"author":{"name":"Frederik Walther Liberoth Christoffersen", "username":"frederik", "symbol":"@"},"organisation":{"symbol":"£","name":"Twitter", "handle": "twitter", "profile_photo_src":"https://pbs.twimg.com/profile_images/1354479643882004483/Btnfm47p_400x400.jpg"},"likes": 47, "is_liked":True, "title":"New Progress", "content":"Today, we just launched Twitter spaces! How cool!"}]*5
     return render_template("comms/news/feed.html", navbar=True, background=True, size="medium", models=models, media=media)
 
 @ bp.route("/wall/", methods=["GET", "POST"])

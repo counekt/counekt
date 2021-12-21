@@ -126,7 +126,7 @@ def create_medium():
                 medium = models.Medium(title=title,content=text, author=current_user, public=True)
                 current_user.wall.append(medium)
                 db.session.commit()
-                return json.dumps({'status': 'success', 'id':medium.id})
+                return json.dumps({'status': 'success', 'id':medium.id, 'author':{'username':medium.author.username}})
             return json.dumps({'status': 'error'})
 
         if action == "save":
