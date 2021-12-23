@@ -115,7 +115,7 @@ class Media:
 	@classmethod
 	def best(cls, query=None):
 		query = query if query else cls.query
-		return query.outerjoin(cls.upvote_class, cls.downvote_class).group_by(cls.id).order_by(cls.count_ratio.desc())
+		return query.outerjoin(cls.upvote_class, cls.downvote_class).group_by(cls.id).order_by(cls.vote_ratio.desc())
 
 	@classmethod
 	def new(cls, query=None):
@@ -138,13 +138,15 @@ class Media:
 		query = cls.search(search) if search else query
 		return {"hot":cls.hot(query=query),"best":cls.best(query=query),"new":cls.new(query=query),"hot":cls.hot(query=query)}.get(by) or query
 
-	@hybrid_property
-	def upvote_class(self):
+	@classmethod
+	@property
+	def upvote_class(cls):
 		relationships = inspect(cls).relationships
 		return relationships["upvotes"].entity.class_
 
-	@hybrid_property
-	def downvote_class(self):
+	@classmethod
+	@property
+	def downvote_class(cls):
 		relationships = inspect(cls).relationships
 		return relationships["downvotes"].entity.class_
        

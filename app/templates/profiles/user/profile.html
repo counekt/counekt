@@ -92,7 +92,7 @@
   {% endif %}
 
 {% include "profiles/user/tabs/tabs.html" %}
-{% with vanish=True, create_bar = user == current_user %}
+{% with vanish=True, create_bar = user == current_user, wall=current_user.wall, by="new" %}
 {% include 'comms/wall/wall-bit.html' %}
 {% endwith %}
 {% endblock %}
@@ -115,6 +115,8 @@
 {% endblock %}
 
 {% block scripts %}
+<link rel="stylesheet" href="/static/css/comms/medium.css">
+<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
 <link rel="stylesheet" href="/static/css/profiles/profile.css">
 <link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
