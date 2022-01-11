@@ -184,29 +184,21 @@ def vote_feedback():
             return json.dumps({'status': 'success'})
         return json.dumps({'status': 'error'})
 
-@ bp.route("/post/vote/", methods=["POST"])
-def vote_post():
+@ bp.route("/medium/vote/", methods=["POST"])
+def vote_medium():
     if flask_request.method == 'POST':
-        post_id = flask_request.form.get("post_id")
+        medium_id = flask_request.form.get("medium_id")
         action = flask_request.form.get("action")
-        post = models.Post.query.get(post_id)
-        print(post_id)
+        medium = models.Medium.query.get(medium_id)
+        print(medium_id)
         print(action)
-        print(post)
-        if action == "upvote":
-            post.upvote(voter=current_user)
+        print(medium)
+        if action == "heart":
+            medium.heart(voter=current_user)
             db.session.commit()
             return json.dumps({'status': 'success'})
-        elif action == "downvote":
-            post.downvote(voter=current_user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        elif action == "unupvote":
-            post.unupvote(voter=current_user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        elif action == "undownvote":
-            post.undownvote(voter=current_user)
+        elif action == "unheart":
+            medium.unheart(voter=current_user)
             db.session.commit()
             return json.dumps({'status': 'success'})
         return json.dumps({'status': 'error'})

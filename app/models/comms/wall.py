@@ -45,7 +45,7 @@ class Media:
 	def upvote(self, voter):
 		if not self.is_upvoted(voter):
 			self.undownvote(voter=voter)
-			self.upvotes.append(cls.upvote_class(media=self,voter=voter))
+			self.upvotes.append(self.upvote_class(media=self,voter=voter))
 
 	def downvote(self, voter):
 		if not self.is_downvoted(voter):
@@ -195,13 +195,13 @@ class Medium(Media,Base,db.Model):
 	club_channel_id = db.Column(db.Integer, db.ForeignKey('club.id'))
 	club_channel = db.relationship("Club", foreign_keys=[club_channel_id])
 
-	def is_loved(self, voter):
+	def is_hearted(self, voter):
 		return self.is_upvoted(voter)
 
-	def love(self, voter):
+	def heart(self, voter):
 		self.upvote(voter)
 
-	def unlove(self, voter):
+	def unheart(self, voter):
 		self.unupvote(voter)
 
 	@hybrid_property

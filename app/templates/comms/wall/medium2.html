@@ -1,5 +1,5 @@
 <div class="container floater">
-<article class="media" style="color:  black;" data-id="{{medium.id}}">
+<article class="media medium" style="color:  black;" data-id="{{medium.id}}">
   <div class="media-left">
     <figure class="image is-64x64" style="width:40px;height: 40px; float: left; margin-right: 5px;">
         <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.href}}{% else %}\\href//{% endif %}"{% endif %}>
@@ -39,10 +39,12 @@
           <a class="medium-quote-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
           <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.quote_count}}</span></a>
         </span>
-        <span class="level-item medium-love">
-          <a class="medium-love-interact"><span class="icon is-small"><i class="far fa-heart"></i></span></a>
+        {% with is_hearted = medium.is_hearted(current_user) %}
+        <span class="level-item medium-love {% if is_hearted %}active{% endif %}">
+          <a class="medium-love-interact"><span class="icon is-small"><i class="{% if is_hearted %}fas{% else %}far{% endif %} fa-heart"></i></span></a>
           <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.heart_count}}</span></a>
         </span>
+        {% endwith %}
       </div>
     </nav>
   </div>
