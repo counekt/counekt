@@ -405,6 +405,15 @@ $(window).on("popstate", function() {
 
 });
 
+function changeToQuoteMedium(quote_identity, quote_profile_pic, quote_content) {
+  $("#modal-box").append(`
+    {% with card_title='Quote Reply' %}
+    {% include "profiles/user/create-quote.html" %}
+    {% endwith %}
+    `.replaceAll('\\identity//', quote_identity).replaceAll('\\profile_photo//', quote_profile_pic).replaceAll('\\text-content//', quote_content));
+  $(document.body).addClass('noscroll');
+}
+
 function changeToCreateMedium() {
   $("#modal-box").append(`
     {% with what='Medium' %}

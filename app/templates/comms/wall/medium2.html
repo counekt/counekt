@@ -1,7 +1,11 @@
 <div class="container floater">
-<article class="media medium" style="color:  black;" data-id="{{medium.id}}">
+<article class="media medium" style="color:  black;" data-id="{% if not is_template %}
+{{medium.id}}{% endif %}">
   <div class="media-left">
-    <figure class="image is-64x64" style="width:40px;height: 40px; float: left; margin-right: 5px;">
+    {% if is_template %}
+      \\profile_photo//
+      {% else %}    
+      <figure class="image is-64x64" style="width:40px;height: 40px; float: left; margin-right: 5px;">
         <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.href}}{% else %}\\href//{% endif %}"{% endif %}>
         {% if through_channel %}
         <img class="is-rounded medium-image-content" src="{{medium.channel.profile_photo.src}}">
@@ -10,9 +14,13 @@
         {% endif %}
           </a>
       </figure>
+    {% endif %}
   </div>
   <div class="media-content">
     <div class="medium-content">
+      {% if is_template %}
+      \\identity//
+      {% else %}
       <p class="medium-identity">
         {% if through_channel %}
         <span class="channel"><strong class="channel-name">{{medium.channel.dname}}</strong> <small class="channel-handle">{{medium.channel.symbol}}{{medium.channel.handle}}</small></span>
@@ -23,12 +31,21 @@
          <small class="creation-datetime">{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}</small>
         
       </p>
-      <p>
+      {% endif %}
+      <br>
+      {% if is_template %}
+      \\text-content//
+      {% else %}
+      <p class="text-content">
         <strong><big>{{medium.title}}</big></strong>
         <br>
         {{medium.content}}
       </p>
+      {% endif %}
+      {% block quote_html %}
+      {% endblock %}
     </div>
+    {% if not is_template %}
     <nav class="level is-mobile">
       <div class="level-left">
         <span class="level-item medium-reply">
@@ -36,7 +53,7 @@
           <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.reply_count}}</span></a>
         </span>
         <span class="level-item medium-quote">
-          <a class="medium-quote-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
+          <a class="medium-quote-reply-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
           <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.quote_count}}</span></a>
         </span>
         {% with is_hearted = medium.is_hearted(current_user) %}
@@ -47,9 +64,12 @@
         {% endwith %}
       </div>
     </nav>
+    {% endif %}
   </div>
+  {% if not is_template %}
   <div class="media-right">
     <button class="button is-rounded" style="background-color:  rgba( 10, 10, 10, 0.2); border: 0 solid black; color: white; width:  25px !important; height: 25px;"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
   </div>
+  {% endif %}
 </article>
 </div>

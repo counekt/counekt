@@ -7,12 +7,14 @@
           <i class="fa fa-times"></i>
         </span>
       </a>
-      <p class="modal-card-title">Create Medium</p>
+      <p class="modal-card-title">{% if card_title %}{{card_title}}{% else %}Create Medium{% endif %}</p>
       <button class="button transition is-light is-info is-rounded show-hidden-selector-on-hover" id="save-draft-button" hidden-selector="p" disabled><p class="invisible" style="margin-right:10px;">Draft</p><span class="icon is-small" style="margin-left:-10px;"><i class="fas fa-save" aria-hidden="true"></i></span></button>
     </header>
     <section class="modal-card-body">
       <input id="title-create" class="input" type="location" placeholder='Title' style="margin-bottom: 10px;">
       <textarea id="text-create" class="textarea has-fixed-size" type="location" placeholder='Text (optional)' style="margin-bottom: 10px;"></textarea>
+      {% block quote_html %}
+      {% endblock %}
     </section>
     <footer class="modal-card-foot" style="justify-content: flex-end; padding:7.5px;">
     <button class="button transition is-link is-rounded show-hidden-selector-on-hover" id="submit-button" hidden-selector="p" disabled><p class="invisible" style="margin-right:10px;">Publish</p><span class="icon is-small" style="margin-left: -10px;"><i class="fas fa-paper-plane" aria-hidden="true"></i></span></button>

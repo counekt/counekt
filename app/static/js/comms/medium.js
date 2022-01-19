@@ -3,6 +3,7 @@ function changeToFeed() {
   $(document.body).removeClass('noscroll');
 }
 
+
   $(document).on('click', '.close, .modal-background', function() {
     changeToFeed();
   //redirect({id:"user-profile"}, "Wall", "/wall/", changeToWall);
@@ -13,6 +14,15 @@ $(".search-filter-bar-b[data-active='false']").on('click', function() {
         searchFeedback();
 });
   
+  $('.medium').on('click', '.medium-quote-reply-interact', function() {
+      var $clicked = $(this);
+      var $medium = $clicked.closest('.medium');
+      var $identiy = $medium.find('.medium-identity');
+      var $profile_picture = $medium.find('figure.image');
+      var $text_content = $medium.find('.text-content');
+      changeToQuoteMedium($identiy.html(), $profile_picture.html(), $text_content.html());
+
+  });
 
   $('.medium').on('click', '.medium-love-interact', function() {
     console.log("WOOP");
