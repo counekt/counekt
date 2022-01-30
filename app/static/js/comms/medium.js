@@ -3,6 +3,26 @@ function changeToFeed() {
   $(document.body).removeClass('noscroll');
 }
 
+  $(document).on('click', '.medium', function(e) {
+
+    var $target = $(e.target);
+  // if click not on clickables
+  if (!$('.clickable').has($target).length && !$target.hasClass('clickable')) {
+      var medium_id = $(this).data('id');
+      console.log("MEDIUM CLICK");
+  }
+  
+});
+
+  $(document).on('click', '.medium .medium', function(e) {
+    var $target = $(e.target);
+  // if click not on clickables
+  if (!$('.clickable').has($target).length && !$target.hasClass('clickable')) {
+      var medium_id = $(this).data('id');
+      console.log("MEDIUM QUOTE CLICK");
+  }
+  });
+
 
   $(document).on('click', '.close, .modal-background', function() {
     changeToFeed();
@@ -20,7 +40,9 @@ $(".search-filter-bar-b[data-active='false']").on('click', function() {
       var $identiy = $medium.find('.medium-identity');
       var $profile_picture = $medium.find('figure.image');
       var $text_content = $medium.find('.text-content');
-      changeToQuoteMedium($identiy.html(), $profile_picture.html(), $text_content.html());
+      var medium_id = $medium.data('id');
+      console.log($text_content.html());
+      changeToQuoteMedium($identiy.html(), $profile_picture.html(), $text_content.html(), medium_id);
 
   });
 

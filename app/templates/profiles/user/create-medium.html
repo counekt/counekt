@@ -17,7 +17,7 @@
       {% endblock %}
     </section>
     <footer class="modal-card-foot" style="justify-content: flex-end; padding:7.5px;">
-    <button class="button transition is-link is-rounded show-hidden-selector-on-hover" id="submit-button" hidden-selector="p" disabled><p class="invisible" style="margin-right:10px;">Publish</p><span class="icon is-small" style="margin-left: -10px;"><i class="fas fa-paper-plane" aria-hidden="true"></i></span></button>
+    <button class="submit-button button transition is-link is-rounded show-hidden-selector-on-hover" id={% block submit_button_id %}"submit-button"{% endblock %} hidden-selector="p" disabled><p class="invisible" style="margin-right:10px;">Publish</p><span class="icon is-small" style="margin-left: -10px;"><i class="fas fa-paper-plane" aria-hidden="true"></i></span></button>
     </footer>
   </div>
 </div>

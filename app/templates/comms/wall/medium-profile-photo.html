@@ -1,0 +1,9 @@
+<figure class="image medium-profile-photo clickable">
+        <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.author.href}}{% else %}\\href//{% endif %}"{% endif %}>
+        {% if through_channel %}
+        <img class="is-rounded medium-image-content" src="{{medium.channel.profile_photo.src}}">
+        {% else %}
+        <img class="is-rounded medium-image-content" src="{{medium.author.profile_photo.src}}">
+        {% endif %}
+        </a>
+</figure>

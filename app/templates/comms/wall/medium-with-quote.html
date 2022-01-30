@@ -1,0 +1,8 @@
+{% extends "comms/wall/plain-medium.html" %}
+{% block quote_html %}
+{% with medium=medium.quote, is_quote=True %}
+<div class="clickable">
+{% include 'comms/wall/plain-medium.html' %}
+</div>
+{% endwith %}
+{% endblock %}

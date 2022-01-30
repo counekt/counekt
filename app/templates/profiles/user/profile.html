@@ -128,6 +128,7 @@
 <script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/user/edit.js"></script>
 <script src="{{ url_for('static', filename='js/profiles/user/create-medium.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/create-medium-with-quote.js') }}"></script>
 <script src="/static/js/profiles/club/create.js"></script>
 <script src="/static/js/profiles/project/create.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
@@ -405,12 +406,12 @@ $(window).on("popstate", function() {
 
 });
 
-function changeToQuoteMedium(quote_identity, quote_profile_pic, quote_content) {
+function changeToQuoteMedium(quote_identity, quote_profile_pic, quote_content, quote_id) {
   $("#modal-box").append(`
-    {% with card_title='Quote Reply' %}
+    {% with is_template = True %}
     {% include "profiles/user/create-quote.html" %}
     {% endwith %}
-    `.replaceAll('\\identity//', quote_identity).replaceAll('\\profile_photo//', quote_profile_pic).replaceAll('\\text-content//', quote_content));
+    `.replaceAll('\\identity//', quote_identity).replaceAll('\\profile_photo//', quote_profile_pic).replaceAll('\\text-content//', quote_content).replaceAll('\\id//',quote_id));
   $(document.body).addClass('noscroll');
 }
 

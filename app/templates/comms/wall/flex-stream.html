@@ -1,9 +1,7 @@
 <div style="margin-top: 10px;" class="wall">
 	{% if wall %}
 	{% for medium in wall.media %}
-		{% with is_liked=medium.is_liked %}
-		{% include 'comms/wall/medium2.html' %}
-		{% endwith %}
+			{% include 'comms/wall/medium.html' %}
 	{% endfor %}
 	{% endif %}
 </div>

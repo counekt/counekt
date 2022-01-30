@@ -1,0 +1,69 @@
+<article class="media medium" style="color:  black;" data-id="{% if not is_template %}
+{{medium.id}}{% else %}\\id//{% endif %}">
+  {% if not is_quote %}
+  <div class="media-left medium-left">
+    {% if is_template %}
+      \\profile_photo//
+      {% else %}    
+      {% include 'comms/wall/medium-profile-photo.html' %}
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="media-content">
+    <div class="medium-content">
+      {% if is_template %}
+      \\identity//
+      {% else %}
+      <p class="medium-identity">
+        {% if through_channel %}
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{{medium.channel.dname}}</strong> <small class="channel-handle">{{medium.channel.symbol}}{{medium.channel.handle}}</small></span>
+         <small>(by <b class="author">{{medium.author.dname}}</b>)</small>
+        {% else %}
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{{medium.author.dname}}</strong> <small class="channel-handle">{{medium.author.symbol}}{{medium.author.username}}</small></span>
+        {% endif %}
+         <span style="margin-right:4px;" class="separator">·</span><span><small class="creation-datetime">{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}</small></span>
+        
+      </p>
+      {% endif %}
+      <br>
+      {% if is_template %}
+      \\text-content//
+      {% else %}
+      <div class="text-content">
+        <p class="medium-title">{{medium.title}}</p>
+        <br>
+        <p class="medium-body-text">
+        {{medium.content}}
+        </p>
+      </div>
+      {% endif %}
+      {% block quote_html %}
+      {% endblock %}
+    </div>
+    {% if not is_template and not is_quote %}
+    <nav class="level is-mobile medium-ballot">
+      <div class="level-left">
+        <span class="level-item medium-reply clickable">
+          <a class="medium-reply-interact"><span class="icon is-small"><i class="fas fa-reply"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.reply_count}}</span></a>
+        </span>
+        <span class="level-item medium-quote clickable">
+          <a class="medium-quote-reply-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.quote_count}}</span></a>
+        </span>
+        {% with is_hearted = medium.is_hearted(current_user) %}
+        <span class="level-item medium-love clickable {% if is_hearted %}active{% endif %}">
+          <a class="medium-love-interact"><span class="icon is-small"><i class="{% if is_hearted %}fas{% else %}far{% endif %} fa-heart"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.heart_count}}</span></a>
+        </span>
+        {% endwith %}
+      </div>
+    </nav>
+    {% endif %}
+  </div>
+  {% if not is_template and not is_quote %}
+  <div class="media-right clickable">
+    <button class="button is-rounded medium-menu-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+  </div>
+  {% endif %}
+</article>

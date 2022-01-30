@@ -1,9 +1,16 @@
 .medium-identity {
-      color: rgba(0, 0, 0, 0.5);
       transition: 0.3s;
   }
 
-  .medium-identity:hover {
+  .channel-name {
+          color: rgb(0, 0, 0);
+  }
+
+  .channel-handle, .creation-datetime, .separator {
+    color: rgb(83, 100, 113);
+  }
+
+  .medium-identity:hover .channel-handle {
     color: rgba(0, 0, 0, 0.65);
   }
 
@@ -110,7 +117,7 @@
   text-decoration: underline;
 }
 
-.medium-image-content:hover {
+.medium-image-content:hover:not(.medium .medium .medium-image-content, .modal-card .medium .medium-image-content) {
   -webkit-filter: brightness(85%);
      filter: brightness(85%);
      cursor: pointer;
@@ -118,15 +125,20 @@
 
 }
 
+.medium-title {
+  font-size: large;
+  font-weight: 500;
+}
+
+
 .medium-left {
-  width:  48px;
   box-sizing: border-box;
-  margin-right: 10px;
+  width: 48px;
+  margin-right: 12px;
+
 }
 
 .medium-image {
-  width: 48px;
-  height: 48px;
   display: inline-block;
   line-height: 20px;
   vertical-align: top;
@@ -156,18 +168,10 @@
   background-color: transparent;
 }
 
-.medium:hover .ballot button.counter {
-  background-color: rgb(240,240,240);
-}
-
-.medium:active:hover .ballot button.counter {
-  background-color: rgb(235,235,235);
-}
 
 
   .medium-content {
     vertical-align:top;
-    margin-top: 10px;
         display: inline-block;
         flex-grow: 1;
           overflow: hidden;
@@ -180,8 +184,14 @@
 
   }
 
-  .medium:not(:last-child) {
+
+  .wall .medium {
     margin-bottom: 10px;
+    margin-top: 0px;
+  }
+
+  .medium-ballot {
+    margin-top: 12px;
   }
 
   .ballot-item:not(:last-child) {
@@ -216,9 +226,56 @@
   .medium {
     transition: 0.3s;
     clear: both;
-    padding: 7px;
+    padding: 16px;
+    padding-top: 12px;
+    padding-bottom: 12px;
     height: 100%;
     display: flex;
+    background-color: white;
+  }
+
+  .medium-profile-photo {
+    width:48px;height: 48px; float: left;
+  }
+
+  .medium .medium .medium-profile-photo {
+    width:24px; height: 24px; margin-right: 4px;
+  }
+
+  .medium:hover:not(.modal-card .medium), .medium:hover .medium {
+
+    background-color: whitesmoke;
+
+  }
+
+  .medium:hover .medium:hover {
+
+    background-color: rgb(240,240,240);
+
+  }
+
+  .modal-card .medium, .medium .medium {
+    border-radius: 10px;
+    border: solid rgb(207, 217, 222) 1px;
+  }
+
+  .medium .medium,  {
+    padding: 10px;
+    margin-bottom: 0px !important;
+    margin-top: 12px;
+
+  }
+
+
+  .medium-menu-button {
+    border: 0 solid black; color: black; width:  25px !important; height: 25px;
+    background-color: transparent;
+    transition: 0.3s;
+  }
+
+  .medium-menu-button:hover {
+    color: rgb(29,155,244);
+    background-color: rgba(29,155,244, 0.1);
   }
 
   .medium-focus .medium-content .title {
@@ -258,10 +315,7 @@
     margin-left: 4px;
   }
 
-</style>
-<style type="text/css">
 
-  
 
 	.modal-card {
   width: 600px;

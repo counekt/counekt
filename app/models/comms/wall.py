@@ -176,7 +176,7 @@ class Medium(Media,Base,db.Model):
 	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	author = db.relationship("User", foreign_keys=[author_id])
 
-	quotes = db.relationship('Medium', backref=db.backref("quote_to", remote_side=[id]), lazy='dynamic',
+	quotes = db.relationship('Medium', backref=db.backref("quote", remote_side=[id]), lazy='dynamic',
         foreign_keys='Medium.quote_to_id')
 
 	replies = db.relationship('Medium', backref=db.backref("reply_to", remote_side=[id]), lazy='dynamic',
@@ -222,3 +222,15 @@ class Medium(Media,Base,db.Model):
 
 	def channel(self):
 		return self.project_channel or self.club_channel
+
+	@property
+	def is_plain(self):
+		return True if not self.quote and not self.reply_to else False
+
+	@property
+	def contains_quote(self):
+		return True if self.quote else False
+
+	@property
+	def is_reply(self):
+		return True if self.reply_to else False

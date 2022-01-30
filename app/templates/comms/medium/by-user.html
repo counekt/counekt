@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div style="max-width:566px; width:100%; ">
-{% with is_liked=medium.is_liked %}
-		{% include 'comms/wall/medium2.html' %}
-{% endwith %}
+{% include 'comms/wall/medium.html' %}
 </div>
 {% endblock %}
 {% block scripts %}

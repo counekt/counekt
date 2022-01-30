@@ -1,6 +1,3 @@
-{% extends "profiles/user/create-medium.html" %}
-{% block quote_html %}
-{% with is_template = True %}
-{% include 'comms/wall/medium2.html' %}
+{% with card_title='Quote Reply' %}
+{% include "profiles/user/create-quote-2.html" %}
 {% endwith %}
-{% endblock %}

@@ -1,20 +1,20 @@
 $(document).on('input', '#title-create', function(){
 		console.log($("#title-create").val());
 		if ($("#title-create").val().length === 0) {
-		$("#submit-button").prop("disabled", true);
+		$(".submit-button").prop("disabled", true);
 		if ($("#text-create").val().length === 0) {
 			$("#save-draft-button").prop("disabled", true);
 		}
 		}
 		else {
-			$("#submit-button").prop("disabled", false);
+			$(".submit-button").prop("disabled", false);
 			$("#save-draft-button").prop("disabled", false);
 		}
 });
 	$(document).on('input', "#text-create", function(){ 
 		if ($("#text-create").val().length === 0) {
 			if ($("#title-create").val().length === 0) { 
-				$("#submit-button").prop("disabled", true);
+				$(".submit-button").prop("disabled", true);
 				$("#save-draft-button").prop("disabled", true);
 			}
 		}
@@ -35,7 +35,7 @@ $(document).on('input', '#title-create', function(){
     }}, '.show-hidden-selector-on-hover')
 
 
- function submitCreate() {
+ function submitCreate(onlySave=false) {
 	post("/create/medium/", function(response) {
       	var response = JSON.parse(response);
         var status = response["status"]; 
@@ -51,7 +51,7 @@ $(document).on('input', '#title-create', function(){
         	flash('#ffff','#f14668',status, delay=1500);
         }
 
-      }, {action:'submit',title:$("#title-create").val(),text:$("#text-create").val()});
+      }, {action: onlySave ? 'save': 'submit' ,title:$("#title-create").val(),text:$("#text-create").val()});
 }
 
 $(document).on('click', "#submit-button", submitCreate);

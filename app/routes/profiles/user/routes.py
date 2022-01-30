@@ -118,24 +118,36 @@ def create_medium():
         action = flask_request.form.get("action")
         title = flask_request.form.get("title")
         text = flask_request.form.get("text")
+        m_type = flask_request.form.get("type", "plain")
+        target_id = flask_request.form.get("target_id", type=int)
+
+        print(m_type)
         print(title)
         print(text)
 
-        if action == "submit":
-            if title:
-                medium = models.Medium(title=title,content=text, author=current_user, public=True)
-                current_user.wall.append(medium)
-                db.session.commit()
-                return json.dumps({'status': 'success', 'id':medium.id, 'author':{'username':medium.author.username}})
+        if (action == "submit" and not title) or (not title and not text):
             return json.dumps({'status': 'error'})
+ 
+        if m_type == "plain":
+            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            current_user.wall.append(medium)
+            db.session.commit()
+            return json.dumps({'status': 'success', 'id':medium.id, 'author':{'username':medium.author.username}})
+        
+        if m_type == "quote":
+            original = models.Medium.query.get(target_id)
+            quote_reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            original.quotes.append(quote_reply)
+            current_user.wall.append(quote_reply)
+            db.session.commit()
+            return json.dumps({'status': 'success', 'id':quote_reply.id, 'author':{'username':quote_reply.author.username}})
 
-        if action == "save":
-            if title or text:
-                medium = models.Medium(title=title,content=text, author=current_user, public=True)
-                current_user.wall.append(medium)
-                db.session.commit()
-                return json.dumps({'status': 'success'})
-            return json.dumps({'status': 'error'})
+        if m_type == "reply":
+            original = models.Medium.query.get(target_id)
+            reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            original.replies.append(reply)
+            db.session.commit()
+            return json.dumps({'status': 'success', 'id':reply.id, 'author':{'username':reply.author.username}})
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
