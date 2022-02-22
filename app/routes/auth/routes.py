@@ -114,6 +114,9 @@ def login():
         user = models.User.query.filter_by(username=username).first()
 
         if user is None or not user.check_password(password) or not user.is_activated:
+            print(user)
+            print(password)
+            print(user.is_activated)
             return json.dumps({'status': 'Incorrect username or password', 'box_ids': ['username', 'password']})
 
         login_user(user, remember=True)

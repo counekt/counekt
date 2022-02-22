@@ -1,9 +1,14 @@
-{% with is_liked=medium.is_liked %}
-
+  {% if medium %}
     {% if medium.contains_quote %}
-      {% include 'comms/wall/medium-with-quote.html' %}
+          {% include 'comms/wall/medium-with-quote.html' %}
     {% elif medium.is_plain %}
-      {% include 'comms/wall/plain-medium.html' %}
+        {% include 'comms/wall/plain-medium.html' %}
     {% endif %}
-
-{% endwith %}
+  {% else %}
+    {% if with_quote %}
+            {% include 'comms/wall/medium-with-quote.html' %}
+    {% else %}
+          {% include 'comms/wall/plain-medium.html' %}
+    {% endif %}
+  {% endif %}
+  

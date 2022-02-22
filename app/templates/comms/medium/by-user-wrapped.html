@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+{% include 'comms/medium/by-user.html' %}
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="/static/css/comms/medium.css">
+<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
+{% endblock %}

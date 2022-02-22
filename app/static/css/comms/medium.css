@@ -125,6 +125,10 @@
 
 }
 
+.text-content + .embedded {
+  margin-top: 5px;
+}
+
 .medium-title {
   font-size: large;
   font-weight: 500;

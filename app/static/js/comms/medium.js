@@ -10,9 +10,36 @@ function changeToFeed() {
   if (!$('.clickable').has($target).length && !$target.hasClass('clickable')) {
       var medium_id = $(this).data('id');
       console.log("MEDIUM CLICK");
+      goToIndividualMedium(medium_id);
   }
   
 });
+
+  function clearWall() {
+  $(".wall").empty();
+}
+
+  function displayLoading() {
+  clearWall();
+  $(".wall").append(infoLoader());
+}
+
+function goToIndividualMedium(medium_id, do_redirect=true) {
+      console.log(medium_id);
+        var pageObject = {'is_search':false,'medium_id':medium_id};
+      if (do_redirect) {redirect(pageObject, "Medium Post", "/user/"+username+"/medium/"+medium_id +"/", function(){});}
+         else {window.history.replaceState(pageObject,"Medium Post", "/user/"+username+"/medium/"+medium_id +"/");}
+      displayLoading();
+      post("/user/"+username+"/medium/"+medium_id +"/", function (response) {
+      var response = JSON.parse(response);
+      var status = response["status"];
+      if (status === "success") {
+        var medium = response["medium"];
+        clearWall();
+        $(".wall").append(mediumFocused(medium.id,medium.title,medium.content,medium.author.dname,medium.author.symbol,medium.author.username,medium.creation_datetime,medium.author.href, medium.author.profile_photo_src, medium.reply_count, medium.quote_count, medium.heart_count, medium.is_hearted));
+      }},{});
+  
+}
 
   $(document).on('click', '.medium .medium', function(e) {
     var $target = $(e.target);

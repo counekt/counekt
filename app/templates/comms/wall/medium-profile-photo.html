@@ -1,9 +1,9 @@
 <figure class="image medium-profile-photo clickable">
-        <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.author.href}}{% else %}\\href//{% endif %}"{% endif %}>
+        <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.author.href}}{% elif is_quote %}\\quote_author_href//{% else %}\\author_href//{% endif %}"{% endif %}>
         {% if through_channel %}
-        <img class="is-rounded medium-image-content" src="{{medium.channel.profile_photo.src}}">
+        <img class="is-rounded medium-image-content" src="{% if medium %}{{medium.channel.profile_photo.src}}{% elif is_quote %}\\quote_profile_photo_src//{% else %}\\profile_photo_src//{% endif %}">
         {% else %}
-        <img class="is-rounded medium-image-content" src="{{medium.author.profile_photo.src}}">
+        <img class="is-rounded medium-image-content" src="{% if medium %}{{medium.author.profile_photo.src}}{% elif is_quote %}\\quote_profile_photo_src//{% else %}\\profile_photo_src//{% endif %}">
         {% endif %}
         </a>
 </figure>

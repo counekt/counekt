@@ -32,12 +32,13 @@ def verify_identifiers(username, email):
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return json.dumps({'status': 'Invalid email address', 'box_ids': ['email']})
 
+    # If username is taken
     if not models.User.query.filter_by(username=username).first() is None:
         print("taken")
         # If only expired users with same username: delete them all and pass
-        expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).first()
+        expired_user = models.User.query.filter_by(username=username).filter(models.User.token_is_expired, models.User.is_activated == False).first()
         print(expired_user)
-        if not models.User.query.filter_by(username=username).filter(models.User.token_is_expired, models.User.is_activated == False).first() is None:
+        if not expired_user is None:
             print("inactive")
             models.User.query.filter_by(username=username).filter(models.User.token_is_expired, models.User.is_activated == False).delete(synchronize_session='fetch')
             db.session.commit()
@@ -49,7 +50,7 @@ def verify_identifiers(username, email):
         # If only expired users with same email: delete them all and pass
         expired_user = models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).first()
         print(expired_user)
-        if not models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).first() is None:
+        if not expired_user is None:
             models.User.query.filter_by(email=email).filter(models.User.token_is_expired, models.User.is_activated == False).delete(synchronize_session='fetch')
             db.session.commit()
         else:

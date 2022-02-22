@@ -1,5 +1,5 @@
-<article class="media medium" style="color:  black;" data-id="{% if not is_template %}
-{{medium.id}}{% else %}\\id//{% endif %}">
+<article class="media medium" style="color:  black;" data-id="{% if is_template %}
+\\id//{% elif not medium %}{% if is_quote %}\\quote_id//{% else %}\\id//{% endif %}{% else %}{{medium.id}}{% endif %}">
   {% if not is_quote %}
   <div class="media-left medium-left">
     {% if is_template %}
@@ -16,12 +16,12 @@
       {% else %}
       <p class="medium-identity">
         {% if through_channel %}
-        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{{medium.channel.dname}}</strong> <small class="channel-handle">{{medium.channel.symbol}}{{medium.channel.handle}}</small></span>
-         <small>(by <b class="author">{{medium.author.dname}}</b>)</small>
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.channel.dname}}{% elif is_quote %}\\quote_channel_dname//{% else %}\\channel_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.channel.symbol}}{{medium.channel.handle}}{% elif is_quote %}\\quote_channel_symbol//\\quote_channel_handle//{% else %}\\channel_symbol//\\channel_handle//{% endif %}</small></span>
+         <small>(by <b class="author">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\quote_author_dname//{% else %}\\author_dname//{% endif %}</b>)</small>
         {% else %}
-        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{{medium.author.dname}}</strong> <small class="channel-handle">{{medium.author.symbol}}{{medium.author.username}}</small></span>
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\quote_author_dname//{% else %}\\author_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.author.symbol}}{{medium.author.username}}{% elif is_quote %}\\quote_author_symbol//\\quote_author_username//{% else %}\\author_symbol//\\author_username//{% endif %}</small></span>
         {% endif %}
-         <span style="margin-right:4px;" class="separator">·</span><span><small class="creation-datetime">{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}</small></span>
+         <span style="margin-right:4px;" class="separator">·</span><span><small class="creation-datetime">{% if medium %}{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}{% elif is_quote %}\\quote_creation_datetime//{% else %}\\creation_datetime//{% endif %}</small></span>
         
       </p>
       {% endif %}
@@ -30,10 +30,10 @@
       \\text-content//
       {% else %}
       <div class="text-content">
-        <p class="medium-title">{{medium.title}}</p>
+        <p class="medium-title">{% if medium %}{{medium.title}}{% elif is_quote %}\\quote_title//{% else %}\\title//{% endif %}</p>
         <br>
         <p class="medium-body-text">
-        {{medium.content}}
+        {% if medium %}{{medium.content}}{% elif is_quote %}\\quote_content//{% else %}\\content//{% endif %}
         </p>
       </div>
       {% endif %}
@@ -45,18 +45,24 @@
       <div class="level-left">
         <span class="level-item medium-reply clickable">
           <a class="medium-reply-interact"><span class="icon is-small"><i class="fas fa-reply"></i></span></a>
-          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.reply_count}}</span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{% if medium %}{{medium.reply_count}}{% else %}\\reply_count//{% endif %}</span></a>
         </span>
         <span class="level-item medium-quote clickable">
           <a class="medium-quote-reply-interact"><span class="icon is-small"><i class="fas fa-quote-left"></i></span></a>
-          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.quote_count}}</span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{% if medium %}{{medium.quote_count}}{% else %}\\quote_count//{% endif %}</span></a>
         </span>
+        {% if medium %}
         {% with is_hearted = medium.is_hearted(current_user) %}
-        <span class="level-item medium-love clickable {% if is_hearted %}active{% endif %}">
-          <a class="medium-love-interact"><span class="icon is-small"><i class="{% if is_hearted %}fas{% else %}far{% endif %} fa-heart"></i></span></a>
-          <a class="number-info"><span class="text" style="margin-left: 5px;">{{medium.heart_count}}</span></a>
+        <span class="level-item medium-love clickable {% if medium %}{% if is_hearted %}active{% endif %}{% else %}\\heart_class//{% endif %}">
+          <a class="medium-love-interact"><span class="icon is-small"><i class="{% if medium %}{% if is_hearted %}fas{% else %}far{% endif %}{% else %}\\heart_icon_type//{% endif %} fa-heart"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">{% if medium %}{{medium.heart_count}}{% else %}\\heart_count//{% endif %}</span></a>
         </span>
         {% endwith %}
+        {% else %}
+        <span class="level-item medium-love clickable \\heart_class//">
+          <a class="medium-love-interact"><span class="icon is-small"><i class="\\heart_icon_type// fa-heart"></i></span></a>
+          <a class="number-info"><span class="text" style="margin-left: 5px;">\\heart_count//</span></a>
+        {% endif %}
       </div>
     </nav>
     {% endif %}

@@ -84,6 +84,22 @@
             return `{% include 'comms/feedback/fb.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active).replaceAll('\\href//',href);
         }
 
+        function mediumFocused(id,title="",content="",author_dname="",author_symbol="@",author_username="",creation_datetime="",author_href="", profile_photo_src="", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
+            if (is_hearted) {
+                var heart_class = "active";
+                var heart_icon_type = "fas";
+            }
+            else {
+                var heart_class = "";
+                var heart_icon_type = "far"
+            }
+            return `{% include 'comms/medium/by-user.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_href//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count);
+        }
+
+        function mediumFocusedWithQuote(id,title,content,quote_id,quote_title,quote_content) {
+
+        }
+
         function infoLoader() {
             return `{% include 'info-loader.html' %}`;
         }
