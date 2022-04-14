@@ -73,7 +73,7 @@ def send_auth_email(user, sender):
         token = user.refresh_token()
     else:
         token = user.get_token()
-    send_email('[CTW] Activate your account',
+    send_email('[Counekt] Activate your account',
                sender=sender,
                recipients=[user.email],
                text_body=render_template('email/auth.txt',

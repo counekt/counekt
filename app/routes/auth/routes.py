@@ -113,10 +113,10 @@ def login():
 
         user = models.User.query.filter_by(username=username).first()
 
-        if user is None or not user.check_password(password) or not user.is_activated:
+        if user is None or not user.check_password(password) or not getattr(user,'is_activated', False):
             print(user)
             print(password)
-            print(user.is_activated)
+            getattr(user,'is_activated', False)
             return json.dumps({'status': 'Incorrect username or password', 'box_ids': ['username', 'password']})
 
         login_user(user, remember=True)

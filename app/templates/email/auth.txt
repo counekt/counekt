@@ -1,4 +1,4 @@
-Dear {{ user.username }},
+Hi {{ user.username }},
 
 To activate your account click on the following link:
 
@@ -6,6 +6,6 @@ To activate your account click on the following link:
 
 If you have not created a user, simply ignore this message.
 
-Sincerely,
+See you online,
 
-The CTW Team
+The Counekt Team
