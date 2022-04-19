@@ -68,13 +68,13 @@ def verify_secret(password, repeat_password):
         return json.dumps({'status': 'Passwords don\'t match', 'box_ids': ['password', 'repeat-password']})
 
 
-def send_auth_email(user, sender):
+def send_auth_email(user):
     if user.token:
         token = user.refresh_token()
     else:
         token = user.get_token()
     send_email('[Counekt] Activate your account',
-               sender=sender,
+               sender=('Counekt', 'support@counekt.com'),
                recipients=[user.email],
                text_body=render_template('email/auth.txt',
                                          user=user, token=token),

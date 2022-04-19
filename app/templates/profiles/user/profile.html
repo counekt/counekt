@@ -92,7 +92,7 @@
   {% endif %}
 
 {% include "profiles/user/tabs/tabs.html" %}
-{% with vanish=True, create_bar = user == current_user, wall=current_user.wall, by="new" %}
+{% with vanish=True, create_bar = user == current_user, wall=user.wall, by="new" %}
 {% include 'comms/wall/wall-bit.html' %}
 {% endwith %}
 {% endblock %}
