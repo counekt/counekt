@@ -67,7 +67,7 @@ def register():
             user.set_password(password)
             user.set_birthdate(date(month=int(month), day=int(day), year=int(year)))
             try:
-                funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+                funcs.send_auth_email(user=user)
             except smtplib.SMTPException as e:
                 return json.dumps({'status': 'Email not sent', 'msg': 'Error: Email Not Sent', 'display': "flash"})
             db.session.add(user)
@@ -85,7 +85,7 @@ def register():
             if user.token_is_expired:
                 return token_is_expired_error(token=user.token)
             try:
-                funcs.send_auth_email(user=user, sender=current_app.config['ADMINS'][0])
+                funcs.send_auth_email(user=user)
             except smtplib.SMTPException as e:
                 return json.dumps({'status': 'Email not sent', 'msg': 'Error: Email Not Sent', 'display': "flash"})
             return json.dumps({'status': 'success'})
@@ -113,7 +113,10 @@ def login():
 
         user = models.User.query.filter_by(username=username).first()
 
-        if user is None or not user.check_password(password) or not user.is_activated:
+        if user is None or not user.check_password(password) or not getattr(user,'is_activated', False):
+            print(user)
+            print(password)
+            getattr(user,'is_activated', False)
             return json.dumps({'status': 'Incorrect username or password', 'box_ids': ['username', 'password']})
 
         login_user(user, remember=True)

@@ -1,4 +1,4 @@
-<p>Dear {{ user.username }},</p>
+<p>Hi {{ user.username }},</p>
 <p>
     To activate your account
     <a href="{{ url_for('auth.activate', token=token, _external=True) }}">
@@ -7,6 +7,6 @@
 </p>
 <p>Alternatively, you can paste the following link in your browser's address bar:</p>
 <p>{{ url_for('auth.activate', token=token, _external=True) }}</p>
-<p>If you have not created a user simply ignore this message.</p>
-<p>Sincerely,</p>
-<p>The CTW Team</p>
+<p>If you have not created a user, simply ignore this message.</p>
+<p>See you online,</p>
+<p>The Counekt Team</p>

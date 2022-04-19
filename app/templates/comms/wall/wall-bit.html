@@ -1,9 +1,11 @@
-<div id="wall-bit" class="container floater {% if vanish %}vanish{% endif %}">
-	{% with what='post', by='hot' %}
+<div id="wall-bit" class="{% if vanish %}vanish{% endif %}">
+<div class="container floater">
+	{% with what='media' %}
 		{% if create_bar %}	
 		{% include 'comms/create-bar.html' %}
 		{% endif %}
     {% include 'comms/search-filter-bar.html' %}
 	{% endwith %}
+</div>
 	{% include 'comms/wall/flex-stream.html' %}
 </div>

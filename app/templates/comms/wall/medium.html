@@ -1,40 +1,14 @@
-<div class="medium box hoverable" style="text-align: left;" data-id="{% if medium %}{{medium.id}}{% else %}\\id//{% endif %}">
-<div class="medium-left">
-        <a class="medium-image" {% if not without_link %}href="{% if medium %}{{medium.href}}{% else %}\\href//{% endif %}"{% endif %}>
-            <img alt draggable="false" class="medium-image-content" src="{% if medium %}{{medium.organisation.profile_photo_src}}{% else %}\\photo_src//{% endif %}">
-        </a>
-        <br>
-      <a class="medium-author-identity" {% if not without_link %}href="{% if medium %}{{medium.author.href}}{% else %}\\author_href//{% endif %}"{% endif %}>
-            <span class="medium-name selectable">by {% if medium %}{% if medium.author.name %}{{medium.author.name}}{% else %}{{medium.author.username}}{% endif %}{% else %}\\author_name//{% endif %}</span>
-            <br>
-            <span class="medium-username selectable">{% if medium %}{{medium.author.symbol}}{{medium.author.username}}{% else %}\\symbol//\\author_identifier//{% endif %}</span>
-          </a>
-</div>
-        <div class="medium-content">
-
-          <a class="medium-org-identity" {% if not without_link %}href="{% if medium %}{{medium.organisation.href}}{% else %}\\org_href//{% endif %}"{% endif %}>
-            <span class="medium-name selectable"><b>{% if medium %}{% if medium.organisation.name %}{{medium.organisation.name}}{% else %}{{medium.organisation.handle}}{% endif %}{% else %}\\name//{% endif %}</b></span>
-            <br>
-            <span class="medium-username selectable">{% if medium %}{{medium.organisation.symbol}}{{medium.organisation.handle}}{% else %}\\symbol//\\identifier//{% endif %}</span>
-          </a>
-          <br>
-        
-<p class="title is-4" style="color:black;">{% if medium %}{{medium.title}}{% else %}\\title//{% endif %}</p>
-<p class="subtitle is-6 text" style="color:black;">{% if medium %}{{medium.content}}{% else %}\\content//{% endif %}</p>
-</div>
-<div class="medium-bottom">
-<div class="ballot">
-  <button class="button transition is-small ballot-item is-inverted is-dark vote upvote {% if is_liked %}is-danger{% else %}\\upvote_button_class//{% endif %}" data-on="is-info" data-active="{% if is_upvoted %}true{% else %}\\upvote_button_active//{% endif %}">
-      <span class="icon is-medium">
-        <i class="{% if is_liked %}fas{% else %}far{% endif %} fa-heart fa-2x"></i>
-      </span>
-    </button>
-    <button class="button transition is-small is-static ballot-item counter">
-      <span class="text">
-        {% if medium %}{{medium.likes}}{% else %}\\likes//{% endif %}
-      </span>
-    </button>
-</div>
-</div>
-
-</div>
+  {% if medium %}
+    {% if medium.contains_quote %}
+          {% include 'comms/wall/medium-with-quote.html' %}
+    {% elif medium.is_plain %}
+        {% include 'comms/wall/plain-medium.html' %}
+    {% endif %}
+  {% else %}
+    {% if with_quote %}
+            {% include 'comms/wall/medium-with-quote.html' %}
+    {% else %}
+          {% include 'comms/wall/plain-medium.html' %}
+    {% endif %}
+  {% endif %}
+  

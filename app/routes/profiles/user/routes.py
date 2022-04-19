@@ -118,37 +118,48 @@ def create_medium():
         action = flask_request.form.get("action")
         title = flask_request.form.get("title")
         text = flask_request.form.get("text")
+        m_type = flask_request.form.get("type", "plain")
+        target_id = flask_request.form.get("target_id", type=int)
+
+        print(m_type)
         print(title)
         print(text)
 
-        if action == "submit":
-            if title:
-                medium = models.Medium(title=title,content=text,author=current_user, public=True)
-                db.session.add(medium)
-                db.session.commit()
-                return json.dumps({'status': 'success', 'id':medium.id})
+        if (action == "submit" and not title) or (not title and not text):
             return json.dumps({'status': 'error'})
+ 
+        if m_type == "plain":
+            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            current_user.wall.append(medium)
+            db.session.commit()
+            return json.dumps({'status': 'success', 'id':medium.id, 'author':{'username':medium.author.username}})
+        
+        if m_type == "quote":
+            original = models.Medium.query.get(target_id)
+            quote_reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            original.quotes.append(quote_reply)
+            current_user.wall.append(quote_reply)
+            db.session.commit()
+            return json.dumps({'status': 'success', 'id':quote_reply.id, 'author':{'username':quote_reply.author.username}})
 
-        if action == "save":
-            if title or text:
-                medium = models.Medium(title=title,content=text,author=current_user, public=False)
-                db.session.add(medium)
-                db.session.commit()
-                return json.dumps({'status': 'success'})
-            return json.dumps({'status': 'error'})
+        if m_type == "reply":
+            original = models.Medium.query.get(target_id)
+            reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            original.replies.append(reply)
+            db.session.commit()
+            return json.dumps({'status': 'success', 'id':reply.id, 'author':{'username':reply.author.username}})
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
 
-@ bp.route("/user/<username>/<medium_id>/", methods=["GET", "POST"])
-@ bp.route("/@<username>/<medium_id>/", methods=["GET", "POST"])
-def user_medium(username):
+@ bp.route("/user/<username>/medium/<id>/", methods=["GET", "POST"])
+@ bp.route("/@<username>/medium/<id>/", methods=["GET", "POST"])
+def user_medium(username, id):
     user = models.User.query.filter_by(username=username).first()
-    medium = user.media.filter_by(medium_id=medium_id)
+    medium = user.wall.media.filter_by(id=id).first()
     if flask_request.method == 'POST':
-        return json.dumps({'status': 'success', "medium":{"id":medium.id, "title":str(medium.title), "content":str(medium.content),"upvotes":medium.upvotes.count(),"downvotes":medium.downvotes.count(), "is_upvoted":medium.is_upvoted(current_user) if current_user.is_authenticated else False, "is_downvoted":medium.is_downvoted(current_user) if current_user.is_authenticated else False}})
-    return render_template("comms/medium/by-user.html", medium=medium, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
-
+        return json.dumps({'status': 'success', "medium":{"author":{"dname":medium.author.dname, "username":medium.author.username, "symbol":"@", "profile_photo_src":medium.author.profile_photo.src,"href":medium.author.href}, "id":medium.id, "creation_datetime":medium.creation_datetime.strftime("%m/%d/%Y, %H:%M:%S"), "title":str(medium.title), "content":str(medium.content),"reply_count":medium.reply_count,"quote_count":medium.quote_count, "is_hearted":medium.is_hearted(current_user) if current_user.is_authenticated else False}})
+    return render_template("comms/medium/by-user-wrapped.html", medium=medium, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
 def user_photo(username):

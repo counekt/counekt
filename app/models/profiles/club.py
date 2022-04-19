@@ -8,8 +8,8 @@ import app.funcs as funcs
 from flask import url_for
 
 viewers = db.Table('club_viewers',
-                    db.Column('club_id', db.Integer, db.ForeignKey('club.id')),
-                    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+                    db.Column('club_id', db.Integer, db.ForeignKey('club.id', ondelete="cascade")),
+                    db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete="cascade"))
                     )
 
 
