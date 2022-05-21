@@ -7,6 +7,8 @@ from dateutil.relativedelta import relativedelta
 import errno
 from threading import Thread
 import concurrent.futures
+from botocore import UNSIGNED
+from botocore.client import Config
 from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
 import os
@@ -136,6 +138,10 @@ def download_file(file_path, output_path, sync=False):
         except EndpointConnectionError as e:
             current_app.logger.error(e.message)
 
+def generate_presigned_url(file_path):
+    s3 = current_app.boto_session.client('s3', config=Config(signature_version=UNSIGNED))
+    url = s3.generate_presigned_url('get_object',Params={'Bucket': current_app.config["BUCKET"],'Key': file_path},ExpiresIn=0)
+    return url
 
 def list_files(folder_path, sync=False):
     """
