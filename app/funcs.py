@@ -220,6 +220,6 @@ def src_for(file_path):
 def silent_local_remove(file_path):
     try:
         os.remove(file_path)
-    except OSError as e:
-        if e != FileNotFoundError:  # If not because it does not exist
-            raise  # re-raise exception if a different error occurred
+    except FileNotFoundError: # If not because it does not exist
+        pass
+    # exception if a different error occurred
