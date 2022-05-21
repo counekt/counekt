@@ -221,5 +221,5 @@ def silent_local_remove(file_path):
     try:
         os.remove(file_path)
     except OSError as e:
-        if e.eerno != errno.ENOENT:  # errno.ENOENT = no such file or directory
+        if e != FileNotFoundError:  # If not because it does not exist
             raise  # re-raise exception if a different error occurred
