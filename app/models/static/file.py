@@ -51,8 +51,8 @@ class File():
             url = url_for("static", filename=funcs.join_parts(*Path(self.path).parts[1:], self.filename, self.end_filename))
             return url
         else:
-            self.make_local()
-            return self.src
+            #generate url for image
+            return funcs.generate_presigned_url(self.full_bucket_path)
 
     def empty(self):
         if not self.is_empty:
@@ -76,7 +76,7 @@ class File():
 
     @property
     def is_empty(self):
-        return not (self.is_local or self.is_local)
+        return not self.is_local
 
     def make_local(self):
         folder = os.path.join(current_app.root_path, self.path, self.filename)
