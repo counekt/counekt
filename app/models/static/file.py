@@ -14,9 +14,9 @@ class File():
 
     def save_locally(self, file_format):
         self.empty()
-        folder = os.path.join(current_app.root_path, self.path, self.filename)
+        folder = Path(current_app.root_path, self.path, self.filename)
         end_filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
-        full_local_path = os.path.join(current_app.root_path, folder, end_filename)
+        full_local_path = Path(current_app.root_path, folder, end_filename)
         # make sure the whole path exists
         Path(folder).mkdir(parents=True, exist_ok=True)
         return full_local_path
@@ -27,21 +27,21 @@ class File():
 
     @property
     def full_local_path(self):
-        folder = os.path.join(current_app.root_path, self.path, self.filename)
-        full_local_path = os.path.join(current_app.root_path, folder, self.end_filename)
+        folder = Path(current_app.root_path, self.path, self.filename)
+        full_local_path = Path(current_app.root_path, folder, self.end_filename)
         return full_local_path
 
     @property
     def full_bucket_path(self):
-        return os.path.join(self.path, self.filename, self.end_filename)
+        return Path(self.path, self.filename, self.end_filename)
 
     @property
     def end_filename(self):
         if self.is_local:
-            folder = os.path.join(current_app.root_path, self.path, self.filename)
+            folder = Path(current_app.root_path, self.path, self.filename)
             end_filename = os.listdir(folder)[0]
         else:
-            folder = os.path.join(self.path, self.filename)
+            folder = Path(self.path, self.filename)
             end_filename = funcs.list_files(folder_path=folder)[-1]
         return end_filename
 
@@ -65,12 +65,12 @@ class File():
 
     @property
     def is_local(self):
-        local_folder = os.path.join(current_app.root_path, self.path, self.filename)
-        return os.path.exists(local_folder) and os.listdir(local_folder)
+        local_folder = Path(current_app.root_path, self.path, self.filename)
+        return local_folder.exists() and any(local_folder).iterdir()
 
     @property
     def is_global(self):
-        folder = os.path.join(self.path, self.filename)
+        folder = Path(self.path, self.filename)
         exists = bool(funcs.list_files(folder_path=folder))
         return exists
 
@@ -79,8 +79,8 @@ class File():
         return not self.is_local
 
     def make_local(self):
-        folder = os.path.join(current_app.root_path, self.path, self.filename)
-        Path(folder).mkdir(parents=True, exist_ok=True)
+        folder = Path(current_app.root_path, self.path, self.filename)
+        folder.mkdir(parents=True, exist_ok=True)
         funcs.download_file(self.full_bucket_path, self.full_local_path)
 
     def __repr__(self):
