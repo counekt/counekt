@@ -1,1 +1,0 @@
-set DATABASE_URL=postgresql://postgres:v1b1ngg00d@localhost:5432/ctw-offline

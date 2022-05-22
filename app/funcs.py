@@ -139,7 +139,8 @@ def download_file(file_path, output_path, sync=False):
             current_app.logger.error(e.message)
 
 def generate_presigned_url(file_path):
-    s3 = current_app.boto_session.client('s3', config=Config(signature_version=UNSIGNED))
+    s3 = current_app.boto_session.client('s3')
+    print(file_path)
     url = s3.generate_presigned_url('get_object',Params={'Bucket': current_app.config["BUCKET"],'Key': file_path},ExpiresIn=0)
     return url
 
