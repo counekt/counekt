@@ -29,19 +29,19 @@ class File():
     def full_local_path(self):
         folder = Path(current_app.root_path, self.path, self.filename)
         full_local_path = Path(current_app.root_path, folder, self.end_filename)
-        return full_local_path
+        return str(full_local_path)
 
     @property
     def full_bucket_path(self):
-        return Path(self.path, self.filename, self.end_filename)
+        return str(Path(self.path, self.filename, self.end_filename))
 
     @property
     def end_filename(self):
         if self.is_local:
-            folder = Path(current_app.root_path, self.path, self.filename)
+            folder = str(Path(current_app.root_path, self.path, self.filename))
             end_filename = os.listdir(folder)[0]
         else:
-            folder = Path(self.path, self.filename)
+            folder = str(Path(self.path, self.filename))
             end_filename = funcs.list_files(folder_path=folder)[-1]
         return end_filename
 
@@ -70,7 +70,7 @@ class File():
 
     @property
     def is_global(self):
-        folder = Path(self.path, self.filename)
+        folder = str(Path(self.path, self.filename))
         exists = bool(funcs.list_files(folder_path=folder))
         return exists
 
