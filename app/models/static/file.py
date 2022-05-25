@@ -13,6 +13,7 @@ class File():
     path = db.Column(db.String(2048))
 
     def save_locally(self, file_format):
+        self.empty()
         folder = Path(current_app.root_path, self.path)
         self.filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
         full_local_path = Path(current_app.root_path, folder, self.filename)
