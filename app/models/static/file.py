@@ -13,42 +13,36 @@ class File():
     path = db.Column(db.String(2048))
 
     def save_locally(self, file_format):
-        self.empty()
-        folder = Path(current_app.root_path, self.path, self.filename)
-        end_filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
-        full_local_path = Path(current_app.root_path, folder, end_filename)
+        folder = Path(current_app.root_path, self.path)
+        self.filename = f"{datetime.now().strftime('%Y,%m,%d,%H,%M,%S')}.{file_format}"
+        full_local_path = Path(current_app.root_path, folder, self.filename)
         # make sure the whole path exists
         Path(folder).mkdir(parents=True, exist_ok=True)
         return full_local_path
 
     def upload_to_bucket(self):
         # Uploading to bucket
-        funcs.upload_file(file_path=self.full_local_path, object_name=os.path.join(self.path, self.filename, self.end_filename))
+        print("#"*10)
+        print(self.filename)
+        print(str(Path(self.path, self.filename)))
+        print("#"*10)
+
+        funcs.upload_file(file_path=self.full_local_path, object_name=str(Path(self.path, self.filename)))
 
     @property
     def full_local_path(self):
-        folder = Path(current_app.root_path, self.path, self.filename)
-        full_local_path = Path(current_app.root_path, folder, self.end_filename)
+        folder = Path(current_app.root_path, self.path)
+        full_local_path = Path(current_app.root_path, folder, self.filename)
         return str(full_local_path)
 
     @property
     def full_bucket_path(self):
-        return str(Path(self.path, self.filename, self.end_filename))
-
-    @property
-    def end_filename(self):
-        if self.is_local:
-            folder = str(Path(current_app.root_path, self.path, self.filename))
-            end_filename = os.listdir(folder)[0]
-        else:
-            folder = str(Path(self.path, self.filename))
-            end_filename = funcs.list_files(folder_path=folder)[-1]
-        return end_filename
+        return str(Path(self.path, self.filename))
 
     @property
     def src(self):
         if self.is_local:
-            url = url_for("static", filename=funcs.join_parts(*Path(self.path).parts[1:], self.filename, self.end_filename))
+            url = url_for("static", filename=funcs.join_parts(*Path(self.path).parts[1:], self.filename))
             return url
         else:
             #generate url for image
@@ -65,13 +59,12 @@ class File():
 
     @property
     def is_local(self):
-        local_folder = Path(current_app.root_path, self.path, self.filename)
-        return local_folder.exists() and any(local_folder).iterdir()
+        local_folder = Path(current_app.root_path, self.path)
+        return local_folder.exists() and any(local_folder.iterdir())
 
     @property
     def is_global(self):
-        folder = str(Path(self.path, self.filename))
-        exists = bool(funcs.list_files(folder_path=folder))
+        exists = bool(funcs.list_files(folder_path=self.path))
         return exists
 
     @property
@@ -79,9 +72,9 @@ class File():
         return not self.is_local
 
     def make_local(self):
-        folder = Path(current_app.root_path, self.path, self.filename)
+        folder = Path(current_app.root_path, self.path)
         folder.mkdir(parents=True, exist_ok=True)
         funcs.download_file(self.full_bucket_path, self.full_local_path)
 
     def __repr__(self):
-        return "<File {}>".format(self.filename)
+        return "<File {}>".format(Path(self.path,self.filename))

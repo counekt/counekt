@@ -102,8 +102,8 @@ class User(UserMixin, db.Model, Base, locationBase):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
-        self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/users/{self.username}/", replacement=self.gravatar)
-        self.cover_photo = Photo(filename="cover_photo", path=f"static/profiles/users/{self.username}/", replacement="/static/images/alps.jpg")
+        self.profile_photo = Photo(path=f"static/profiles/users/{self.username}/profile_photo/", replacement=self.gravatar)
+        self.cover_photo = Photo(path=f"static/profiles/users/{self.username}/cover_photo/", replacement="/static/images/alps.jpg")
         self.wall = Wall()
 
     def set_password(self, password):
