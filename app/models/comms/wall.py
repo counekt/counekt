@@ -23,6 +23,28 @@ class Wall(Base, db.Model):
 		self.media.append(medium)
 		return medium
 
+	@property
+	def media_sorted_by_hot(self):
+		return self.media_class_.hot(query=self.media)
+
+	@property
+	def media_sorted_by_new(self):
+		print(self.media_class_.new(query=self.media))
+		return self.media_class_.new(query=self.media)
+
+	@property
+	def media_sorted_by_top(self):
+		return self.media_class_.top(query=self.media)
+
+	@property
+	def media_sorted_by_best(self):
+		return self.media_class_.best(query=self.media)
+
+	@property
+	def media_class_(self):
+		relationships = inspect(self.__class__).relationships
+		return relationships["media"].entity.class_
+
 class Media:
 
 	def __init__(self, **kwargs):

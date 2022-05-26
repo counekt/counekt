@@ -59,7 +59,7 @@ class File():
     @property
     def is_local(self):
         local_folder = Path(current_app.root_path, self.path)
-        return local_folder.exists() and any(local_folder.iterdir())
+        return local_folder.exists() and os.listdir(str(local_folder))
 
     @property
     def is_global(self):

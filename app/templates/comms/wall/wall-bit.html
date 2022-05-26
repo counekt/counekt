@@ -7,5 +7,9 @@
     {% include 'comms/search-filter-bar.html' %}
 	{% endwith %}
 </div>
-	{% include 'comms/wall/flex-stream.html' %}
+
+{% with media = {"hot":wall.media_sorted_by_hot,"best":wall.media_sorted_by_best, "top": wall.media_sorted_by_top, "new":wall.media_sorted_by_new}.get(by, wall.media_sorted_by_new) %}
+{% include 'comms/wall/flex-stream.html' %}
+{% endwith %}
+	
 </div>
