@@ -23,12 +23,10 @@ class File():
 
     def upload_to_bucket(self):
         # Uploading to bucket
-        print("#"*10)
-        print(self.filename)
-        print(str(Path(self.path, self.filename)))
-        print("#"*10)
-
-        funcs.upload_file(file_path=self.full_local_path, object_name=str(Path(self.path, self.filename)))
+        object_name = self.full_bucket_path
+        print(f"Uploading to bucket... OBJECT NAME: {object_name}")
+        current_app.logger.info(f"Uploading to bucket... OBJECT NAME: {object_name}")
+        funcs.upload_file(file_path=self.full_local_path, object_name=object_name)
 
     @property
     def full_local_path(self):
@@ -38,7 +36,7 @@ class File():
 
     @property
     def full_bucket_path(self):
-        return str(Path(self.path, self.filename))
+        return str(Path(self.path, self.filename).as_posix())
 
     @property
     def src(self):
