@@ -132,7 +132,7 @@ def create_medium():
             medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
             current_user.wall.append(medium)
             db.session.commit()
-            return json.dumps({'status': 'success', 'id':medium.id, 'author':{'username':medium.author.username}})
+            return json.dumps({'status': 'success', 'id':medium.id, 'title':medium.title,'content':medium.content, 'author':{'href':medium.author.href,'dname':medium.author.dname,'username':medium.author.username, 'profile_photo_src':medium.author.profile_photo.src}, 'creation_datetime':medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")})
         
         if m_type == "quote":
             original = models.Medium.query.get(target_id)

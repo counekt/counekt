@@ -60,8 +60,22 @@ function goToIndividualMedium(medium_id, do_redirect=true) {
 $(".search-filter-bar-b[data-active='false']").on('click', function() {
         searchFeedback();
 });
+
+
+$(document).on('click', function() {
+  $('.medium-menu').removeClass('is-active');
+});
+
+$(document).on('click', '.medium-menu-button', function(e) {
+  e.stopPropagation();
+  $(this).closest('.medium-menu').toggleClass('is-active');
+});
+
+$(document).on('click', '.delete-medium', function() {
+  makeSureDeleteMedium();
+});
   
-  $('.medium').on('click', '.medium-quote-reply-interact', function() {
+  $(document).on('click', '.medium-quote-reply-interact', function() {
       var $clicked = $(this);
       var $medium = $clicked.closest('.medium');
       var $identiy = $medium.find('.medium-identity');
@@ -73,7 +87,7 @@ $(".search-filter-bar-b[data-active='false']").on('click', function() {
 
   });
 
-  $('.medium').on('click', '.medium-love-interact', function() {
+  $(document).on('click', '.medium-love-interact', function() {
     console.log("WOOP");
     var $clicked = $(this);
     var $medium = $clicked.closest('.medium');

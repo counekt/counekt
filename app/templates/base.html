@@ -84,7 +84,13 @@
             return `{% include 'comms/feedback/fb.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active).replaceAll('\\href//',href);
         }
 
-        function mediumFocused(id,title="",content="",author_dname="",author_symbol="@",author_username="",creation_datetime="",author_href="", profile_photo_src="", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
+        function makeSureDeleteMedium() {
+            $("#modal-box").append(`{% include 'comms/wall/makesure-delete-medium.html' %}`);
+        }
+
+        function medium(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_symbol="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
+            console.log(profile_photo_src);
+            console.log("PROFILE PHOTO SRC");
             if (is_hearted) {
                 var heart_class = "active";
                 var heart_icon_type = "fas";
@@ -93,10 +99,10 @@
                 var heart_class = "";
                 var heart_icon_type = "far"
             }
-            return `{% include 'comms/medium/by-user.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_href//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count);
+            return `{% include 'comms/wall/plain-medium.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
         }
 
-        function mediumFocusedWithQuote(id,title,content,quote_id,quote_title,quote_content) {
+        function mediumWithQuote(id,title,content,quote_id,quote_title,quote_content) {
 
         }
 
@@ -114,6 +120,24 @@
         }
         {% endif %}
         
+            function changeToQuoteMedium(quote_identity, quote_profile_pic, quote_content, quote_id) {
+          $("#modal-box").append(`
+            {% with is_template = True %}
+            {% include "profiles/user/create-quote.html" %}
+            {% endwith %}
+            `.replaceAll('\\identity//', quote_identity).replaceAll('\\profile_photo//', quote_profile_pic).replaceAll('\\text-content//', quote_content).replaceAll('\\id//',quote_id));
+          $(document.body).addClass('noscroll');
+    }
+
+        function changeToCreateMedium() {
+          $("#modal-box").append(`
+            {% with what='Medium' %}
+            {% include "profiles/user/create-medium.html" %}
+            {% endwith %}
+            `);
+          $('#title-create').focus();
+          $(document.body).addClass('noscroll');
+        }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>

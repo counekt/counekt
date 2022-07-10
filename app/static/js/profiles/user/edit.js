@@ -1,5 +1,6 @@
 $(document).on("click", "#save-button", function() {
    console.log("Applying edit");
+   $(this).prop('disabled', true);$(this).addClass('is-loading');
    console.log($("#day").val());
    var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    

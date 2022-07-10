@@ -32,7 +32,7 @@ $(document).on('input', '#title-create', function(){
     },
     mouseleave: function () {
         $(this).find($(this).attr('hidden-selector')).addClass('invisible');
-    }}, '.show-hidden-selector-on-hover')
+    }}, '.show-hidden-selector-on-hover');
 
 
  function submitCreate(onlySave=false) {
@@ -41,10 +41,12 @@ $(document).on('input', '#title-create', function(){
         var status = response["status"]; 
         if (status == "success") {
       		flash('#ffff','#3abb8','Medium submitted', delay=1500);
-
-      		setTimeout(function() {
-      			document.location.href = "/@"+response["author"]["username"]+"/medium/"+response["id"]+"/";
-      		},1500);
+      		console.log(response["author"]["profile_photo_src"]);
+      		$('.wall').prepend(medium(
+      			response["id"],response["title"],response["content"],response["creation_datetime"],
+      			response["author"]["dname"],response["author"]["username"],
+      			response["author"]["href"],response["author"]["profile_photo_src"]));
+      		changeToProfile();
         }
 
         else {
@@ -54,5 +56,7 @@ $(document).on('input', '#title-create', function(){
       }, {action: onlySave ? 'save': 'submit' ,title:$("#title-create").val(),text:$("#text-create").val()});
 }
 
-$(document).on('click', "#submit-button", submitCreate);
-
+$(document).on('click', "#submit-button", function() {
+	  $("#submit-button").prop('disabled', true).addClass('is-loading');
+	  submitCreate();
+});

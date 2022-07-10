@@ -131,7 +131,7 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	padding: 10px;
 	border-radius: 10px;
 	max-width: 750px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	display: flex;
 	min-height: 200px;
 }
@@ -139,21 +139,21 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 .profile-skill-row {
 	display: grid;
 		grid-auto-flow: column;
-		grid-column-gap: 10px;
+		grid-column-gap: 5px;
 	width: 100%;
 }
 
 .profile-skill-row + .profile-skill-row {
-		margin-top: 10px;
+		margin-top: 5px;
 
 }
 
 #profile-skills {
 	width: 100%;
-	padding: 10px;
+	padding: 5px;
 	background-color: rgba(255,255,255,0.9);
 	border-radius: 5px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	max-width: 750px;
 }
 
@@ -161,7 +161,7 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	background-color: rgba(255,255,255,0.9);
 	max-width: 750px;
 	border-radius: 5px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 }
 
 #profile-tabs .tabs {
@@ -245,7 +245,7 @@ margin-bottom: 55px;}
 }
 
 #background {
-	padding-top: 15px;
+	padding-top: 10px;
 	padding-bottom: 0px;
 }
 
@@ -280,7 +280,7 @@ margin-bottom: 55px;}
 
 		grid-column-gap: 5px;}
 
-#profile-top, #profile-skills { border-radius: 0px; margin-bottom: 7px;}
+#profile-top, #profile-skills { border-radius: 0px;}
 
 
 #profile-top, #profile-tabs, #profile-skills {
