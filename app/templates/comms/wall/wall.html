@@ -23,7 +23,7 @@
 
 function changeToWall() {
   $("#modal-box").empty();
-  $(document.body).removeClass('noscroll');
+  unfreezeScroller();
 }
 
   $(document).on('click', '.close, .modal-background', function() {

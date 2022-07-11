@@ -1,6 +1,6 @@
 function changeToFeed() {
   $("#modal-box").empty();
-  $(document.body).removeClass('noscroll');
+  unfreezeScroller();
 }
 
   $(document).on('click', '.medium', function(e) {

@@ -410,12 +410,12 @@ function changeToEdit() {
   $("#modal-box").append(`
     {% include "profiles/user/edit.html" %}`);
   load_map_js();
-  $(document.body).addClass('noscroll');
+  freezeScroller();
 }
 
 function changeToProfile() {
   $("#modal-box").empty();
-  $(document.body).removeClass('noscroll');
+  unfreezeScroller();
 }
 
 function changeToPhoto() {
@@ -424,7 +424,7 @@ function changeToPhoto() {
     {% include "photo.html" %}
     {% endwith %}
     `);
-  $(document.body).addClass('noscroll');
+  freezeScroller();
 }
 
 
@@ -432,14 +432,14 @@ function changeToCreateClub() {
     $("#modal-box").append(`
     {% include "profiles/club/create.html" %}`);
   load_map_js();
-  $(document.body).addClass('noscroll');
+  freezeScroller();
 }
 
 function changeToCreateProject() {
     $("#modal-box").append(`
     {% include "profiles/project/create.html" %}`);
   load_map_js();
-  $(document.body).addClass('noscroll');
+  freezeScroller();
 }
 
 
