@@ -198,7 +198,7 @@ class Medium(Media,Base,db.Model):
 	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	author = db.relationship("User", foreign_keys=[author_id])
 
-	quotes = db.relationship('Medium', backref=db.backref("quote", remote_side=[id]), lazy='dynamic',
+	quote_replies = db.relationship('Medium', backref=db.backref("quote", remote_side=[id]), lazy='dynamic',
         foreign_keys='Medium.quote_to_id')
 
 	replies = db.relationship('Medium', backref=db.backref("reply_to", remote_side=[id]), lazy='dynamic',
@@ -240,7 +240,7 @@ class Medium(Media,Base,db.Model):
 
 	@property
 	def quote_count(self):
-		return self.quotes.count()
+		return self.quote_replies.count()
 
 	def channel(self):
 		return self.project_channel or self.club_channel

@@ -58,5 +58,8 @@ $(document).on('input', '#title-create', function(){
 
 $(document).on('click', "#submit-button", function() {
 	  $("#submit-button").prop('disabled', true).addClass('is-loading');
-	  submitCreate();
+});
+
+$(document).on('click', "#submit-medium-button" , function() {
+	submitCreate();
 });

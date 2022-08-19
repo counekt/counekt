@@ -135,12 +135,12 @@ def create_medium():
             return json.dumps({'status': 'success', 'id':medium.id, 'title':medium.title,'content':medium.content, 'author':{'href':medium.author.href,'dname':medium.author.dname,'username':medium.author.username, 'profile_photo_src':medium.author.profile_photo.src}, 'creation_datetime':medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")})
         
         if m_type == "quote":
-            original = models.Medium.query.get(target_id)
-            quote_reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
-            original.quotes.append(quote_reply)
-            current_user.wall.append(quote_reply)
+            quote = models.Medium.query.get(target_id)
+            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            quote.quote_replies.append(medium)
+            current_user.wall.append(medium)
             db.session.commit()
-            return json.dumps({'status': 'success', 'id':quote_reply.id, 'author':{'username':quote_reply.author.username}})
+            return json.dumps({'status': 'success', 'id':medium.id, 'title':medium.title,'content':medium.content, 'author':{'href':medium.author.href,'dname':medium.author.dname,'username':medium.author.username, 'profile_photo_src':medium.author.profile_photo.src}, 'creation_datetime':medium.creation_datetime.strftime("%b %d %Y  %I:%M %p"), "quote": {'id':quote.id, 'title':quote.title,'content':quote.content, 'author':{'href':quote.author.href,'dname':quote.author.dname,'username':quote.author.username, 'profile_photo_src':quote.author.profile_photo.src}, 'creation_datetime':quote.creation_datetime.strftime("%b %d %Y  %I:%M %p")}})
 
         if m_type == "reply":
             original = models.Medium.query.get(target_id)

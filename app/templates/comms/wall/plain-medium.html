@@ -1,8 +1,8 @@
-<article class="media medium" style="color:  black;" data-id="{% if is_template %}
-\\id//{% elif not medium %}{% if is_quote %}\\quote_id//{% else %}\\id//{% endif %}{% else %}{{medium.id}}{% endif %}">
+<article class="media medium {% if is_quote %}quote{% endif %}" style="color:  black;" data-id="{% if medium %}{{medium.id}}
+{% else %}\\id//{% endif %}">
   {% if not is_quote %}
   <div class="media-left medium-left">
-    {% if is_template %}
+    {% if is_filler %}
       \\profile_photo//
       {% else %}    
       {% include 'comms/wall/medium-profile-photo.html' %}
@@ -11,36 +11,36 @@
   {% endif %}
   <div class="media-content">
     <div class="medium-content">
-      {% if is_template %}
+      {% if is_filler %}
       \\identity//
       {% else %}
       <p class="medium-identity">
         {% if through_channel %}
-        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.channel.dname}}{% elif is_quote %}\\quote_channel_dname//{% else %}\\channel_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.channel.symbol}}{{medium.channel.handle}}{% elif is_quote %}\\quote_channel_symbol//\\quote_channel_handle//{% else %}\\channel_symbol//\\channel_handle//{% endif %}</small></span>
-         <small>(by <b class="author">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\quote_author_dname//{% else %}\\author_dname//{% endif %}</b>)</small>
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.channel.dname}}{% elif is_quote %}\\channel_dname//{% else %}\\channel_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.channel.symbol}}{{medium.channel.handle}}{% elif is_quote %}\\channel_symbol//\\channel_handle//{% else %}\\channel_symbol//\\channel_handle//{% endif %}</small></span>
+         <small>(by <b class="author">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\author_dname//{% else %}\\author_dname//{% endif %}</b>)</small>
         {% else %}
-        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\quote_author_dname//{% else %}\\author_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.author.symbol}}{{medium.author.username}}{% elif is_quote %}\\quote_author_symbol//\\quote_author_username//{% else %}\\author_symbol//\\author_username//{% endif %}</small></span>
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\author_dname//{% else %}\\author_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.author.symbol}}{{medium.author.username}}{% elif is_quote %}\\author_symbol//\\author_username//{% else %}\\author_symbol//\\author_username//{% endif %}</small></span>
         {% endif %}
-         <span style="margin-right:4px;" class="separator">·</span><span><small class="creation-datetime">{% if medium %}{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}{% elif is_quote %}\\quote_creation_datetime//{% else %}\\creation_datetime//{% endif %}</small></span>
+         <span style="margin-right:4px;" class="separator">·</span><span><small class="creation-datetime">{% if medium %}{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}{% elif is_quote %}\\creation_datetime//{% else %}\\creation_datetime//{% endif %}</small></span>
         
       </p>
       {% endif %}
       <br>
-      {% if is_template %}
+      {% if is_filler %}
       \\text-content//
       {% else %}
       <div class="text-content">
-        <p class="medium-title">{% if medium %}{{medium.title}}{% elif is_quote %}\\quote_title//{% else %}\\title//{% endif %}</p>
+        <p class="medium-title">{% if medium %}{{medium.title}}{% elif is_quote %}\\title//{% else %}\\title//{% endif %}</p>
         <br>
         <p class="medium-body-text">
-        {% if medium %}{{medium.content}}{% elif is_quote %}\\quote_content//{% else %}\\content//{% endif %}
+        {% if medium %}{{medium.content}}{% elif is_quote %}\\content//{% else %}\\content//{% endif %}
         </p>
       </div>
       {% endif %}
       {% block quote_html %}
       {% endblock %}
     </div>
-    {% if not is_template and not is_quote %}
+    {% if not is_filler and not is_quote %}
     <nav class="level is-mobile medium-ballot">
       <div class="level-left">
         <span class="level-item medium-reply clickable">
@@ -67,7 +67,7 @@
     </nav>
     {% endif %}
   </div>
-  {% if not is_template and not is_quote %}
+  {% if not is_filler and not is_quote %}
   <div class="media-right clickable">
     <div class="dropdown medium-menu">
       <div class="dropdown-trigger">
