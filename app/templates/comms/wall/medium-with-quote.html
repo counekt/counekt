@@ -4,9 +4,13 @@
 {% if is_template %}
 \\quote_html//
 {% else %}
-{% with medium=medium.quote, is_quote=True %}
-{% include 'comms/wall/plain-medium.html' %}
-{% endwith %}
+	{% if medium.contains_quote %}
+		{% with medium=medium.quote, is_quote=True %}
+			{% include 'comms/wall/plain-medium.html' %}
+		{% endwith %}
+	{% else %}
+		{% include 'comms/wall/unavailable-quote.html' %}
+	{% endif %}
 {% endif %}
 </div>
 {% endblock %}

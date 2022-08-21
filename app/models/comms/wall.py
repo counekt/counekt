@@ -198,6 +198,8 @@ class Medium(Media,Base,db.Model):
 	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	author = db.relationship("User", foreign_keys=[author_id])
 
+	with_quote = db.Column(db.Boolean, default=False)
+
 	quote_replies = db.relationship('Medium', backref=db.backref("quote", remote_side=[id]), lazy='dynamic',
         foreign_keys='Medium.quote_to_id')
 

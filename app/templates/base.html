@@ -104,9 +104,15 @@
             }
         }
 
-        function makeSureDeleteMedium() {
+        function makeSureDeleteMedium(id) {
+            console.log(id);
             $("#modal-box").append(`{% include 'comms/wall/makesure-delete-medium.html' %}`);
+            $("#modal-box").find('#delete-medium-button').attr("data-id",id);
             freezeScroller();
+        }
+
+        function unavailableQuote(id) {
+            return `{% include 'comms/wall/unavailable-quote.html' %}`;
         }
 
         function medium(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_symbol="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {

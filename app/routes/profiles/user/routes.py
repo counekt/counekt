@@ -136,7 +136,7 @@ def create_medium():
         
         if m_type == "quote":
             quote = models.Medium.query.get(target_id)
-            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False, with_quote=True)
             quote.quote_replies.append(medium)
             current_user.wall.append(medium)
             db.session.commit()
@@ -151,6 +151,16 @@ def create_medium():
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
+
+@ bp.route("/delete/medium/", methods=["POST"])
+@login_required
+def delete_medium():
+    if flask_request.method == 'POST':
+        target_id = flask_request.form.get("target_id", type=int)
+        medium = current_user.wall.media.filter_by(id=target_id).first()
+        db.session.delete(medium)
+        db.session.commit()
+        return json.dumps({'status': 'success'})
 
 @ bp.route("/user/<username>/medium/<id>/", methods=["GET", "POST"])
 @ bp.route("/@<username>/medium/<id>/", methods=["GET", "POST"])

@@ -72,7 +72,11 @@ $(document).on('click', '.medium-menu-button', function(e) {
 });
 
 $(document).on('click', '.delete-medium', function() {
-  makeSureDeleteMedium();
+  var $clicked = $(this);
+  var $medium = $clicked.closest('.medium');
+  var medium_id = $medium.data('id');
+  console.log(medium_id);
+  makeSureDeleteMedium(medium_id);
 });
   
   $(document).on('click', '.medium-quote-reply-interact', function() {
