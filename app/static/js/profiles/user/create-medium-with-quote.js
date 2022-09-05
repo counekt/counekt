@@ -1,5 +1,7 @@
 
 function submitQuoteCreate(onlySave=false) {
+    var button = $("#submit-quote-button");
+    button.prop('disabled', true).addClass('is-loading');
     console.log("DADADWD");
     var target_id = $(".modal-card-body").find('.medium').data('id');
     console.log(target_id);
@@ -13,9 +15,13 @@ function submitQuoteCreate(onlySave=false) {
         var status = response["status"]; 
         if (status == "success") {
             $counter.text(parseInt($counter.text())+1);
+            if (profile_is_current_user) {
       		flash('Quote Reply sent');
-
-      		$('.wall').prepend(response["html"]);
+            $('.wall').prepend(response["html"]);
+            }
+            else {
+            flash('Quote reply sent <a href="/#">Show</a>');
+            }
             changeToProfile();
         }
         

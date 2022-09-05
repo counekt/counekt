@@ -135,6 +135,8 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
+  var profile_is_current_user = {{"true" if user == current_user else "false"}};
+
   function makeConnectButtonDefault() {
     $('#connect-button').addClass('is-info');
     $('#connect-button').removeClass('is-light').removeClass('is-link');

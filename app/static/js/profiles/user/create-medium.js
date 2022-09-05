@@ -36,16 +36,22 @@ $(document).on('input', '#title-create', function(){
 
 
  function submitCreate(onlySave=false) {
+ 	var button = $("#submit-medium-button");
+    button.prop('disabled', true).addClass('is-loading');
+
 	post("/create/medium/", function(response) {
       	var response = JSON.parse(response);
         var status = response["status"]; 
         if (status == "success") {
+      		
+      		if (profile_is_current_user) {
       		flash('Medium submitted');
-      		console.log(response["author"]["profile_photo_src"]);
-      		$('.wall').prepend(medium(
-      			response["id"],response["title"],response["content"],response["creation_datetime"],
-      			response["author"]["dname"],response["author"]["username"],
-      			response["author"]["href"],response["author"]["profile_photo_src"]));
+      		$('.wall').prepend(response["html"]);
+      		}
+      		else {
+      		flash('Medium submitted <a href="/#">Show</a>');
+
+      		}
       		changeToProfile();
         }
 
@@ -55,10 +61,6 @@ $(document).on('input', '#title-create', function(){
 
       }, {action: onlySave ? 'save': 'submit' ,title:$("#title-create").val(),text:$("#text-create").val()});
 }
-
-$(document).on('click', "#submit-button", function() {
-	  $("#submit-button").prop('disabled', true).addClass('is-loading');
-});
 
 $(document).on('click', "#submit-medium-button" , function() {
 	submitCreate();

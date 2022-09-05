@@ -35,7 +35,7 @@ function unload(_delay) {
  $("#flash").css('color', c);
  $("#flash").css('background-color', bgc);
  $("#flash").animate({ opacity: 1, queue: false });
- $("#flash").children().text(txt);
+ $("#flash p").html(txt);
  $("#flash").delay(delay).animate({ opacity: 0, queue: false });
 }
 
