@@ -1,8 +1,12 @@
   {% if medium %}
     {% if medium.with_quote %}
+          {% with by_current_user = medium.author == current_user %}
           {% include 'comms/wall/medium-with-quote.html' %}
+          {% endwith %}
     {% elif medium.is_plain %}
-        {% include 'comms/wall/plain-medium.html' %}
+        {% with by_current_user = medium.author == current_user %}
+          {% include 'comms/wall/plain-medium.html' %}
+        {% endwith %}
     {% endif %}
   {% else %}
     {% if with_quote %}

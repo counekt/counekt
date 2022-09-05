@@ -5,12 +5,12 @@
     <div id="profile-left">
       <div id="profile-image">
         <a href="/user/{{user.username}}/photo/">
-        <img alt draggable="false" id="profile-image-content" src="{{ user.profile_photo.src }}">
+        <img alt draggable="false" class="{% if user == current_user %}current-user-photo{% endif %}" id="profile-image-content" src="{{ user.profile_photo.src }}">
         </a>
       </div>
       <div id="profile-left-bottom">
-        <p class="title is-4 selectable" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">@{{ user.username }}</p>
+        <p class="title is-4 selectable {% if user == current_user %}current-user-name{% endif %}" style="color:black"><b>{% if user.name %}{{ user.name }}{% else %}{{ user.username }}{% endif %}</b></p>
+        <p class="subtitle is-5 selectable {% if user == current_user %}current-user-handle{% endif %}" style="color:gray">@{{ user.username }}</p>
       </div>
     </div>
 
@@ -79,17 +79,13 @@
     </div>
     <br style="clear: both;">
   </div>
+  <div id="profile-skills-container"> 
   {% if user.skills.all() %}
-  <div id="profile-skills" class="container">
-    {% for skillrow in skillrows %}
-    <div class="profile-skill-row">
-    {% for skill in skillrow %}
-      <div class="profile-skill" style="color: {{skill_aspects[skill.title]['color']}}; background-color: {{skill_aspects[skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
-    {% endfor %}
-    </div>
-    {% endfor %}
-  </div>
+    {% with skillrows = user.skillrows %}
+        {% include 'profiles/skill-bar.html' %}
+    {% endwith %}
   {% endif %}
+  </div>
 
 {% include "profiles/user/tabs/tabs.html" %}
 {% with vanish=True, create_bar = user == current_user, wall=user.wall, by="new" %}
@@ -407,9 +403,11 @@ $(window).on("popstate", function() {
 
 });
 
+var edit_modal = `
+    {% include "profiles/user/edit.html" %}`;
+
 function changeToEdit() {
-  $("#modal-box").append(`
-    {% include "profiles/user/edit.html" %}`);
+  $("#modal-box").append(edit_modal);
   load_map_js();
   freezeScroller();
 }

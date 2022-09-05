@@ -6,7 +6,9 @@
 {% else %}
 	{% if medium.contains_quote %}
 		{% with medium=medium.quote, is_quote=True %}
-			{% include 'comms/wall/plain-medium.html' %}
+			{% with by_current_user = medium.author == current_user %}
+				{% include 'comms/wall/plain-medium.html' %}
+			{% endwith %}
 		{% endwith %}
 	{% else %}
 		{% include 'comms/wall/unavailable-quote.html' %}

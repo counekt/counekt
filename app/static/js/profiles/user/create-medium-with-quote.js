@@ -13,19 +13,14 @@ function submitQuoteCreate(onlySave=false) {
         var status = response["status"]; 
         if (status == "success") {
             $counter.text(parseInt($counter.text())+1);
-      		flash('#ffff','#3abb8','Quote Reply sent', delay=1500);
+      		flash('Quote Reply sent');
 
-      		$('.wall').prepend(mediumWithQuote(mediumQuote(response["quote"]["id"],response["quote"]["title"],response["quote"]["content"],response["quote"]["creation_datetime"],
-                response["quote"]["author"]["dname"],response["quote"]["author"]["username"],
-                response["quote"]["author"]["href"],response["quote"]["author"]["profile_photo_src"]),
-                response["id"],response["title"],response["content"],response["creation_datetime"],
-                response["author"]["dname"],response["author"]["username"],
-                response["author"]["href"],response["author"]["profile_photo_src"]));
+      		$('.wall').prepend(response["html"]);
             changeToProfile();
         }
         
         else {
-        	flash('#ffff','#f14668',status, delay=1500);
+        	flash(status,'#ffff','#f14668',delay=1500);
         }
 
       }, {action: onlySave ? 'save' : 'submit', title:$("#title-create").val(),text:$("#text-create").val(), target_id:target_id, type:'quote'});

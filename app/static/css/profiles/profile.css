@@ -180,7 +180,9 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 	left: 0;
 }
 
-
+.current-user-photo {
+	aspect-ratio: 1/1;
+}
 
 #profile-image {width: 100%;
 	max-width: 250px;
@@ -188,9 +190,11 @@ margin-bottom: 55px;}
 
 #profile-image-content {
 	width: 100%;
+	max-width: 250px;
 	border-radius: 100%;
 	transition: 0.3s;
 	border: solid rgba(0, 0, 0, 0.04) 0.1px;
+	aspect-ratio: 1/1;
 
 }
 

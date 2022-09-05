@@ -1,0 +1,9 @@
+<div id="profile-skills" class="container">
+    {% for skillrow in skillrows %}
+    <div class="profile-skill-row">
+    {% for skill in skillrow %}
+      <div class="profile-skill" style="color: {{config['SKILL_ASPECTS'][skill.title]['color']}}; background-color: {{config['SKILL_ASPECTS'][skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
+    {% endfor %}
+    </div>
+    {% endfor %}
+</div>

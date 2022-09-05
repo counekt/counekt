@@ -11,12 +11,12 @@ function submitDeleteMedium() {
       	var response = JSON.parse(response);
         var status = response["status"]; 
         if (status == "success") {
-      		flash('#ffff','#3abb8','Your medium was deleted', delay=0);
+      		flash('Your medium was deleted');
       		
         }
         
         else {
-        	flash('#ffff','#f14668',status, delay=0);
+        	flash(status);
         }
 
       }, {target_id:target_id});

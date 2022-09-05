@@ -30,7 +30,7 @@ function unload(_delay) {
    }
  }
 
- function flash(c,bgc,txt, delay=1500){
+ function flash(txt,c="white",bgc="#3298dc", delay=3000){
  $("#flash").stop(stopAll=true);
  $("#flash").css('color', c);
  $("#flash").css('background-color', bgc);
@@ -62,6 +62,10 @@ function post(url, success, args) {
 }
   
   }
+
+function emptyModalBox() {
+    $('#modal-box').find('.modal').removeClass('is-active');
+}
 
 
 function isScrolledIntoView(elem)

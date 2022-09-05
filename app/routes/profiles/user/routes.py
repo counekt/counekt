@@ -10,6 +10,7 @@ from datetime import date
 from requests import HTTPError
 from app.routes.profiles import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from sqlalchemy import exc
 
 
 @ bp.route("/user/<username>/", methods=["GET", "POST"])
@@ -18,8 +19,7 @@ def user(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
         abort(404)
-    skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
+    return render_template("profiles/user/profile.html", user=user, navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
@@ -106,9 +106,8 @@ def edit_user():
                 db.session.delete(skill)
 
         db.session.commit()
-        return json.dumps({'status': 'success', 'username': current_user.username})
-    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.address, 'skill-bar':render_template("profiles/skill-bar.html", skillrows=current_user.skillrows)})
+    return render_template("profiles/user/profile.html", user=current_user, background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/create/medium/", methods=["GET", "POST"])
@@ -127,32 +126,34 @@ def create_medium():
 
         if (action == "submit" and not title) or (not title and not text):
             return json.dumps({'status': 'error'})
- 
-        if m_type == "plain":
-            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
-            current_user.wall.append(medium)
-            db.session.commit()
-            return json.dumps({'status': 'success', 'id':medium.id, 'title':medium.title,'content':medium.content, 'author':{'href':medium.author.href,'dname':medium.author.dname,'username':medium.author.username, 'profile_photo_src':medium.author.profile_photo.src}, 'creation_datetime':medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")})
-        
-        if m_type == "quote":
-            quote = models.Medium.query.get(target_id)
-            medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False, with_quote=True)
-            quote.quote_replies.append(medium)
-            current_user.wall.append(medium)
-            db.session.commit()
-            return json.dumps({'status': 'success', 'id':medium.id, 'title':medium.title,'content':medium.content, 'author':{'href':medium.author.href,'dname':medium.author.dname,'username':medium.author.username, 'profile_photo_src':medium.author.profile_photo.src}, 'creation_datetime':medium.creation_datetime.strftime("%b %d %Y  %I:%M %p"), "quote": {'id':quote.id, 'title':quote.title,'content':quote.content, 'author':{'href':quote.author.href,'dname':quote.author.dname,'username':quote.author.username, 'profile_photo_src':quote.author.profile_photo.src}, 'creation_datetime':quote.creation_datetime.strftime("%b %d %Y  %I:%M %p")}})
+        try:
+            if m_type == "plain":
+                medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+                current_user.wall.append(medium)
+                db.session.commit()
+                return json.dumps({'status': 'success', 'id':medium.id, 'title':medium.title,'content':medium.content, 'author':{'href':medium.author.href,'dname':medium.author.dname,'username':medium.author.username, 'profile_photo_src':medium.author.profile_photo.src}, 'creation_datetime':medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")})
+            
+            if m_type == "quote":
+                quote = models.Medium.query.get(target_id)
+                medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False, with_quote=True)
+                quote.quote_replies.append(medium)
+                current_user.wall.append(medium)
+                db.session.commit()
+                return json.dumps({'status': 'success', 'id':medium.id, "html":render_template("comms/wall/medium.html", medium=medium)})
 
-        if m_type == "reply":
-            original = models.Medium.query.get(target_id)
-            reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
-            original.replies.append(reply)
-            db.session.commit()
-            return json.dumps({'status': 'success', 'id':reply.id, 'author':{'username':reply.author.username}})
+            if m_type == "reply":
+                original = models.Medium.query.get(target_id)
+                reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+                original.replies.append(reply)
+                db.session.commit()
+                return json.dumps({'status': 'success', 'id':reply.id, 'author':{'username':reply.author.username}})
+        except exc.SQLAlchemyError:
+            return json.dumps({'status': 'Medium not submitted'})
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
 
-@ bp.route("/delete/medium/", methods=["POST"])
+@bp.route("/delete/medium/", methods=["POST"])
 @login_required
 def delete_medium():
     if flask_request.method == 'POST':

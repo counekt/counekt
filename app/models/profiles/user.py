@@ -208,6 +208,10 @@ class User(UserMixin, db.Model, Base, locationBase):
         return query
 
     @property
+    def skillrows(self):
+        return [self.skills.all()[i:i + 3] for i in range(0, len(self.skills.all()), 3)]
+
+    @property
     def gravatar(self, size=256):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
         return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(

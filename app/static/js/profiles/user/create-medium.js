@@ -40,7 +40,7 @@ $(document).on('input', '#title-create', function(){
       	var response = JSON.parse(response);
         var status = response["status"]; 
         if (status == "success") {
-      		flash('#ffff','#3abb8','Medium submitted', delay=1500);
+      		flash('Medium submitted');
       		console.log(response["author"]["profile_photo_src"]);
       		$('.wall').prepend(medium(
       			response["id"],response["title"],response["content"],response["creation_datetime"],
@@ -50,7 +50,7 @@ $(document).on('input', '#title-create', function(){
         }
 
         else {
-        	flash('#ffff','#f14668',status, delay=1500);
+        	flash(status,'#ffff','#f14668');
         }
 
       }, {action: onlySave ? 'save': 'submit' ,title:$("#title-create").val(),text:$("#text-create").val()});

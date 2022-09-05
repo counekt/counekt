@@ -1,20 +1,34 @@
+
+
 $(document).on("click", "#save-button", function() {
    console.log("Applying edit");
    $(this).prop('disabled', true);$(this).addClass('is-loading');
    console.log($("#day").val());
-   var skills = $(".skill-title").map(function() { return $(this).text();}).get();
-   
+   var skills = JSON.stringify($(".skill-title").map(function() { return $(this).text();}).get());
+   var photo = $("#upload-image").prop('files')[0];
+   var photo_src = $("#edit-associate-image-content").attr('src');
+   var name = $("#name-field").val();
+   var bio = $("#bio-field").val();
+   var show_location = $("#show-location").is(':checked') ? 1 : 0;
+   var visible = $("#visible").is(':checked') ? 1 : 0;
+   var month = $("#month").val();
+   var day = $("#day").val();
+   var year = $("#year").val();
+   var address;
+   var skill_bar;
+
    var formData = new FormData();
-   console.log($("#upload-image").prop('files')[0]);
-   formData.append('photo', $("#upload-image").prop('files')[0]);
+   
+   formData.append('photo', photo);
+   
+   formData.append("name", name);
 
-   formData.append("name", $("#name-field").val());
+   formData.append("bio", bio);
 
-   formData.append("bio", $("#bio-field").val());
-
-   formData.append("show-location", $("#show-location").is(':checked') ? 1 : 0);
+   
+   formData.append("show-location", show_location);
    if ($("#show-location").is(':checked')) {
-   formData.append("visible", $("#visible").is(':checked') ? 1 : 0);
+   formData.append("visible", visible);
    if (window.markerIsPlaced()) {
    formData.append("lat", window.getLatLng().lat);
    formData.append("lng", window.getLatLng().lng);
@@ -22,21 +36,20 @@ $(document).on("click", "#save-button", function() {
 
   }
 
-   if ($("#month").val()) {
-    formData.append("month", $("#month").val());
+   if (month) {
+    formData.append("month", month);
   }
    
-   if ($("#day").val()) {
-    formData.append("day", $("#day").val());
+   if (day) {
+    formData.append("day", day);
   }
 
-  if ($("#year").val()) {
-    formData.append("year", $("#year").val());
+  if (year) {
+    formData.append("year", year);
   }
 
    formData.append("gender", $("#gender").val());
-
-   formData.append("skills", JSON.stringify(skills));
+   formData.append("skills", skills);
 
    if (! $("#location-field").hasClass('errorClass') && ! $("#map").hasClass('errorClass')) {
 
@@ -48,8 +61,22 @@ $(document).on("click", "#save-button", function() {
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
+        address = response["address"];
+        console.log(address);
+        skill_bar = response["skill-bar"];
         var status = response["status"];
-        if (status === "success") { location.replace("/user/"+response["username"]+"/"); }
+        if (status === "success") { 
+          console.log("FLASHING");
+          $("#profile-bio p").text(bio);
+          $("#profile-birthdate span:not(.icon)").text(`${year}-${month}-${day}`);
+          $("#profile-address span:not(.icon)").text(address);
+          $(".current-user-name").text(name);
+          $(".current-user-photo").attr('src',photo_src);
+          $("#profile-skills-container").html(skill_bar);
+          $("#save-button").prop('disabled', false);$("#save-button").removeClass('is-loading');
+          edit_modal = $("#modal-box").clone();
+          changeToProfile();
+          flash("Your changes were saved"); }
         else{message(status, response["box_id"], true);}
         
       }});

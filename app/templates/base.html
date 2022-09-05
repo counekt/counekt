@@ -26,7 +26,9 @@
     {% elif exonavbar %}
         {% include "navbar/exonavbar.html" %}
     {% endif %}
-    <div id="flash"><p class="title is-4 has-text-centered"></p></div>
+    <div id="flash-container">
+    <div id="flash"><p class="text has-text-centered"></p></div>
+    </div>
     {% if background %}
     <section class="hero is-info is-bold is-fullheight">
     <div class="hero-body" id="background">
@@ -126,7 +128,7 @@
                 var heart_class = "";
                 var heart_icon_type = "far"
             }
-            return `{% include 'comms/wall/plain-medium.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
+            return `{% with by_current_user=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
         }
 
         function mediumQuote(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_symbol="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
@@ -150,7 +152,7 @@
                 var heart_class = "";
                 var heart_icon_type = "far"
             }
-            var the_content = `{% with is_template=True %}{% include 'comms/wall/medium-with-quote.html' %}{% endwith %}`;
+            var the_content = `{% with is_template=True, by_current_user=True %}{% include 'comms/wall/medium-with-quote.html' %}{% endwith %}`;
             console.log(the_content);
             return the_content.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type).replaceAll('\\quote_html//',{% with is_quote=True %}quote_html{% endwith %});
 

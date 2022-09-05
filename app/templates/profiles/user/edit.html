@@ -1,4 +1,4 @@
-<div class="modal is-active">
+<div id="edit-modal" class="modal is-active">
 <div class="modal-background"></div>
 <div class="modal-card noselect">
   <header class="modal-card-head">
@@ -106,7 +106,7 @@
           </button>
         </div>
         {% endfor %}
-        {% if not user.has_skills(available_skills) %}
+        {% if not user.has_skills(config["AVAILABLE_SKILLS"]) %}
         <div id="add-a-skill-wrap">
           <button id="add-a-skill" class="button is-info is-normal is-inverted">
             <span>Add skill</span>
@@ -119,7 +119,7 @@
         <div id='select-skill' class='select is-info'> 
           <select id="selected-skill"> 
             <option value='' disabled hidden selected>Select skill</option> 
-            {% for title in available_skills %}
+            {% for title in config["AVAILABLE_SKILLS"] %}
             {% if not user.has_skill(title) %}
             <option>{{ title }}</option>
             {% endif %}

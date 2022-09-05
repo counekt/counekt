@@ -1,4 +1,4 @@
-<article class="media medium {% if is_quote %}quote{% endif %}" style="color:  black;" data-id="{% if medium %}{{medium.id}}
+<article class="media medium {% if is_quote %}quote{% endif %} {% if by_current_user %}by-current-user{% endif %}" style="color:  black;" data-id="{% if medium %}{{medium.id}}
 {% else %}\\id//{% endif %}">
   {% if not is_quote %}
   <div class="media-left medium-left">
@@ -19,7 +19,7 @@
         <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.channel.dname}}{% elif is_quote %}\\channel_dname//{% else %}\\channel_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.channel.symbol}}{{medium.channel.handle}}{% elif is_quote %}\\channel_symbol//\\channel_handle//{% else %}\\channel_symbol//\\channel_handle//{% endif %}</small></span>
          <small>(by <b class="author">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\author_dname//{% else %}\\author_dname//{% endif %}</b>)</small>
         {% else %}
-        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="channel-name">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\author_dname//{% else %}\\author_dname//{% endif %}</strong> <small class="channel-handle">{% if medium %}{{medium.author.symbol}}{{medium.author.username}}{% elif is_quote %}\\author_symbol//\\author_username//{% else %}\\author_symbol//\\author_username//{% endif %}</small></span>
+        <span class="channel clickable">{% if is_quote %}{% include 'comms/wall/medium-profile-photo.html' %}{% endif %}<strong class="{% if by_current_user %}current-user-name{% endif %}">{% if medium %}{{medium.author.dname}}{% elif is_quote %}\\author_dname//{% else %}\\author_dname//{% endif %}</strong> <small class="{% if by_current_user %}current-user-handle{% endif %}">{% if medium %}{{medium.author.symbol}}{{medium.author.username}}{% elif is_quote %}\\author_symbol//\\author_username//{% else %}\\author_symbol//\\author_username//{% endif %}</small></span>
         {% endif %}
          <span style="margin-right:4px;" class="separator">·</span><span><small class="creation-datetime">{% if medium %}{{medium.creation_datetime.strftime("%b %d %Y  %I:%M %p")}}{% elif is_quote %}\\creation_datetime//{% else %}\\creation_datetime//{% endif %}</small></span>
         
