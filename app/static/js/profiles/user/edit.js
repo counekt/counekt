@@ -1,5 +1,3 @@
-
-
 $(document).on("click", "#save-button", function() {
    console.log("Applying edit");
    $(this).prop('disabled', true);$(this).addClass('is-loading');
@@ -74,6 +72,9 @@ $(document).on("click", "#save-button", function() {
           $(".current-user-photo").attr('src',photo_src);
           $("#profile-skills-container").html(skill_bar);
           $("#save-button").prop('disabled', false);$("#save-button").removeClass('is-loading');
+          $("select").find("option").removeAttr('selected');
+          $("select").find("option:selected").attr('selected', 'selected');
+          
           edit_modal = $("#modal-box").clone();
           changeToProfile();
           flash("Your changes were saved"); }
@@ -87,6 +88,7 @@ $(document).on("click", "#save-button", function() {
 
      }
   });
+
 
 
 $(document).on("click", "#edit-associate-image-upload", function() {

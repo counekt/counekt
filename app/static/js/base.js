@@ -9,6 +9,24 @@ else {
 	unload(window.loading_delay);
 }});
 
+ $(document).on("click",".dropdown-trigger button", function() {
+    $('.dropdown').removeClass('is-active');
+    $('.dropdown-trigger button').show();
+    $(this).hide();
+    $(this).parent('.dropdown').addClass('is-active');
+    console.log($(this).parent('.dropdown'));
+        $(this).parent('.dropdown').addClass('is-active');
+
+ });
+
+ $(document).click(function(event) { 
+  var $target = $(event.target);
+  if(!$target.closest('.dropdown-trigger button').length) {
+    $('.dropdown-trigger button').show();
+  }        
+});
+
+
 function unload(_delay) {
 	$("#loader").delay(_delay).fadeOut("slow");
 	$("#page").css('display', 'block');

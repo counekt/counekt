@@ -69,23 +69,27 @@
   </div>
   {% if not is_filler and not is_quote %}
   <div class="media-right clickable">
-    <div class="dropdown medium-menu">
+    <div class="dropdown medium-menu is-right">
       <div class="dropdown-trigger">
         <button class="button is-rounded medium-menu-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
       </div>
       <div class="dropdown-menu" role="menu">
         <div class="dropdown-content">
+          {% if by_current_user %}
           <a class="dropdown-item delete-medium is-danger">
             <span class="text has-text-danger">Delete</span><span class="icon">
               <i class="fa fa-trash has-text-danger" aria-hidden="true"></i>
             </span>
           </a>
-          <hr class="dropdown-divider">
+          {% endif %}
+          <!-- <hr class="dropdown-divider"> -->
+          {% if not by_current_user %}
           <a href="#" class="dropdown-item">
             <span class="text">Report</span><span class="icon">
               <i class="fa fa-flag" aria-hidden="true"></i>
             </span>
           </a>
+          {% endif %}
         </div>
       </div>
     </div>

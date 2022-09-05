@@ -86,10 +86,10 @@
       <h1><b>Gender</b></h1>
       <div class='select'> 
         <select id="gender"> 
-          <option selected>Unspecified</option>
-          <option {% if user.gender == "Male" %} selected {% endif %}>Male</option>
-          <option {% if user.gender == "Female" %} selected {% endif %}>Female</option>
-          <option {% if user.gender == "Other" %} selected {% endif %}>Other</option>
+          <option value="Unspecified" selected>Unspecified</option>
+          <option {% if user.gender == "Male" %} selected {% endif %} value="Male">Male</option>
+          <option {% if user.gender == "Female" %} selected {% endif %} value="Female">Female</option>
+          <option {% if user.gender == "Other" %} selected {% endif %} value="Other">Other</option>
       </select>
     </div>
     <div id="feedback-gender" class="feedback" class="feedback">
