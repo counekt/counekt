@@ -2,27 +2,21 @@
 {% if request.url_rule.endpoint != 'profiles.user' or current_user != user %}
 <p class="control">
     <a href="/user/{{current_user.username}}/" class="button transition {% if class %}{{class}}{% endif %}">
-      <span id="cog" class="icon">
+      <span class="icon">
         <i class="fas fa-user"></i>
       </span>
     </a>
   </p>
 {% endif %}
 {% if request.url_rule.endpoint != 'profiles.notifications' %}
-<p class="control">
-  <a href="/notifications" class="button transition {% if class %}{{class}}{% endif %}">
-    <span id="cog" class="icon">
-      <i class="fa fa-bell"></i>
-    </span>
-  </a>
-</p>
+{% include "navbar/notif-bell/clean.html" %}
 {% endif %}
 {% endif %}
 <!-- 
 {% if request.url_rule.endpoint != 'main.main' %}
 <p class="control">
   <a href="/explore" class="button transition {% if class %}{{class}}{% endif %}">
-    <span id="cog" class="icon">
+    <span class="icon">
       <i class="fas fa-search"></i>
     </span>
   </a>

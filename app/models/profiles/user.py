@@ -5,8 +5,7 @@ from app.models.comms.wall import Wall
 from app.models.locationBase import locationBase
 from app.models.static.photo import Photo
 from app.models.profiles.group import Membership, Group
-from app.models.profiles.club import Club
-from app.models.profiles.project import Project
+from app.models.profiles.idea import Idea
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func, inspect
 from datetime import date, datetime, timedelta
@@ -33,16 +32,6 @@ allies = db.Table('allies',
 followers = db.Table('followers',
                      db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
                      db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
-
-clubs = db.Table('clubs',
-                 db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                 db.Column('club_id', db.Integer, db.ForeignKey('club.id'))
-                 )
-
-projects = db.Table('projects',
-                    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                    db.Column('project_id', db.Integer, db.ForeignKey('project.id'))
-                    )
 
 
 class User(UserMixin, db.Model, Base, locationBase):
@@ -88,15 +77,13 @@ class User(UserMixin, db.Model, Base, locationBase):
     memberships = db.relationship(
         'Membership', lazy='dynamic',
         foreign_keys='Membership.owner_id')
-
-    clubs = db.relationship(
-        'Club', secondary=clubs, backref="members", lazy='dynamic')
-
-    projects = db.relationship(
-        'Project', secondary=projects, backref="members", lazy='dynamic')
     
     convos = db.relationship(
         'Convo', secondary=convos, backref="members", lazy='dynamic')
+
+    @property
+    def ideas(self):
+        pass
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -123,7 +110,7 @@ class User(UserMixin, db.Model, Base, locationBase):
             return title
 
     def has_skill(self, title):
-        return any([skill.title == title for skill in self.skills.all()])
+        return self.has_skills([title])
 
     def has_skills(self, titles):
         return all([title in [skill.title for skill in self.skills.all()] for title in titles])
@@ -188,7 +175,7 @@ class User(UserMixin, db.Model, Base, locationBase):
         return True
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return '<User @{}>'.format(self.username)
 
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):

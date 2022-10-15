@@ -100,19 +100,17 @@
 {% with photo_src = user.profile_photo.src %}
 {% include "photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'profiles.create_club' %}
-{% include "profiles/club/create.html" %}
-{% elif request.url_rule.endpoint == 'profiles.create_project' %}
-{% include "profiles/project/create.html" %}
-{% elif request.url_rule.endpoint == 'profiles.create_medium' %}
-{% include "profiles/user/create-medium.html" %}
+{% elif request.url_rule.endpoint == 'profiles.create_idea' %}
+{% include "profiles/idea/create.html" %}
+{% elif request.url_rule.endpoint == 'profiles.create_input' %}
+{% include "profiles/user/create-input.html" %}
 {% endif %}
 
 {% endblock %}
 
 {% block scripts %}
-<link rel="stylesheet" href="/static/css/comms/medium.css">
-<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
+<link rel="stylesheet" href="/static/css/comms/input.css">
+<script src="{{ url_for('static', filename='js/comms/input.js') }}"></script>
 <link rel="stylesheet" href="/static/css/profiles/profile.css">
 <link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
@@ -123,11 +121,10 @@
 <script src="/static/js/profiles/profile.js"></script>
 <script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/user/edit.js"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/create-medium.js') }}"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/create-medium-with-quote.js') }}"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/delete-medium.js') }}"></script>
-<script src="/static/js/profiles/club/create.js"></script>
-<script src="/static/js/profiles/project/create.js"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/create-input.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/create-input-with-quote.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/delete-input.js') }}"></script>
+<script src="/static/js/profiles/idea/create.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
@@ -340,7 +337,7 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_club','profiles.create_project']  %}
+{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_idea']  %}
 load_map_js();
 {% endif %}
 </script>
@@ -357,13 +354,9 @@ load_map_js();
     e.preventDefault();
   });
 
-   $(document).on('click', '#create-club-button', function(e) {
-    redirect({id:"create-club"},"Create club", "/create/club/", changeToCreateClub);
-    e.preventDefault();
-  });
 
-     $(document).on('click', '#create-project-button', function(e) {
-    redirect({id:"create-project"},"Create project", "/create/project/", changeToCreateProject);
+     $(document).on('click', '#create-idea-button', function(e) {
+    redirect({id:"create-idea"},"Create idea", "/create/idea/", changeToCreateIdea);
     e.preventDefault();
   });
 
@@ -376,7 +369,7 @@ $(document).on('click', '.modal-background', function() {
 });
 
 $(document).on('focus', '#create-bar-input', function() {
-    redirect({id:"create-medium"}, "Create medium", "/create/medium/", changeToCreateMedium);
+    redirect({id:"create-input"}, "Create input", "/create/input/", changeToCreateInput);
   });
 
 $(window).on("popstate", function() {
@@ -391,16 +384,13 @@ $(window).on("popstate", function() {
     changeToPhoto();
   }
 
-  else if (window.history.state.id == "create-club") {
-    changeToCreateClub();
+
+  else if (window.history.state.id == "create-idea") {
+    changeToCreateIdea();
   }
 
-  else if (window.history.state.id == "create-project") {
-    changeToCreateProject();
-  }
-
-  else if (window.history.state.id == "create-medium") {
-      changeToCreateMedium();
+  else if (window.history.state.id == "create-input") {
+      changeToCreateInput();
   }
 
 });
@@ -429,16 +419,9 @@ function changeToPhoto() {
 }
 
 
-function changeToCreateClub() {
+function changeToCreateIdea() {
     $("#modal-box").append(`
-    {% include "profiles/club/create.html" %}`);
-  load_map_js();
-  freezeScroller();
-}
-
-function changeToCreateProject() {
-    $("#modal-box").append(`
-    {% include "profiles/project/create.html" %}`);
+    {% include "profiles/idea/create.html" %}`);
   load_map_js();
   freezeScroller();
 }
@@ -448,12 +431,10 @@ function changeToCreateProject() {
 window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
 {% elif request.url_rule.endpoint == 'profiles.user_photo' %}
 window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
-{% elif request.url_rule.endpoint == 'profiles.create_club' %}
-window.history.replaceState({id:"create-club"},"Create club", "/create/club/");
-{% elif request.url_rule.endpoint == 'profiles.create_project' %}
-window.history.replaceState({id:"create-project"},"Create project", "/create/project/");
-{% elif request.url_rule.endpoint == 'profiles.create_medium' %}
-window.history.replaceState({id:"create-medium"},"Create medium", "/create/medium/");
+{% elif request.url_rule.endpoint == 'profiles.create_idea' %}
+window.history.replaceState({id:"create-idea"},"Create idea", "/create/idea/");
+{% elif request.url_rule.endpoint == 'profiles.create_input' %}
+window.history.replaceState({id:"create-input"},"Create input", "/create/input/");
 {% else %}
 window.history.replaceState({id:"user-profile"},"Profile", "./");
 {% endif %}

@@ -1,7 +1,0 @@
-{% for role in club.roles %}
-
-{% endfor %}
-      
-{% if club.group.member_has_permission(current_user,"permissionToCreateRoles") %}
-<div class="add-specific-button" id="create-role-button"><span>Add role</span></div>
-{% endif %}

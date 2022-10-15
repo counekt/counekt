@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5c2e8f198944
+Revision ID: 090039c86e4a
 Revises: 
-Create Date: 2021-12-12 14:18:38.245932
+Create Date: 2022-10-15 19:42:44.092517
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5c2e8f198944'
+revision = '090039c86e4a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -39,29 +39,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('club',
-    sa.Column('address', sa.String(), nullable=True),
-    sa.Column('latitude', sa.Float(), nullable=True),
-    sa.Column('longitude', sa.Float(), nullable=True),
-    sa.Column('sin_rad_lat', sa.Float(), nullable=True),
-    sa.Column('cos_rad_lat', sa.Float(), nullable=True),
-    sa.Column('rad_lng', sa.Float(), nullable=True),
-    sa.Column('show_location', sa.Boolean(), nullable=True),
-    sa.Column('is_visible', sa.Boolean(), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('handle', sa.String(), nullable=True),
-    sa.Column('group_id', sa.Integer(), nullable=True),
-    sa.Column('name', sa.String(), nullable=True),
-    sa.Column('description', sa.String(), nullable=True),
-    sa.Column('public', sa.Boolean(), nullable=True),
-    sa.Column('profile_photo_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
-    sa.ForeignKeyConstraint(['profile_photo_id'], ['photo.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id')
-    )
-    op.create_index(op.f('ix_club_handle'), 'club', ['handle'], unique=True)
-    op.create_table('project',
+    op.create_table('idea',
     sa.Column('address', sa.String(), nullable=True),
     sa.Column('latitude', sa.Float(), nullable=True),
     sa.Column('longitude', sa.Float(), nullable=True),
@@ -79,11 +57,11 @@ def upgrade():
     sa.Column('profile_photo_id', sa.Integer(), nullable=True),
     sa.Column('parent_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
-    sa.ForeignKeyConstraint(['parent_id'], ['project.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['idea.id'], ),
     sa.ForeignKeyConstraint(['profile_photo_id'], ['photo.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_project_handle'), 'project', ['handle'], unique=True)
+    op.create_index(op.f('ix_idea_handle'), 'idea', ['handle'], unique=True)
     op.create_table('role',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(), nullable=True),
@@ -141,18 +119,6 @@ def upgrade():
     sa.ForeignKeyConstraint(['left_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['right_id'], ['user.id'], )
     )
-    op.create_table('club_viewers',
-    sa.Column('club_id', sa.Integer(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['club_id'], ['club.id'], ondelete='cascade'),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='cascade')
-    )
-    op.create_table('clubs',
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('club_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['club_id'], ['club.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
-    )
     op.create_table('convos',
     sa.Column('convo_id', sa.Integer(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -178,19 +144,30 @@ def upgrade():
     sa.ForeignKeyConstraint(['followed_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['follower_id'], ['user.id'], )
     )
-    op.create_table('medium',
+    op.create_table('idea_viewers',
+    sa.Column('idea_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['idea_id'], ['idea.id'], ondelete='cascade'),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='cascade')
+    )
+    op.create_table('input',
     sa.Column('creation_datetime', sa.DateTime(), nullable=True),
     sa.Column('title', sa.String(), nullable=True),
     sa.Column('content', sa.Text(), nullable=True),
     sa.Column('public', sa.Boolean(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('to_id', sa.Integer(), nullable=True),
     sa.Column('author_id', sa.Integer(), nullable=True),
+    sa.Column('with_quote', sa.Boolean(), nullable=True),
+    sa.Column('reply_to_id', sa.Integer(), nullable=True),
+    sa.Column('quote_to_id', sa.Integer(), nullable=True),
+    sa.Column('channel_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['author_id'], ['user.id'], ),
-    sa.ForeignKeyConstraint(['to_id'], ['medium.id'], ),
+    sa.ForeignKeyConstraint(['channel_id'], ['idea.id'], ),
+    sa.ForeignKeyConstraint(['quote_to_id'], ['input.id'], ),
+    sa.ForeignKeyConstraint(['reply_to_id'], ['input.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_medium_creation_datetime'), 'medium', ['creation_datetime'], unique=False)
+    op.create_index(op.f('ix_input_creation_datetime'), 'input', ['creation_datetime'], unique=False)
     op.create_table('membership',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('owner_id', sa.Integer(), nullable=True),
@@ -219,22 +196,10 @@ def upgrade():
     sa.Column('receiver_id', sa.Integer(), nullable=True),
     sa.Column('timestamp', sa.Float(), nullable=True),
     sa.Column('payload_json', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_notification_timestamp'), 'notification', ['timestamp'], unique=False)
-    op.create_table('project_viewers',
-    sa.Column('project_id', sa.Integer(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='cascade'),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='cascade')
-    )
-    op.create_table('projects',
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('project_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['project_id'], ['project.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
-    )
     op.create_table('skill',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=20), nullable=True),
@@ -243,18 +208,6 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_skill_title'), 'skill', ['title'], unique=False)
-    op.create_table('club_to_user_request',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('type', sa.String(), nullable=True),
-    sa.Column('sender_id', sa.Integer(), nullable=True),
-    sa.Column('receiver_id', sa.Integer(), nullable=True),
-    sa.Column('notification_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['notification_id'], ['notification.id'], ),
-    sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['sender_id'], ['club.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_club_to_user_request_type'), 'club_to_user_request', ['type'], unique=False)
     op.create_table('feedback_downvote',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('feedback_id', sa.Integer(), nullable=True),
@@ -271,21 +224,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['voter_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('media',
-    sa.Column('medium_id', sa.Integer(), nullable=True),
-    sa.Column('wall_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['medium_id'], ['medium.id'], ),
-    sa.ForeignKeyConstraint(['wall_id'], ['wall.id'], )
-    )
-    op.create_table('medium_heart',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('medium_id', sa.Integer(), nullable=True),
-    sa.Column('voter_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['medium_id'], ['medium.id'], ),
-    sa.ForeignKeyConstraint(['voter_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('project_to_user_request',
+    op.create_table('idea_to_user_request',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('type', sa.String(), nullable=True),
     sa.Column('sender_id', sa.Integer(), nullable=True),
@@ -293,34 +232,44 @@ def upgrade():
     sa.Column('notification_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['notification_id'], ['notification.id'], ),
     sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['sender_id'], ['project.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['sender_id'], ['idea.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_project_to_user_request_type'), 'project_to_user_request', ['type'], unique=False)
-    op.create_table('user_to_club_request',
+    op.create_index(op.f('ix_idea_to_user_request_type'), 'idea_to_user_request', ['type'], unique=False)
+    op.create_table('input_downvote',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('input_id', sa.Integer(), nullable=True),
+    sa.Column('voter_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['input_id'], ['input.id'], ),
+    sa.ForeignKeyConstraint(['voter_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('input_heart',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('input_id', sa.Integer(), nullable=True),
+    sa.Column('voter_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['input_id'], ['input.id'], ),
+    sa.ForeignKeyConstraint(['voter_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('inputs',
+    sa.Column('input_id', sa.Integer(), nullable=True),
+    sa.Column('wall_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['input_id'], ['input.id'], ),
+    sa.ForeignKeyConstraint(['wall_id'], ['wall.id'], )
+    )
+    op.create_table('user_to_idea_request',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('type', sa.String(), nullable=True),
     sa.Column('sender_id', sa.Integer(), nullable=True),
     sa.Column('receiver_id', sa.Integer(), nullable=True),
     sa.Column('notification_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['notification_id'], ['notification.id'], ),
-    sa.ForeignKeyConstraint(['receiver_id'], ['club.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['receiver_id'], ['idea.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_user_to_club_request_type'), 'user_to_club_request', ['type'], unique=False)
-    op.create_table('user_to_project_request',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('type', sa.String(), nullable=True),
-    sa.Column('sender_id', sa.Integer(), nullable=True),
-    sa.Column('receiver_id', sa.Integer(), nullable=True),
-    sa.Column('notification_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['notification_id'], ['notification.id'], ),
-    sa.ForeignKeyConstraint(['receiver_id'], ['project.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_user_to_project_request_type'), 'user_to_project_request', ['type'], unique=False)
+    op.create_index(op.f('ix_user_to_idea_request_type'), 'user_to_idea_request', ['type'], unique=False)
     op.create_table('user_to_user_request',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('type', sa.String(), nullable=True),
@@ -340,35 +289,29 @@ def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_index(op.f('ix_user_to_user_request_type'), table_name='user_to_user_request')
     op.drop_table('user_to_user_request')
-    op.drop_index(op.f('ix_user_to_project_request_type'), table_name='user_to_project_request')
-    op.drop_table('user_to_project_request')
-    op.drop_index(op.f('ix_user_to_club_request_type'), table_name='user_to_club_request')
-    op.drop_table('user_to_club_request')
-    op.drop_index(op.f('ix_project_to_user_request_type'), table_name='project_to_user_request')
-    op.drop_table('project_to_user_request')
-    op.drop_table('medium_heart')
-    op.drop_table('media')
+    op.drop_index(op.f('ix_user_to_idea_request_type'), table_name='user_to_idea_request')
+    op.drop_table('user_to_idea_request')
+    op.drop_table('inputs')
+    op.drop_table('input_heart')
+    op.drop_table('input_downvote')
+    op.drop_index(op.f('ix_idea_to_user_request_type'), table_name='idea_to_user_request')
+    op.drop_table('idea_to_user_request')
     op.drop_table('feedback_upvote')
     op.drop_table('feedback_downvote')
-    op.drop_index(op.f('ix_club_to_user_request_type'), table_name='club_to_user_request')
-    op.drop_table('club_to_user_request')
     op.drop_index(op.f('ix_skill_title'), table_name='skill')
     op.drop_table('skill')
-    op.drop_table('projects')
-    op.drop_table('project_viewers')
     op.drop_index(op.f('ix_notification_timestamp'), table_name='notification')
     op.drop_table('notification')
     op.drop_index(op.f('ix_message_creation_datetime'), table_name='message')
     op.drop_table('message')
     op.drop_table('membership')
-    op.drop_index(op.f('ix_medium_creation_datetime'), table_name='medium')
-    op.drop_table('medium')
+    op.drop_index(op.f('ix_input_creation_datetime'), table_name='input')
+    op.drop_table('input')
+    op.drop_table('idea_viewers')
     op.drop_table('followers')
     op.drop_index(op.f('ix_feedback_creation_datetime'), table_name='feedback')
     op.drop_table('feedback')
     op.drop_table('convos')
-    op.drop_table('clubs')
-    op.drop_table('club_viewers')
     op.drop_table('allies')
     op.drop_index(op.f('ix_user_username'), table_name='user')
     op.drop_index(op.f('ix_user_token'), table_name='user')
@@ -377,10 +320,8 @@ def downgrade():
     op.drop_table('user')
     op.drop_index(op.f('ix_role_title'), table_name='role')
     op.drop_table('role')
-    op.drop_index(op.f('ix_project_handle'), table_name='project')
-    op.drop_table('project')
-    op.drop_index(op.f('ix_club_handle'), table_name='club')
-    op.drop_table('club')
+    op.drop_index(op.f('ix_idea_handle'), table_name='idea')
+    op.drop_table('idea')
     op.drop_table('wall')
     op.drop_table('photo')
     op.drop_table('group')

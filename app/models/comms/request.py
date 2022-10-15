@@ -73,7 +73,10 @@ class UserToUserRequest(db.Model, RequestBase, Base):
         return "<UserToUserRequest {}>".format(self.type)
 
     def get_notification_payload_json(self):
-        return {"ally": {"type": "ally", "color": "#3298dc",
+        return {"ally": {"type": "request",
+                         "request_type":"UserToUserRequest",
+                         "request_subtype":"ally",
+                         "color": "#3298dc",
                          "icon": "fa fa-user-friends",
                          "sender-name": self.sender.name,
                          "sender-username": self.sender.username,
@@ -83,11 +86,11 @@ class UserToUserRequest(db.Model, RequestBase, Base):
                          }}.get(self.type)
 
 
-class UserToClubRequest(db.Model, RequestBase, Base):
+class UserToIdeaRequest(db.Model, RequestBase, Base):
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     sender = db.relationship("User", foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('club.id', ondelete='CASCADE'))
-    receiver = db.relationship("Club", foreign_keys=[receiver_id])
+    receiver_id = db.Column(db.Integer, db.ForeignKey('idea.id', ondelete='CASCADE'))
+    receiver = db.relationship("Idea", foreign_keys=[receiver_id])
 
     def __init__(self, **kwargs):
         RequestBase.__init__(self, **kwargs)
@@ -98,42 +101,17 @@ class UserToClubRequest(db.Model, RequestBase, Base):
             self.receiver.add_member(self.sender)
 
     def __repr__(self):
-        return "<UserToClubRequest {}>".format(self.type)
+        return "<UserToIdeaRequest {}>".format(self.type)
 
     def get_notification_payload_json(self):
-        return {"join": {"type":"join","color": "#3298dc",
+        return {"join": {"type": "request",
+                         "request_type":"UserToIdeaRequest",
+                         "request_subtype":"join",
+                         "color": "#3298dc",
                          "icon": "fa fa-user-friends",
                          "sender-name": self.sender.name,
                          "sender-username": self.sender.username,
-                         "message": "wants to join your Club",
-                         "sender-photo": self.sender.profile_photo.src,
-                         "href":f"/@{self.sender.username}/"
-                         }}.get(self.type)
-
-
-class UserToProjectRequest(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    sender = db.relationship("User", foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
-    receiver = db.relationship("Project", foreign_keys=[receiver_id])
-
-    def __init__(self, **kwargs):
-        RequestBase.__init__(self, **kwargs)
-
-    def _do(self):
-        if self.type == "join":
-            self.receiver.viewers.remove(self.sender)
-            self.receiver.add_member(self.sender)
-
-    def __repr__(self):
-        return "<UserToProjectRequest {}>".format(self.type)
-
-    def get_notification_payload_json(self):
-        return {"join": {"type":"join", "color": "#3298dc",
-                         "icon": "fa fa-user-friends",
-                         "sender-name": self.sender.name,
-                         "sender-username": self.sender.username,
-                         "message": "wants to join your Project",
+                         "message": "wants to join your Idea",
                          "sender-photo": self.sender.profile_photo.src,
                          "href":f"/£{self.sender.handle}/"
                          }}.get(self.type)
@@ -142,9 +120,9 @@ class UserToProjectRequest(db.Model, RequestBase, Base):
 # --------------------------------------
 
 
-class ProjectToUserRequest(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'))
-    sender = db.relationship("Project", foreign_keys=[sender_id])
+class IdeaToUserRequest(db.Model, RequestBase, Base):
+    sender_id = db.Column(db.Integer, db.ForeignKey('idea.id', ondelete='CASCADE'))
+    sender = db.relationship("Idea", foreign_keys=[sender_id])
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     receiver = db.relationship("User", foreign_keys=[receiver_id])
 
@@ -158,45 +136,17 @@ class ProjectToUserRequest(db.Model, RequestBase, Base):
             self.sender.add_member(self.receiver)
 
     def __repr__(self):
-        return "<UserToProjectRequest {}>".format(self.type)
+        return "<UserToIdeaRequest {}>".format(self.type)
 
     def get_notification_payload_json(self):
-        return {"invite": {"type":"invite","color": "#3298dc",
+        return {"invite": {"type": "request",
+                           "request_type":"IdeaToUserRequest",
+                           "request_subtype":"invite",
+                           "color": "#3298dc",
                            "icon": "fa fa-user-friends",
                            "sender-name": self.sender.name,
                            "sender-handle": self.sender.handle,
-                           "message": "invites you to join their Project",
+                           "message": "invites you to join their Idea",
                            "sender-photo": self.sender.profile_photo.src,
                            "href":f"/£{self.sender.handle}/"
                            }}.get(self.type)
-
-
-class ClubToUserRequest(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('club.id', ondelete='CASCADE'))
-    sender = db.relationship("Club", foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    receiver = db.relationship("User", foreign_keys=[receiver_id])
-
-    def __init__(self, **kwargs):
-        RequestBase.__init__(self, **kwargs)
-        if self.type == "invite":
-            self.sender.viewers.append(self.receiver)
-
-    def _do(self):
-        if self.type == "invite":
-            self.sender.viewers.remove(self.receiver)
-            self.sender.add_member(self.receiver)
-
-    def __repr__(self):
-        return "<ClubToUserRequest {}>".format(self.type)
-
-    def get_notification_payload_json(self):
-        return {"invite": {"type": "invite","color": "#3298dc",
-                           "icon": "fa fa-envelope",
-                           "sender-name": self.sender.name,
-                           "sender-handle": self.sender.handle,
-                           "message": "invites you to join their Club",
-                           "sender-photo": self.sender.profile_photo.src,
-                           "href":f"/€{self.sender.handle}/"
-                           }}.get(self.type)
-                           

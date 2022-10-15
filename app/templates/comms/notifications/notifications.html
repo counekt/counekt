@@ -6,6 +6,7 @@
   </div>
   <div id="notifications">
     {% for notification in notifications %}
+    {% include 'comms/notifications/notif.html' %}
     {% with data = notification.get_data() %}
     <div class="splitter"></div>
     <a href="{{data.get('href')}}">

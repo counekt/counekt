@@ -10,7 +10,7 @@ function changeToFeed() {
   if (!$('.clickable').has($target).length && !$target.hasClass('clickable')) {
       var medium_id = $(this).data('id');
       console.log("MEDIUM CLICK");
-      goToIndividualMedium(medium_id);
+      //goToIndividualMedium(medium_id);
   }
   
 });

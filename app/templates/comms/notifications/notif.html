@@ -1,0 +1,28 @@
+{% with data = notification.get_data() %}
+    <div class="splitter"></div>
+      <div class="notif box {% if not notification.seen %}unread{% endif %}" data-id="{{notification.id}}">
+        <span class="notif-icon icon" style="color: {{data.get('color')}};"><i class="fas fa-lg {{data.get('icon')}}"></i></span>
+          <div class="notif-content">
+              <a class="profile-image" href="{{data.get('href')}}">
+              <figure class="image medium-profile-photo clickable">
+              <img alt draggable="false" class="profile-image-content" src="{{data.get('photo')}}">
+              </figure>
+              </a>
+              
+              <br style="display: block;
+   margin: 10px 0;">
+              <a class="profile-name" href="{{data.get('href')}}"><b>{% if data.get('sender-name') %}{{data.get('sender-name')}}{% elif data.get('sender-username') %}{{data.get('sender-username')}}{% else %}{{data.get('sender-handle')}}{% endif %}</b></a>
+              <span class="selectable">{{data.get('message')}}</span>
+        </div>
+        <div class="field" style="float:right;">
+          <p class="control">
+            <button id="connect-button" class="button is-light" data-type="pending"><span class="text">Accept?</span>
+              <span class="icon">
+                <i class="fas fa-check" aria-hidden="true"></i>
+              </span>
+            </button>
+          </p>
+          
+        </div>
+      </div>
+{% endwith %}

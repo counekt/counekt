@@ -1,4 +1,3 @@
-from app.routes.profiles.routes import notifications
 from app import db
 from app.models.base import Base
 from sqlalchemy.ext.hybrid import hybrid_property

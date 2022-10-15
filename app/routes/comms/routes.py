@@ -212,3 +212,19 @@ def news():
 @ bp.route("/wall/", methods=["GET", "POST"])
 def wall():
     return render_template("comms/wall/wall.html", navbar=True, background=True, size="medium", models=models, wall=None)
+
+@login_required
+@ bp.route("/notifications/", methods=['GET', 'POST'])
+def notifications():
+    # POST request for marking notif as read
+    if flask_request.method == 'POST':
+        notif_id = flask_request.form.get("id")
+        notification = models.Notification.query.filter_by(id=notif_id).first()
+        if notification:
+            notification.seen = True
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+        return json.dumps({'status': 'error'})
+
+    notifications = current_user.notifications
+    return render_template("comms/notifications/notifications.html", background=True, size="medium", navbar=True, notifications=notifications)

@@ -12,8 +12,7 @@ from app.routes.profiles import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
 from app.routes.profiles.user.routes import *
-from app.routes.profiles.club.routes import *
-from app.routes.profiles.project.routes import *
+from app.routes.profiles.idea.routes import *
 
 
 @ bp.route("/get/coordinates/", methods=["POST"])
@@ -73,47 +72,9 @@ def connect(username):
             return json.dumps({'status': 'success'})
         return json.dumps({'status': 'error'})
 
-@ bp.route("/club/<handle>/invite/", methods=["POST"])
-@ bp.route("/€<handle>/invite/", methods=["POST"])
-def invite_to_club(handle):
-    club = models.Club.query.filter_by(handle=handle).first()
-    if club not in current_user.clubs:
-        abort(404)
-    if flask_request.method == 'POST':
-        usernames = json.loads(flask_request.form.get("usernames"))
-        for username in usernames:
-            user = models.User.query.filter_by(username=username).first()
-            sent_request = models.ClubToUserRequest.query.filter_by(type="invite", sender=club, receiver=user).first()
-            received_request = models.UserToClubRequest.query.filter_by(type="join", receiver=user, sender=club).first()
-            if flask_request.form.get("do") and not sent_request and not received_request:
-                request = models.ClubToUserRequest(type="invite", sender=club, receiver=user)
-                db.session.add(request)
-        db.session.commit()
-        return json.dumps({'status': 'success', 'handle':handle})
-
-@login_required
-@ bp.route("/join/club/<handle>/", methods=["POST"])
-@ bp.route("/join/€<handle>/", methods=["POST"])
-def join_club(handle):
-    club = models.Club.query.filter_by(handle=handle).first()
-    
-    if flask_request.method == 'POST':
-        received_request = models.ClubToUserRequest.query.filter_by(type="invite", sender=club, receiver=current_user).first()
-        sent_request = models.UserToClubRequest.query.filter_by(type="join", receiver=current_user, sender=club).first()
-        if flask_request.form.get("do") and not sent_request and not received_request:
-            request = models.UserToClubRequest(type="join", sender=current_user, receiver=club)
-            db.session.add(request)
-        elif flask_request.form.get("accept") and received_request:
-            received_request.accept()
-        elif flask_request.form.get("undo") and sent_request:
-            sent_request.regret()
-        db.session.commit()
-        return json.dumps({'status': 'success', 'handle':handle})
-
-
-@ bp.route("/project/<handle>/invite/", methods=["POST"])
-@ bp.route("/£<handle>/invite/", methods=["POST"])
-def invite_to_project(handle):
+@ bp.route("/idea/<handle>/invite/", methods=["POST"])
+@ bp.route("/$<handle>/invite/", methods=["POST"])
+def invite_to_idea(handle):
     project = models.Project.query.filter_by(handle=handle).first()
     if project not in current_user.project:
         abort(404)
@@ -134,8 +95,8 @@ def invite_to_project(handle):
         return json.dumps({'status': 'success', 'handle':handle})
 
 @login_required
-@ bp.route("/join/project/<handle>/", methods=["POST"])
-@ bp.route("/join/£<handle>/", methods=["POST"])
+@ bp.route("/join/idea/<handle>/", methods=["POST"])
+@ bp.route("/join/$<handle>/", methods=["POST"])
 def join_project(handle):
     project = models.Project.query.filter_by(handle=handle).first()
     
@@ -152,8 +113,8 @@ def join_project(handle):
         db.session.commit()
         return json.dumps({'status': 'success', 'handle':handle})
 
-@ bp.route("/project/<handle>/exit/", methods=["POST"])
-@ bp.route("/£<handle>/exit/", methods=["POST"])
+@ bp.route("/idea/<handle>/exit/", methods=["POST"])
+@ bp.route("/$<handle>/exit/", methods=["POST"])
 def exit_from_project(handle):
     """
     if flask_request.form.get("disconnect"):
@@ -162,29 +123,3 @@ def exit_from_project(handle):
             return json.dumps({'status': 'success'})
     """
     pass
-
-@ bp.route("/club/<handle>/exit/", methods=["POST"])
-@ bp.route("/€<handle>/exit/", methods=["POST"])
-def exit_from_club(handle):
-    """
-    if flask_request.form.get("disconnect"):
-            club.remove_member(user)
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-    """
-    pass
-
-@ bp.route("/notifications/", methods=['GET', 'POST'])
-def notifications():
-    # POST request for marking notif as read
-    if flask_request.method == 'POST':
-        notif_id = flask_request.form.get("id")
-        notification = models.Notification.query.filter_by(id=notif_id).first()
-        if notification:
-            notification.seen = True
-            db.session.commit()
-            return json.dumps({'status': 'success'})
-        return json.dumps({'status': 'error'})
-
-    notifications = current_user.notifications
-    return render_template("notifications.html", background=True, size="medium", navbar=True, notifications=notifications)

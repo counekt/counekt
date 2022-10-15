@@ -85,6 +85,10 @@ function emptyModalBox() {
     $('#modal-box').find('.modal').removeClass('is-active');
 }
 
+function add_notification (argument) {
+    // body...
+}
+
 
 function isScrolledIntoView(elem)
 {
