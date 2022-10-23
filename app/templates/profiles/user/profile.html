@@ -102,15 +102,15 @@
 {% endwith %}
 {% elif request.url_rule.endpoint == 'profiles.create_idea' %}
 {% include "profiles/idea/create.html" %}
-{% elif request.url_rule.endpoint == 'profiles.create_input' %}
-{% include "profiles/user/create-input.html" %}
+{% elif request.url_rule.endpoint == 'profiles.create_medium' %}
+{% include "profiles/user/create-medium.html" %}
 {% endif %}
 
 {% endblock %}
 
 {% block scripts %}
-<link rel="stylesheet" href="/static/css/comms/input.css">
-<script src="{{ url_for('static', filename='js/comms/input.js') }}"></script>
+<link rel="stylesheet" href="/static/css/comms/medium.css">
+<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
 <link rel="stylesheet" href="/static/css/profiles/profile.css">
 <link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profiles/edit.css">
@@ -121,9 +121,9 @@
 <script src="/static/js/profiles/profile.js"></script>
 <script src="/static/js/profiles/user/profile.js"></script>
 <script src="/static/js/profiles/user/edit.js"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/create-input.js') }}"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/create-input-with-quote.js') }}"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/delete-input.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/create-medium.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/create-medum-with-quote.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profiles/user/delete-medum.js') }}"></script>
 <script src="/static/js/profiles/idea/create.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
@@ -188,9 +188,12 @@ $("#connect-button").hover(
 </script>
 <script type="text/javascript">
   var username = "{{user.username}}";
+  var has_marker = {% if user.latitude and user.longitude %}true{% else %}false{% endif %};
+  var mapLatLng = {% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}]{% else %}[55.676111, 12.568333]{% endif %};
+  var mapZoom = {% if user.latitude and user.longitude %}12{% else %}2{% endif %};
 
   function load_map_js() {
-  var map = L.map('map').setView({% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
+  var map = L.map('map').setView(mapLatLng, mapZoom);
          
          //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
          layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -207,11 +210,6 @@ map.on('click', function(e){
     getAddress(e.latlng);
 });
 
-var marker;
-
-{% if current_user.latitude and current_user.longitude %}
-  marker = new L.marker([{{current_user.latitude}}, {{current_user.longitude}}]).addTo(markerGroup);
-{% endif %}
 
 window.getLatLng = function() {
   return(marker.getLatLng());
@@ -222,6 +220,11 @@ window.markerIsPlaced = function() {
     return(true);
   }
   return(false);
+}
+
+if (window.markerIsPlaced() || has_marker) {
+var marker;
+marker = new L.marker(mapLatLng).addTo(markerGroup);
 }
 
 function placeMarker(latlng, zoom_all_in=false) {
@@ -303,7 +306,7 @@ function getCoordinates() {
         var response = JSON.parse(response);
         var status = response["status"];
         if (status === "success") {stopErrorAlert("location-field");
-  stopErrorAlert("map");placeMarker([response["lat"],response["lng"]]);}
+  stopErrorAlert("map");$('#location-field').val(response["address"]);placeMarker([response["lat"],response["lng"]]);}
         else{console.log("WWW");alertError("location-field");}
       }});
 }
@@ -368,8 +371,8 @@ $(document).on('click', '.modal-background', function() {
     redirect({id:"user-profile"}, "Profile", "/user/{{user.username}}/", changeToProfile);
 });
 
-$(document).on('focus', '#create-bar-input', function() {
-    redirect({id:"create-input"}, "Create input", "/create/input/", changeToCreateInput);
+$(document).on('focus', '#create-bar-medium', function() {
+    redirect({id:"create-medium"}, "Create Medium", "/create/medium/", changeToCreateMedium);
   });
 
 $(window).on("popstate", function() {
@@ -389,8 +392,8 @@ $(window).on("popstate", function() {
     changeToCreateIdea();
   }
 
-  else if (window.history.state.id == "create-input") {
-      changeToCreateInput();
+  else if (window.history.state.id == "create-medium") {
+      changeToCreateMedium();
   }
 
 });
@@ -433,8 +436,8 @@ window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/
 window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
 {% elif request.url_rule.endpoint == 'profiles.create_idea' %}
 window.history.replaceState({id:"create-idea"},"Create idea", "/create/idea/");
-{% elif request.url_rule.endpoint == 'profiles.create_input' %}
-window.history.replaceState({id:"create-input"},"Create input", "/create/input/");
+{% elif request.url_rule.endpoint == 'profiles.create_medium' %}
+window.history.replaceState({id:"create-medium"},"Create Medium", "/create/medium/");
 {% else %}
 window.history.replaceState({id:"user-profile"},"Profile", "./");
 {% endif %}

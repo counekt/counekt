@@ -110,9 +110,9 @@ def edit_user():
     return render_template("profiles/user/profile.html", user=current_user, background=True, navbar=True, size="medium", noscroll=True)
 
 
-@ bp.route("/create/input/", methods=["GET", "POST"])
+@ bp.route("/create/medium/", methods=["GET", "POST"])
 @login_required
-def create_input():
+def create_medium():
     if flask_request.method == 'POST':
         action = flask_request.form.get("action")
         title = flask_request.form.get("title")
@@ -128,49 +128,49 @@ def create_input():
             return json.dumps({'status': 'error'})
         try:
             if m_type == "plain":
-                _input = models.Input(title=title,content=text, author=current_user, public=True if action == "submit" else False)
-                current_user.wall.append(_input)
+                medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+                current_user.wall.append(medium)
                 db.session.commit()
-                return json.dumps({'status': 'success', 'id':_input.id, "html":render_template("comms/wall/input.html", _input=_input)})
+                return json.dumps({'status': 'success', 'id':medium.id, "html":render_template("comms/wall/medium.html", medium=medium)})
             
             if m_type == "quote":
-                quote = models.Input.query.get(target_id)
-                _input = models.Input(title=title,content=text, author=current_user, public=True if action == "submit" else False, with_quote=True)
-                quote.quote_replies.append(_input)
-                current_user.wall.append(_input)
+                quote = models.Medium.query.get(target_id)
+                medium = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False, with_quote=True)
+                quote.quote_replies.append(medium)
+                current_user.wall.append(medium)
                 db.session.commit()
-                return json.dumps({'status': 'success', 'id':_input.id, "html":render_template("comms/wall/input.html", _input=_input)})
+                return json.dumps({'status': 'success', 'id':medium.id, "html":render_template("comms/wall/medium.html", medium=medium)})
 
             if m_type == "reply":
-                original = models.Input.query.get(target_id)
-                reply = models.Input(title=title,content=text, author=current_user, public=True if action == "submit" else False)
+                original = models.Medium.query.get(target_id)
+                reply = models.Medium(title=title,content=text, author=current_user, public=True if action == "submit" else False)
                 original.replies.append(reply)
                 db.session.commit()
                 return json.dumps({'status': 'success', 'id':reply.id, 'author':{'username':reply.author.username}})
         except exc.SQLAlchemyError:
-            return json.dumps({'status': 'Input not submitted'})
+            return json.dumps({'status': 'Medium not submitted'})
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
 
-@bp.route("/delete/input/", methods=["POST"])
+@bp.route("/delete/medium/", methods=["POST"])
 @login_required
-def delete_input():
+def delete_medium():
     if flask_request.method == 'POST':
         target_id = flask_request.form.get("target_id", type=int)
-        _input = current_user.wall.media.filter_by(id=target_id).first()
-        db.session.delete(_input)
+        medium = current_user.wall.media.filter_by(id=target_id).first()
+        db.session.delete(medium)
         db.session.commit()
         return json.dumps({'status': 'success'})
 
-@ bp.route("/user/<username>/input/<id>/", methods=["GET", "POST"])
-@ bp.route("/@<username>/input/<id>/", methods=["GET", "POST"])
-def user_input(username, id):
+@ bp.route("/user/<username>/medium/<id>/", methods=["GET", "POST"])
+@ bp.route("/@<username>/medium/<id>/", methods=["GET", "POST"])
+def user_medium(username, id):
     user = models.User.query.filter_by(username=username).first()
-    _input = user.wall.media.filter_by(id=id).first()
+    medium = user.wall.media.filter_by(id=id).first()
     if flask_request.method == 'POST':
-        return json.dumps({'status': 'success', "input":{"author":{"dname":_input.author.dname, "username":_input.author.username, "symbol":"@", "profile_photo_src":_input.author.profile_photo.src,"href":_input.author.href}, "id":_input.id, "creation_datetime":_input.creation_datetime.strftime("%m/%d/%Y, %H:%M:%S"), "title":str(_input.title), "content":str(_input.content),"reply_count":_input.reply_count,"quote_count":_input.quote_count, "is_hearted":_input.is_hearted(current_user) if current_user.is_authenticated else False}})
-    return render_template("comms/_input/by-user-wrapped.html", _input=_input, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
+        return json.dumps({'status': 'success', "medium":{"author":{"dname":medium.author.dname, "username":medium.author.username, "symbol":"@", "profile_photo_src":medium.author.profile_photo.src,"href":medium.author.href}, "id":medium.id, "creation_datetime":medium.creation_datetime.strftime("%m/%d/%Y, %H:%M:%S"), "title":str(medium.title), "content":str(medium.content),"reply_count":medium.reply_count,"quote_count":medium.quote_count, "is_hearted":medium.is_hearted(current_user) if current_user.is_authenticated else False}})
+    return render_template("comms/medium/by-user-wrapped.html", medium=medium, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
 def user_photo(username):

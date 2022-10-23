@@ -35,7 +35,7 @@ def reverse_geocode(coordinates, attempt=1, max_attempts=5, languages=["en"], zo
 
 
 def shorten_addr(location):
-    addr = location.raw["address"]
+    addr = location.raw.get("address",location.raw.get("display_name"))
     display = addr.get("country")
     print(addr)
     if addr.get("city"):

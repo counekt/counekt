@@ -20,9 +20,10 @@ def get_coordinates():
     if flask_request.method == 'POST':
         address = flask_request.form.get("address")
         location = funcs.geocode(address)
+        location = funcs.reverse_geocode([location.latitude, location.longitude])
         if not location:
             return json.dumps({'status': 'Non-valid location'})
-        return json.dumps({'status': 'success', 'lat': location.latitude, 'lng': location.longitude})
+        return json.dumps({'status': 'success', 'address':funcs.shorten_addr(location=location),'lat': location.latitude, 'lng': location.longitude})
 
 
 @ bp.route("/get/allies/", methods=["POST"])

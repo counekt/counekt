@@ -75,6 +75,8 @@ $(document).on("click", "#save-button", function() {
           $("select").find("option:selected").attr('selected', 'selected');
           $("select").find("option:not(:selected)").removeAttr('selected');
           edit_modal = $("#modal-box").clone();
+          mapLatLng =  window.getLatLng();
+          mapZoom = 12;
           changeToProfile();
           flash("Your changes were saved"); }
         else{message(status, response["box_id"], true);}

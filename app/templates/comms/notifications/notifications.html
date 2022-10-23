@@ -7,26 +7,6 @@
   <div id="notifications">
     {% for notification in notifications %}
     {% include 'comms/notifications/notif.html' %}
-    {% with data = notification.get_data() %}
-    <div class="splitter"></div>
-    <a href="{{data.get('href')}}">
-      <div class="notif box {% if not notification.seen %}unread{% endif %}" data-id="{{notification.id}}">
-        <span class="notif-icon icon" style="color: {{data.get('color')}};"><i class="fas fa-lg {{data.get('icon')}}"></i></span>
-          <div class="notif-content">
-              <a class="profile-image" href="{{data.get('href')}}">
-              <img alt draggable="false" class="profile-image-content" src="{{data.get('sender-photo')}}">
-              </a>
-              <br>
-              <a class="profile-name" href="{{data.get('href')}}"><b>{% if data.get('sender-name') %}{{data.get('sender-name')}}{% elif data.get('sender-username') %}{{data.get('sender-username')}}{% else %}{{data.get('sender-handle')}}{% endif %}</b></a>
-              <span class="selectable">{{data.get('message')}}</span>
-        </div>
-        <div class="button-answers">
-          <i class="far fa-check-circle"></i>
-          <i class="far fa-times-circle"></i>
-        </div>
-      </div>
-    </a>
-    {% endwith %}
     {% endfor %}
   </div>
 </div>
