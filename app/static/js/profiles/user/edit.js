@@ -1,6 +1,6 @@
-$(document).on("click", "#save-button", function() {
-   console.log("Applying edit");
+$(document).on("click", '#save-button', function(e) {
    $(this).prop('disabled', true);$(this).addClass('is-loading');
+   console.log("Applying edit");
    console.log($("#day").val());
    var skills = JSON.stringify($(".skill-title").map(function() { return $(this).text();}).get());
    var photo = $("#upload-image").prop('files')[0];
@@ -71,7 +71,7 @@ $(document).on("click", "#save-button", function() {
           $(".current-user-name").text(name);
           $(".current-user-photo").attr('src',photo_src);
           $("#profile-skills-container").html(skill_bar);
-          $("#save-button").prop('disabled', false);$("#save-button").removeClass('is-loading');
+          stopButtonLoading();
           $("select").find("option:selected").attr('selected', 'selected');
           $("select").find("option:not(:selected)").removeAttr('selected');
           edit_modal = $("#modal-box").clone();

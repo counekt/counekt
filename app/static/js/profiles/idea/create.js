@@ -1,5 +1,6 @@
-$(document).on("click", "#create-project", function() {
-   
+$(document).on("click", "#create-idea", function() {
+     $(this).prop('disabled', true);$(this).addClass('is-loading');
+
    //var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    
    var formData = new FormData();
@@ -27,15 +28,16 @@ $(document).on("click", "#create-project", function() {
 
     $.post({
       type: "POST",
-      url: "/create/project/",
+      url: "/create/idea/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
+        stopButtonLoading();
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { location.replace("/£"+handle+"/"); }
+        if (status === "success") { location.replace("/$"+handle+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});

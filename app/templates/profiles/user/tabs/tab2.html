@@ -1,9 +1,9 @@
-{% for club in user.clubs %}
-        {% with profile=club %}
+{% for project in user.projects %}
+        {% with profile=project %}
         {% include 'profiles/mini-profile.html' %}
         {% endwith %}
 {% endfor %}
-
+      
 {% if user==current_user %}
-<div class="add-specific-button" id="create-club-button"><span>Create club</span></div>
+<div class="add-specific-button" id="create-idea-button"><span>Create Idea</span></div>
 {% endif %}

@@ -8,14 +8,14 @@
         </span>
       </a>
       <p class="modal-card-title" id="header">Create Idea</p>
-      <button class="button is-info is-normal is-rounded" id="create-project">
+      <button class="button loading-button is-info is-normal is-rounded" id="create-idea">
         <span>Save</span>
       </button>
   </header>
   <section class="modal-card-body has-text-centered">
 
   <div id="edit-associate-image">
-      <img draggable="false" id="edit-associate-image-content" src="{{ url_for('static', filename='images/project.jpg') }}">
+      <img draggable="false" id="edit-associate-image-content" src="{{ url_for('static', filename='images/idea.jpg') }}">
       <input type="file"  accept="image/*" name="image" id="upload" onchange="loadImage(event, '#edit-associate-image-content')" style="display: none;">
     <button class="button is-large is-white" id="edit-associate-image-upload">
     <span class="icon is-medium">
@@ -29,10 +29,10 @@
       <h1><b>Handle</b></h1>
         <div class="field has-addons">
           <p class="control">
-          <a class="button is-static">£</a>
+          <a class="button is-static">$</a>
           </p>
           <p class="control" style="width:100%;">
-          <input class="input has-fixed-size" placeholder="Add the handle of your idea" id="handle-field"></input>
+          <input class="input has-fixed-size" placeholder="Add the handle of your idea" id="handle-field" autocapitalize="none" style="text-transform: lowercase;"></input>
           </p>
         </div>
     </div>

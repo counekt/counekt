@@ -9,19 +9,19 @@ from datetime import datetime
 from sqlalchemy import func, inspect, case, extract
 import app.funcs as funcs
 
-inputs = db.Table('inputs',
-                  db.Column('input_id', db.Integer, db.ForeignKey('input.id')),
+media = db.Table('media',
+                  db.Column('media_id', db.Integer, db.ForeignKey('medium.id')),
                   db.Column('wall_id', db.Integer, db.ForeignKey('wall.id'))
                   )
 
 class Wall(Base, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	media = db.relationship(
-	    'Input', secondary=inputs, backref="walls", lazy='dynamic')
+	    'Medium', secondary=media, backref="walls", lazy='dynamic')
 
-	def append(self, _input):
-		self.media.append(_input)
-		return _input
+	def append(self, medium):
+		self.media.append(medium)
+		return medium
 
 	@property
 	def media_sorted_by_hot(self):
@@ -53,7 +53,7 @@ class Media:
 	
 	@declared_attr
 	def author_id(self):
-		return db.Column(db.Integer, db.ForeignKey('user.id'))
+		return db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
 
 	@declared_attr
 	def author(self):
@@ -183,38 +183,38 @@ class Vote:
 	def voter(self):
 		return db.relationship('User',foreign_keys=[self.voter_id])
 
-class InputHeart(Vote,db.Model):
-	input_id = db.Column(db.Integer, db.ForeignKey('input.id'))
+class MediumHeart(Vote,db.Model):
+	medium_id = db.Column(db.Integer, db.ForeignKey('medium.id', ondelete='CASCADE'))
 
-class InputDownvote(Vote,db.Model):
-	input_id = db.Column(db.Integer, db.ForeignKey('input.id'))
+class MediumDownvote(Vote,db.Model):
+	medium_id = db.Column(db.Integer, db.ForeignKey('medium.id', ondelete='CASCADE'))
 
-class Input(Media,Base,db.Model):
+class Medium(Media,Base,db.Model):
 
 	def __init__(self, **kwargs):
-		super(Input, self).__init__(**kwargs)
+		super(Medium, self).__init__(**kwargs)
 
 	id = db.Column(db.Integer, primary_key=True)
-	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+	author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
 	author = db.relationship("User", foreign_keys=[author_id])
 
 	with_quote = db.Column(db.Boolean, default=False)
 
-	quote_replies = db.relationship('Input', backref=db.backref("quote", remote_side=[id]), lazy='dynamic',
-        foreign_keys='Input.quote_to_id')
+	quote_replies = db.relationship('Medium', backref=db.backref("quote", remote_side=[id]), lazy='dynamic',
+        foreign_keys='Medium.quote_to_id')
 
-	replies = db.relationship('Input', backref=db.backref("reply_to", remote_side=[id]), lazy='dynamic',
-        foreign_keys='Input.reply_to_id')
+	replies = db.relationship('Medium', backref=db.backref("reply_to", remote_side=[id]), lazy='dynamic',
+        foreign_keys='Medium.reply_to_id')
 
-	reply_to_id = db.Column(db.Integer, db.ForeignKey('input.id'))
-	quote_to_id = db.Column(db.Integer, db.ForeignKey('input.id'))
+	reply_to_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
+	quote_to_id = db.Column(db.Integer, db.ForeignKey('medium.id'))
 
-	upvotes = db.relationship('InputHeart', backref='input', lazy='dynamic',
-        foreign_keys='InputHeart.input_id')
-	downvotes = db.relationship('InputDownvote', backref='input', lazy='dynamic',
-        foreign_keys='InputDownvote.input_id')
+	upvotes = db.relationship('MediumHeart', backref='media', lazy='dynamic',
+        foreign_keys='MediumHeart.medium_id')
+	downvotes = db.relationship('MediumDownvote', backref='media', lazy='dynamic',
+        foreign_keys='MediumDownvote.medium_id')
 	
-	channel_id = db.Column(db.Integer, db.ForeignKey('idea.id'))
+	channel_id = db.Column(db.Integer, db.ForeignKey('idea.id', ondelete='CASCADE'))
 	channel = db.relationship("Idea", foreign_keys=[channel_id])
 
 	def is_hearted(self, voter):

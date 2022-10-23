@@ -122,3 +122,7 @@ Utils.prototype = {
 };
 
 var Utils = new Utils();
+
+function stopButtonLoading() {
+    $(".loading-button").prop('disabled', false);$(".loading-button").removeClass('is-loading');
+}
