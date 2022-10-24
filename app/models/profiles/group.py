@@ -1,5 +1,6 @@
 from app import db
 from app.models.base import Base
+import app.models.profiles.idea
 from sqlalchemy.ext.hybrid import hybrid_property
 
 class Group(db.Model, Base):
@@ -81,6 +82,10 @@ class Membership(db.Model, Base):
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship("Role", foreign_keys=[role_id])
+
+    @property
+    def organization(self):
+        return app.models.profiles.idea.Idea.query.filter_by(group=self.group).first_or_404()
 
     def __repr__(self):
         return "<Membership {}>".format(self.role)

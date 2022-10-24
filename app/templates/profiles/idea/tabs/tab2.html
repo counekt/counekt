@@ -1,7 +1,7 @@
-{% for role in project.roles %}
+{% for role in idea.roles %}
 
 {% endfor %}
       
-{% if project.group.member_has_permission(current_user,"permissionToCreateRoles") %}
+{% if idea.group.member_has_permission(current_user,"permissionToCreateRoles") %}
 <div class="add-specific-button" id="create-role-button"><span>Add role</span></div>
 {% endif %}

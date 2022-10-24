@@ -1,5 +1,5 @@
-{% for project in user.projects %}
-        {% with profile=project %}
+{% for idea in user.ideas %}
+        {% with profile=idea %}
         {% include 'profiles/mini-profile.html' %}
         {% endwith %}
 {% endfor %}

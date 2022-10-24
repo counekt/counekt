@@ -4,13 +4,13 @@
   <div id="profile-top" class="floater container">
     <div id="profile-left">
       <div id="profile-image">
-        <a href="/project/{{project.handle}}/photo/">
-        <img alt draggable="false" id="profile-image-content" src="{{ project.profile_photo.src }}">
+        <a href="/idea/{{idea.handle}}/photo/">
+        <img alt draggable="false" id="profile-image-content" src="{{ idea.profile_photo.src }}">
         </a>
       </div>
       <div id="profile-left-bottom">
-        <p class="title is-4 selectable" style="color:black"><b>{{ project.name }}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">£{{ project.handle }}</p>
+        <p class="title is-4 selectable" style="color:black"><b>{{ idea.name }}</b></p>
+        <p class="subtitle is-5 selectable" style="color:gray">${{ idea.handle }}</p>
       </div>
     </div>
 
@@ -18,9 +18,9 @@
       <div id="profile-right-top">
         <div id="profile-bar" class="field">
           <div id="profile-bar-content">
-            {% if project not in current_user.projects %}
+            {% if idea not in current_user.ideas %}
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
-              {% with request_sent = models.UserToProjectRequest.query.filter_by(type='join', sender=current_user, receiver=project).first(), request_received = models.ProjectToUserRequest.query.filter_by(type='invite', sender=project, receiver=current_user).first(), is_joined = project in current_user.projects %}
+              {% with request_sent = models.UserToIdeaRequest.query.filter_by(type='join', sender=current_user, receiver=idea).first(), request_received = models.ideaToUserRequest.query.filter_by(type='invite', sender=idea, receiver=current_user).first(), is_joined = idea in current_user.ideas %}
               <button id="join-button" class="button {% if is_joined %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_joined %}joined{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
                 {% if is_joined %}
                   {% include 'profiles/join-button/joined.html' %}
@@ -35,20 +35,20 @@
               {% endwith %}
               {% endif %}
 
-              {% if project.group.member_has_permission(current_user,"permissionToEditPage") %}
+              {% if idea.group.member_has_permission(current_user,"permissionToEditPage") %}
                 <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Idea</button>
               {% endif %}
           </div>
           <br style="clear: both;">
         </div>
         <div id="profile-bio" class="selectable">
-        <p style="color:black"> {% if project.description %}{{project.description}}{% endif %} </p>
+        <p style="color:black"> {% if idea.description %}{{idea.description}}{% endif %} </p>
         </div>
       </div>
       <div id="profile-right-bottom">
-        {% if project.address %}
+        {% if idea.address %}
         <div id="profile-address">
-          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{project.address}}</span>
+          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{idea.address}}</span>
         </div>
         {% endif %}
       </div>
@@ -57,7 +57,7 @@
   </div>
   <!-- 
   {% raw %}
-  {% if project.skills.all() %}
+  {% if idea.skills.all() %}
   <div id="profile-skills" class="container">
     {% for skillrow in skillrows %}
     <div class="profile-skill-row">
@@ -71,20 +71,20 @@
   {% endraw  %}
   -->
 
-{% include "profiles/project/tabs/tabs.html" %}
+{% include "profiles/idea/tabs/tabs.html" %}
 
 {% endblock %}
 
 {% block modal %}
-{% if request.url_rule.endpoint == 'profiles.edit_project' %}
-{% include "profiles/project/edit.html" %}
-{% elif request.url_rule.endpoint == 'profiles.project_photo' %}
-{% with photo_src=project.profile_photo.src %}
+{% if request.url_rule.endpoint == 'profiles.edit_idea' %}
+{% include "profiles/idea/edit.html" %}
+{% elif request.url_rule.endpoint == 'profiles.idea_photo' %}
+{% with photo_src=idea.profile_photo.src %}
 {% include "profiles/user/photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
+{% elif request.url_rule.endpoint == 'profiles.idea_add_members' %}
 {% include "profiles/add-members.html" %}
-{% elif request.url_rule.endpoint == 'profiles.club_add_roles' %}
+{% elif request.url_rule.endpoint == 'profiles.idea_add_roles' %}
 {% include "profiles/add-roles.html" %}
 {% endif %}
 
@@ -103,8 +103,8 @@
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profiles/profile.js"></script>
 <script src="/static/js/profiles/user/profile.js"></script>
-<script src="/static/js/profiles/project/profile.js"></script>
-<script src="/static/js/profiles/project/edit.js"></script>
+<script src="/static/js/profiles/idea/profile.js"></script>
+<script src="/static/js/profiles/idea/edit.js"></script>
 <script src="/static/js/profiles/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
@@ -114,7 +114,7 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
 
-  var handle = "{{project.handle}}";
+  var handle = "{{idea.handle}}";
 
   function makeConnectButtonDefault() {
     $('#join-button').addClass('is-info');
@@ -169,10 +169,10 @@ $("#join-button").hover(
 
 </script>
 <script type="text/javascript">
-  var handle = "{{project.handle}}";
+  var handle = "{{idea.handle}}";
 
   function load_map_js() {
-  var map = L.map('map').setView({% if project.latitude and project.longitude %}[{{project.latitude}}, {{project.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
+  var map = L.map('map').setView({% if idea.latitude and idea.longitude %}[{{idea.latitude}}, {{idea.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
          
          //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
          layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -191,8 +191,8 @@ map.on('click', function(e){
 
 var marker;
 
-{% if project.latitude and project.longitude %}
-  marker = new L.marker([{{project.latitude}}, {{project.longitude}}]).addTo(markerGroup);
+{% if idea.latitude and idea.longitude %}
+  marker = new L.marker([{{idea.latitude}}, {{idea.longitude}}]).addTo(markerGroup);
 {% endif %}
 
 window.getLatLng = function() {
@@ -319,16 +319,16 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_project','profiles.create_project','profiles.create_project']  %}
+{% if request.url_rule.endpoint in ['profiles.edit_idea','profiles.create_idea','profiles.create_idea']  %}
 load_map_js();
 {% endif %}
 </script>
 <script type="text/javascript">
   function sendInvites() {
-    sendProjectInvites();
+    sendideaInvites();
   }
 
-function sendProjectInvites() {
+function sendideaInvites() {
   var formData = new FormData();
     var usernames = JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username')));
     console.log(usernames);
@@ -337,71 +337,71 @@ function sendProjectInvites() {
 
     $.post({
       type: "POST",
-      url: "/£"+handle+"/invite/",
+      url: "/$"+handle+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
         var status = response["status"];
-        if (status === "success") { location.replace("/£"+response["handle"]+"/"); }
+        if (status === "success") { location.replace("/$"+response["handle"]+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});
 }
 
-{% if request.url_rule.endpoint in ['profiles.project_add_members']  %}
+{% if request.url_rule.endpoint in ['profiles.idea_add_members']  %}
 load_add_members_js();
 {% endif %}
 </script>
 <script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
-    redirect({id:"project-photo"},"Profile photo", "/£{{project.handle}}/photo/", changeToPhoto);
+    redirect({id:"idea-photo"},"Profile photo", "/${{idea.handle}}/photo/", changeToPhoto);
       e.preventDefault();
   });
 
 
   $(document).on('click', '#edit-button', function(e) {
-    redirect({id:"edit-project"},"Edit project", "/£"+handle+"/edit/", changeToEdit);
+    redirect({id:"edit-idea"},"Edit idea", "/$"+handle+"/edit/", changeToEdit);
     e.preventDefault();
   });
 
   $(document).on('click', '#members-button', function(e) {
-    redirect({id:"project-members"},"Project members", "/£"+handle+"/members/", changeToMembers);
+    redirect({id:"idea-members"},"idea members", "/$"+handle+"/members/", changeToMembers);
     e.preventDefault();
   });
 
   $(document).on('click', '#roles-button', function(e) {
-    redirect({id:"club-roles"},"Club Roles Permission", "/€"+handle+"/roles/", changeRoles);
+    redirect({id:"idea-roles"},"Idea Roles Permission", "/$"+handle+"/roles/", changeRoles);
     e.preventDefault();
   });
 
 $(document).on('click', '.close', function() {
-  redirect({id:"project-profile"}, "Profile", "/£{{project.handle}}/", changeToProfile);
+  redirect({id:"idea-profile"}, "Profile", "/${{idea.handle}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {
-    redirect({id:"project-profile"}, "Profile", "/£{{project.handle}}/", changeToProfile);
+    redirect({id:"idea-profile"}, "Profile", "/${{idea.handle}}/", changeToProfile);
 });
 
 $(window).on("popstate", function() {
-  if (window.history.state.id == "edit-project") {
+  if (window.history.state.id == "edit-idea") {
     changeToEdit()
   }
-  else if (window.history.state.id == "project-profile") {
+  else if (window.history.state.id == "idea-profile") {
     changeToProfile();
   }
 
-  else if (window.history.state.id == "project-photo") {
+  else if (window.history.state.id == "idea-photo") {
     changeToPhoto();
   }
 
-  else if (window.history.state.id == "project-add-members") {
+  else if (window.history.state.id == "idea-add-members") {
     changeToMembers();
   }
 
-  else if (window.history.state.id == "club-roles") {
+  else if (window.history.state.id == "idea-roles") {
     changeRoles();
   }
 
@@ -410,7 +410,7 @@ $(window).on("popstate", function() {
 
 function changeToEdit() {
   $("#modal-box").append(`
-    {% include "profiles/project/edit.html" %}`);
+    {% include "profiles/idea/edit.html" %}`);
   load_map_js();
   $(document.body).addClass('noscroll');
 }
@@ -422,7 +422,7 @@ function changeToProfile() {
 
 function changeToPhoto() {
   $("#modal-box").append(`
-    {% with photo_src=project.profile_photo.src %}
+    {% with photo_src=idea.profile_photo.src %}
     {% include "photo.html" %}
     {% endwith %}
     `);
@@ -444,16 +444,16 @@ function changeRoles() {
 }
 
 
-{% if request.url_rule.endpoint == 'profiles.edit_project' %}
-window.history.replaceState({id:"edit-project"},"Edit project", "/£{{project.handle}}/edit/");
-{% elif request.url_rule.endpoint == 'profiles.project_photo' %}
-window.history.replaceState({id:"project-photo"},"Profile photo", "/£{{project.handle}}/");
-{% elif request.url_rule.endpoint == 'profiles.project_add_members' %}
-window.history.replaceState({id:"project-add-members"},"Project add members", "/£{{project.handle}}/add-members/");
-{% elif request.url_rule.endpoint == 'profiles.club_roles' %}
-window.history.replaceState({id:"club-add-roles"},"Club add roles", "/€{{club.handle}}/add-roles/");
+{% if request.url_rule.endpoint == 'profiles.edit_idea' %}
+window.history.replaceState({id:"edit-idea"},"Edit idea", "/${{idea.handle}}/edit/");
+{% elif request.url_rule.endpoint == 'profiles.idea_photo' %}
+window.history.replaceState({id:"idea-photo"},"Profile photo", "/${{idea.handle}}/");
+{% elif request.url_rule.endpoint == 'profiles.idea_add_members' %}
+window.history.replaceState({id:"idea-add-members"},"idea add members", "/${{idea.handle}}/add-members/");
+{% elif request.url_rule.endpoint == 'profiles.idea_roles' %}
+window.history.replaceState({id:"idea-add-roles"},"Idea add roles", "/${{idea.handle}}/add-roles/");
 {% else %}
-window.history.replaceState({id:"project-profile"},"Profile", "./");
+window.history.replaceState({id:"idea-profile"},"Profile", "./");
 {% endif %}
 </script>
 {% endblock %}

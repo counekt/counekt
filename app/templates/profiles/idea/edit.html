@@ -15,7 +15,7 @@
   <section class="modal-card-body has-text-centered">
 
   <div id="edit-associate-image">
-      <img draggable="false" id="edit-associate-image-content" src="{{ project.profile_photo.src }}">
+      <img draggable="false" id="edit-associate-image-content" src="{{ idea.profile_photo.src }}">
       <input type="file"  accept="image/*" name="image" id="upload-image" onchange="loadImage(event, '#edit-associate-image-content')" style="display: none;">
     <button class="button is-large is-white" id="edit-associate-image-upload">
     <span class="icon is-medium">
@@ -27,7 +27,7 @@
   <div>
     <div id="name">
       <h1><b>Name</b></h1>
-      <input class="input has-fixed-size" placeholder="Add your Project's name" id="name-field" value="{% if project.name %}{{project.name}}{% else %}{{project.handle}}{% endif %}"></input>
+      <input class="input has-fixed-size" placeholder="Add your Idea's name" id="name-field" value="{% if idea.name %}{{idea.name}}{% else %}{{idea.handle}}{% endif %}"></input>
     </div>
       <div id="feedback-name" class="feedback">
         <div class="message"></div>
@@ -35,7 +35,7 @@
       <br id="name-anchor">
     <div id="description">
       <h1><b>Description</b></h1>
-      <textarea class="textarea has-fixed-size" placeholder="Add your Project's description" id="description-field" rows="3" maxlength="160">{% if project.description %}{{project.description}}{% endif %}</textarea>
+      <textarea class="textarea has-fixed-size" placeholder="Add your Idea's description" id="description-field" rows="3" maxlength="160">{% if idea.description %}{{idea.description}}{% endif %}</textarea>
     </div>
       <div id="feedback-description" class="feedback">
         <div class="message"></div>
@@ -44,7 +44,7 @@
 
     <h1><b>Public</b></h1>
     <label class="switch">
-      <input type="checkbox" id="public" {% if project.public %}checked{% endif %}>
+      <input type="checkbox" id="public" {% if idea.public %}checked{% endif %}>
       <span class="slider round"></span>
     </label>
     <div id="feedback-public" class="feedback">
@@ -54,7 +54,7 @@
 
     <h1><b>Show location</b></h1>
     <label class="switch">
-      <input type="checkbox" id="show-location" {% if project.show_location %}checked{% endif %}>
+      <input type="checkbox" id="show-location" {% if idea.show_location %}checked{% endif %}>
       <span class="slider round"></span>
     </label>
     <div id="feedback-show-location" class="feedback">
@@ -64,7 +64,7 @@
     <div id="location-settings">
       <div id="location">
         <h1><b>Location</b></h1>
-        <input class="input has-fixed-size" placeholder="Add your Project's location" id="location-field" rows="2" {% if project.address %}value="{{ project.address }}"{% endif %}></input>
+        <input class="input has-fixed-size" placeholder="Add your Idea's location" id="location-field" rows="2" {% if idea.address %}value="{{ idea.address }}"{% endif %}></input>
         <div id="map">
         </div>
       </div>
@@ -74,7 +74,7 @@
         <br id="location-anchor">
         <h1><b>Visible on the map</b></h1>
       <label class="switch">
-        <input type="checkbox" id="visible" {% if project.is_visible %}checked{% endif %}>
+        <input type="checkbox" id="visible" {% if idea.is_visible %}checked{% endif %}>
         <span class="slider round"></span>
       </label>
       <div id="feedback-visible" class="feedback">

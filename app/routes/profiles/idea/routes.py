@@ -86,6 +86,7 @@ def create_idea():
             if not skill.title in skills:
                 db.session.delete(skill)
         """
+        db.session.add(idea)
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
@@ -95,7 +96,7 @@ def create_idea():
 @ bp.route("/idea/<handle>/", methods=["GET", "POST"])
 @ bp.route("/$<handle>/", methods=["GET", "POST"])
 def idea(handle):
-    idea = models.idea.query.filter_by(handle=handle).first()
+    idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     #if not idea or (not idea.public and not current_user in idea.group.members) and not current_user in idea.viewers:
         #abort(404)
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
@@ -108,7 +109,7 @@ def idea(handle):
 def edit_idea(handle):
     if not handle:
         abort(404)
-    idea = models.idea.query.filter_by(handle=handle).first()
+    idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     if not idea:
         abort(404)
     if flask_request.method == 'POST':
@@ -189,7 +190,7 @@ def edit_idea(handle):
 def idea_add_members(handle):
     if not handle:
         abort(404)
-    idea = models.idea.query.filter_by(handle=handle).first()
+    idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     if not idea:
         abort(404)
 

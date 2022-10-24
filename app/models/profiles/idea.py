@@ -1,6 +1,6 @@
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-from app.models.profiles.group import Group
+import app.models.profiles.group
 from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
@@ -14,7 +14,7 @@ viewers = db.Table('idea_viewers',
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
     symbol = "$"
-    group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
     handle = db.Column(db.String, index=True, unique=True)
     name = db.Column(db.String)
@@ -35,18 +35,16 @@ class Idea(db.Model, Base, locationBase):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         # do custom initialization here
         members = kwargs["members"]
-        self.group = Group(members=members)
+        self.group = app.models.profiles.group.Group(members=members)
         for user in members:
-            user.ideas.append(self)
+            self.add_member(user)
         self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/ideas/{self.handle}/", replacement="/static/images/idea.jpg")
 
     def add_member(self, user):
         self.group.members.append(user)
-        user.ideas.append(self)
 
     def remove_member(self, user):
         self.group.members.remove(user)
-        user.ideas.remove(self)
 
     def delete(self):
         for m in self.group.members:

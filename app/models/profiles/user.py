@@ -83,7 +83,7 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     @property
     def ideas(self):
-        pass
+        return [m.organization for m in self.memberships]
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
