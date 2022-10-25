@@ -1,0 +1,39 @@
+.key-info-tab {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	 white-space: nowrap;
+display: inline-block;
+  height: 50px;
+  width: 100%;
+  padding: 10px;
+  background-color: #238cd1;
+  text-align:center;
+  border-radius: 5px;
+font-size: 20px;
+font-weight: 500;
+font-family: Universe, "Helvetica Neue",sans-serif;
+  margin: auto !important;
+  	transition: 0.3s;
+}
+
+.key-info-tab:hover {
+  -webkit-filter: brightness(87.5%);
+     filter: brightness(87.5%);
+     cursor: pointer;
+}
+
+#key-info {
+  width: 100%;
+  padding: 5px;
+  background-color: rgba(255,255,255,0.9);
+  border-radius: 5px;
+  margin-bottom: 5px;
+  max-width: 750px;
+   display: grid;
+    grid-auto-flow: column;
+    grid-column-gap: 5px;
+}
+
+.key-info-tab .icon:first-child {
+    margin-right: 0.5em;
+}
