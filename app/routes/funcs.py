@@ -3,4 +3,5 @@ from flask import request
 
 def redirectIfHeroku():
 	if request.headers['Host'] == 'counekt.herokuapp.com':
-		return abort(301)
+		pass
+		#return abort(301)
