@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, abort
 from app import geolocator
 from geopy.exc import GeocoderTimedOut
 from geopy.extra.rate_limiter import RateLimiter
