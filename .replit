@@ -1,3 +1,0 @@
-language = "python3"
-run = "python -m flask run -h 0.0.0.0 -p 8080"
-comment="python -m flask run -h 0.0.0.0 -p 8080"
