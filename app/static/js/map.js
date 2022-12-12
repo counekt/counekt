@@ -162,6 +162,8 @@ function explore(do_redirect=true) {
       processData: false,
       contentType: false,
       success(response) {
+          $('#search-button').removeClass('is-loading');
+
         var response = JSON.parse(response);
         
         var status = response["status"]; 

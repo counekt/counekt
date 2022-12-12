@@ -178,6 +178,7 @@ $(document).on("click", "#search-button", function() {
   $("#radius-value").blur();
   $("#age-value0").blur();
   $("#age-value1").blur();
+  $(this).addClass('is-loading');
   explore();
 
 });
