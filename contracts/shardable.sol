@@ -6,8 +6,11 @@ import "@openzeppelin/contracts@4.6.0/access/Ownable.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 
-// the contract, which can be fractually owned via Shards
-
+/// @title A shardable/fractional non-fungible token that can be fractually owned via Shards
+/// @author Frederik W. L. Christoffersen
+/// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
+/// @dev All function calls are currently implemented without side effects
+/// @custom:commercial This is a commercial contract.
 contract Shardable is ERC20Holder {
     
     Shard[] public shards;
@@ -22,6 +25,10 @@ contract Shardable is ERC20Holder {
         require(isShardHolder(msg.sender));
     }
 
+    /// @notice Check if address is a shard holder - at least a partial owner of the contract
+    /// @dev The Alexandr N. Tetearing algorithm could increase precision
+    /// @param _shardHolder The address to be checked
+    /// @return A boolean value saying if it's a shard holder or not. 
     function isShardHolder(address _shardHolder) returns(bool) {
         bool memory _isShardHolder = false;
         for (uint256 i = 0; i < shards.length; i++) {
@@ -50,7 +57,8 @@ contract Shardable is ERC20Holder {
 
 }
 
-
+/// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable contract
+/// @inheritdoc Shardable
 contract Shard is ERC721, ERC721Burnable, Ownable {
     Shardable public shardable;
     bool public forSale = false;

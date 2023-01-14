@@ -3,20 +3,24 @@ pragma solidity ^0.8.4;
 import "../shardable.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 
-
+/// @title A fractional DAO-like non-fungible token that can be administered by its shareholders
+/// @author Frederik W. L. Christoffersen
+/// @notice This contract is used as an administerable business entity. Be aware that a sell transfers a service fee of 2.5% to Counekt.
+/// @dev All function calls are currently implemented without side effects
+/// @custom:commercial This is a commercial contract.
 contract Administerable is Shardable, ERC20Holder {
     
-    Bank[] public banks;
-
     constructor() public {
 
     }
 
     struct Bank {
-        string name;
         uint256 balance;
         address[] administrators;
     }
+
+    // Bank by name
+    mapping(string => Bank) public banks;
 
 
     struct Permits {
@@ -218,8 +222,9 @@ contract Administerable is Shardable, ERC20Holder {
 
     function issueReferendum(string[] proposedChanges) external onlyWithPermission("issueVote") {}
 
-    function createBank(string name) external onlyWithPermission("createBank") {
-        require(name not in)
+    function createBank(string name) external onlyWithPermission("manageBank") {
+        require(banks[name] == Bank)
+        banks[name] = new Bank(0, [msg.sender])
     }
 
     function givePermission(string permissionName) {}
