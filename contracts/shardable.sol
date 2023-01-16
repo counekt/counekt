@@ -9,34 +9,48 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 /// @title A shardable/fractional non-fungible token that can be fractually owned via Shards
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
-/// @dev All function calls are currently implemented without side effects
-/// @custom:commercial This is a commercial contract.
+/// @dev About to implement a goddamn lot of mappings to avoid a potential max limit on shards
+/// @custom:beaware This is a commercial contract.
 contract Shardable is ERC20Holder {
     
-    Shard[] public shards;
-    mapping(address => Shard);
+    Shard[] private shards;
+    mapping(Shard => uint256) shardIndex;
+    mapping(Shard => bool) validShards;
+    mapping(address => Shard) private shardByOwner;
 
-    constructor() public {
+    constructor() {
         // pass full ownership to creator of contract
-        shards.push(new Shard(1,1, msg.sender));
+        _pushShard(new Shard(1,1, msg.sender));
     }
 
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender));
     }
 
+    modifier onlyValidShard {
+        require(isValidShard(msg.sender));
+    }
+
+    function isValidShard(Shard shard) returns(bool) {
+        return validShards[shard];
+    }
+
+
+
     /// @notice Check if address is a shard holder - at least a partial owner of the contract
-    /// @dev The Alexandr N. Tetearing algorithm could increase precision
+    /// @dev Accessing a mapping instead as in the comment below would prevent a limit on the amount of Shards
     /// @param _shardHolder The address to be checked
-    /// @return A boolean value saying if it's a shard holder or not. 
+    /// @return A boolean value - a shard holder or not. 
     function isShardHolder(address _shardHolder) returns(bool) {
+        /*
         bool memory _isShardHolder = false;
         for (uint256 i = 0; i < shards.length; i++) {
             if (_shardHolder.ownerOf(shards[i])) {
                 _isShardHolder = true;
             }
         }
-        return _isShardHolder;
+        return _isShardHolder; */
+        return shardByOwner[_shardholder] != Shard(0x0);
     }
 
     function getShardHolders() public view returns(address [] memory){
@@ -55,7 +69,52 @@ contract Shardable is ERC20Holder {
         }
     }
 
+    function _pushShard(Shard _shard) private {
+        shards.push(shard);
+        shardByOwner[shard.owner] = shard;
+        validShards[shard] = true;
+    }
+
+    function _removeShard(Shard _shard) private {
+        shardByOwner[shard.owner] = 0;
+        shards[i] = referendums[referendums.length-1];
+                referendums.pop();
+        validShards[shard] = false;
+    }
+
+    function splitShard(address to, Fraction toBeSplit) external onlyValidShard {
+        Shard shard = msg.sender;
+        require(toBeSplit.numerator/toBeSplit.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't split more than shard's fraction");
+        
+        // if receiver already owns a shard
+        if (isShardHolder(to)) { 
+            Shard shardToBeUpgraded = getShardByHolder(to);
+            
+            // just add the sold fraction together with the already existing one
+            // and subtract that from the shard, which it split off of
+            shardToBeUpgraded.changeFraction(addFractions(shardToBeUpgraded.fraction,toBeSplit));
+            changeFraction(subtractFractions(fraction,toBeSplit));
+            
+        }
+
+        else {
+            // if the shard to be split is 100% of the shard, which it "split" off of
+            if (toBeSplit.numerator/toBeSplit.denominator == shard.fraction.numerator/shard.fraction.denominator) {
+                shard.transferOwnership(to); // transfer the whole shard without creating a new one
+            }
+            else {
+                // create a new shard
+                Shard new_shard = new Shard(toBeSplit.numerator,toBeSplit.denominator);
+                changeFraction(subtractFractions(fraction,toBeSplit)); //subtract that from the shard, which it split off of
+                new_shard.transferOwnership(to); // transfer to receiver
+                _pushShard(new_shard);
+            }
+        }
+
+    }
+
 }
+
 
 /// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable contract
 /// @inheritdoc Shardable
@@ -77,7 +136,6 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         shardable = msg.sender;
         fraction = Fraction(_numerator,_denominator);
         _transferOwnership(holder);
-
     }
 
     modifier onlyShardable {
@@ -114,29 +172,6 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         address holder
         );
 
-    function getCommonDenominator(uint256 a, uint256 b) internal pure returns(uint256) {
-        while (b) {
-        a,b = b, a % b
-        }
-        return a;
-    }
-
-    function simplifyFraction(Fraction _fraction) internal pure returns(Fraction) {
-        commonDenominator = getCommonDenominator(_fraction.numerator,_fraction.denominator);
-        return new Fraction(_fraction.numerator/commonDenominator,_fraction.denominator/commonDenominator);
-    }
-
-    function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
-        a.numerator = a.numerator * b.denominator;
-        b.numerator = b.numerator * a.denominator,
-        return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
-    }
-
-    function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
-        return addFractions(a,new Fraction(-b.numerator,b.denominator));
-    }
-
-
     function putForSaleTo(address to, uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner {
         forSaleTo = to;
         putForSale(price,_numerator,_denominator);
@@ -168,42 +203,16 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         // Pay Service Fee of 2.5% to Counekt
         (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
         require(success, "Transfer failed.");
-        _split(to: msg.sender.address, _numerator: fractionForsale.numerator, _denominator: fractionForsale.denominator);
+        _split(msg.sender, fractionForsale);
         emit SaleSold(to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice);
     }
 
-    function _split(address to, uint256 _numerator, uint256 _denominator) private internal {
-        require(_numerator/_denominator >= fraction.numerator/fraction.denominator, "Can't split more than shard's fraction");
-        uint256 _fraction = simplifyFraction(_numerator,_denominator);
-
-        // if receiver already owns a shard
-        if (shardable.isShardHolder(to)) { 
-            Shard shardToBeUpgraded = shardable.getShardByHolder(to);
-            
-            // just add the sold fraction together with the already existing one
-            // and subtract that from the shard, which it split off of
-            shardToBeUpgraded.changeFraction(addFractions(shardToBeUpgraded.fraction,_fraction));
-            changeFraction(subtractFractions(fraction,_fraction));
-            
-        }
-
-        else {
-            // if the shard to be split is equal to the fraction of the shard, which it split off of
-            if (_fraction.numerator/fraction._denominator == fraction.numerator/fraction.denominator) {
-                _transferOwnership(holder); // transfer the whole shard without creating a new one
-            }
-            else {
-                // create a new shard
-                Shard new_shard = new Shard(_fraction.numerator,_fraction.denominator);
-                changeFraction(subtractFractions(fraction,_fraction)); //subtract that from the shard, which it split off of
-                new_shard.transferOwnership(to); // transfer to receiver
-            }
-        }
-
+    function _split(address to, Fraction toBeSplit) private internal {
+        shardable.splitShard(to,toBeSplit);
     }
 
     function split(address to, uint256 _numerator, uint256 _denominator) external onlyOwner {
-        _split(to,_numerator,_denominator);
+        _split(to,Fraction(_numerator,_denominator));
         emit SplitMade(to,_numerator,_denominator);
     }
 
@@ -215,9 +224,35 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         fraction = new Fraction(simplify(new_numerator, new_denominator));
     }
 
+    function transferOwnership(address to) external onlyShardable {
+        _transferOwnership(to);
+    }
+
     function _burn() private internal {
         super._burn();
     }
+}
 
-    
+// Fractional Math
+
+function getCommonDenominator(uint256 a, uint256 b) internal pure returns(uint256) {
+        while (b) {
+        a,b = b, a % b
+        }
+        return a;
+}
+
+function simplifyFraction(Fraction _fraction) internal pure returns(Fraction) {
+    commonDenominator = getCommonDenominator(_fraction.numerator,_fraction.denominator);
+    return new Fraction(_fraction.numerator/commonDenominator,_fraction.denominator/commonDenominator);
+}
+
+function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
+    a.numerator = a.numerator * b.denominator;
+    b.numerator = b.numerator * a.denominator,
+    return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
+}
+
+function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
+    return addFractions(a,new Fraction(-b.numerator,b.denominator));
 }
