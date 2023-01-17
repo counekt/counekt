@@ -16,7 +16,7 @@ contract Shardable is ERC20Holder {
     Shard[] private shards;
     mapping(Shard => uint256) shardIndex;
     mapping(Shard => bool) validShards;
-    mapping(address => Shard) private shardByOwner;
+    mapping(address => Shard) shardByOwner;
 
     constructor() {
         // pass full ownership to creator of contract
@@ -35,9 +35,7 @@ contract Shardable is ERC20Holder {
         return validShards[shard];
     }
 
-
-
-    /// @notice Check if address is a shard holder - at least a partial owner of the contract
+    /// @notice Checks if address is a shard holder - at least a partial owner of the contract
     /// @dev Accessing a mapping instead as in the comment below would prevent a limit on the amount of Shards
     /// @param _shardHolder The address to be checked
     /// @return A boolean value - a shard holder or not. 
@@ -56,7 +54,7 @@ contract Shardable is ERC20Holder {
     function getShardHolders() public view returns(address [] memory){
         address[] memory shardHolders;
         for (uint256 i = 0; i < shards.length; i++) {
-            shardHolders.push(shards[i].owner())
+            shardHolders.push(shards[i].owner());
         }
         return shardHolders;
     }
@@ -125,8 +123,8 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
     uint256 public salePrice;
 
     struct Fraction {
-        uint256 public numerator;
-        uint256 public denominator;
+        uint256 numerator;
+        uint256 denominator;
     }
 
     Fraction public fraction;
@@ -185,9 +183,9 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         emit PutForSale(forSaleTo,_numerator,_denominator,price);
     }
 
-    function _cancelSell() internal private {
+    function _cancelSell() internal {
         forSale = false;
-        forSaleTo = null;
+        forSaleTo = 0x0;
     }
 
     function cancelSell() onlyOwner {
@@ -197,14 +195,14 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
 
     function purchase() external payable {
         require(forsale, "Not for sale");
-        require(forSaleTo == msg.sender.address || !forSaleTo, string.concat("Only for sale to "+string(address)))
+        require(forSaleTo == msg.sender.address || !forSaleTo, string.concat("Only for sale to "+string(address)));
         require(msg.value >= salePrice, "Not enough paid");
         _cancelSell();
         // Pay Service Fee of 2.5% to Counekt
         (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
         require(success, "Transfer failed.");
         _split(msg.sender, fractionForsale);
-        emit SaleSold(to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice);
+        emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
     }
 
     function _split(address to, Fraction toBeSplit) private internal {
@@ -218,7 +216,7 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
 
     function changeFraction(Fraction new_fraction) external onlyShardable {
         if (new_fraction.numerator == 0) {
-                emit Burned()
+                emit Burned();
                 _burn();
         }
         fraction = new Fraction(simplify(new_numerator, new_denominator));
@@ -228,8 +226,12 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         _transferOwnership(to);
     }
 
-    function _burn() private internal {
+    function _burn() internal {
         super._burn();
+    }
+
+    function getDecimal() view returns(uint256) {
+        return fraction.numerator/fraction.denominator;
     }
 }
 
@@ -237,7 +239,7 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
 
 function getCommonDenominator(uint256 a, uint256 b) internal pure returns(uint256) {
         while (b) {
-        a,b = b, a % b
+        a,b = b, a % b;
         }
         return a;
 }
