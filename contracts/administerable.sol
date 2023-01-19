@@ -17,7 +17,8 @@ contract Administerable is Shardable, ERC20Holder {
 
     struct Bank {
         uint256 balance;
-        mapping(address => bool) administrators;
+        address[] administrators;
+        mapping(address => bool) isAdministrator;
     }
 
     /// @dev The structures from Permits all the way down to Referendum should be rethought and remade.
@@ -52,7 +53,9 @@ contract Administerable is Shardable, ERC20Holder {
 
     struct Referendum {
         Proposal[] proposals;
-        Vote[] votes;
+        Fraction forFraction;
+        Fraction againstFraction;
+        mapping(Shard => bool) hasVoted;
     }
 
     struct Dividend {
@@ -61,7 +64,8 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     // Bank by name
-    mapping(string => Bank) public banks;
+    Bank[] banks;
+    mapping(string => Bank) bankByName;
 
     // mapping of addresses with permits
     mapping(address => Permits) permits;
@@ -91,9 +95,9 @@ contract Administerable is Shardable, ERC20Holder {
     // triggers when money is received
     event MoneyReceived(
         address tokenAddress,
+        Bank bank,
         uint256 value,
-        address from,
-        Bank bank
+        address from
         );
 
     // triggers when money is transferred
@@ -122,31 +126,41 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     // modifier to make sure msg.sender is administrator of a specific bank
-    modifier onlyBankAdministrator(Bank bank) {
-        require(isBankAdministrator(msg.sender, bank));
+    modifier onlyBankAdministrator(string bankName) {
+        require(isBankAdministrator(msg.sender, bankName));
     }
 
+    modifier onlyExistingBank(string bankName) {
+        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exist.");
+    }
+
+    /// @notice Receives money and puts it into the 'main' bank when there's no supplying data 
     receive() payable {
-        banks["main"].value += msg.value;
+        _receiveMoney(bankByName["main"],msg.value,msg.sender);
     }
 
-    fallback() payable {
-        banks["main"].value += msg.value;
-    }
-
-
+    /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
+    /// @param referendum The referendum to be voted on.
+    /// @param for The boolean value signalling a for or against vote.
+    /// @dev There is a potential problem when selling and or splitting a shard. Then the right of the new shard to vote may unfairly perish, possibly making a referendum unsolvable.
     function vote(Referendum referendum, bool for) external onlyShardHolder hasNotVoted(referendum) {
-        Shard memory _shard = getShardByHolder(msg.sender);
-        referendums[referendum].votes.push(new Vote(_shard, for));
+        Shard memory _shard = shardByOwner[msg.sender];
+        if (for) {
+            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,_shard.fraction));
+        }
+        else {
+            referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,_shard.fraction));
+        }
+        referendum.hasVoted[_shard] = true;
         emit VoteCast(referendum, _shard, for)
     }
 
     /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
     /// @dev There is a potential problem when selling and or splitting a shard. Then the dividend right sometimes perishes.
-    /// @param bank The bank to issue a dividend from.
+    /// @param bankName The name of the bank to issue a dividend from.
     /// @param value The value of the dividend to be issued.
-    function issueDividend(Bank bank, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bank) {
-        require(value <= bank.value, "Dividend value "+string(value)+" can't be more than bank value "+bank.value);
+    function issueDividend(string bankName, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) {
+        require(value <= bankByName[bankName].value, "Dividend value "+string(value)+" can't be more than bank value "+bank.value);
         bank.value -= value;
         Dividend newDividend = new Dividend(value,validShards);
         dividends.push(newDividend);
@@ -168,12 +182,16 @@ contract Administerable is Shardable, ERC20Holder {
        _createBank(bankName, msg.sender);
     }
 
-    function moveMoney(Bank bankFrom, Bank bankTo, uint256 value) external onlyBankAdministrator(bankFrom) {
-        _moveMoney(bankFrom,bankTo,value);
+    function moveMoney(string fromBankName, string toBankName, uint256 value) external onlyBankAdministrator(fromBankName) {
+        _moveMoney(fromBankName,bankTo,value);
     }
 
-    function transferMoney(Bank bank, uint256 value, address to) external onlyBankAdministrator(bank) {
-        _transferMoney(bank,value,to);
+    function transferMoney(string bankName, uint256 value, address to) external onlyBankAdministrator(bankName) {
+        _transferMoney(bankName,value,to);
+    }
+
+    function receiveMoney(string bankName, uint256 value) external payable {
+        _receiveMoney(bankByName[bankName],value, msg.sender);z
     }
 
     function issueReferendum(string[] proposedChanges) external onlyWithPermit("issueVote") {}
@@ -203,58 +221,52 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function hasVoted(address _shardHolder, Referendum referendum) view returns(bool){
-        for (uint i = 0; i < referendum.votes.length; i++) {
-            if (_shardHolder.ownerOf(referendum.votes[i].shard)) {
-                return true;
-            }
-        }
-
-        return false;
+        return referendum.hasVoted[shardByOwner[_shardholder]];
     }
 
-    function isBankAdministrator(address _administrator, Bank bank) view returns(bool) {
-        return bank.administrators[msg.sender];
+    function bankExists(string bankName) returns(bool) {
+        return bankByName[bankName].administrators.length >= 1;
     }
 
-    function getReferendumForFraction(Referendum referendum) pure returns(Fraction) {
-        Fraction forFraction = Fraction(0,1);
-
-        // the shard fractions of all the for-votes are counted together
-        for (uint i = 0; i < referendum.votes.length; i++) {
-        
-            if (referendum.votes[i].for) {
-                forFraction = addFractions(forFraction,referendum.votes[i].shard.fraction);
-            }
-
-        }
-        return forFraction;
+    function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
+        return bankByName[bankName].isAdministrator[_administrator];
     }
+
 
     function getReferendumResult(Referendum referendum) pure returns(bool) {
-        Fraction forFraction = getReferendumForFraction(referendum);
         // if forFraction is bigger than 50%, then the vote is FOR
-        if (forFraction.numerator / forFraction.denominator > 0.5) {
+        if (referendum.forFraction.numerator / referendum.forFraction.denominator > 0.5) {
             return true;
         }
         return false;
     }
 
-    function _moveMoney(Bank bankFrom, Bank bankTo, uint256 value) internal {
-        require(value <= bankFrom.value, "The value to be moved "+string(value)+" from '"+bankFrom.name+"' to '"+bankTo.name+"' can't be more than the value of '"+bankFrom.name+"':"+bankFrom.value);
+    function _moveMoney(string fromBankName, string toBankName, uint256 value) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) {
+        Bank fromBank = bankByName[fromBankName];
+        Bank toBank = bankByName[toBankName];
+        require(value <= fromBankName.value, "The value to be moved "+string(value)+" from '"+fromBankName+"' to '"+toBankName+"' can't be more than the value of '"+fromBankName+"':"+fromBank.value);
         bankFrom.value -= value;
         bankTo.value += value;
     }
 
-    function _transferMoney(Bank bankFrom, uint256 value, address to) internal {
-        require(value <= bank.value, "The value to be transferred "+string(value)+" from '"+bank.name+"' can't be more than the value of that bank:"+bankFrom.value);
-        bank.value -= value;
+    function _transferMoney(string fromBankName, uint256 value, address to) internal onlyExistingBank(fromBankName) {
+        Bank fromBank = bankByName[fromBankName];
+        require(value <= fromBank.value, "The value to be transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.value);
+        fromBank.value -= value;
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
     }
 
+    function _receiveMoney(string toBankName, uint256 value, address from) internal onlyExistingBank(toBankName) {
+        Bank toBank = bankByName[toBankName];
+        toBank.value += value;
+        emit MoneyReceived(toBank,value,from);
+    }
+
     function _createBank(string bankName, address bankAdministrator) internal {
-        require(banks[name].administrators.length > 0, "Bank with name "+name+" already exists!");
-        banks[name] = new Bank(0, [bankAdministrator]);
+        require(!bankExists(bankName), "Bank with name "+bankName+" already exists!");
+        bankByName[bankName] = new Bank(0, [bankAdministrator]);
+        banks.push(bankByName[bankName]);
         emit BankCreated({name:name, by:bankAdministrator});
     }
 
@@ -285,7 +297,7 @@ contract Administerable is Shardable, ERC20Holder {
                 }
         }
     }
-
+    /// @dev next step is to eliminate the for loops by implementing an incrementing counting mechanism and a Referendum mapping.
     function _closeReferendum(Referendum referendum) internal {
         bool memory result = getReferendumResult(referendum);
         emit ReferendumClosed(referendum, result);

@@ -51,42 +51,30 @@ contract Shardable is ERC20Holder {
         return shardByOwner[_shardholder] != Shard(0x0);
     }
 
-    function getShardHolders() public view returns(address [] memory){
-        address[] memory shardHolders;
-        for (uint256 i = 0; i < shards.length; i++) {
-            shardHolders.push(shards[i].owner());
-        }
-        return shardHolders;
-    }
-
-    function getShardByHolder(address _shardHolder) public view returns(address memory) {
-        for (uint256 i = 0; i < shards.length; i++) {
-            if (_shardHolder.ownerOf(shards[i])) {
-                return shards[i];
-            }   
-        }
-    }
-
     function _pushShard(Shard _shard) private {
-        shards.push(shard);
+        shards.push(_shard);
+        shardIndex[_shard] = shards.length - 1;
         shardByOwner[shard.owner] = shard;
         validShards[shard] = true;
     }
 
     function _removeShard(Shard _shard) private {
         shardByOwner[shard.owner] = 0;
-        shards[i] = referendums[referendums.length-1];
-                referendums.pop();
+        Shard memory lastShard = shards[shards.length-1];
+        shards[shardIndex[_shard]] = lastShard; // move last element in array to shard's place
+        shardIndex[lastShard] = shardIndex[_shard]; // configure the index to show that as well
+        _shardIndex[_shard] = 0;
+        shards.pop();
         validShards[shard] = false;
     }
 
     function splitShard(address to, Fraction toBeSplit) external onlyValidShard {
         Shard shard = msg.sender;
-        require(toBeSplit.numerator/toBeSplit.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't split more than shard's fraction");
+        require(toBeSplit.numerator/toBeSplit.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't split more than 100% of shard's fraction");
         
         // if receiver already owns a shard
         if (isShardHolder(to)) { 
-            Shard shardToBeUpgraded = getShardByHolder(to);
+            Shard shardToBeUpgraded = shardByOwner[to];
             
             // just add the sold fraction together with the already existing one
             // and subtract that from the shard, which it split off of
@@ -141,25 +129,19 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
     }
 
     event SplitMade(
-        address from,
         address to,
-        uint256 numerator,
-        uint256 denominator
+        Fraction fraction
         );
 
     event SaleSold(
-        address from,
         address indexed to,
-        uint256 numerator,
-        uint256 denominator,
-        uint256 price
+        uint256 price,
+        Fraction fraction
         );
 
     event PutForSale(
-        address from,
         address indexed to,
-        uint256 numerator,
-        uint256 denominator,
+        Fraction fraction,
         uint256 price
         );
 
@@ -172,7 +154,7 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
 
     function putForSaleTo(address to, uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner {
         forSaleTo = to;
-        putForSale(price,_numerator,_denominator);
+        putForSale(price,Fractíon(_numerator,_denominator));
     }
 
     function putForSale(uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner {
@@ -180,7 +162,7 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         fractionForsale = Fraction(simplify(_numerator, _denominator));
         salePrice = price;
         forsale = True;
-        emit PutForSale(forSaleTo,_numerator,_denominator,price);
+        emit PutForSale(forSaleTo,price,Fraction(_numerator,_denominator));
     }
 
     function _cancelSell() internal {
