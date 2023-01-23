@@ -14,6 +14,24 @@ contract Administerable is Shardable, ERC20Holder {
         _createBank("main",msg.sender);
     }
 
+    // Bank by name
+    Bank[] banks;
+    mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
+    mapping(string => Bank) bankByName;
+
+    // mapping of addresses with permits
+    mapping(address => Permits) permits;
+
+    // Pending Referendums
+    Referendum[] internal pendingReferendums;
+    mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up to differentiate betweeen empty values
+
+    // Proposals
+    Referendum[] referendumsToBeImplemented;
+    
+    // Dividends
+    Dividend[] internal dividends;
+
 
     struct Bank {
         uint256 balance;
@@ -41,14 +59,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     struct Proposal {
-        address[] affected;
-        string permitName;
-        bool newValue;
-    }
-
-    struct Vote {
-        Shard shard;
-        bool for;
+        string program;
     }
 
     struct Referendum {
@@ -63,19 +74,10 @@ contract Administerable is Shardable, ERC20Holder {
         mapping(Shard => bool) applicable;
     }
 
-    // Bank by name
-    Bank[] banks;
-    mapping(string => Bank) bankByName;
-
-    // mapping of addresses with permits
-    mapping(address => Permits) permits;
-    Referendum[] internal referendums;
-
-    Dividend[] private dividends;
 
     // triggers when a referendum is issued
     event ReferendumIssued(
-        Proposal[] proposals,
+        Referendum referendum,
         address by
         );
 
@@ -87,6 +89,7 @@ contract Administerable is Shardable, ERC20Holder {
 
     // triggers when a vote is cast
     event VoteCast(
+        address by,
         Referendum referendum,
         Shard shard,
         bool for
@@ -95,7 +98,7 @@ contract Administerable is Shardable, ERC20Holder {
     // triggers when money is received
     event MoneyReceived(
         address tokenAddress,
-        Bank bank,
+        string bankName,
         uint256 value,
         address from
         );
@@ -104,8 +107,15 @@ contract Administerable is Shardable, ERC20Holder {
     event MoneyTransfered(
         address tokenAddress,
         uint256 value,
-        Bank bank,
+        string bankName,
         address to,
+        address by
+        );
+
+    event MoneyMoved(
+        string fromBankName,
+        string toBankName,
+        uint256 value,
         address by
         );
 
@@ -113,6 +123,10 @@ contract Administerable is Shardable, ERC20Holder {
     event BankCreated(
         string name,
         address by
+        );
+
+    event BankDeleted(
+        string name
         )
 
     // modifier to make sure msg.sender has specific permit
@@ -134,9 +148,13 @@ contract Administerable is Shardable, ERC20Holder {
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exist.");
     }
 
+    modifier onlyExistingReferendum(Referendum referendum) {
+        require(referendumExists(referendum), "Referendum doesn't exist.");
+    }
+
     /// @notice Receives money and puts it into the 'main' bank when there's no supplying data 
     receive() payable {
-        _receiveMoney(bankByName["main"],msg.value,msg.sender);
+        _processReceipt(bankByName["main"],msg.value,msg.sender);
     }
 
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
@@ -152,7 +170,7 @@ contract Administerable is Shardable, ERC20Holder {
             referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,_shard.fraction));
         }
         referendum.hasVoted[_shard] = true;
-        emit VoteCast(referendum, _shard, for)
+        emit VoteCast(msg.sender, referendum, _shard, for)
     }
 
     /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
@@ -182,19 +200,25 @@ contract Administerable is Shardable, ERC20Holder {
        _createBank(bankName, msg.sender);
     }
 
+    function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdministrator(bankName) {
+        _deleteBank(bankName);
+    }
+
     function moveMoney(string fromBankName, string toBankName, uint256 value) external onlyBankAdministrator(fromBankName) {
-        _moveMoney(fromBankName,bankTo,value);
+        _moveMoney(fromBankName,bankTo,value,msg.sender);
     }
 
     function transferMoney(string bankName, uint256 value, address to) external onlyBankAdministrator(bankName) {
-        _transferMoney(bankName,value,to);
+        _transferMoney(bankName,value,to,msg.sender);
     }
 
-    function receiveMoney(string bankName, uint256 value) external payable {
-        _receiveMoney(bankByName[bankName],value, msg.sender);z
+    function receiveMoney(string bankName) external payable {
+        _processReceipt(bankByName[bankName],msg.value, msg.sender);
     }
 
-    function issueReferendum(string[] proposedChanges) external onlyWithPermit("issueVote") {}
+    function issueReferendum(Proposal[] proposals) external onlyWithPermit("issueVote") {
+        _issueReferendum(proposals);
+    }
 
 
     function givePermit(string permitName) {}
@@ -228,6 +252,10 @@ contract Administerable is Shardable, ERC20Holder {
         return bankByName[bankName].administrators.length >= 1;
     }
 
+    function referendumExists(Referendum referendum) returns(bool) {
+        return referendumIndex[referendum] > 0; // bigger than 0 because stored indices starts from 1
+    }
+
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
         return bankByName[bankName].isAdministrator[_administrator];
     }
@@ -241,36 +269,83 @@ contract Administerable is Shardable, ERC20Holder {
         return false;
     }
 
-    function _moveMoney(string fromBankName, string toBankName, uint256 value) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) {
+    function getBankIndex(Bank bank) view returns(uint256){
+        return bankIndex[bank]-1; // -1 because stored indices starts from 1
+    }
+
+    function getReferendumIndex(Referendum referendum) view returns(uint256) {
+        return referendumIndex[bank]-1; // -1 because stored indices starts from 1
+    }
+
+    function _moveMoney(string fromBankName, string toBankName, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) {
         Bank fromBank = bankByName[fromBankName];
         Bank toBank = bankByName[toBankName];
         require(value <= fromBankName.value, "The value to be moved "+string(value)+" from '"+fromBankName+"' to '"+toBankName+"' can't be more than the value of '"+fromBankName+"':"+fromBank.value);
         bankFrom.value -= value;
         bankTo.value += value;
+        emit MoneyMoved(fromBankName,toBankName,value, by);
     }
 
-    function _transferMoney(string fromBankName, uint256 value, address to) internal onlyExistingBank(fromBankName) {
-        Bank fromBank = bankByName[fromBankName];
-        require(value <= fromBank.value, "The value to be transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.value);
-        fromBank.value -= value;
+    function _transferMoney(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        _processTransfer(fromBankName,value,to,by);
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
+        emit MoneyTransfered(fromBankName,value,to,by);
     }
 
-    function _receiveMoney(string toBankName, uint256 value, address from) internal onlyExistingBank(toBankName) {
+    function _processTransfer(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        Bank fromBank = bankByName[fromBankName];
+        require(value <= fromBank.value, "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.value);
+        fromBank.value -= value;
+    }
+
+    function _processReceipt(string toBankName, uint256 value, address from) internal onlyExistingBank(toBankName) {
         Bank toBank = bankByName[toBankName];
         toBank.value += value;
         emit MoneyReceived(toBank,value,from);
     }
 
     function _createBank(string bankName, address bankAdministrator) internal {
-        require(!bankExists(bankName), "Bank with name "+bankName+" already exists!");
+        require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
         bankByName[bankName] = new Bank(0, [bankAdministrator]);
+        bankIndex[bankByName[bankName]] = banks.length+1;
         banks.push(bankByName[bankName]);
-        emit BankCreated({name:name, by:bankAdministrator});
+        emit BankCreated({name:bankName, by:bankAdministrator});
+    }
+
+    function _deleteBank(string bankName) internal {
+        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
+        require(bankByName[bankName].value == 0, "Bank '"+bankName+"' must be empty before being deleted!");
+        Bank bank = bankByName[bankName];
+        banks[bankIndex[bank]] = banks[banks.length-1]; // -1 because stored indices starts from 1
+        banks.pop();
+        bankByName[bankName] = new Bank();
+        emit BankDeleted({name:bankName});
+    }
+
+    function _issueReferendum(Proposal[] proposals, address by) internal {
+        Referendum referendum = new Referendum(proposals);
+        pendingReferendumIndex[referendum] = pendingReferendums.length+1; // +1 to distinguish between empty values
+        pendingReferendums.push(referendum);
+        emit ReferendumIssued(referendum, by);
+    }
+
+    function _closeReferendum(Referendum referendum) internal onlyExistingReferendum(referendum) {
+        bool memory result = getReferendumResult(referendum);
+        // remove the now closed Referendum from 'pendingReferendums'
+        pendingReferendums[pendingReferendumIndex[referendum]-1] = pendingReferendums[pendingReferendums.length]; // -1 because stored indices starts from 1
+        pendingReferendumIndex[referendum] = 0; // a stored index value of 0 means empty
+        pendingReferendums.pop()
+
+        if (result) { // if it got voted through
+            // the proposals are pushed to 'proposalsToBeImplemented'
+            proposalsToBeImplemented.push(referendum.proposals);
+        }
+        emit ReferendumClosed(referendum, result);
     }
 
     function _implementProposal(Proposal proposal) internal {
+        /*
         for (uint i = 0; i < proposal.affected.length; i++) {
             proposal.affected[i].permits.
                 switch (proposal.permitName) {
@@ -296,27 +371,8 @@ contract Administerable is Shardable, ERC20Holder {
                         revert();
                 }
         }
-    }
-    /// @dev next step is to eliminate the for loops by implementing an incrementing counting mechanism and a Referendum mapping.
-    function _closeReferendum(Referendum referendum) internal {
-        bool memory result = getReferendumResult(referendum);
-        emit ReferendumClosed(referendum, result);
-        // if the vote turned out to be FOR
-        if (result) {
-            // implement the proposals of the referendum
-            for (uint i = 0; i < referendum.proposals.length; i++) {
-                _implementProposal(referendum.proposals[i]);
-            }
-        }
-        // remove the referendum from the list
-        for (uint i = 0; i < referendums.length; i++) {
-            if (referendums[i] == referendum) {
-                referendums[i] = referendums[referendums.length-1];
-                referendums.pop();
-                break;
-            }
-        }
-
+        */
+        this.call(bytes4(sha3(proposal.program)));
     }
 
 }

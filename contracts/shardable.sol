@@ -13,7 +13,7 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 /// @custom:beaware This is a commercial contract.
 contract Shardable is ERC20Holder {
     
-    Shard[] private shards;
+    Shard[] internal shards;
     mapping(Shard => uint256) shardIndex;
     mapping(Shard => bool) validShards;
     mapping(address => Shard) shardByOwner;
@@ -51,14 +51,14 @@ contract Shardable is ERC20Holder {
         return shardByOwner[_shardholder] != Shard(0x0);
     }
 
-    function _pushShard(Shard _shard) private {
+    function _pushShard(Shard _shard) internal {
+        shardIndex[_shard] = shards.length;
         shards.push(_shard);
-        shardIndex[_shard] = shards.length - 1;
         shardByOwner[shard.owner] = shard;
         validShards[shard] = true;
     }
 
-    function _removeShard(Shard _shard) private {
+    function _removeShard(Shard _shard) internal {
         shardByOwner[shard.owner] = 0;
         Shard memory lastShard = shards[shards.length-1];
         shards[shardIndex[_shard]] = lastShard; // move last element in array to shard's place
@@ -187,7 +187,7 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
     }
 
-    function _split(address to, Fraction toBeSplit) private internal {
+    function _split(address to, Fraction toBeSplit) internal {
         shardable.splitShard(to,toBeSplit);
     }
 
@@ -219,14 +219,14 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
 
 // Fractional Math
 
-function getCommonDenominator(uint256 a, uint256 b) internal pure returns(uint256) {
+function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
         while (b) {
         a,b = b, a % b;
         }
         return a;
 }
 
-function simplifyFraction(Fraction _fraction) internal pure returns(Fraction) {
+function simplifyFraction(Fraction _fraction) pure returns(Fraction) {
     commonDenominator = getCommonDenominator(_fraction.numerator,_fraction.denominator);
     return new Fraction(_fraction.numerator/commonDenominator,_fraction.denominator/commonDenominator);
 }
