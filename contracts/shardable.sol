@@ -14,9 +14,11 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 contract Shardable is ERC20Holder {
     
     Shard[] internal shards;
-    mapping(Shard => uint256) shardIndex;
+    mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
     mapping(Shard => bool) validShards;
     mapping(address => Shard) shardByOwner;
+
+    bool active = true;
 
     constructor() {
         // pass full ownership to creator of contract
@@ -24,50 +26,14 @@ contract Shardable is ERC20Holder {
     }
 
     modifier onlyShardHolder {
-        require(isShardHolder(msg.sender));
+        require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
     }
 
     modifier onlyValidShard {
-        require(isValidShard(msg.sender));
+        require(isValidShard(msg.sender),"msg.sender must be a valid shard!");
     }
 
-    function isValidShard(Shard shard) returns(bool) {
-        return validShards[shard];
-    }
-
-    /// @notice Checks if address is a shard holder - at least a partial owner of the contract
-    /// @dev Accessing a mapping instead as in the comment below would prevent a limit on the amount of Shards
-    /// @param _shardHolder The address to be checked
-    /// @return A boolean value - a shard holder or not. 
-    function isShardHolder(address _shardHolder) returns(bool) {
-        /*
-        bool memory _isShardHolder = false;
-        for (uint256 i = 0; i < shards.length; i++) {
-            if (_shardHolder.ownerOf(shards[i])) {
-                _isShardHolder = true;
-            }
-        }
-        return _isShardHolder; */
-        return shardByOwner[_shardholder] != Shard(0x0);
-    }
-
-    function _pushShard(Shard _shard) internal {
-        shardIndex[_shard] = shards.length;
-        shards.push(_shard);
-        shardByOwner[shard.owner] = shard;
-        validShards[shard] = true;
-    }
-
-    function _removeShard(Shard _shard) internal {
-        shardByOwner[shard.owner] = 0;
-        Shard memory lastShard = shards[shards.length-1];
-        shards[shardIndex[_shard]] = lastShard; // move last element in array to shard's place
-        shardIndex[lastShard] = shardIndex[_shard]; // configure the index to show that as well
-        _shardIndex[_shard] = 0;
-        shards.pop();
-        validShards[shard] = false;
-    }
-
+    /// @dev This function creates an unwanted loophole for shardholders to deceively steal more funds than owed from a dividend.
     function splitShard(address to, Fraction toBeSplit) external onlyValidShard {
         Shard shard = msg.sender;
         require(toBeSplit.numerator/toBeSplit.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't split more than 100% of shard's fraction");
@@ -99,6 +65,47 @@ contract Shardable is ERC20Holder {
 
     }
 
+    function removeShard() external onlyValidShard {
+        Shard shard = msg.sender;
+        _removeShard(shard);
+    }
+
+    function isValidShard(Shard shard) returns(bool) {
+        return validShards[shard];
+    }
+
+    /// @notice Checks if address is a shard holder - at least a partial owner of the contract
+    /// @param _shardHolder The address to be checked
+    /// @return A boolean value - a shard holder or not. 
+    function isShardHolder(address _shardHolder) returns(bool) {
+        return shardByOwner[_shardholder] != Shard(0x0);
+    }
+
+    function _pushShard(Shard _shard) internal {
+        shardIndex[_shard] = shards.length+1;
+        shards.push(_shard);
+        shardByOwner[shard.owner] = shard;
+        validShards[shard] = true;
+    }
+
+    function _removeShard(Shard shard) internal {
+        require(isValidShard(shard), "Shard must be valid!");
+        shardByOwner[shard.owner] = 0;
+        Shard memory lastShard = shards[shards.length-1];
+        shards[shardIndex[_shard]-1] = lastShard; // move last element in array to shard's place // -1 because stored indices starts from 1
+        shardIndex[lastShard] = shardIndex[shard]; // configure the index to show that as well
+        shardIndex[shard] = 0;
+        shards.pop();
+        validShards[shard] = false;
+    }
+
+
+    function _processShardTransfer(Shard shard, address to) internal {
+        require(validShards[shard], "Shard is not valid!");
+        shardByOwner[shard.owner] = Shard(0x0);
+        shardByOwner[to] = shard;
+    }
+
 }
 
 
@@ -128,6 +135,10 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         require(msg.sender == shardable);
     }
 
+    modifier onlyIfShardableIsActive {
+        require(shardable.active, "Shardable isn't active!")
+    }
+
     event SplitMade(
         address to,
         Fraction fraction
@@ -152,12 +163,12 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         address holder
         );
 
-    function putForSaleTo(address to, uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner {
+    function putForSaleTo(address to, uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner onlyIfShardableIsActive {
         forSaleTo = to;
         putForSale(price,Fractíon(_numerator,_denominator));
     }
 
-    function putForSale(uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner {
+    function putForSale(uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner onlyIfShardableIsActive {
         require(_numerator/_denominator >= fraction.numerator/fraction.denominator, "Can't put for sale more than shard's fraction");
         fractionForsale = Fraction(simplify(_numerator, _denominator));
         salePrice = price;
@@ -165,17 +176,13 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         emit PutForSale(forSaleTo,price,Fraction(_numerator,_denominator));
     }
 
-    function _cancelSell() internal {
-        forSale = false;
-        forSaleTo = 0x0;
-    }
 
     function cancelSell() onlyOwner {
         _cancelSell();
         emit SellCancelled();
     }
 
-    function purchase() external payable {
+    function purchase() external payable onlyIfShardableIsActive {
         require(forsale, "Not for sale");
         require(forSaleTo == msg.sender.address || !forSaleTo, string.concat("Only for sale to "+string(address)));
         require(msg.value >= salePrice, "Not enough paid");
@@ -187,17 +194,15 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
     }
 
-    function _split(address to, Fraction toBeSplit) internal {
-        shardable.splitShard(to,toBeSplit);
-    }
 
-    function split(address to, uint256 _numerator, uint256 _denominator) external onlyOwner {
+    function split(address to, uint256 _numerator, uint256 _denominator) external onlyOwner onlyIfShardableIsActive {
         _split(to,Fraction(_numerator,_denominator));
         emit SplitMade(to,_numerator,_denominator);
     }
 
     function changeFraction(Fraction new_fraction) external onlyShardable {
         if (new_fraction.numerator == 0) {
+                shardable.removeShard();
                 emit Burned();
                 _burn();
         }
@@ -206,10 +211,24 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
 
     function transferOwnership(address to) external onlyShardable {
         _transferOwnership(to);
+        shardable._processShardTransfer(to);
+    }
+
+    function _split(address to, Fraction toBeSplit) internal {
+        shardable.splitShard(to,toBeSplit);
+    }
+
+    function _cancelSell() internal {
+        forSale = false;
+        forSaleTo = 0x0;
     }
 
     function _burn() internal {
         super._burn();
+    }
+
+    function isEmpty() returns(bool) {
+        return getDecimal() == 0;
     }
 
     function getDecimal() view returns(uint256) {

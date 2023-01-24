@@ -24,7 +24,7 @@ contract Administerable is Shardable, ERC20Holder {
 
     // Pending Referendums
     Referendum[] internal pendingReferendums;
-    mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up to differentiate betweeen empty values
+    mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Proposals
     Referendum[] referendumsToBeImplemented;
@@ -74,6 +74,24 @@ contract Administerable is Shardable, ERC20Holder {
         mapping(Shard => bool) applicable;
     }
 
+    // triggers when a dividend is issued
+    event DividendIssued(
+        Dividend dividend,
+        uint256 value
+        );
+
+    // triggers when a dividend is dissolved
+    event DividendDissolved(
+        Dividend dividend,
+        uint256 value
+        );
+
+    // triggers when a dividend is dissolved
+    event DividendClaimed(
+        Dividend dividend,
+        uint256 value,
+        address by
+        );
 
     // triggers when a referendum is issued
     event ReferendumIssued(
@@ -129,6 +147,10 @@ contract Administerable is Shardable, ERC20Holder {
         string name
         )
 
+    event AdministerableDissolved(
+
+        );
+
     // modifier to make sure msg.sender has specific permit
     modifier onlyWithPermit(string permitName) {
         require(hasPermit(msg.sender, permitName));
@@ -152,7 +174,7 @@ contract Administerable is Shardable, ERC20Holder {
         require(referendumExists(referendum), "Referendum doesn't exist.");
     }
 
-    /// @notice Receives money and puts it into the 'main' bank when there's no supplying data 
+    /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
     receive() payable {
         _processReceipt(bankByName["main"],msg.value,msg.sender);
     }
@@ -174,7 +196,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
-    /// @dev There is a potential problem when selling and or splitting a shard. Then the dividend right sometimes perishes.
+    /// @dev There is a potential problem when selling and or splitting a shard. Then the Dividend Right sometimes perishes.
     /// @param bankName The name of the bank to issue a dividend from.
     /// @param value The value of the dividend to be issued.
     function issueDividend(string bankName, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) {
@@ -182,6 +204,16 @@ contract Administerable is Shardable, ERC20Holder {
         bank.value -= value;
         Dividend newDividend = new Dividend(value,validShards);
         dividends.push(newDividend);
+        emit DividendIssued();
+    }
+
+    /// @notice Dissolves a dividend, releasing its remaining unclaimed value to the 'main' bank.
+    /// @param dividend The dividend to be dissolved.
+    function dissolveDividend(Dividend dividend) external onlyWithPermit("issueDividend") {
+        uint256 memory valueLeft = dividend.value;
+        dividend.value = 0;
+        bankByName["main"].value += valueLeft;
+        emit DividendDissolved(dividend, valueLeft);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
@@ -194,20 +226,33 @@ contract Administerable is Shardable, ERC20Holder {
         dividend.value -= dividendValue;
         (bool success, ) = address(msg.sender).call.value(dividendValue)("");
         require(success, "Transfer failed.");
+        emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
+    /// @notice Creates a Bank - a container of funds with access limited to its administators.
+    /// @param bankName The name of the Bank to be created
     function createBank(string bankName) external onlyWithPermit("manageBank") {
        _createBank(bankName, msg.sender);
     }
 
+    /// @notice Deletes an empty Bank 
+    /// @param bankName The name of the Bank to be deleted
     function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdministrator(bankName) {
         _deleteBank(bankName);
     }
 
+    /// @notice Moves money internally from one bank to another.
+    /// @param fromBankName The name of the Bank to move money away from.
+    /// @param toBankName The name of the Bank to move the money to.
+    /// @param value The value to be moved
     function moveMoney(string fromBankName, string toBankName, uint256 value) external onlyBankAdministrator(fromBankName) {
         _moveMoney(fromBankName,bankTo,value,msg.sender);
     }
 
+    /// @notice Transfers value from one bank to another.
+    /// @param fromBankName The name of the Bank to move money away from.
+    /// @param toBankName The name of the Bank to move the money to.
+    /// @param value The value to be moved
     function transferMoney(string bankName, uint256 value, address to) external onlyBankAdministrator(bankName) {
         _transferMoney(bankName,value,to,msg.sender);
     }
@@ -218,6 +263,11 @@ contract Administerable is Shardable, ERC20Holder {
 
     function issueReferendum(Proposal[] proposals) external onlyWithPermit("issueVote") {
         _issueReferendum(proposals);
+    }
+
+    /// @dev Make sure proposal is part of proposalsToBeImplemented
+    function implementProposal(Proposal proposal) external onlyShardHolder {
+
     }
 
 
@@ -277,13 +327,20 @@ contract Administerable is Shardable, ERC20Holder {
         return referendumIndex[bank]-1; // -1 because stored indices starts from 1
     }
 
+    /// @notice Dissolves the administerable entity - a container of funds with access limited to its administators.
+    /// @dev Function isn't finished.
+    function _dissolve() internal {
+        active = false; // stops trading of Shards
+
+    }
+
     function _moveMoney(string fromBankName, string toBankName, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) {
         Bank fromBank = bankByName[fromBankName];
         Bank toBank = bankByName[toBankName];
         require(value <= fromBankName.value, "The value to be moved "+string(value)+" from '"+fromBankName+"' to '"+toBankName+"' can't be more than the value of '"+fromBankName+"':"+fromBank.value);
         bankFrom.value -= value;
         bankTo.value += value;
-        emit MoneyMoved(fromBankName,toBankName,value, by);
+        emit MoneyMoved(fromBankName,toBankName,value,by);
     }
 
     function _transferMoney(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
@@ -308,7 +365,7 @@ contract Administerable is Shardable, ERC20Holder {
     function _createBank(string bankName, address bankAdministrator) internal {
         require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
         bankByName[bankName] = new Bank(0, [bankAdministrator]);
-        bankIndex[bankByName[bankName]] = banks.length+1;
+        bankIndex[bankByName[bankName]] = banks.length+1; // +1 because stored indices starts from 1
         banks.push(bankByName[bankName]);
         emit BankCreated({name:bankName, by:bankAdministrator});
     }
