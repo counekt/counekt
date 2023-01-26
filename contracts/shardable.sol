@@ -30,7 +30,7 @@ contract Shardable is ERC20Holder {
     }
 
     modifier onlyValidShard {
-        require(isValidShard(msg.sender),"msg.sender must be a valid shard!");
+        require(isValidShard(msg.sender), "msg.sender must be a valid shard!");
     }
 
     /// @dev This function creates an unwanted loophole for shardholders to deceively steal more funds than owed from a dividend.
