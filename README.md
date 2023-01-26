@@ -1,2 +1,2 @@
-# CTW
-*connect the world*
+# Counekt
+Entrepreneurial *infrastructure* for the internet.
