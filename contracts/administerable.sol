@@ -31,6 +31,7 @@ contract Administerable is Shardable, ERC20Holder {
     
     // Dividends
     Dividend[] internal dividends;
+    mapping(Dividend => uint256) dividendIndex;
 
     Dividend liquidization;
 
@@ -105,6 +106,11 @@ contract Administerable is Shardable, ERC20Holder {
         Referendum referendum,
         bool result
         )
+        
+    event ProposalImplemented(
+      Proposal proposal,
+      Referendum referendum
+      );
 
     // triggers when a vote is cast
     event VoteCast(
@@ -180,13 +186,17 @@ contract Administerable is Shardable, ERC20Holder {
     modifier onlyExistingReferendum(Referendum referendum) {
         require(referendumExists(referendum), "Referendum doesn't exist.");
     }
+    
+    modifier onlyExistingDividend(Dividend dividend) {
+      require(dividendExists(dividend));
+    }
 
     modifier onlyIfActive() {
         require(active == true, "Administerable entity isn't active.");
     }
 
     /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
-    receive() payable {
+    receive() payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
         _processReceipt(bankByName["main"],msg.value,msg.sender);
     }
@@ -215,13 +225,16 @@ contract Administerable is Shardable, ERC20Holder {
         require(value <= bankByName[bankName].value, "Dividend value "+string(value)+" can't be more than bank value "+bank.value);
         bank.value -= value;
         Dividend newDividend = new Dividend(value,validShards);
+        dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
         dividends.push(newDividend);
         emit DividendIssued();
     }
 
     /// @notice Dissolves a dividend, releasing its remaining unclaimed value to the 'main' bank.
     /// @param dividend The dividend to be dissolved.
-    function dissolveDividend(Dividend dividend) external onlyWithPermit("issueDividend") onlyIfActive {
+    function dissolveDividend(Dividend dividend) external onlyWithPermit("issueDividend") onlyExistingDividend onlyIfActive {
+      dividends[dividendIndex[dividend]] = dividends[dividends.lenght-1];
+      dividends.pop();
         uint256 memory valueLeft = dividend.value;
         dividend.value = 0;
         bankByName["main"].value += valueLeft;
@@ -231,7 +244,7 @@ contract Administerable is Shardable, ERC20Holder {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param dividend The dividend to be claimed.
     /// @inheritdoc issueDividend
-    function claimDividend(Dividend dividend) external onlyShardHolder onlyIfActive{
+    function claimDividend(Dividend dividend) external onlyShardHolder onlyExistingDividend onlyIfActive{
         require(active == true, "Can't claim dividends from a liquidized entity. Check liquidization instead.")
         require(dividend.applicable[msg.sender] == true, "Not applicable for Dividend");
         dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.value;
@@ -242,7 +255,7 @@ contract Administerable is Shardable, ERC20Holder {
         emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
-    /// @notice Claims the owed liquid value of the liquidized/dissolved entity corresponding to the shard holder's respective shard fraction.
+    /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
     /// @inheritdoc _dissolve
     function claimLiquid() external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.")
@@ -295,7 +308,6 @@ contract Administerable is Shardable, ERC20Holder {
 
     }
 
-
     function givePermit(string permitName) onlyIfActive {}
 
     function withdrawPermit(string permitName) onlyIfActive {}
@@ -329,6 +341,10 @@ contract Administerable is Shardable, ERC20Holder {
 
     function referendumExists(Referendum referendum) returns(bool) {
         return referendumIndex[referendum] > 0; // bigger than 0 because stored indices starts from 1
+    }
+    
+    function dividendExists(Dividend dividend) view returns(bool) {
+      return dividendIndex[dividend] > 0; ; // bigger than 0 because stored indices starts from 1
     }
 
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
