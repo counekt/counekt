@@ -28,7 +28,7 @@ contract Administerable is Shardable, ERC20Holder {
 
     // Proposals
     Referendum[] referendumsToBeImplemented;
-    
+    mapping(Referendum => uint256) referendumToBeImplementedIndex;
     // Dividends
     Dividend[] internal dividends;
     mapping(Dividend => uint256) dividendIndex;
@@ -66,6 +66,7 @@ contract Administerable is Shardable, ERC20Holder {
 
     struct Referendum {
         Proposal[] proposals;
+        mapping(Proposal => uint256) proposalIndex;
         Fraction forFraction;
         Fraction againstFraction;
         mapping(Shard => bool) hasVoted;
@@ -340,7 +341,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function referendumExists(Referendum referendum) returns(bool) {
-        return referendumIndex[referendum] > 0; // bigger than 0 because stored indices starts from 1
+        return referendumIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
     }
     
     function dividendExists(Dividend dividend) view returns(bool) {
@@ -442,7 +443,7 @@ contract Administerable is Shardable, ERC20Holder {
         emit ReferendumClosed(referendum, result);
     }
 
-    function _implementProposal(Proposal proposal) internal onlyIfActive {
+    function _implementProposal(Referendum referendum, Proposal proposal) internal onlyIfActive {
         /*
         for (uint i = 0; i < proposal.affected.length; i++) {
             proposal.affected[i].permits.
@@ -470,7 +471,16 @@ contract Administerable is Shardable, ERC20Holder {
                 }
         }
         */
+        require(referendumToBeImplementedIndex[referendum]>0);
+        require(referendum.proposalIndex[proposal]>0);
         this.call(bytes4(sha3(proposal.program)));
+        referendum.proposals[referendum.proposalIndex[proposal]-1] =referendum.proposals[referendum.proposals.length];
+        referendum.proposals.pop();
+        if (referendum.proposals.length==0) {
+          // remove fully implemented referendum from referendumsToBeImplemented
+          referendumsToBeImplemented[referendumToBeImplementedIndex[referendum]] = referendumsToBeImplemented[referendumToBeImplemented.length];
+          referendumToBeImplemented.pop();
+        }
     }
 
 }
