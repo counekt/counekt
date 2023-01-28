@@ -9,7 +9,7 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 /// @title A shardable/fractional non-fungible token that can be fractually owned via Shards
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
-/// @dev About to implement a goddamn lot of mappings to avoid a potential max limit on shards
+/// @dev Develop a way in which Shards are registered differently when traded
 /// @custom:beaware This is a commercial contract.
 contract Shardable is ERC20Holder {
     

@@ -31,15 +31,14 @@ contract Administerable is Shardable, ERC20Holder {
 
     // Referendums To Be Implemented
     Referendum[] referendumsToBeImplemented;
-    mapping(Referendum => uint256) referendumToBeImplementedIndex;
+    mapping(Referendum => uint256) referendumToBeImplementedIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Dividends
     Dividend[] internal dividends;
-    mapping(Dividend => uint256) dividendIndex;
+    mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Liquidization (in case of dissolvement of the administerable entity).
     Dividend liquidization;
-
 
     struct Bank {
         uint256 balance;
@@ -49,13 +48,18 @@ contract Administerable is Shardable, ERC20Holder {
 
     /// @dev The structures from Permits all the way down to Proposal should be rethought and remade.
     struct Permits {
+
         // Issue Vote
-        bool issueVote; // Permission to issue a Referendum
-        bool administrateIssueVotePermit; // Permission to distribute and withdraw the permit to issue a Referendum.
+        bool issueVote; // Permission to issue a vote
+        bool administrateIssueVotePermit; // Permission to distribute and withdraw the permit to issue a vote.
 
         // Issue Dividend
         bool issueDividend;
         bool administrateIssueDividendPermit; // Permission to distribute and withdraw the permit to issue a dividend.
+
+        // Dissolve Dividend
+        bool dissolveDividend;
+        bool administrateDissolveDividendPermit; // Permission to distribute and withdraw the permit to dissolve a dividend.
 
         // Manage Bank
         bool manageBank;
@@ -65,7 +69,9 @@ contract Administerable is Shardable, ERC20Holder {
         bool implementProposal; // Permission to implement a proposal from a referendum which is to be implemented.
         bool administrateImplementProposal;
 
-        // 
+        // Liquidize Entity
+        bool liquidizeEntity;
+        bool administrateLiquidizeEntityPermit;
 
     }
 
@@ -119,7 +125,7 @@ contract Administerable is Shardable, ERC20Holder {
     event ReferendumClosed(
         Referendum referendum,
         bool result
-        )
+        );
         
     event ProposalImplemented(
       Proposal proposal,
@@ -166,11 +172,9 @@ contract Administerable is Shardable, ERC20Holder {
 
     event BankDeleted(
         string name
-        )
-
-    event AdministerableLiquidized(
-
         );
+
+    event AdministerableLiquidized();
 
     // triggers when a liquid is claimed
     event LiquidClaimed(
@@ -193,18 +197,22 @@ contract Administerable is Shardable, ERC20Holder {
         require(isBankAdministrator(msg.sender, bankName));
     }
 
+    // modifier to make sure bank exists
     modifier onlyExistingBank(string bankName) {
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exist.");
     }
 
+    // modifier to make sure referendum exists
     modifier onlyExistingReferendum(Referendum referendum) {
         require(referendumExists(referendum), "Referendum doesn't exist.");
     }
     
+    // modifier to make sure dividend exists
     modifier onlyExistingDividend(Dividend dividend) {
       require(dividendExists(dividend));
     }
 
+    // modifier to make sure entity is active and not liquidized/dissolved
     modifier onlyIfActive() {
         require(active == true, "Administerable entity isn't active.");
     }
@@ -215,81 +223,29 @@ contract Administerable is Shardable, ERC20Holder {
         _processReceipt(bankByName["main"],msg.value,msg.sender);
     }
 
-    /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
-    /// @param referendum The referendum to be voted on.
-    /// @param for The boolean value signalling a for or against vote.
-    /// @dev There is a potential problem when selling and or splitting a shard. Then the right of the new shard to vote may unfairly perish, possibly making a referendum unsolvable.
-    function vote(Referendum referendum, bool for) external onlyShardHolder hasNotVoted(referendum) onlyIfActive {
-        Shard memory _shard = shardByOwner[msg.sender];
-        if (for) {
-            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,_shard.fraction));
-        }
-        else {
-            referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,_shard.fraction));
-        }
-        referendum.hasVoted[_shard] = true;
-        emit VoteCast(msg.sender, referendum, _shard, for);
-    }
-
     /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
     /// @dev There is a potential problem when selling and or splitting a shard. Then the Dividend Right sometimes perishes.
     /// @param bankName The name of the bank to issue a dividend from.
     /// @param value The value of the dividend to be issued.
     function issueDividend(string bankName, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) onlyIfActive {
-        require(value <= bankByName[bankName].value, "Dividend value "+string(value)+" can't be more than bank value "+bank.value);
-        bank.value -= value;
-        Dividend newDividend = new Dividend(value,validShards);
-        dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
-        dividends.push(newDividend);
-        emit DividendIssued();
+        _issueDividend(bankName,value);
     }
 
     /// @notice Dissolves a dividend, releasing its remaining unclaimed value to the 'main' bank.
     /// @param dividend The dividend to be dissolved.
     function dissolveDividend(Dividend dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
-      dividends[dividendIndex[dividend]] = dividends[dividends.lenght-1];
-      dividends.pop();
-        uint256 memory valueLeft = dividend.value;
-        dividend.value = 0;
-        bankByName["main"].value += valueLeft;
-        emit DividendDissolved(dividend, valueLeft);
-    }
-
-    /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
-    /// @param dividend The dividend to be claimed.
-    /// @inheritdoc issueDividend
-    function claimDividend(Dividend dividend) external onlyShardHolder onlyExistingDividend onlyIfActive{
-        require(active == true, "Can't claim dividends from a liquidized entity. Check liquidization instead.")
-        require(dividend.applicable[msg.sender] == true, "Not applicable for Dividend");
-        dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.value;
-        dividend.applicable[msg.sender] = false;
-        dividend.value -= dividendValue;
-        (bool success, ) = address(msg.sender).call.value(dividendValue)("");
-        require(success, "Transfer failed.");
-        emit DividendClaimed(dividend,dividendValue,msg.sender);
-    }
-
-    /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
-    /// @inheritdoc _liquidize
-    function claimLiquid() external onlyShardHolder {
-        require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.")
-        require(liquidization.applicable[msg.sender] == true, "Not applicable for liquidity.");
-        liquidization.applicable[msg.sender] = false;
-        liquidValue = shardByOwner[msg.sender].getDecimal() * address(this).balance;
-        (bool success, ) = address(msg.sender).call.value(liquidValue)("");
-        require(success, "Transfer failed.");
-        emit LiquidClaimed(liquidValue,msg.sender);
+        _dissolveDividend(dividend);
     }
 
     /// @notice Creates a Bank - a container of funds with access limited to its administators.
     /// @param bankName The name of the Bank to be created
-    function createBank(string bankName) external onlyWithPermit("createBank") {
+    function createBank(string bankName) external onlyWithPermit("manageBank") {
        _createBank(bankName, msg.sender);
     }
 
     /// @notice Deletes an empty Bank 
     /// @param bankName The name of the Bank to be deleted
-    function deleteBank(string bankName) external onlyWithPermit("deleteBank") onlyBankAdministrator(bankName) {
+    function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdministrator(bankName) {
         _deleteBank(bankName);
     }
 
@@ -321,6 +277,54 @@ contract Administerable is Shardable, ERC20Holder {
         _implementProposal(referendum, proposal);
     }
 
+    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
+    /// @inheritdoc _liquidize
+    function liquidize() external onlyWithPermit("liquidizeEntity") {
+        _liquidize();
+    }
+
+    /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
+    /// @param referendum The referendum to be voted on.
+    /// @param for The boolean value signalling a for or against vote.
+    /// @dev There is a potential problem when selling and or splitting a shard. Then the right of the new shard to vote may unfairly perish, possibly making a referendum unsolvable.
+    function vote(Referendum referendum, bool for) external onlyShardHolder hasNotVoted(referendum) onlyIfActive {
+        Shard memory _shard = shardByOwner[msg.sender];
+        if (for) {
+            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,_shard.fraction));
+        }
+        else {
+            referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,_shard.fraction));
+        }
+        referendum.hasVoted[_shard] = true;
+        emit VoteCast(msg.sender, referendum, _shard, for);
+    }
+
+    /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
+    /// @param dividend The dividend to be claimed.
+    /// @inheritdoc issueDividend
+    function claimDividend(Dividend dividend) external onlyShardHolder onlyExistingDividend onlyIfActive {
+        require(active == true, "Can't claim dividends from a liquidized entity. Check liquidization instead.")
+        require(dividend.applicable[msg.sender] == true, "Not applicable for Dividend");
+        dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.value;
+        dividend.applicable[msg.sender] = false;
+        dividend.value -= dividendValue;
+        (bool success, ) = address(msg.sender).call.value(dividendValue)("");
+        require(success, "Transfer failed.");
+        emit DividendClaimed(dividend,dividendValue,msg.sender);
+    }
+
+    /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
+    /// @inheritdoc _liquidize
+    function claimLiquid() external onlyShardHolder {
+        require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.")
+        require(liquidization.applicable[msg.sender] == true, "Not applicable for liquidity.");
+        liquidization.applicable[msg.sender] = false;
+        liquidValue = shardByOwner[msg.sender].getDecimal() * address(this).balance;
+        (bool success, ) = address(msg.sender).call.value(liquidValue)("");
+        require(success, "Transfer failed.");
+        emit LiquidClaimed(liquidValue,msg.sender);
+    }
+
     function changePermit(address shardHolder, string permitName, bool newState) onlyIfActive {
         require(isShardHolder(shardHolder), "Only Shard holders can have Permits");
         require(!(hasPermit(shardHolder, permitName) & newState == true), "Shard Holder already has Permit '"+permitName+"'");
@@ -338,6 +342,11 @@ contract Administerable is Shardable, ERC20Holder {
                     case "issueDividend":
                         require(hasPermit(msg.sender, "administrateIssueDividendPermit"));
                         require(!hasPermit(shardHolder, "administrateIssueDividendPermit"));
+                        permits[shardHolder].issueDividend = true;
+                        break;
+                    case "dissolveDividend":
+                        require(hasPermit(msg.sender, "administrateDissolveDividendPermit"));
+                        require(!hasPermit(shardHolder, "administrateDissolveDividendPermit"));
                         permits[shardHolder].issueDividend = true;
                         break;
                     case "administrateIssueDividendPermit":
@@ -368,30 +377,7 @@ contract Administerable is Shardable, ERC20Holder {
                 }
     }
 
-    function hasPermit(address holder, string permitName) view returns (bool) {
-        switch (permitName) {
-                    case "issueVote":
-                        return permits[holder].issueVote || basePermits.issueVote;
-                    case "administrateIssueVotePermit":
-                        return permits[holder].administrateIssueVotePermit || basePermits.administrateIssueVotePermit;
-                    case "issueDividend":
-                        return permits[holder].issueDividend || basePermits.issueDividend;
-                    case "administrateIssueDividendPermit":
-                        return permits[holder].administrateIssueDividendPermit || basePermits.administrateIssueDividendPermit;
-                    case "manageBank":
-                        return permits[holder].manageBank || basePermits.administrateManageBankPermit;
-                    case "administrateManageBankPermit":
-                        return permits[holder].administrateManageBankPermit || basePermits.administrateManageBankPermit;
-                    case "implementProposal":
-                        return permits[holder].implementProposal || basePermits.implementProposal;
-                    case "administrateImplementProposal":
-                        return permits[holder].administrateImplementProposal || basePermits.administrateImplementProposal;
-                    default:
-                        revert();
-                }
-    }
-
-    function hasVoted(address _shardHolder, Referendum referendum) view returns(bool){
+    function hasVoted(address _shardHolder, Referendum referendum) view returns(bool) {
         return referendum.hasVoted[shardByOwner[_shardholder]];
     }
 
@@ -420,21 +406,37 @@ contract Administerable is Shardable, ERC20Holder {
         return false;
     }
 
-    function getBankIndex(Bank bank) view returns(uint256){
-        return bankIndex[bank]-1; // -1 because stored indices starts from 1
+    function hasPermit(address holder, string permitName) view returns (bool) {
+        switch (permitName) {
+                    case "issueVote":
+                        return permits[holder].issueVote || basePermits.issueVote;
+                    case "administrateIssueVotePermit":
+                        return permits[holder].administrateIssueVotePermit || basePermits.administrateIssueVotePermit;
+                    case "issueDividend":
+                        return permits[holder].issueDividend || basePermits.issueDividend;
+                    case "dissolveDividend":
+                        return permits[holder].dissolveDividend || basePermits.dissolveDividend;
+                    case "administrateIssueDividendPermit":
+                        return permits[holder].administrateIssueDividendPermit || basePermits.administrateIssueDividendPermit;
+                    case "manageBank":
+                        return permits[holder].manageBank || basePermits.administrateManageBankPermit;
+                    case "administrateManageBankPermit":
+                        return permits[holder].administrateManageBankPermit || basePermits.administrateManageBankPermit;
+                    case "implementProposal":
+                        return permits[holder].implementProposal || basePermits.implementProposal;
+                    case "administrateImplementProposal":
+                        return permits[holder].administrateImplementProposal || basePermits.administrateImplementProposal;
+                    default:
+                        revert();
+                }
     }
 
-    function getReferendumIndex(Referendum referendum) view returns(uint256) {
-        return referendumIndex[bank]-1; // -1 because stored indices starts from 1
-    }
-
-    /// @notice Dissolves and liquidizes the administerable entity. CAN'T BE UNDONE!!!
+    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     function _liquidize() internal {
         active = false; // stops trading of Shards
         liquidization = new Dividend(address(this).balance, validShards); // sets up a final dividend for shardholders
         emit AdministerableLiquidized();
     }
-
 
     function _moveMoney(string fromBankName, string toBankName, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
         Bank fromBank = bankByName[fromBankName];
@@ -473,6 +475,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function _deleteBank(string bankName) internal onlyIfActive {
+        require(bankName != "main", "Can't delete the main bank!");
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
         require(bankByName[bankName].value == 0, "Bank '"+bankName+"' must be empty before being deleted!");
         Bank bank = bankByName[bankName];
@@ -487,6 +490,24 @@ contract Administerable is Shardable, ERC20Holder {
         pendingReferendumIndex[referendum] = pendingReferendums.length+1; // +1 to distinguish between empty values
         pendingReferendums.push(referendum);
         emit ReferendumIssued(referendum, by);
+    }
+
+    function _issueDividend(string bankName, uint256 value) internal {
+        require(value <= bankByName[bankName].value, "Dividend value "+string(value)+" can't be more than bank value "+bank.value);
+        bank.value -= value;
+        Dividend newDividend = new Dividend(value,validShards);
+        dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
+        dividends.push(newDividend);
+        emit DividendIssued();
+    }
+
+    function _dissolveDividend(Dividend dividend) internal onlyIfActive {
+        dividends[dividendIndex[dividend]] = dividends[dividends.lenght-1];
+        dividends.pop();
+        uint256 memory valueLeft = dividend.value;
+        dividend.value = 0;
+        bankByName["main"].value += valueLeft;
+        emit DividendDissolved(dividend, valueLeft);
     }
 
     function _closeReferendum(Referendum referendum) internal onlyExistingReferendum(referendum) onlyIfActive {
@@ -504,33 +525,6 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function _implementProposal(Referendum referendum, Proposal proposal) internal onlyIfActive {
-        /*
-        for (uint i = 0; i < proposal.affected.length; i++) {
-            proposal.affected[i].permits.
-                switch (proposal.permitName) {
-                    case "issueVote":
-                        proposal.affected[i].permits.issueVote = proposal.newValue;
-                        break;
-                    case "administrateIssueVotePermit":
-                        proposal.affected[i].permits.administrateIssueVotePermit = proposal.newValue;
-                        break;
-                    case "issueDividend":
-                        proposal.affected[i].permits.issueDividend = proposal.newValue;
-                        break;
-                    case "administrateIssueDividendPermit":
-                        proposal.affected[i].permits.administrateIssueDividendPermit = proposal.newValue;
-                        break;
-                    case "manageBank":
-                        proposal.affected[i].permits.manageBank = proposal.newValue;
-                        break;
-                    case "administrateManageBankPermit":
-                        proposal.affected[i].permits.administrateManageBankPermit = proposal.newValue;
-                        break;
-                    default:
-                        revert();
-                }
-        }
-        */
         require(referendumToBeImplementedIndex[referendum]>0);
         require(referendum.proposalIndex[proposal]>0);
         this.call(bytes4(sha3(proposal.program)));
