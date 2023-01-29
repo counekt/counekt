@@ -11,7 +11,7 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 /// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
 /// @dev Develop a way in which Shards are registered differently when traded
 /// @custom:beaware This is a commercial contract.
-contract Shardable is ERC20Holder {
+contract Shardable {
     
     Shard[] internal shards;
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
@@ -33,34 +33,42 @@ contract Shardable is ERC20Holder {
         require(isValidShard(msg.sender), "msg.sender must be a valid shard!");
     }
 
-    /// @dev This function creates an unwanted loophole for shardholders to deceively steal more funds than owed from a dividend.
+    /// @dev Better
     function splitShard(address to, Fraction toBeSplit) external onlyValidShard {
-        Shard shard = msg.sender;
-        require(toBeSplit.numerator/toBeSplit.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't split more than 100% of shard's fraction");
+        Shard memory senderShard = msg.sender;
+        require(toBeSplit.numerator/toBeSplit.denominator < senderShard.fraction.numerator/senderShard.fraction.denominator, "Can't split 100% or more of shard's fraction");
+        address memory sender = senderShard.owner;
+        bool memory receiverIsShardHolder = isShardHolder(to);
+        Fraction memory newReceiverFraction;
         
-        // if receiver already owns a shard
-        if (isShardHolder(to)) { 
-            Shard shardToBeUpgraded = shardByOwner[to];
+        if (receiverIsShardHolder) { // if Receiver already owns a shard
+            Shard memory receiverShard = shardByOwner[to];
             
-            // just add the sold fraction together with the already existing one
-            // and subtract that from the shard, which it split off of
-            shardToBeUpgraded.changeFraction(addFractions(shardToBeUpgraded.fraction,toBeSplit));
-            changeFraction(subtractFractions(fraction,toBeSplit));
+            newReceiverFraction = addFractions(receiverShard.fraction,toBeSplit); // The fractions are added and upgraded
             
+            // Destroy the Old Receiver Shard
+            _removeShard(receiverShard); 
+            receiverShard.burn();
+
         }
 
         else {
-            // if the shard to be split is 100% of the shard, which it "split" off of
-            if (toBeSplit.numerator/toBeSplit.denominator == shard.fraction.numerator/shard.fraction.denominator) {
-                shard.transferOwnership(to); // transfer the whole shard without creating a new one
-            }
-            else {
-                // create a new shard
-                Shard new_shard = new Shard(toBeSplit.numerator,toBeSplit.denominator);
-                changeFraction(subtractFractions(fraction,toBeSplit)); //subtract that from the shard, which it split off of
-                new_shard.transferOwnership(to); // transfer to receiver
-                _pushShard(new_shard);
-            }
+            // The Fraction of the Receiver Shard is equal to the one split off of the Sender Shard
+            newReceiverFraction = toBeSplit; 
+        }
+
+        // The new Fraction of the Sender Shard has been subtracted by the Split Fraction.
+        Fraction newSenderFraction = subtractFractions(senderShard.fraction,toBeSplit);
+
+        // Destroy the old Sender Shard
+        _removeShard(senderShard); 
+        senderShard.burn();
+
+        // Push the new Shards
+        Shard newReceiverShard = new Shard(newReceiverFraction,to);
+        Shard newSenderShard = new Shard(newSenderFraction,sender);
+        _pushShard(newReceiverShard);
+        _pushShard(newSenderShard);
         }
 
     }
@@ -125,9 +133,11 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
     Fraction public fraction;
     Fraction public fractionForsale;
 
-    constructor(uint256 _numerator, uint256 _denominator, address holder) ERC721("Shard", "SH") {
+    constructor(Fraction _fraction, address holder) ERC721("Shard", "SH") {
+        require(_fraction.denominator > 0);
+        require(1 <= _fraction.numerator/_fraction.denominator > 0);
         shardable = msg.sender;
-        fraction = Fraction(_numerator,_denominator);
+        fraction = _fraction;
         _transferOwnership(holder);
     }
 
@@ -200,18 +210,13 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         emit SplitMade(to,_numerator,_denominator);
     }
 
-    function changeFraction(Fraction new_fraction) external onlyShardable {
-        if (new_fraction.numerator == 0) {
-                shardable.removeShard();
-                emit Burned();
-                _burn();
-        }
-        fraction = new Fraction(simplify(new_numerator, new_denominator));
-    }
-
-    function transferOwnership(address to) external onlyShardable {
+    function transferOwnership(address to) external onlyOwner {
         _transferOwnership(to);
         shardable._processShardTransfer(to);
+    }
+
+    function burn() external onlyShardable {
+        _burn();
     }
 
     function _split(address to, Fraction toBeSplit) internal {
