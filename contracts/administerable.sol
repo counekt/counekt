@@ -41,7 +41,8 @@ contract Administerable is Shardable, ERC20Holder {
     Dividend liquidization;
 
     struct Bank {
-        uint256 balance;
+        address[] tokenAddresses;
+        mapping(address => uint256) balance;
         address[] administrators;
         mapping(address => bool) isAdministrator;
     }
@@ -92,6 +93,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     struct Dividend {
+        address tokenAddress;
         uint256 value;
         mapping(Shard => bool) applicable;
     }
@@ -99,18 +101,21 @@ contract Administerable is Shardable, ERC20Holder {
     // triggers when a dividend is issued
     event DividendIssued(
         Dividend dividend,
+        address tokenAddress,
         uint256 value
         );
 
     // triggers when a dividend is dissolved
     event DividendDissolved(
         Dividend dividend,
+        address tokenAddress,
         uint256 value
         );
 
     // triggers when a dividend is claimed
     event DividendClaimed(
         Dividend dividend,
+        address tokenAddress,
         uint256 value,
         address by
         );
@@ -141,15 +146,15 @@ contract Administerable is Shardable, ERC20Holder {
         );
 
     // triggers when money is received
-    event MoneyReceived(
+    event TokenReceived(
         address tokenAddress,
         string bankName,
         uint256 value,
         address from
         );
 
-    // triggers when money is transferred
-    event MoneyTransfered(
+    // triggers when token is transferred
+    event TokenTransfered(
         address tokenAddress,
         uint256 value,
         string bankName,
@@ -157,9 +162,10 @@ contract Administerable is Shardable, ERC20Holder {
         address by
         );
 
-    event MoneyMoved(
+    event TokenMoved(
         string fromBankName,
         string toBankName,
+        address tokenAddress,
         uint256 value,
         address by
         );
@@ -220,15 +226,15 @@ contract Administerable is Shardable, ERC20Holder {
     /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
     receive() payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
-        _processReceipt(bankByName["main"],msg.value,msg.sender);
+        _processTokenReceipt("main",address(0),msg.value,msg.sender);
     }
 
     /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
     /// @dev There is a potential problem when selling and or splitting a shard. Then the Dividend Right sometimes perishes.
     /// @param bankName The name of the bank to issue a dividend from.
     /// @param value The value of the dividend to be issued.
-    function issueDividend(string bankName, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) onlyIfActive {
-        _issueDividend(bankName,value);
+    function issueDividend(string bankName, address tokenAddress, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) onlyIfActive {
+        _issueDividend(bankName,tokenAddress,value);
     }
 
     /// @notice Dissolves a dividend, releasing its remaining unclaimed value to the 'main' bank.
@@ -252,21 +258,30 @@ contract Administerable is Shardable, ERC20Holder {
     /// @notice Moves money internally from one bank to another.
     /// @param fromBankName The name of the Bank to move money away from.
     /// @param toBankName The name of the Bank to move the money to.
+    /// @param tokenAddress The address of the token to be moved (address(0) if ether)
     /// @param value The value to be moved
-    function moveMoney(string fromBankName, string toBankName, uint256 value) external onlyBankAdministrator(fromBankName) {
-        _moveMoney(fromBankName,bankTo,value,msg.sender);
+    function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdministrator(fromBankName) {
+        _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
     }
 
     /// @notice Transfers value from one bank to another.
     /// @param fromBankName The name of the Bank to move money away from.
+    /// @param tokenAddress The address of the token contract (address(0) if ether)
     /// @param toBankName The name of the Bank to move the money to.
     /// @param value The value to be moved
-    function transferMoney(string bankName, uint256 value, address to) external onlyBankAdministrator(bankName) {
-        _transferMoney(bankName,value,to,msg.sender);
+    function transferToken(string fromBankName, address tokenAddress, uint256 value, address to) external onlyBankAdministrator(bankName) {
+        _transferToken(fromBankName,tokenAddress,value,to,msg.sender);
     }
 
-    function receiveMoney(string bankName) external payable onlyIfActive {
+    function receiveEther(string bankName) external payable onlyIfActive {
         _processReceipt(bankByName[bankName],msg.value, msg.sender);
+    }
+
+    function receiveToken(string bankName, address tokenAddress, uint256 value) external {
+        ERC20 token = ERC20(tokenAddress);
+        require(token.approve(address(this), value), "Failed to approve transfer");
+        require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens");
+        _processTokenReceipt(bankName,tokenAddress,value,msg.sender);
     }
 
     function issueVote(Proposal[] proposals) external onlyWithPermit("issueVote") {
@@ -308,13 +323,13 @@ contract Administerable is Shardable, ERC20Holder {
         dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.value;
         dividend.applicable[msg.sender] = false;
         dividend.value -= dividendValue;
-        (bool success, ) = address(msg.sender).call.value(dividendValue)("");
-        require(success, "Transfer failed.");
+        _transferToken(dividend.tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
     /// @inheritdoc _liquidize
+    /// @dev NOT UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
     function claimLiquid() external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.")
         require(liquidization.applicable[msg.sender] == true, "Not applicable for liquidity.");
@@ -385,6 +400,11 @@ contract Administerable is Shardable, ERC20Holder {
         return bankByName[bankName].administrators.length >= 1;
     }
 
+    function bankIsEmpty(string bankName) returns(bool) {
+        Bank memory bank = bankByName[bankName];
+        return bank.tokenAddresses.length == 0 && bank.balance[address(0)] == 0;
+    }
+
     function referendumExists(Referendum referendum) returns(bool) {
         return referendumIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
     }
@@ -438,32 +458,50 @@ contract Administerable is Shardable, ERC20Holder {
         emit AdministerableLiquidized();
     }
 
-    function _moveMoney(string fromBankName, string toBankName, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
-        Bank fromBank = bankByName[fromBankName];
-        Bank toBank = bankByName[toBankName];
-        require(value <= fromBankName.value, "The value to be moved "+string(value)+" from '"+fromBankName+"' to '"+toBankName+"' can't be more than the value of '"+fromBankName+"':"+fromBank.value);
-        bankFrom.value -= value;
-        bankTo.value += value;
-        emit MoneyMoved(fromBankName,toBankName,value,by);
+    function _moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
+        Bank memory fromBank = bankByName[fromBankName];
+        Bank memory toBank = bankByName[toBankName];
+        require(value <= fromBankName.balance[tokenAddress], "The value to be moved "+string(value)+" from '"+fromBankName+"' to '"+toBankName+"' can't be more than the value of '"+fromBankName+"':"+fromBank.balance[tokenAddress]);
+        bankFrom.balance[tokenAddress] -= value;
+        bankTo.balance[tokenAddress] += value;
+        emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
     }
 
-    function _transferMoney(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) onlyIfActive {
-        _processTransfer(fromBankName,value,to,by);
+    function _transferEther(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        require(value <= fromBank.balance[address(0)], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[address(0)]);
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
-        emit MoneyTransfered(fromBankName,value,to,by);
     }
 
-    function _processTransfer(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        Bank fromBank = bankByName[fromBankName];
-        require(value <= fromBank.value, "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.value);
-        fromBank.value -= value;
+    function _transferToken(address tokenAddress, uint256 value, address to) internal {
+        if (tokenAddress == address(0)) { _transferEther(value, to, by);}
+        else {
+            ERC20 token = ERC20(tokenAddress);
+            require(token.approve(to, value), "Failed to approve transfer");
+            require(token.transferFrom(address(this), to, value), "Failed to transfer tokens");
+        }
     }
 
-    function _processReceipt(string toBankName, uint256 value, address from) internal onlyExistingBank(toBankName) {
-        Bank toBank = bankByName[toBankName];
-        toBank.value += value;
-        emit MoneyReceived(toBank,value,from);
+    function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        Bank memory fromBank = bankByName[fromBankName];
+        require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
+        _transferToken(tokenAddress,value,to);
+        _processTokenTransfer(fromBank,tokenAddress,value,to,by);
+    }
+
+    function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        Bank memory fromBank = bankByName[fromBankName];
+        fromBank.balance[tokenAddress] -= value;
+        emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
+    }
+
+    function _processTokenReceipt(string bankName, address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
+        Bank memory bank = bankByName[bankName];
+        if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
+            bank.tokenAddresses.push(tokenAddress);
+        }
+        bank.balance[tokenAddress] += value;
+        emit TokenReceived(bankName,tokenAddress,value,from);
     }
 
     function _createBank(string bankName, address bankAdministrator) internal onlyIfActive {
@@ -477,7 +515,7 @@ contract Administerable is Shardable, ERC20Holder {
     function _deleteBank(string bankName) internal onlyIfActive {
         require(bankName != "main", "Can't delete the main bank!");
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
-        require(bankByName[bankName].value == 0, "Bank '"+bankName+"' must be empty before being deleted!");
+        require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
         Bank bank = bankByName[bankName];
         banks[bankIndex[bank]] = banks[banks.length-1]; // -1 because stored indices starts from 1
         banks.pop();
