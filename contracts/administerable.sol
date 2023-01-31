@@ -37,14 +37,18 @@ contract Administerable is Shardable, ERC20Holder {
     Dividend[] internal dividends;
     mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
 
-    // Liquidization (in case of dissolvement of the administerable entity).
-    Dividend liquidization;
+    // Liquidization (in case of dissolvement of the administerable entity) - Dividends by token addresses
+    // is updated along the way
+    mapping(address => Dividend) liquidization;
+    address[] tokenAddresses;
+    mapping(address => uint256) tokenAddressIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     struct Bank {
         address[] tokenAddresses;
+        mapping(address => uint256) tokenAddressIndex;
         mapping(address => uint256) balance;
         address[] administrators;
-        mapping(address => bool) isAdministrator;
+        mapping(address => uint256) administratorIndex;
     }
 
     /// @dev The structures from Permits all the way down to Proposal should be rethought and remade.
@@ -95,28 +99,24 @@ contract Administerable is Shardable, ERC20Holder {
     struct Dividend {
         address tokenAddress;
         uint256 value;
+        uint256 originalValue;
         mapping(Shard => bool) applicable;
     }
 
     // triggers when a dividend is issued
     event DividendIssued(
-        Dividend dividend,
-        address tokenAddress,
-        uint256 value
+        Dividend dividend
         );
 
     // triggers when a dividend is dissolved
     event DividendDissolved(
         Dividend dividend,
-        address tokenAddress,
-        uint256 value
+        uint256 valueLeft
         );
 
     // triggers when a dividend is claimed
     event DividendClaimed(
         Dividend dividend,
-        address tokenAddress,
-        uint256 value,
         address by
         );
 
@@ -147,17 +147,17 @@ contract Administerable is Shardable, ERC20Holder {
 
     // triggers when money is received
     event TokenReceived(
-        address tokenAddress,
         string bankName,
+        address tokenAddress,
         uint256 value,
         address from
         );
 
     // triggers when token is transferred
     event TokenTransfered(
+        string bankName,
         address tokenAddress,
         uint256 value,
-        string bankName,
         address to,
         address by
         );
@@ -177,7 +177,8 @@ contract Administerable is Shardable, ERC20Holder {
         );
 
     event BankDeleted(
-        string name
+        string name,
+        address by
         );
 
     event AdministerableLiquidized();
@@ -279,8 +280,7 @@ contract Administerable is Shardable, ERC20Holder {
 
     function receiveToken(string bankName, address tokenAddress, uint256 value) external {
         ERC20 token = ERC20(tokenAddress);
-        require(token.approve(address(this), value), "Failed to approve transfer");
-        require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens");
+        require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens. Make sure the transfer is approved.");
         _processTokenReceipt(bankName,tokenAddress,value,msg.sender);
     }
 
@@ -320,23 +320,37 @@ contract Administerable is Shardable, ERC20Holder {
     function claimDividend(Dividend dividend) external onlyShardHolder onlyExistingDividend onlyIfActive {
         require(active == true, "Can't claim dividends from a liquidized entity. Check liquidization instead.")
         require(dividend.applicable[msg.sender] == true, "Not applicable for Dividend");
-        dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.value;
         dividend.applicable[msg.sender] = false;
+        dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.originalValue;
         dividend.value -= dividendValue;
         _transferToken(dividend.tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
+        if (dividend.value == 0) {
+            _dissolveDividend(dividend);
+        }
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
     /// @inheritdoc _liquidize
     /// @dev NOT UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
-    function claimLiquid() external onlyShardHolder {
-        require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.")
-        require(liquidization.applicable[msg.sender] == true, "Not applicable for liquidity.");
-        liquidization.applicable[msg.sender] = false;
-        liquidValue = shardByOwner[msg.sender].getDecimal() * address(this).balance;
-        (bool success, ) = address(msg.sender).call.value(liquidValue)("");
-        require(success, "Transfer failed.");
+    function claimLiquid(address tokenAddress) external onlyShardHolder {
+
+        require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
+        require(tokenAddressIndex[tokenAddress] != 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
+        Dividend tokenLiquidization = liquidization[tokenAddress];
+        if (tokenLiquidization.originalValue == tokenLiquidization.value) {
+            tokenLiquidization.applicable = validShards;
+        }
+        require(tokenLiquidization.applicable[msg.sender] == true, "Not applicable for liquidity.");
+        tokenLiquidization.applicable[msg.sender] = false;
+        liquidValue = shardByOwner[msg.sender].getDecimal() * tokenLiquidization.originalValue;
+        tokenLiquidization.value -= liquidValue;
+        if (tokenLiquidization.value == 0) {
+            tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1];
+            tokenAddressIndex[tokenAddress] = 0;
+            tokenAddress.pop();
+        }
+        _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(liquidValue,msg.sender);
     }
 
@@ -414,7 +428,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
-        return bankByName[bankName].isAdministrator[_administrator];
+        return bankByName[bankName].administratorIndex[_administrator] != 0;
     }
 
 
@@ -478,7 +492,7 @@ contract Administerable is Shardable, ERC20Holder {
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
-            require(token.transferFrom(address(this), to, value), "Failed to transfer tokens");
+            to.receiveToken(tokenAddress,value);
         }
     }
 
@@ -490,14 +504,41 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        // First: Liquidization logic
+        liquidization[tokenAddress].originalValue -= value;
+        if (liquidization[tokenAddress].originalValue == 0) {
+            tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1];
+            tokenAddressIndex[tokenAddress] = 0;
+            tokenAddress.pop();
+        }
+        // Then: Bank logic
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
+        if (bank.balance[tokenAddress] == 0) {
+            bank.tokenAddresses[bank.tokenAddressIndex[tokenAddress]-1] = bank.tokenAddresses[bank.tokenAddresses.length-1];
+            bank.tokenAddressIndex[tokenAddress] = 0;
+            bank.tokenAddresses.pop();
+        }
         emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
     }
 
     function _processTokenReceipt(string bankName, address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
+        // First: Liquidization logic
+        if (tokenAddressIndex[tokenAddress] != 0) {
+            tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1;
+            tokenAddresses.push(tokenAddress);
+            Dividend newDividend = new Dividend();
+            newDividend.tokenAddress = tokenAddress;
+            newDividend.originalValue = value;
+            liquidization[tokenAddress] = newDividend;
+        }
+        else {
+            liquidization[tokenAddress].originalValue += value;
+        }
+        // Then: Bank logic
         Bank memory bank = bankByName[bankName];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
+            bank.tokenAddressIndex[tokenAddress] = bank.tokenAddresses.length + 1;
             bank.tokenAddresses.push(tokenAddress);
         }
         bank.balance[tokenAddress] += value;
@@ -506,21 +547,23 @@ contract Administerable is Shardable, ERC20Holder {
 
     function _createBank(string bankName, address bankAdministrator) internal onlyIfActive {
         require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
-        bankByName[bankName] = new Bank(0, [bankAdministrator]);
-        bankIndex[bankByName[bankName]] = banks.length+1; // +1 because stored indices starts from 1
-        banks.push(bankByName[bankName]);
-        emit BankCreated({name:bankName, by:bankAdministrator});
+        Bank memory bank = new Bank();
+        bank.administrators.push(bankAdministrator);
+        bank.administratorIndex[bankAdministrator] = 1;
+        bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1
+        banks.push(bank);
+        emit BankCreated(bankName,bankAdministrator);
     }
 
     function _deleteBank(string bankName) internal onlyIfActive {
         require(bankName != "main", "Can't delete the main bank!");
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
         require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
-        Bank bank = bankByName[bankName];
+        Bank memory bank = bankByName[bankName];
         banks[bankIndex[bank]] = banks[banks.length-1]; // -1 because stored indices starts from 1
         banks.pop();
         bankByName[bankName] = new Bank();
-        emit BankDeleted({name:bankName});
+        emit BankDeleted(bankName);
     }
 
     function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
@@ -530,13 +573,18 @@ contract Administerable is Shardable, ERC20Holder {
         emit ReferendumIssued(referendum, by);
     }
 
-    function _issueDividend(string bankName, uint256 value) internal {
-        require(value <= bankByName[bankName].value, "Dividend value "+string(value)+" can't be more than bank value "+bank.value);
-        bank.value -= value;
-        Dividend newDividend = new Dividend(value,validShards);
+    function _issueDividend(string bankName, address tokenAddress, uint256 value) internal onlyExistingBank(bankName) {
+        Bank memory bank = bankByName[bankName];
+        require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
+        bank.balance[tokenAddress] -= value;
+        Dividend newDividend = new Dividend();
+        newDividend.tokenAddress = tokenAddress;
+        newDividend.originalValue = value;
+        newDividend.value = value; 
+        newDividend.applicable = validShards;
         dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
         dividends.push(newDividend);
-        emit DividendIssued();
+        emit DividendIssued(newDividend);
     }
 
     function _dissolveDividend(Dividend dividend) internal onlyIfActive {
@@ -544,7 +592,7 @@ contract Administerable is Shardable, ERC20Holder {
         dividends.pop();
         uint256 memory valueLeft = dividend.value;
         dividend.value = 0;
-        bankByName["main"].value += valueLeft;
+        bankByName["main"].balance[dividend.tokenAddress] += valueLeft;
         emit DividendDissolved(dividend, valueLeft);
     }
 
