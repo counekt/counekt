@@ -30,8 +30,8 @@ contract Administerable is Shardable, ERC20Holder {
     mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Referendums To Be Implemented
-    Referendum[] referendumsToBeImplemented;
-    mapping(Referendum => uint256) referendumToBeImplementedIndex; // starts from 1 and up, to differentiate betweeen empty values
+    Referendum[] referendumsTBI;
+    mapping(Referendum => uint256) referendumTBIIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Dividends
     Dividend[] internal dividends;
@@ -206,12 +206,21 @@ contract Administerable is Shardable, ERC20Holder {
 
     // modifier to make sure bank exists
     modifier onlyExistingBank(string bankName) {
-        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exist.");
+        require(bankExists(bankName), "Bank '"+bankName+"' does NOT exist!");
     }
 
     // modifier to make sure referendum exists
     modifier onlyExistingReferendum(Referendum referendum) {
-        require(referendumExists(referendum), "Referendum doesn't exist.");
+        require(referendumExists(referendum), "Referendum does NOT exist!");
+    }
+
+    // modifier to make sure referendumTBI exists
+    modifier onlyExistingReferendumTBI(Referendum referendum) {
+        require(referendumTBIExists(referendum), "Referendum To Be Implemented does NOT exist!");
+    }
+
+    modifier onlyExistingProposal(Referendum referendum, Proposal proposal) {
+        require(proposalExists(referendum,proposal), "Proposal does NOT exists!");
     }
     
     // modifier to make sure dividend exists
@@ -346,9 +355,7 @@ contract Administerable is Shardable, ERC20Holder {
         liquidValue = shardByOwner[msg.sender].getDecimal() * tokenLiquidization.originalValue;
         tokenLiquidization.value -= liquidValue;
         if (tokenLiquidization.value == 0) {
-            tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1];
-            tokenAddressIndex[tokenAddress] = 0;
-            tokenAddress.pop();
+            _unregisterTokenAddress(tokenAddress);
         }
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(liquidValue,msg.sender);
@@ -422,6 +429,14 @@ contract Administerable is Shardable, ERC20Holder {
     function referendumExists(Referendum referendum) returns(bool) {
         return referendumIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
     }
+
+    function referendumTBIExists(Referendum referendum) returns(bool) {
+        return referendumsTBIIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
+    }
+
+    function proposalExists(Referendum referendum, Proposal proposal) returns(bool) {
+        return referendum.proposalIndex[proposal] > 0;
+    }
     
     function dividendExists(Dividend dividend) view returns(bool) {
       return dividendIndex[dividend] > 0; ; // bigger than 0 because stored indices starts from 1
@@ -430,7 +445,6 @@ contract Administerable is Shardable, ERC20Holder {
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
         return bankByName[bankName].administratorIndex[_administrator] != 0;
     }
-
 
     function getReferendumResult(Referendum referendum) pure returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
@@ -481,21 +495,6 @@ contract Administerable is Shardable, ERC20Holder {
         emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
     }
 
-    function _transferEther(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        require(value <= fromBank.balance[address(0)], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[address(0)]);
-        (bool success, ) = address(to).call.value(value)("");
-        require(success, "Transfer failed.");
-    }
-
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        if (tokenAddress == address(0)) { _transferEther(value, to, by);}
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "Failed to approve transfer");
-            to.receiveToken(tokenAddress,value);
-        }
-    }
-
     function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
@@ -507,17 +506,13 @@ contract Administerable is Shardable, ERC20Holder {
         // First: Liquidization logic
         liquidization[tokenAddress].originalValue -= value;
         if (liquidization[tokenAddress].originalValue == 0) {
-            tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1];
-            tokenAddressIndex[tokenAddress] = 0;
-            tokenAddress.pop();
+            _unregisterTokenAddress(tokenAddress);
         }
         // Then: Bank logic
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
         if (bank.balance[tokenAddress] == 0) {
-            bank.tokenAddresses[bank.tokenAddressIndex[tokenAddress]-1] = bank.tokenAddresses[bank.tokenAddresses.length-1];
-            bank.tokenAddressIndex[tokenAddress] = 0;
-            bank.tokenAddresses.pop();
+            _unregisterTokenAddressFromBank(tokenAddress,bankName);
         }
         emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
     }
@@ -525,12 +520,7 @@ contract Administerable is Shardable, ERC20Holder {
     function _processTokenReceipt(string bankName, address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
         // First: Liquidization logic
         if (tokenAddressIndex[tokenAddress] != 0) {
-            tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1;
-            tokenAddresses.push(tokenAddress);
-            Dividend newDividend = new Dividend();
-            newDividend.tokenAddress = tokenAddress;
-            newDividend.originalValue = value;
-            liquidization[tokenAddress] = newDividend;
+            _registerTokenAddress(tokenAddress);
         }
         else {
             liquidization[tokenAddress].originalValue += value;
@@ -538,11 +528,29 @@ contract Administerable is Shardable, ERC20Holder {
         // Then: Bank logic
         Bank memory bank = bankByName[bankName];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
-            bank.tokenAddressIndex[tokenAddress] = bank.tokenAddresses.length + 1;
-            bank.tokenAddresses.push(tokenAddress);
+            _registerTokenAddressToBank(tokenAddress);
         }
         bank.balance[tokenAddress] += value;
         emit TokenReceived(bankName,tokenAddress,value,from);
+    }
+
+    function _transferEther(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        require(value <= fromBank.balance[address(0)], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[address(0)]);
+        (bool success, ) = address(to).call.value(value)("");
+        require(success, "Transfer failed.");
+    }
+
+    function _transferToken(address tokenAddress, uint256 value, address to) internal {
+        if (tokenAddress == address(0)) { _transferEther(value, to, by);}
+        else {
+            ERC20 token = ERC20(tokenAddress);
+            require(token.approve(to, value), "Failed to approve transfer");
+        }
+    }
+
+    function _transferTokenToAdministerable(Administerable receiver, string bankName, address tokenAddress, uint256 value) {
+        _transferToken(tokenAddress,value,address(receiver));
+        receiver.receiveToken(bankName, tokenAddress, value);
     }
 
     function _createBank(string bankName, address bankAdministrator) internal onlyIfActive {
@@ -560,7 +568,7 @@ contract Administerable is Shardable, ERC20Holder {
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
         require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
         Bank memory bank = bankByName[bankName];
-        banks[bankIndex[bank]] = banks[banks.length-1]; // -1 because stored indices starts from 1
+        banks[bankIndex[bank]-1] = banks[banks.length-1]; // -1 because stored indices starts from 1
         banks.pop();
         bankByName[bankName] = new Bank();
         emit BankDeleted(bankName);
@@ -588,7 +596,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function _dissolveDividend(Dividend dividend) internal onlyIfActive {
-        dividends[dividendIndex[dividend]] = dividends[dividends.lenght-1];
+        dividends[dividendIndex[dividend]-1] = dividends[dividends.lenght-1]; // -1 to distinguish between empty values;
         dividends.pop();
         uint256 memory valueLeft = dividend.value;
         dividend.value = 0;
@@ -596,10 +604,44 @@ contract Administerable is Shardable, ERC20Holder {
         emit DividendDissolved(dividend, valueLeft);
     }
 
+    function _registerTokenAddress(address tokenAddress) {
+        require(tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!");
+        tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1; // +1 to distinguish between empty values;
+        tokenAddresses.push(tokenAddress);
+        // Update liquidization
+        Dividend newDividend = new Dividend();
+        newDividend.tokenAddress = tokenAddress;
+        newDividend.originalValue = value;
+        liquidization[tokenAddress] = newDividend;
+    }
+
+    function _registerTokenAddressToBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
+        Bank memory bank = bankByName[bankName];
+        require(bank.tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!"); // a stored index value of 0 means empty
+        bank.tokenAddressIndex[tokenAddress] = bank.tokenAddresses.length + 1; // +1 to distinguish between empty values;
+        bank.tokenAddresses.push(tokenAddress);
+    }
+
+    function _unregisterTokenAddress(address tokenAddress) {
+        require(tokenAddressIndex[tokenAddress] > 0, "Token address '"+string(tokenAddress)+"' NOT registered!");
+        tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1]; // -1 to distinguish between empty values;
+        tokenAddressIndex[tokenAddress] = 0; // a stored index value of 0 means empty
+        tokenAddress.pop();
+    }
+
+    function _unregisterTokenAddressFromBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
+        Bank memory bank = bankByName[bankName];
+        require(bank.tokenAddressIndex[tokenAddress] > 0, "Token address '"+string(tokenAddress)+"' NOT registered!");
+        bank.tokenAddresses[bank.tokenAddressIndex[tokenAddress]-1] = bank.tokenAddresses[bank.tokenAddresses.length-1]; // -1 to distinguish between empty values;
+        bank.tokenAddressIndex[tokenAddress] = 0; // a stored index value of 0 means empty
+        bank.tokenAddresses.pop();
+    }
+
+
     function _closeReferendum(Referendum referendum) internal onlyExistingReferendum(referendum) onlyIfActive {
         bool memory result = getReferendumResult(referendum);
         // remove the now closed Referendum from 'pendingReferendums'
-        pendingReferendums[pendingReferendumIndex[referendum]-1] = pendingReferendums[pendingReferendums.length]; // -1 because stored indices starts from 1
+        pendingReferendums[pendingReferendumIndex[referendum]-1] = pendingReferendums[pendingReferendums.length-1]; // -1 because stored indices starts from 1
         pendingReferendumIndex[referendum] = 0; // a stored index value of 0 means empty
         pendingReferendums.pop()
 
@@ -610,17 +652,23 @@ contract Administerable is Shardable, ERC20Holder {
         emit ReferendumClosed(referendum, result);
     }
 
-    function _implementProposal(Referendum referendum, Proposal proposal) internal onlyIfActive {
-        require(referendumToBeImplementedIndex[referendum]>0);
-        require(referendum.proposalIndex[proposal]>0);
+    function _implementProposal(Referendum referendum, Proposal proposal) internal onlyIfActive onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum,proposal) {
         this.call(bytes4(sha3(proposal.program)));
-        referendum.proposals[referendum.proposalIndex[proposal]-1] =referendum.proposals[referendum.proposals.length];
-        referendum.proposals.pop();
+        _unregisterProposal(proposal);
         if (referendum.proposals.length==0) {
-          // remove fully implemented referendum from referendumsToBeImplemented
-          referendumsToBeImplemented[referendumToBeImplementedIndex[referendum]] = referendumsToBeImplemented[referendumToBeImplemented.length];
-          referendumToBeImplemented.pop();
+            // remove fully implemented referendum from referendumsToBeImplemented
+          _unregisterReferendumTBI(referendum);
         }
+    }
+
+    function _unregisterProposal(Referendum referendum, Proposal proposal) onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum, proposal) {
+        referendum.proposals[referendum.proposalIndex[proposal]-1] = referendum.proposals[referendum.proposals.length-1];
+        referendum.proposals.pop();
+    }
+
+    function _unregisterReferendumTBI(Referendum referendum) onlyExistingReferendumTBI(referendum) {
+        referendumsTBI[referendumTBIIndex[referendum]-1] = referendumsTBI[referendumsTBI.length-1];
+        referendumsTBI.pop();
     }
 
 }
