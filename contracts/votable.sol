@@ -1,3 +1,5 @@
+pragma solidity ^0.8.4;
+
 import "../administerable.sol";
 
 /// @title A fractional DAO-like contract which decisions can be voted upon by its shareholders
