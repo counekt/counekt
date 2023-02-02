@@ -3,10 +3,9 @@ pragma solidity ^0.8.4;
 import "../shardable.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 
-/// @title A fractional DAO-like non-fungible token that can be administered by its shareholders
+/// @title A fractional DAO-like contract that through permits, banks and dividends can be administered by its shareholders
 /// @author Frederik W. L. Christoffersen
-/// @notice This contract is used as an administerable business entity. Be aware that a sell transfers a service fee of 2.5% to Counekt.
-/// @dev About to figure out how to do the structure of Proposals right - it can't just be about permits
+/// @notice This contract is used as an administerable business entity. 
 /// @custom:beaware This is a commercial contract.
 contract Administerable is Shardable, ERC20Holder {
     
@@ -24,14 +23,6 @@ contract Administerable is Shardable, ERC20Holder {
     // Permits
     mapping(address => Permits) permits;
     Permits basePermits;
-
-    // Pending Referendums
-    Referendum[] internal pendingReferendums;
-    mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up, to differentiate betweeen empty values
-
-    // Referendums To Be Implemented
-    Referendum[] referendumsTBI;
-    mapping(Referendum => uint256) referendumTBIIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Dividends
     Dividend[] internal dividends;
@@ -80,22 +71,6 @@ contract Administerable is Shardable, ERC20Holder {
 
     }
 
-    struct Proposal {
-        string program;
-    }
-
-    struct Argument {
-
-    }
-
-    struct Referendum {
-        Proposal[] proposals;
-        mapping(Proposal => uint256) proposalIndex;
-        Fraction forFraction;
-        Fraction againstFraction;
-        mapping(Shard => bool) hasVoted;
-    }
-
     struct Dividend {
         address tokenAddress;
         uint256 value;
@@ -118,31 +93,6 @@ contract Administerable is Shardable, ERC20Holder {
     event DividendClaimed(
         Dividend dividend,
         address by
-        );
-
-    // triggers when a referendum is issued
-    event ReferendumIssued(
-        Referendum referendum,
-        address by
-        );
-
-    // triggers when a referendum is closed
-    event ReferendumClosed(
-        Referendum referendum,
-        bool result
-        );
-        
-    event ProposalImplemented(
-      Proposal proposal,
-      Referendum referendum
-      );
-
-    // triggers when a vote is cast
-    event VoteCast(
-        address by,
-        Referendum referendum,
-        Shard shard,
-        bool for
         );
 
     // triggers when money is received
@@ -194,11 +144,6 @@ contract Administerable is Shardable, ERC20Holder {
         require(hasPermit(msg.sender, permitName));
     }
 
-    // modifier to make sure msg.sender has NOT voted on a specific referendum
-    modifier hasNotVoted(Referendum referendum) {
-        require(!hasVoted(msg.sender,referendum));
-    }
-
     // modifier to make sure msg.sender is administrator of a specific bank
     modifier onlyBankAdministrator(string bankName) {
         require(isBankAdministrator(msg.sender, bankName));
@@ -207,20 +152,6 @@ contract Administerable is Shardable, ERC20Holder {
     // modifier to make sure bank exists
     modifier onlyExistingBank(string bankName) {
         require(bankExists(bankName), "Bank '"+bankName+"' does NOT exist!");
-    }
-
-    // modifier to make sure referendum exists
-    modifier onlyExistingReferendum(Referendum referendum) {
-        require(referendumExists(referendum), "Referendum does NOT exist!");
-    }
-
-    // modifier to make sure referendumTBI exists
-    modifier onlyExistingReferendumTBI(Referendum referendum) {
-        require(referendumTBIExists(referendum), "Referendum To Be Implemented does NOT exist!");
-    }
-
-    modifier onlyExistingProposal(Referendum referendum, Proposal proposal) {
-        require(proposalExists(referendum,proposal), "Proposal does NOT exists!");
     }
     
     // modifier to make sure dividend exists
@@ -293,34 +224,10 @@ contract Administerable is Shardable, ERC20Holder {
         _processTokenReceipt(bankName,tokenAddress,value,msg.sender);
     }
 
-    function issueVote(Proposal[] proposals) external onlyWithPermit("issueVote") {
-        _issueVote(proposals);
-    }
-
-    function implementProposal(Referendum referendum, Proposal proposal) external onlyWithPermit("implementProposal") {
-        _implementProposal(referendum, proposal);
-    }
-
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     /// @inheritdoc _liquidize
     function liquidize() external onlyWithPermit("liquidizeEntity") {
         _liquidize();
-    }
-
-    /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
-    /// @param referendum The referendum to be voted on.
-    /// @param for The boolean value signalling a for or against vote.
-    /// @dev There is a potential problem when selling and or splitting a shard. Then the right of the new shard to vote may unfairly perish, possibly making a referendum unsolvable.
-    function vote(Referendum referendum, bool for) external onlyShardHolder hasNotVoted(referendum) onlyIfActive {
-        Shard memory _shard = shardByOwner[msg.sender];
-        if (for) {
-            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,_shard.fraction));
-        }
-        else {
-            referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,_shard.fraction));
-        }
-        referendum.hasVoted[_shard] = true;
-        emit VoteCast(msg.sender, referendum, _shard, for);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
@@ -412,9 +319,10 @@ contract Administerable is Shardable, ERC20Holder {
                         revert();
                 }
     }
-
-    function hasVoted(address _shardHolder, Referendum referendum) view returns(bool) {
-        return referendum.hasVoted[shardByOwner[_shardholder]];
+    function isAdministerable(address _address) returns(bool) {
+        bytes32 administerableBytecode = bytes32(keccak256(abi.encodePacked(type(Administerable).creationCode)));
+        bytes32 targetBytecode = bytes32(keccak256(abi.encodePacked(bytes(_address.code()))));
+        return administerableBytecode == targetBytecode;
     }
 
     function bankExists(string bankName) returns(bool) {
@@ -425,18 +333,6 @@ contract Administerable is Shardable, ERC20Holder {
         Bank memory bank = bankByName[bankName];
         return bank.tokenAddresses.length == 0 && bank.balance[address(0)] == 0;
     }
-
-    function referendumExists(Referendum referendum) returns(bool) {
-        return referendumIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
-    }
-
-    function referendumTBIExists(Referendum referendum) returns(bool) {
-        return referendumsTBIIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
-    }
-
-    function proposalExists(Referendum referendum, Proposal proposal) returns(bool) {
-        return referendum.proposalIndex[proposal] > 0;
-    }
     
     function dividendExists(Dividend dividend) view returns(bool) {
       return dividendIndex[dividend] > 0; ; // bigger than 0 because stored indices starts from 1
@@ -444,14 +340,6 @@ contract Administerable is Shardable, ERC20Holder {
 
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
         return bankByName[bankName].administratorIndex[_administrator] != 0;
-    }
-
-    function getReferendumResult(Referendum referendum) pure returns(bool) {
-        // if forFraction is bigger than 50%, then the vote is FOR
-        if (referendum.forFraction.numerator / referendum.forFraction.denominator > 0.5) {
-            return true;
-        }
-        return false;
     }
 
     function hasPermit(address holder, string permitName) view returns (bool) {
@@ -545,12 +433,11 @@ contract Administerable is Shardable, ERC20Holder {
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
-        }
-    }
+            if (isAdministerable(to)) {
+                Administerable(to).receiveToken(bankName, tokenAddress, value);
+            }
 
-    function _transferTokenToAdministerable(Administerable receiver, string bankName, address tokenAddress, uint256 value) {
-        _transferToken(tokenAddress,value,address(receiver));
-        receiver.receiveToken(bankName, tokenAddress, value);
+        }
     }
 
     function _createBank(string bankName, address bankAdministrator) internal onlyIfActive {
@@ -572,13 +459,6 @@ contract Administerable is Shardable, ERC20Holder {
         banks.pop();
         bankByName[bankName] = new Bank();
         emit BankDeleted(bankName);
-    }
-
-    function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
-        Referendum referendum = new Referendum(proposals);
-        pendingReferendumIndex[referendum] = pendingReferendums.length+1; // +1 to distinguish between empty values
-        pendingReferendums.push(referendum);
-        emit ReferendumIssued(referendum, by);
     }
 
     function _issueDividend(string bankName, address tokenAddress, uint256 value) internal onlyExistingBank(bankName) {
@@ -635,40 +515,6 @@ contract Administerable is Shardable, ERC20Holder {
         bank.tokenAddresses[bank.tokenAddressIndex[tokenAddress]-1] = bank.tokenAddresses[bank.tokenAddresses.length-1]; // -1 to distinguish between empty values;
         bank.tokenAddressIndex[tokenAddress] = 0; // a stored index value of 0 means empty
         bank.tokenAddresses.pop();
-    }
-
-
-    function _closeReferendum(Referendum referendum) internal onlyExistingReferendum(referendum) onlyIfActive {
-        bool memory result = getReferendumResult(referendum);
-        // remove the now closed Referendum from 'pendingReferendums'
-        pendingReferendums[pendingReferendumIndex[referendum]-1] = pendingReferendums[pendingReferendums.length-1]; // -1 because stored indices starts from 1
-        pendingReferendumIndex[referendum] = 0; // a stored index value of 0 means empty
-        pendingReferendums.pop()
-
-        if (result) { // if it got voted through
-            // the proposals are pushed to 'proposalsToBeImplemented'
-            proposalsToBeImplemented.push(referendum.proposals);
-        }
-        emit ReferendumClosed(referendum, result);
-    }
-
-    function _implementProposal(Referendum referendum, Proposal proposal) internal onlyIfActive onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum,proposal) {
-        this.call(bytes4(sha3(proposal.program)));
-        _unregisterProposal(proposal);
-        if (referendum.proposals.length==0) {
-            // remove fully implemented referendum from referendumsToBeImplemented
-          _unregisterReferendumTBI(referendum);
-        }
-    }
-
-    function _unregisterProposal(Referendum referendum, Proposal proposal) onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum, proposal) {
-        referendum.proposals[referendum.proposalIndex[proposal]-1] = referendum.proposals[referendum.proposals.length-1];
-        referendum.proposals.pop();
-    }
-
-    function _unregisterReferendumTBI(Referendum referendum) onlyExistingReferendumTBI(referendum) {
-        referendumsTBI[referendumTBIIndex[referendum]-1] = referendumsTBI[referendumsTBI.length-1];
-        referendumsTBI.pop();
     }
 
 }
