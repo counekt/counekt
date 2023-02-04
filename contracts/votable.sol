@@ -2,9 +2,9 @@ pragma solidity ^0.8.4;
 
 import "../administerable.sol";
 
-/// @title A fractional DAO-like contract which decisions can be voted upon by its shareholders
+/// @title A fractional DAO-like contract whose decisions can be voted upon by its shareholders
 /// @author Frederik W. L. Christoffersen
-/// @notice This contract is used as a "democratically" administerable business entity.
+/// @notice This contract is used as a votable administerable business entity.
 /// @dev About to figure out how to do the structure of Proposals right - it can't just be about permits
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administerable {
@@ -22,31 +22,13 @@ contract Votable is Administerable {
     mapping(Referendum => uint256) referendumTBIIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     struct Proposal {
-        string functionName;
-        Argument[] arguments;
-    }
-
-    enum ArgumentType {
-    	_bool,
-    	_uint256,
-    	_string,
-    	_proposal,
-    	_dividend
-    }
-
-    struct Argument {
-    	ArgumentType type;
-    	bool _bool;
-    	uint256 _uint256;
-    	string _string;
-    	address _address;
-    	Proposal _proposal;
-    	Dividend _dividend;
+        bytes4 functionSignifier;
+        bytes argumentData;
     }
 
     struct Referendum {
         Proposal[] proposals;
-        mapping(Proposal => uint256) proposalIndex;
+        mapping(Proposal => uint256) proposalIndex; // starts from 1 and up, to differentiate betweeen empty values
         Fraction forFraction;
         Fraction againstFraction;
         mapping(Shard => bool) hasVoted;
@@ -109,20 +91,20 @@ contract Votable is Administerable {
     /// @param for The boolean value signalling a for or against vote.
     /// @dev There is a potential problem when selling and or splitting a shard. Then the right of the new shard to vote may unfairly perish, possibly making a referendum unsolvable.
     function vote(Referendum referendum, bool for) external onlyShardHolder hasNotVoted(referendum) onlyIfActive {
-        Shard memory _shard = shardByOwner[msg.sender];
+        Shard memory shard = shardByOwner[msg.sender];
         if (for) {
-            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,_shard.fraction));
+            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,shard.fraction));
         }
         else {
-            referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,_shard.fraction));
+            referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,shard.fraction));
         }
-        referendum.hasVoted[_shard] = true;
-        emit VoteCast(msg.sender, referendum, _shard, for);
+        referendum.hasVoted[shard] = true;
+        emit VoteCast(msg.sender, referendum, shard, for);
     }
 
 
-    function hasVoted(address _shardHolder, Referendum referendum) view returns(bool) {
-        return referendum.hasVoted[shardByOwner[_shardholder]];
+    function hasVoted(address shardHolder, Referendum referendum) view returns(bool) {
+        return referendum.hasVoted[shardByOwner[shardholder]];
     }
 
     function getReferendumResult(Referendum referendum) pure returns(bool) {
@@ -143,6 +125,11 @@ contract Votable is Administerable {
 
     function proposalExists(Referendum referendum, Proposal proposal) returns(bool) {
         return referendum.proposalIndex[proposal] > 0;
+    }
+
+    function createProposal(bytes4 functionName, bytes argumentData) {
+        Proposal proposal = Proposal(functionSignifier,argumentData);
+
     }
 
     function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
@@ -170,10 +157,50 @@ contract Votable is Administerable {
         _unregisterProposal(proposal);
         switch (proposal.functionName) {
                     case "issueVote":
-                    	break // ...
-                }
-        this.call(bytes4(sha3(proposal.functionName+"("+proposal.arguments[0])));
-        //this.call(bytes4(sha3(proposal.program)));
+                        require(issueVote.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        Proposal[] proposals = abi.decode(proposal.argumentData, (Proposal[]));
+                        _issueVote(proposals, this.address);
+                        break;
+                    case "changePermit":
+                        require(changePermit.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (address shardHolder, string permitName, bool newState) = abi.decode(proposal.argumentData, (address, string, bool));
+                        _changePermit(shardholder,permitName,newState,this.address);
+                        break;
+                    case "transferToken":
+                        require(transferToken.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (string fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposal.argumentData, (string, address, uint256,address));
+                        _transferTokenFromBank(fromBankName,tokenAddress,value,to,this.address);
+                        break;
+                    case "moveToken":
+                        require(moveToken.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (string fromBankName, string toBankName, address tokenAddress, uint256 value) = abi.decode(proposal.argumentData, (string, string, address, uint256));
+                        _moveToken(fromBankName,toBankName,tokenAddress,value,this.address);
+                        break;
+                    case "issueDividend":
+                        require(issueDividend.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (string bankName, address tokenAddress, uint256 value) = abi.decode(proposal.argumentData, (string,address,uint256));
+                        _issueDividend(bankName,tokenAddress,value,this.address);
+                        break;
+                    case "dissolveDividend":
+                        require(dissolveDividend.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (Dividend dividend) = abi.decode(proposal.argumentData, (Dividend));
+                        _dissolveDividend(dividend,this.address);
+                        break;
+                    case "createBank":
+                        require(createBank.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (string bankName, address[] administrators) = abi.decode(proposal.argumentData, (string, address[]));
+                        _createBank(bankName,administrators,this.address);
+                        break;
+                    case "deleteBank":
+                        require(deleteBank.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        (string bankName) = abi.decode(proposal.argumentData, (string));
+                        _deleteBank(bankName, this.address);
+                        break;
+                    case "liquidize":
+                        require(_liquidize.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
+                        _liquidize();
+                        break;
+        }
         if (referendum.proposals.length==0) {
             // remove fully implemented referendum from referendumsToBeImplemented
           _unregisterReferendumTBI(referendum);
