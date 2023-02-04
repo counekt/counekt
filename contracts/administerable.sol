@@ -15,6 +15,9 @@ contract Administerable is Shardable, ERC20Holder {
 
     }
 
+    // Rules
+    bool allowNonShardHolders;
+
     // Banks
     Bank[] banks;
     mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
@@ -42,32 +45,32 @@ contract Administerable is Shardable, ERC20Holder {
         mapping(address => uint256) administratorIndex;
     }
 
+    enum PermitState {
+        unauthorized,
+        authorized,
+        administrator
+    }
+
     /// @dev The structures from Permits all the way down to Proposal should be rethought and remade.
     struct Permits {
 
         // Issue Vote
-        bool issueVote; // Permission to issue a vote
-        bool administrateIssueVotePermit; // Permission to distribute and withdraw the permit to issue a vote.
+        PermitState issueVote; // Permission to issue a vote
 
         // Issue Dividend
-        bool issueDividend;
-        bool administrateIssueDividendPermit; // Permission to distribute and withdraw the permit to issue a dividend.
+        PermitState issueDividend;
 
         // Dissolve Dividend
-        bool dissolveDividend;
-        bool administrateDissolveDividendPermit; // Permission to distribute and withdraw the permit to dissolve a dividend.
+        PermitState dissolveDividend;
 
         // Manage Bank
-        bool manageBank;
-        bool administrateManageBankPermit; // Permission to distribute and withdraw the permit to manage a bank.
+        PermitState manageBank;
 
         // Implement Proposal
-        bool implementProposal; // Permission to implement a proposal from a referendum which is to be implemented.
-        bool administrateImplementProposal;
+        PermitState implementProposal; // Permission to implement a proposal from a referendum which is to be implemented.
 
         // Liquidize Entity
-        bool liquidizeEntity;
-        bool administrateLiquidizeEntityPermit;
+        PermitState liquidizeEntity;
 
     }
 
@@ -80,20 +83,22 @@ contract Administerable is Shardable, ERC20Holder {
 
     // triggers when a dividend is issued
     event DividendIssued(
-        Dividend dividend
-        );
+        Dividend dividend,
+        address by
+    );
 
     // triggers when a dividend is dissolved
     event DividendDissolved(
         Dividend dividend,
-        uint256 valueLeft
-        );
+        uint256 valueLeft,
+        address by
+    );
 
     // triggers when a dividend is claimed
     event DividendClaimed(
         Dividend dividend,
         address by
-        );
+    );
 
     // triggers when money is received
     event TokenReceived(
@@ -101,7 +106,7 @@ contract Administerable is Shardable, ERC20Holder {
         address tokenAddress,
         uint256 value,
         address from
-        );
+    );
 
     // triggers when token is transferred
     event TokenTransfered(
@@ -110,7 +115,7 @@ contract Administerable is Shardable, ERC20Holder {
         uint256 value,
         address to,
         address by
-        );
+    );
 
     event TokenMoved(
         string fromBankName,
@@ -118,26 +123,26 @@ contract Administerable is Shardable, ERC20Holder {
         address tokenAddress,
         uint256 value,
         address by
-        );
+    );
 
     // triggers when bank is created
     event BankCreated(
         string name,
         address by
-        );
+    );
 
     event BankDeleted(
         string name,
         address by
-        );
+    );
 
-    event AdministerableLiquidized();
+    event AdministerableLiquidized(address by);
 
     // triggers when a liquid is claimed
     event LiquidClaimed(
         uint256 value,
         address by
-        );
+    );
 
     // modifier to make sure msg.sender has specific permit
     modifier onlyWithPermit(string permitName) {
@@ -227,7 +232,7 @@ contract Administerable is Shardable, ERC20Holder {
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     /// @inheritdoc _liquidize
     function liquidize() external onlyWithPermit("liquidizeEntity") {
-        _liquidize();
+        _liquidize(msg.sender);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
@@ -268,57 +273,45 @@ contract Administerable is Shardable, ERC20Holder {
         emit LiquidClaimed(liquidValue,msg.sender);
     }
 
-    function changePermit(address shardHolder, string permitName, bool newState) onlyIfActive {
-        require(isShardHolder(shardHolder), "Only Shard holders can have Permits");
-        require(!(hasPermit(shardHolder, permitName) & newState == true), "Shard Holder already has Permit '"+permitName+"'");
+    function changePermit(address shardHolder, string permitName, PermitState newState) onlyIfActive {
+        require(isShardHolder(shardHolder) || allowNonShardHolders, "Only Shard holders can have Permits");
+        require(!(hasPermit(shardHolder, permitName) && newState >= PermitState.authorized), "Shard Holder already has Permit '"+permitName+"'");
         switch (permitName) {
                     case "issueVote":
-                        require(hasPermit(msg.sender, "administrateIssueVotePermit"));
-                        require(!hasPermit(shardHolder, "administrateIssueVotePermit"));
+                        require(isPermitAdministrator(msg.sender, "issueVote"));
+                        require(!isPermitAdministrator(shardHolder, "issueVote"));
                         permits[shardHolder].issueVote = newState;
                         break;
-                    case "administrateIssueVotePermit":
-                        require(hasPermit(msg.sender, "administrateIssueVotePermit"));
-                        require(!hasPermit(shardHolder, "administrateIssueVotePermit"));
-                        permits[shardHolder].administrateIssueVotePermit = true;
-                        break;
                     case "issueDividend":
-                        require(hasPermit(msg.sender, "administrateIssueDividendPermit"));
-                        require(!hasPermit(shardHolder, "administrateIssueDividendPermit"));
-                        permits[shardHolder].issueDividend = true;
+                        require(isPermitAdministrator(msg.sender, "issueDividend"));
+                        require(!isPermitAdministrator(shardHolder, "issueDividend"));
+                        permits[shardHolder].issueDividend = newState;
                         break;
                     case "dissolveDividend":
-                        require(hasPermit(msg.sender, "administrateDissolveDividendPermit"));
-                        require(!hasPermit(shardHolder, "administrateDissolveDividendPermit"));
-                        permits[shardHolder].issueDividend = true;
-                        break;
-                    case "administrateIssueDividendPermit":
-                        require(hasPermit(msg.sender, "administrateIssueDividendPermit"));
-                        require(!hasPermit(shardHolder, "administrateIssueDividendPermit"));
-                        permits[shardHolder].administrateIssueDividendPermit = true;
+                        require(isPermitAdministrator(msg.sender, "dissolveDividend"));
+                        require(!isPermitAdministrator(shardHolder, "dissolveDividend"));
+                        permits[shardHolder].issueDividend = newState;
                         break;
                     case "manageBank":
-                        require(hasPermit(msg.sender, "administrateManageBankPermit"));
-                        require(!hasPermit(shardHolder, "administrateManageBankPermit"));
-                        permits[shardHolder].manageBank = true;
-                        break;
-                    case "administrateManageBankPermit":
-                        require(hasPermit(msg.sender, "administrateManageBankPermit"));
-                        require(!hasPermit(shardHolder, "administrateManageBankPermit"));
-                        permits[shardHolder].administrateManageBankPermit = true;
+                        require(isPermitAdministrator(msg.sender, "manageBank"));
+                        require(!isPermitAdministrator(shardHolder, "manageBank"));
+                        permits[shardHolder].manageBank = newState;
                         break;
                     case "implementProposal":
-                        require(hasPermit(msg.sender, "administrateImplementProposal"));
-                        require(!hasPermit(shardHolder, "administrateImplementProposal"));
-                        permits[shardHolder].implementProposal = true;
-                    case "administrateImplementProposal":
-                        require(hasPermit(msg.sender, "administrateImplementProposal"));
-                        require(!hasPermit(shardHolder, "administrateImplementProposal"));
-                        permits[shardHolder].administrateImplementProposal = true;
+                        require(isPermitAdministrator(msg.sender, "implementProposal"));
+                        require(!isPermitAdministrator(shardHolder, "implementProposal"));
+                        permits[shardHolder].implementProposal = newState;
+                        break;
+                    case "liquidizeEntity":
+                        require(isPermitAdministrator(msg.sender, "liquidizeEntity"));
+                        require(!isPermitAdministrator(shardHolder, "liquidizeEntity"));
+                        permits[shardHolder].liquidizeEntity = newState;
+                        break;
                     default:
                         revert();
                 }
     }
+
     function isAdministerable(address _address) returns(bool) {
         bytes32 administerableBytecode = bytes32(keccak256(abi.encodePacked(type(Administerable).creationCode)));
         bytes32 targetBytecode = bytes32(keccak256(abi.encodePacked(bytes(_address.code()))));
@@ -326,7 +319,7 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function bankExists(string bankName) returns(bool) {
-        return bankByName[bankName].administrators.length >= 1;
+        return bankIndex[bankByName[bankName]] > 0; // bigger than 0 because stored indices starts from 1
     }
 
     function bankIsEmpty(string bankName) returns(bool) {
@@ -335,43 +328,60 @@ contract Administerable is Shardable, ERC20Holder {
     }
     
     function dividendExists(Dividend dividend) view returns(bool) {
-      return dividendIndex[dividend] > 0; ; // bigger than 0 because stored indices starts from 1
+      return dividendIndex[dividend] > 0; // bigger than 0 because stored indices starts from 1
     }
 
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
-        return bankByName[bankName].administratorIndex[_administrator] != 0;
+        return bankByName[bankName].administratorIndex[_administrator] > 0;
     }
 
-    function hasPermit(address holder, string permitName) view returns (bool) {
+    function hasPermit(address holder, string permitName) view returns(bool) {
+        if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
                     case "issueVote":
-                        return permits[holder].issueVote || basePermits.issueVote;
-                    case "administrateIssueVotePermit":
-                        return permits[holder].administrateIssueVotePermit || basePermits.administrateIssueVotePermit;
+                        return permits[holder].issueVote >= Permit.authorized || basePermits.issueVote >= Permit.authorized;
                     case "issueDividend":
-                        return permits[holder].issueDividend || basePermits.issueDividend;
+                        return permits[holder].issueDividend >= Permit.authorized || basePermits.issueDividend  >= Permit.authorized;
                     case "dissolveDividend":
-                        return permits[holder].dissolveDividend || basePermits.dissolveDividend;
-                    case "administrateIssueDividendPermit":
-                        return permits[holder].administrateIssueDividendPermit || basePermits.administrateIssueDividendPermit;
+                        return permits[holder].dissolveDividend  >= Permit.authorized || basePermits.dissolveDividend  >= Permit.authorized;
                     case "manageBank":
-                        return permits[holder].manageBank || basePermits.administrateManageBankPermit;
-                    case "administrateManageBankPermit":
-                        return permits[holder].administrateManageBankPermit || basePermits.administrateManageBankPermit;
+                        return permits[holder].manageBank >= Permit.authorized || basePermits.manageBank >= Permit.authorized;
                     case "implementProposal":
-                        return permits[holder].implementProposal || basePermits.implementProposal;
-                    case "administrateImplementProposal":
-                        return permits[holder].administrateImplementProposal || basePermits.administrateImplementProposal;
+                        return permits[holder].implementProposal >= Permit.administrator || basePermits.implementProposal >= Permit.authorized;
+                    case "liquidizeEntity":
+                        return permits[holder].liquidizeEntity >= Permit.authorized || basePermits.liquidizeEntity >= Permit.authorized;
+                    default:
+                        revert();
+        }
+
+    }
+
+    function isPermitAdministrator(address holder, string permitName) view returns(bool) {
+        if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
+        switch (permitName) {
+                    case "issueVote":
+                        return permits[holder].issueVote == Permit.administrator || basePermits.issueVote == Permit.administrator;
+                    case "issueDividend":
+                        return permits[holder].issueDividend == Permit.administrator || basePermits.issueDividend  == Permit.administrator;
+                    case "dissolveDividend":
+                        return permits[holder].dissolveDividend  == Permit.administrator || basePermits.dissolveDividend  == Permit.administrator;
+                    case "manageBank":
+                        return permits[holder].manageBank == Permit.administrator || basePermits.manageBank == Permit.administrator;
+                    case "implementProposal":
+                        return permits[holder].implementProposal == Permit.administrator || basePermits.implementProposal == Permit.administrator;
+                    case "liquidizeEntity":
+                        return permits[holder].liquidizeEntity == Permit.administrator || basePermits.liquidizeEntity == Permit.administrator;
                     default:
                         revert();
                 }
+
     }
 
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
-    function _liquidize() internal {
+    function _liquidize(address by) internal {
         active = false; // stops trading of Shards
         liquidization = new Dividend(address(this).balance, validShards); // sets up a final dividend for shardholders
-        emit AdministerableLiquidized();
+        emit AdministerableLiquidized(by);
     }
 
     function _moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
@@ -422,27 +432,27 @@ contract Administerable is Shardable, ERC20Holder {
         emit TokenReceived(bankName,tokenAddress,value,from);
     }
 
-    function _transferEther(string fromBankName, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        require(value <= fromBank.balance[address(0)], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[address(0)]);
+    function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
     }
 
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        if (tokenAddress == address(0)) { _transferEther(value, to, by);}
+        if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
             if (isAdministerable(to)) {
-                Administerable(to).receiveToken(bankName, tokenAddress, value);
+                Administerable(to).receiveToken("main", tokenAddress, value);
             }
 
         }
     }
 
-    function _createBank(string bankName, address bankAdministrator) internal onlyIfActive {
+    function _createBank(string bankName, address[] administrators) internal onlyIfActive {
         require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
         Bank memory bank = new Bank();
+        for ()
         bank.administrators.push(bankAdministrator);
         bank.administratorIndex[bankAdministrator] = 1;
         bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1

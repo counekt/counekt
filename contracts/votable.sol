@@ -127,11 +127,6 @@ contract Votable is Administerable {
         return referendum.proposalIndex[proposal] > 0;
     }
 
-    function createProposal(bytes4 functionName, bytes argumentData) {
-        Proposal proposal = Proposal(functionSignifier,argumentData);
-
-    }
-
     function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
         Referendum referendum = new Referendum(proposals);
         pendingReferendumIndex[referendum] = pendingReferendums.length+1; // +1 to distinguish between empty values
