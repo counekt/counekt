@@ -10,12 +10,21 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 contract Administerable is Shardable, ERC20Holder {
     
     constructor() public {
-        _createBank("main",msg.sender);
-        permits[msg.sender] = Permits(true,true,true,true,true,true,true,true);
-
+        _createBank("main",msg.sender,this.address);
+        // First Shard holder is initialized with all Permits
+        PermitSet permitSet = PermitSet();
+        permitSet.issueVote = PermitState.administrator;
+        permitSet.issueDividend = PermitState.administrator;
+        permitSet.dissolveDividend = PermitState.administrator;
+        permitSet.manageBank = PermitState.administrator;
+        permitSet.implementProposal = PermitState.administrator;
+        permitSet.liquidizeEntity = PermitState.administrator;
+        permits[msg.sender] = permitSet;
     }
 
     // Rules
+    /// @notice Rules that lay the ground for the fundamental logic of the entity. 
+    // @dev To be implemented. And next up: voting thresholds.
     bool allowNonShardHolders;
 
     // Banks
@@ -24,8 +33,8 @@ contract Administerable is Shardable, ERC20Holder {
     mapping(string => Bank) bankByName;
 
     // Permits
-    mapping(address => Permits) permits;
-    Permits basePermits;
+    mapping(address => PermitSet) permits;
+    PermitSet basePermits;
 
     // Dividends
     Dividend[] internal dividends;
@@ -51,9 +60,7 @@ contract Administerable is Shardable, ERC20Holder {
         administrator
     }
 
-    /// @dev The structures from Permits all the way down to Proposal should be rethought and remade.
-    struct Permits {
-
+    struct PermitSet {
         // Issue Vote
         PermitState issueVote; // Permission to issue a vote
 
@@ -71,7 +78,6 @@ contract Administerable is Shardable, ERC20Holder {
 
         // Liquidize Entity
         PermitState liquidizeEntity;
-
     }
 
     struct Dividend {
@@ -117,6 +123,7 @@ contract Administerable is Shardable, ERC20Holder {
         address by
     );
 
+    // triggers when a token is moved from one bank to another
     event TokenMoved(
         string fromBankName,
         string toBankName,
@@ -131,12 +138,15 @@ contract Administerable is Shardable, ERC20Holder {
         address by
     );
 
+
+    // triggers when a bank is deleted
     event BankDeleted(
         string name,
         address by
     );
 
-    event AdministerableLiquidized(address by);
+    // triggers when the entity is liquidized
+    event EntityLiquidized(address by);
 
     // triggers when a liquid is claimed
     event LiquidClaimed(
@@ -180,34 +190,25 @@ contract Administerable is Shardable, ERC20Holder {
     /// @param bankName The name of the bank to issue a dividend from.
     /// @param value The value of the dividend to be issued.
     function issueDividend(string bankName, address tokenAddress, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) onlyIfActive {
-        _issueDividend(bankName,tokenAddress,value);
+        _issueDividend(bankName,tokenAddress,value, msg.sender);
     }
 
     /// @notice Dissolves a dividend, releasing its remaining unclaimed value to the 'main' bank.
     /// @param dividend The dividend to be dissolved.
     function dissolveDividend(Dividend dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
-        _dissolveDividend(dividend);
+        _dissolveDividend(dividend, msg.sender);
     }
 
     /// @notice Creates a Bank - a container of funds with access limited to its administators.
     /// @param bankName The name of the Bank to be created
-    function createBank(string bankName) external onlyWithPermit("manageBank") {
-       _createBank(bankName, msg.sender);
+    function createBank(string bankName, address bankAdministrator) external onlyWithPermit("manageBank") {
+       _createBank(bankName, bankAdministrator, msg.sender);
     }
 
     /// @notice Deletes an empty Bank 
     /// @param bankName The name of the Bank to be deleted
     function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdministrator(bankName) {
-        _deleteBank(bankName);
-    }
-
-    /// @notice Moves money internally from one bank to another.
-    /// @param fromBankName The name of the Bank to move money away from.
-    /// @param toBankName The name of the Bank to move the money to.
-    /// @param tokenAddress The address of the token to be moved (address(0) if ether)
-    /// @param value The value to be moved
-    function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdministrator(fromBankName) {
-        _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
+        _deleteBank(bankName, msg.sender);
     }
 
     /// @notice Transfers value from one bank to another.
@@ -219,8 +220,13 @@ contract Administerable is Shardable, ERC20Holder {
         _transferToken(fromBankName,tokenAddress,value,to,msg.sender);
     }
 
-    function receiveEther(string bankName) external payable onlyIfActive {
-        _processReceipt(bankByName[bankName],msg.value, msg.sender);
+    /// @notice Moves money internally from one bank to another.
+    /// @param fromBankName The name of the Bank to move money away from.
+    /// @param toBankName The name of the Bank to move the money to.
+    /// @param tokenAddress The address of the token to be moved (address(0) if ether)
+    /// @param value The value to be moved
+    function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdministrator(fromBankName) {
+        _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
     }
 
     function receiveToken(string bankName, address tokenAddress, uint256 value) external {
@@ -255,7 +261,6 @@ contract Administerable is Shardable, ERC20Holder {
     /// @inheritdoc _liquidize
     /// @dev NOT UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
     function claimLiquid(address tokenAddress) external onlyShardHolder {
-
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
         require(tokenAddressIndex[tokenAddress] != 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
         Dividend tokenLiquidization = liquidization[tokenAddress];
@@ -309,7 +314,7 @@ contract Administerable is Shardable, ERC20Holder {
                         break;
                     default:
                         revert();
-                }
+        }
     }
 
     function isAdministerable(address _address) returns(bool) {
@@ -332,24 +337,25 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
-        return bankByName[bankName].administratorIndex[_administrator] > 0;
+        return bankByName[bankName].administratorIndex[_administrator] > 0 || permits[_administrator].manageBank == PermitState.administrator;
     }
 
     function hasPermit(address holder, string permitName) view returns(bool) {
+        if (holder == this.address) {return true}
         if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
                     case "issueVote":
-                        return permits[holder].issueVote >= Permit.authorized || basePermits.issueVote >= Permit.authorized;
+                        return permits[holder].issueVote >= PermitState.authorized || basePermits.issueVote >= PermitState.authorized;
                     case "issueDividend":
-                        return permits[holder].issueDividend >= Permit.authorized || basePermits.issueDividend  >= Permit.authorized;
+                        return permits[holder].issueDividend >= PermitState.authorized || basePermits.issueDividend >= PermitState.authorized;
                     case "dissolveDividend":
-                        return permits[holder].dissolveDividend  >= Permit.authorized || basePermits.dissolveDividend  >= Permit.authorized;
+                        return permits[holder].dissolveDividend  >= PermitState.authorized || basePermits.dissolveDividend >= PermitState.authorized;
                     case "manageBank":
-                        return permits[holder].manageBank >= Permit.authorized || basePermits.manageBank >= Permit.authorized;
+                        return permits[holder].manageBank >= PermitState.authorized || basePermits.manageBank >= PermitState.authorized;
                     case "implementProposal":
-                        return permits[holder].implementProposal >= Permit.administrator || basePermits.implementProposal >= Permit.authorized;
+                        return permits[holder].implementProposal >= PermitState.administrator || basePermits.implementProposal >= PermitState.authorized;
                     case "liquidizeEntity":
-                        return permits[holder].liquidizeEntity >= Permit.authorized || basePermits.liquidizeEntity >= Permit.authorized;
+                        return permits[holder].liquidizeEntity >= PermitState.authorized || basePermits.liquidizeEntity >= PermitState.authorized;
                     default:
                         revert();
         }
@@ -357,31 +363,77 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     function isPermitAdministrator(address holder, string permitName) view returns(bool) {
+        if (holder == this.address) {return true}
         if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
                     case "issueVote":
-                        return permits[holder].issueVote == Permit.administrator || basePermits.issueVote == Permit.administrator;
+                        return permits[holder].issueVote == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
                     case "issueDividend":
-                        return permits[holder].issueDividend == Permit.administrator || basePermits.issueDividend  == Permit.administrator;
+                        return permits[holder].issueDividend == PermitState.administrator || basePermits.issueDividend  == PermitState.administrator;
                     case "dissolveDividend":
-                        return permits[holder].dissolveDividend  == Permit.administrator || basePermits.dissolveDividend  == Permit.administrator;
+                        return permits[holder].dissolveDividend  == PermitState.administrator || basePermits.dissolveDividend  == PermitState.administrator;
                     case "manageBank":
-                        return permits[holder].manageBank == Permit.administrator || basePermits.manageBank == Permit.administrator;
+                        return permits[holder].manageBank == PermitState.administrator || basePermits.manageBank == PermitState.administrator;
                     case "implementProposal":
-                        return permits[holder].implementProposal == Permit.administrator || basePermits.implementProposal == Permit.administrator;
+                        return permits[holder].implementProposal == PermitState.administrator || basePermits.implementProposal == PermitState.administrator;
                     case "liquidizeEntity":
-                        return permits[holder].liquidizeEntity == Permit.administrator || basePermits.liquidizeEntity == Permit.administrator;
+                        return permits[holder].liquidizeEntity == PermitState.administrator || basePermits.liquidizeEntity == PermitState.administrator;
                     default:
                         revert();
-                }
-
+        }
     }
 
-    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
-    function _liquidize(address by) internal {
-        active = false; // stops trading of Shards
-        liquidization = new Dividend(address(this).balance, validShards); // sets up a final dividend for shardholders
-        emit AdministerableLiquidized(by);
+    function _createBank(string bankName, address bankAdministrator, address by) internal onlyIfActive {
+        require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
+        require(isShardHolder(bankAdministrator) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
+        require(hasPermit(bankAdministrator,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        Bank memory bank = new Bank();
+        bank.administrators.push(bankAdministrator);
+        bank.administratorIndex[bankAdministrator] = 1;
+        bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1
+        banks.push(bank);
+        emit BankCreated(bankName,bankAdministrator, by);
+    }
+
+    function _deleteBank(string bankName, address by) internal onlyIfActive {
+        require(bankName != "main", "Can't delete the main bank!");
+        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
+        require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
+        Bank memory bank = bankByName[bankName];
+        banks[bankIndex[bank]-1] = banks[banks.length-1]; // -1 because stored indices starts from 1
+        banks.pop();
+        bankByName[bankName] = new Bank();
+        emit BankDeleted(bankName, by);
+    }
+
+    function _issueDividend(string bankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(bankName) {
+        Bank memory bank = bankByName[bankName];
+        require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
+        bank.balance[tokenAddress] -= value;
+        Dividend newDividend = new Dividend();
+        newDividend.tokenAddress = tokenAddress;
+        newDividend.originalValue = value;
+        newDividend.value = value; 
+        newDividend.applicable = validShards;
+        dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
+        dividends.push(newDividend);
+        emit DividendIssued(newDividend, by);
+    }
+
+    function _dissolveDividend(Dividend dividend, address by) internal onlyIfActive {
+        dividends[dividendIndex[dividend]-1] = dividends[dividends.lenght-1]; // -1 to distinguish between empty values;
+        dividends.pop();
+        uint256 memory valueLeft = dividend.value;
+        dividend.value = 0;
+        bankByName["main"].balance[dividend.tokenAddress] += valueLeft;
+        emit DividendDissolved(dividend, valueLeft, by);
+    }
+
+    function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        Bank memory fromBank = bankByName[fromBankName];
+        require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
+        _transferToken(tokenAddress,value,to);
+        _processTokenTransfer(fromBank,tokenAddress,value,to,by);
     }
 
     function _moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
@@ -393,11 +445,11 @@ contract Administerable is Shardable, ERC20Holder {
         emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
     }
 
-    function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        Bank memory fromBank = bankByName[fromBankName];
-        require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
-        _transferToken(tokenAddress,value,to);
-        _processTokenTransfer(fromBank,tokenAddress,value,to,by);
+    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
+    function _liquidize(address by) internal {
+        active = false; // stops trading of Shards
+        liquidization = new Dividend(address(this).balance, validShards); // sets up a final dividend for shardholders
+        emit EntityLiquidized(by);
     }
 
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
@@ -447,51 +499,6 @@ contract Administerable is Shardable, ERC20Holder {
             }
 
         }
-    }
-
-    function _createBank(string bankName, address[] administrators) internal onlyIfActive {
-        require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
-        Bank memory bank = new Bank();
-        for ()
-        bank.administrators.push(bankAdministrator);
-        bank.administratorIndex[bankAdministrator] = 1;
-        bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1
-        banks.push(bank);
-        emit BankCreated(bankName,bankAdministrator);
-    }
-
-    function _deleteBank(string bankName) internal onlyIfActive {
-        require(bankName != "main", "Can't delete the main bank!");
-        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
-        require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
-        Bank memory bank = bankByName[bankName];
-        banks[bankIndex[bank]-1] = banks[banks.length-1]; // -1 because stored indices starts from 1
-        banks.pop();
-        bankByName[bankName] = new Bank();
-        emit BankDeleted(bankName);
-    }
-
-    function _issueDividend(string bankName, address tokenAddress, uint256 value) internal onlyExistingBank(bankName) {
-        Bank memory bank = bankByName[bankName];
-        require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
-        bank.balance[tokenAddress] -= value;
-        Dividend newDividend = new Dividend();
-        newDividend.tokenAddress = tokenAddress;
-        newDividend.originalValue = value;
-        newDividend.value = value; 
-        newDividend.applicable = validShards;
-        dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
-        dividends.push(newDividend);
-        emit DividendIssued(newDividend);
-    }
-
-    function _dissolveDividend(Dividend dividend) internal onlyIfActive {
-        dividends[dividendIndex[dividend]-1] = dividends[dividends.lenght-1]; // -1 to distinguish between empty values;
-        dividends.pop();
-        uint256 memory valueLeft = dividend.value;
-        dividend.value = 0;
-        bankByName["main"].balance[dividend.tokenAddress] += valueLeft;
-        emit DividendDissolved(dividend, valueLeft);
     }
 
     function _registerTokenAddress(address tokenAddress) {

@@ -5,7 +5,7 @@ import "../administerable.sol";
 /// @title A fractional DAO-like contract whose decisions can be voted upon by its shareholders
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as a votable administerable business entity.
-/// @dev About to figure out how to do the structure of Proposals right - it can't just be about permits
+/// @dev Need to figure out how to keep Shards consistent during trades for full voting percentage. Hint: mapping(Shard => Shard) shardSplitFrom;
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administerable {
 
@@ -183,8 +183,8 @@ contract Votable is Administerable {
                         break;
                     case "createBank":
                         require(createBank.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
-                        (string bankName, address[] administrators) = abi.decode(proposal.argumentData, (string, address[]));
-                        _createBank(bankName,administrators,this.address);
+                        (string bankName, bankAdministrator) = abi.decode(proposal.argumentData, (string, address));
+                        _createBank(bankName,bankAdministrator,this.address);
                         break;
                     case "deleteBank":
                         require(deleteBank.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
@@ -211,7 +211,5 @@ contract Votable is Administerable {
         referendumsTBI[referendumTBIIndex[referendum]-1] = referendumsTBI[referendumsTBI.length-1];
         referendumsTBI.pop();
     }
-
-
 
 }
