@@ -17,6 +17,7 @@ contract Shardable {
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
     mapping(Shard => bool) validShards;
     mapping(address => Shard) shardByOwner;
+    mapping(Shard => Shard) ancestorByDescendant; /// @dev not sure this will actually work - because of two parents, but let's see, they won't be dynamic!
 
     bool active = true;
 
@@ -48,7 +49,6 @@ contract Shardable {
             
             // Destroy the Old Receiver Shard
             _removeShard(receiverShard); 
-            receiverShard.burn();
 
         }
 
@@ -62,10 +62,10 @@ contract Shardable {
 
         // Destroy the old Sender Shard
         _removeShard(senderShard); 
-        senderShard.burn();
 
         // Push the new Shards
         Shard newReceiverShard = new Shard(newReceiverFraction,to);
+
         Shard newSenderShard = new Shard(newSenderFraction,sender);
         _pushShard(newReceiverShard);
         _pushShard(newSenderShard);
@@ -73,9 +73,22 @@ contract Shardable {
 
     }
 
-    function removeShard() external onlyValidShard {
-        Shard shard = msg.sender;
-        _removeShard(shard);
+    function unifyShardWith(address to) external onlyValidShard {
+        require(isShardHolder(to),"Receiver must have a Shard to unify with!");
+        Shard memory senderShard = msg.sender;
+        Shard memory receiverShard = shardByOwner[to];
+        Fraction newReceiverFraction = addFractions(senderShard.fraction,receiverShard.fraction); // The fractions are added and upgraded
+        _removeShard(receiverShard); 
+        _removeShard(senderShard); 
+        Shard newReceiverShard = new Shard(newReceiverFraction,to);
+        _pushShard(newReceiverShard);
+    }
+
+    function processShardTransfer(Shard shard, address to) external onlyValidShard {
+        require(validShards[shard], "Shard is not valid!");
+        require(!validShards[shardByOwner[shard.owner]],"");
+        shardByOwner[shard.owner] = Shard(0x0);
+        shardByOwner[to] = shard;
     }
 
     function isValidShard(Shard shard) returns(bool) {
@@ -105,13 +118,7 @@ contract Shardable {
         shardIndex[shard] = 0;
         shards.pop();
         validShards[shard] = false;
-    }
-
-
-    function _processShardTransfer(Shard shard, address to) internal {
-        require(validShards[shard], "Shard is not valid!");
-        shardByOwner[shard.owner] = Shard(0x0);
-        shardByOwner[to] = shard;
+        shard.burn();
     }
 
 }
@@ -119,9 +126,9 @@ contract Shardable {
 
 /// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable contract
 /// @inheritdoc Shardable
-contract Shard is ERC721, ERC721Burnable, Ownable {
+contract Shard is Ownable {
     Shardable public shardable;
-    bool public forSale = false;
+    bool public forSale;
     address public forSaleTo;
     uint256 public salePrice;
 
@@ -133,7 +140,7 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
     Fraction public fraction;
     Fraction public fractionForsale;
 
-    constructor(Fraction _fraction, address holder) ERC721("Shard", "SH") {
+    constructor(Fraction _fraction, address holder) {
         require(_fraction.denominator > 0);
         require(1 <= _fraction.numerator/_fraction.denominator > 0);
         shardable = msg.sender;
@@ -200,7 +207,8 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
         // Pay Service Fee of 2.5% to Counekt
         (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
         require(success, "Transfer failed.");
-        _split(msg.sender, fractionForsale);
+        if (fractionForsale == fraction) {shardable.unifyWith(msg.sender);}
+        else {_split(msg.sender, fractionForsale);}
         emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
     }
 
@@ -211,8 +219,13 @@ contract Shard is ERC721, ERC721Burnable, Ownable {
     }
 
     function transferOwnership(address to) external onlyOwner {
-        _transferOwnership(to);
-        shardable._processShardTransfer(to);
+        if (shardable.validShards[shardable.shardByOwner[to]]) {
+            shardable.unifyWith(to);
+        }
+        else {
+            _transferOwnership(to);
+            shardable.processShardTransfer(to);
+        }
     }
 
     function burn() external onlyShardable {
