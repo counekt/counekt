@@ -81,10 +81,11 @@ contract Administerable is Shardable, ERC20Holder {
     }
 
     struct Dividend {
+        uint256 creationTime;
         address tokenAddress;
         uint256 value;
         uint256 originalValue;
-        mapping(Shard => bool) applicable;
+        mapping(Shard => bool) hasClaimed;
     }
 
     // triggers when a dividend is issued
@@ -244,10 +245,12 @@ contract Administerable is Shardable, ERC20Holder {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param dividend The dividend to be claimed.
     /// @inheritdoc issueDividend
+    /// @dev Now only shards who exist at the time of Dividend creation are applicable. Next up: Must be claimed with reference to shard.
     function claimDividend(Dividend dividend) external onlyShardHolder onlyExistingDividend onlyIfActive {
-        require(active == true, "Can't claim dividends from a liquidized entity. Check liquidization instead.")
-        require(dividend.applicable[msg.sender] == true, "Not applicable for Dividend");
-        dividend.applicable[msg.sender] = false;
+        require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.")
+        require(dividend.hasClaimed[msg.sender] == false, "Already claimed Dividend!");
+        require(shardByOwner[msg.sender] > dividend.creationTime > shardByOwner[msg.sender].creationTime, "Not applicable for Dividend!");
+        dividend.hasClaimed[msg.sender] = true;
         dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.originalValue;
         dividend.value -= dividendValue;
         _transferToken(dividend.tokenAddress,dividendValue,msg.sender);
@@ -411,6 +414,7 @@ contract Administerable is Shardable, ERC20Holder {
         require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
         bank.balance[tokenAddress] -= value;
         Dividend newDividend = new Dividend();
+        newDividend.creationTime = block.timestamp;
         newDividend.tokenAddress = tokenAddress;
         newDividend.originalValue = value;
         newDividend.value = value; 

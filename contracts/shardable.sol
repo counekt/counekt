@@ -15,9 +15,8 @@ contract Shardable {
     
     Shard[] internal shards;
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
-    mapping(Shard => bool) validShards;
+    mapping(Shard => bool) historicShards;
     mapping(address => Shard) shardByOwner;
-    mapping(Shard => Shard) ancestorByDescendant; /// @dev not sure this will actually work - because of two parents, but let's see, they won't be dynamic!
 
     bool active = true;
 
@@ -28,6 +27,10 @@ contract Shardable {
 
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
+    }
+
+    modifier onlyHistoricShardHolder {
+        require(isHistoricShardHolder(msg.sender), "Sender must have been a valid shard holder!")
     }
 
     modifier onlyValidShard {
@@ -96,10 +99,14 @@ contract Shardable {
     }
 
     /// @notice Checks if address is a shard holder - at least a partial owner of the contract
-    /// @param _shardHolder The address to be checked
+    /// @param shardHolder The address to be checked
     /// @return A boolean value - a shard holder or not. 
-    function isShardHolder(address _shardHolder) returns(bool) {
-        return shardByOwner[_shardholder] != Shard(0x0);
+    function isShardHolder(address shardHolder) returns(bool) {
+        return shardIndex[shardHolder] != 0;
+    }
+
+    function isHistoricShardHolder(address shardHolder) returns(bool) {
+        return historicShards[]
     }
 
     function _pushShard(Shard _shard) internal {
@@ -131,6 +138,8 @@ contract Shard is Ownable {
     bool public forSale;
     address public forSaleTo;
     uint256 public salePrice;
+    uint256 creationTime;
+    uint256 burnedTime uint256(int256(-1)); // The maximum value: (2^256)-1
 
     struct Fraction {
         uint256 numerator;
@@ -145,6 +154,7 @@ contract Shard is Ownable {
         require(1 <= _fraction.numerator/_fraction.denominator > 0);
         shardable = msg.sender;
         fraction = _fraction;
+        creationTime = block.timestamp;
         _transferOwnership(holder);
     }
 

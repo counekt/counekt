@@ -13,8 +13,12 @@ contract Votable is Administerable {
         super.constructor();
     }
 
+    // Referendums Not Yet Initialized
+    Referendum[] referendumsNYI;
+    mapping(Referendum => uint256) referendumNYIIndex; // starts from 1 and up, to differentiate betweeen empty values
+
 	// Pending Referendums
-    Referendum[] internal pendingReferendums;
+    Referendum[] pendingReferendums;
     mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // Referendums To Be Implemented
@@ -27,6 +31,7 @@ contract Votable is Administerable {
     }
 
     struct Referendum {
+        uint256 creationTime;
         Proposal[] proposals;
         mapping(Proposal => uint256) proposalIndex; // starts from 1 and up, to differentiate betweeen empty values
         Fraction forFraction;
@@ -89,16 +94,17 @@ contract Votable is Administerable {
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
     /// @param referendum The referendum to be voted on.
     /// @param for The boolean value signalling a for or against vote.
-    /// @dev There is a potential problem when selling and or splitting a shard. Then the right of the new shard to vote may unfairly perish, possibly making a referendum unsolvable.
-    function vote(Referendum referendum, bool for) external onlyShardHolder hasNotVoted(referendum) onlyIfActive {
+    /// @dev I f'cked it up. Now it's time based. Only Shards born before creation and potentially burned afterwards can vote.
+    function vote(Referendum referendum, bool for) external onlyHistoricShardHolder onlyExistingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         Shard memory shard = shardByOwner[msg.sender];
+        require(shard.burnedTime > referendum.creationTime > shard.creationTime, "Not applicable for voting!");
+        referendum.hasVoted[shard] = true;
         if (for) {
             referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,shard.fraction));
         }
         else {
             referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,shard.fraction));
         }
-        referendum.hasVoted[shard] = true;
         emit VoteCast(msg.sender, referendum, shard, for);
     }
 
@@ -128,7 +134,9 @@ contract Votable is Administerable {
     }
 
     function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
-        Referendum referendum = new Referendum(proposals);
+        Referendum referendum = new Referendum();
+        referendum.creationTime = block.timestamp;
+        referendum.proposals = proposals;
         pendingReferendumIndex[referendum] = pendingReferendums.length+1; // +1 to distinguish between empty values
         pendingReferendums.push(referendum);
         emit ReferendumIssued(referendum, by);
