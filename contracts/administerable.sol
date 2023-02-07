@@ -246,10 +246,11 @@ contract Administerable is Shardable, ERC20Holder {
     /// @param dividend The dividend to be claimed.
     /// @inheritdoc issueDividend
     /// @dev Now only shards who exist at the time of Dividend creation are applicable. Next up: Must be claimed with reference to shard.
-    function claimDividend(Dividend dividend) external onlyShardHolder onlyExistingDividend onlyIfActive {
+    function claimDividend(Shard shard, Dividend dividend) external onlyExistingDividend onlyIfActive {
         require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.")
+        require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
         require(dividend.hasClaimed[msg.sender] == false, "Already claimed Dividend!");
-        require(shardByOwner[msg.sender] > dividend.creationTime > shardByOwner[msg.sender].creationTime, "Not applicable for Dividend!");
+        require(shardExisted(shard,dividend.creationTime), "Not applicable for Dividend!");
         dividend.hasClaimed[msg.sender] = true;
         dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.originalValue;
         dividend.value -= dividendValue;
@@ -265,13 +266,11 @@ contract Administerable is Shardable, ERC20Holder {
     /// @dev NOT UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
     function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
-        require(tokenAddressIndex[tokenAddress] != 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
+        require(tokenAddressIndex[tokenAddress] > 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
         Dividend tokenLiquidization = liquidization[tokenAddress];
-        if (tokenLiquidization.originalValue == tokenLiquidization.value) {
-            tokenLiquidization.applicable = validShards;
-        }
-        require(tokenLiquidization.applicable[msg.sender] == true, "Not applicable for liquidity.");
-        tokenLiquidization.applicable[msg.sender] = false;
+        
+        require(!tokenLiquidization.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
+        tokenLiquidization.hasClaimed[msg.sender] = true;
         liquidValue = shardByOwner[msg.sender].getDecimal() * tokenLiquidization.originalValue;
         tokenLiquidization.value -= liquidValue;
         if (tokenLiquidization.value == 0) {
@@ -452,7 +451,6 @@ contract Administerable is Shardable, ERC20Holder {
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     function _liquidize(address by) internal {
         active = false; // stops trading of Shards
-        liquidization = new Dividend(address(this).balance, validShards); // sets up a final dividend for shardholders
         emit EntityLiquidized(by);
     }
 

@@ -95,9 +95,9 @@ contract Votable is Administerable {
     /// @param referendum The referendum to be voted on.
     /// @param for The boolean value signalling a for or against vote.
     /// @dev I f'cked it up. Now it's time based. Only Shards born before creation and potentially burned afterwards can vote.
-    function vote(Referendum referendum, bool for) external onlyHistoricShardHolder onlyExistingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
-        Shard memory shard = shardByOwner[msg.sender];
-        require(shard.burnedTime > referendum.creationTime > shard.creationTime, "Not applicable for voting!");
+    function vote(Shard shard, Referendum referendum, bool for) external onlyHistoricShardHolder onlyExistingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
+        require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
+        require(shardExisted(referendum.creationTime), "Shard is not applicable for this vote!");
         referendum.hasVoted[shard] = true;
         if (for) {
             referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,shard.fraction));
