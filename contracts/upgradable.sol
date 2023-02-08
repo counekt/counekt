@@ -14,8 +14,35 @@ contract Upgradable {
 		
 	}
 
-	function _upgradeTo(address _newContract) public {
-        storedContract = _newContract;
+	function _upgradeTo(string upgradeName) public {
+	  require(Upgrader.upgradeIsValid(upgradeName),"Upgrade '"+upgradeName+"' isn't valid!");
+        storedContract = newContract;
     }
 
+}
+
+contract Upgrader {
+  string[] upgradeNames;
+  mapping(string => uint256) upgradeNameIndex;
+  mapping(string => bytes) upgradesByName;
+  
+  modifier onlyCounekt {
+    require(msg.sender.address == "counektAddress");
+  }
+  
+  function upgradeIsValid(string upgradeName) external view returns(bool){
+    return upgradeNameIndex[upgradeName]>0;
+  }
+  
+  function addUpgrade(string upgradeName, bytes upgradeBytes) external onlyCounekt {
+    upgradesByName[upgradeName] = upgradeBytes;
+    upgradeNameIndex[upgradeName] = upgradeNames.length + 1;
+    upgradeNames.push(upgradeName);
+  }
+  
+  function removeUpgrade(string upgradeName) external onlyCounekt {
+    upgradeNames[upgradeNameIndex[upgradeName]-1] = upgradeNames[upgradeNames.length-1];
+    upgradeNames.pop();
+    upgradeNameIndex[upgradeName] = 0;
+  }
 }
