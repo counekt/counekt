@@ -1,16 +1,14 @@
 pragma solidity ^0.8.4;
 
 import "../shardable.sol";
-import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 
 /// @title A fractional DAO-like contract that through permits, banks and dividends can be administered by its shareholders
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administerable business entity. 
 /// @custom:beaware This is a commercial contract.
-contract Administerable is Shardable, ERC20Holder {
+contract Administerable is Shardable {
     
-    function initialize() public {
-        super.initialize();
+    function initialize() reinitializer(2) public {
         _createBank("main",msg.sender,this.address);
         // First Shard holder is initialized with all Permits
         PermitSet permitSet = PermitSet();
@@ -320,6 +318,7 @@ contract Administerable is Shardable, ERC20Holder {
         }
     }
 
+    /// @dev This fucntion won't work with other contracts inheriting from this - and certainly not with upgradable proxies!
     function isAdministerable(address _address) returns(bool) {
         bytes32 administerableBytecode = bytes32(keccak256(abi.encodePacked(type(Administerable).creationCode)));
         bytes32 targetBytecode = bytes32(keccak256(abi.encodePacked(bytes(_address.code()))));

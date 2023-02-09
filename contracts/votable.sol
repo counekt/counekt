@@ -21,6 +21,10 @@ contract Votable is Administerable {
     Referendum[] referendumsTBI;
     mapping(Referendum => uint256) referendumTBIIndex; // starts from 1 and up, to differentiate betweeen empty values
 
+    function initialize() reinitializer(3) public {
+        
+    }
+
     struct Proposal {
         bytes4 functionSignifier;
         bytes argumentData;

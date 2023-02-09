@@ -5,30 +5,37 @@ pragma solidity ^0.8.4;
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used to make another contract upgradeable.
 /// @dev This contract is incomplete
-
 contract UpgradableProxy {
 	
-	address public agentContract;
+	address public agent;
 
 	constructor(address) {
 		
 	}
 
+	fallback() external payable {
+		agent.delegatecall(msg.data);
+	}
+
 	function _upgradeTo(string upgradeName) public {
 	  require(Upgrader.upgradeIsValid(upgradeName),"Upgrade '"+upgradeName+"' isn't valid!");
 	   address newAgentContract = address(create(Upgrader.upgradesByName[upgradeName]));
-        agentContract = newAgentContract;
+        agent = newAgentContract;
     }
 
 }
 
+/// @title Bottle neck of the upgradability. An admin contract to manage valid Idea entity upgrades controlled by Counekt.
+/// @author Frederik W. L. Christoffersen
+/// @notice This contract will only have one instance, whose address will be used by the UpgradableProxy.
+/// @dev This contract needs to be deployed with one instance before the other ones.
 contract Upgrader {
   string[] upgradeNames;
   mapping(string => uint256) upgradeNameIndex;
   mapping(string => bytes) upgradesByName;
   
   modifier onlyCounekt {
-    require(msg.sender.address == "counektAddress");
+    require(msg.sender.address == 0x49a71890aea5A751E30e740C504f2E9683f347bC);
   }
   
   function upgradeIsValid(string upgradeName) external view returns(bool){

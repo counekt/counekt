@@ -5,13 +5,15 @@ import "@openzeppelin/contracts@4.6.0/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts@4.6.0/access/Ownable.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /// @title A shardable/fractional non-fungible token that can be fractually owned via Shards
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
 /// @dev historicShards are used to show proof of ownership at different points of time.
 /// @custom:beaware This is a commercial contract.
-contract Shardable {
+
+contract Shardable is Initializable {
     
     Shard[] internal shards;
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
@@ -22,7 +24,7 @@ contract Shardable {
     
     bool private initialized;
     
-    function initialize() {
+    function initialize() initializer public{
       require(!initialized, "Contract instance has already been initialized");
         initialized = true;
         // pass full ownership to creator of contract
