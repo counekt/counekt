@@ -9,10 +9,6 @@ import "../administerable.sol";
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administerable {
 
-	constructor() public {
-        super.constructor();
-    }
-
     // Referendums Not Yet Initialized
     Referendum[] referendumsNYI;
     mapping(Referendum => uint256) referendumNYIIndex; // starts from 1 and up, to differentiate betweeen empty values

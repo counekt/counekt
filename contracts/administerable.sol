@@ -9,7 +9,8 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 /// @custom:beaware This is a commercial contract.
 contract Administerable is Shardable, ERC20Holder {
     
-    constructor() public {
+    function initialize() public {
+        super.initialize();
         _createBank("main",msg.sender,this.address);
         // First Shard holder is initialized with all Permits
         PermitSet permitSet = PermitSet();

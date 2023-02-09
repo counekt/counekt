@@ -19,8 +19,12 @@ contract Shardable {
     mapping(address => Shard) shardByOwner;
 
     bool active = true;
-
-    constructor() {
+    
+    bool private initialized;
+    
+    function initialize() {
+      require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
         // pass full ownership to creator of contract
         _pushShard(new Shard(1,1, msg.sender));
     }

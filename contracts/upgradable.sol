@@ -6,17 +6,18 @@ pragma solidity ^0.8.4;
 /// @notice This contract is used to make another contract upgradeable.
 /// @dev This contract is incomplete
 
-contract Upgradable {
+contract UpgradableProxy {
 	
-	address public storedContract;
+	address public agentContract;
 
-	constructor() {
+	constructor(address) {
 		
 	}
 
 	function _upgradeTo(string upgradeName) public {
 	  require(Upgrader.upgradeIsValid(upgradeName),"Upgrade '"+upgradeName+"' isn't valid!");
-        storedContract = newContract;
+	   address newAgentContract = address(create(Upgrader.upgradesByName[upgradeName]));
+        agentContract = newAgentContract;
     }
 
 }
