@@ -22,11 +22,7 @@ contract Shardable is Initializable {
 
     bool active = true;
     
-    bool private initialized;
-    
     function initialize() initializer public{
-      require(!initialized, "Contract instance has already been initialized");
-        initialized = true;
         // pass full ownership to creator of contract
         _pushShard(new Shard(1,1, msg.sender));
     }

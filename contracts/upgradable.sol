@@ -9,17 +9,17 @@ contract UpgradableProxy {
 	
 	address public agent;
 
-	constructor(address) {
-		
+	constructor(string versionName) {
+		_upgradeTo(versionName);
 	}
 
 	fallback() external payable {
 		agent.delegatecall(msg.data);
 	}
 
-	function _upgradeTo(string upgradeName) public {
-	  require(Upgrader.upgradeIsValid(upgradeName),"Upgrade '"+upgradeName+"' isn't valid!");
-	   address newAgentContract = address(create(Upgrader.upgradesByName[upgradeName]));
+	function _upgradeTo(string versionName) public {
+	  require(Upgrader.upgradeIsValid(versionName),"Version '"+versionName+"' doesn't exist!");
+	   address newAgentContract = address(create(Upgrader.versionsByName[versionName]));
         agent = newAgentContract;
     }
 
@@ -30,27 +30,27 @@ contract UpgradableProxy {
 /// @notice This contract will only have one instance, whose address will be used by the UpgradableProxy.
 /// @dev This contract needs to be deployed with one instance before the other ones.
 contract Upgrader {
-  string[] upgradeNames;
-  mapping(string => uint256) upgradeNameIndex;
-  mapping(string => bytes) upgradesByName;
+  string[] versionNames;
+  mapping(string => uint256) versionNameIndex;
+  mapping(string => bytes) versionsByName;
   
   modifier onlyCounekt {
     require(msg.sender.address == 0x49a71890aea5A751E30e740C504f2E9683f347bC);
   }
   
-  function upgradeIsValid(string upgradeName) external view returns(bool){
-    return upgradeNameIndex[upgradeName]>0;
+  function versionIsValid(string upgradeName) external view returns(bool){
+    return versionNameIndex[versionName]>0;
   }
   
-  function addUpgrade(string upgradeName, bytes upgradeBytes) external onlyCounekt {
-    upgradesByName[upgradeName] = upgradeBytes;
-    upgradeNameIndex[upgradeName] = upgradeNames.length + 1;
-    upgradeNames.push(upgradeName);
+  function addVersion (string versionName, bytes versionBytes) external onlyCounekt {
+    versionByName[versionName] = versionBytes;
+    versionNameIndex[versionName] = versionNames.length + 1;
+    versionNames.push(versionName);
   }
   
-  function removeUpgrade(string upgradeName) external onlyCounekt {
-    upgradeNames[upgradeNameIndex[upgradeName]-1] = upgradeNames[upgradeNames.length-1];
-    upgradeNames.pop();
-    upgradeNameIndex[upgradeName] = 0;
+  function removeUpgrade(string versionName) external onlyCounekt {
+    versionNames[versionNameIndex[versionName]-1] = versionNames[versiomNames.length-1];
+    versionNames.pop();
+    versionNameIndex[versionName] = 0;
   }
 }
