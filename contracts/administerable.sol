@@ -9,6 +9,7 @@ import "../shardable.sol";
 contract Administerable is Shardable {
     
     function initialize() reinitializer(2) public {
+        
         _createBank("main",msg.sender,this.address);
         // First Shard holder is initialized with all Permits
         PermitSet permitSet = PermitSet();
@@ -138,6 +139,10 @@ contract Administerable is Shardable {
         address by
     );
 
+    event BankAdminAdded(string name, address admin, address by);
+
+    event BankAdminRemoved(string name,address admin, address by);
+
 
     // triggers when a bank is deleted
     event BankDeleted(
@@ -160,8 +165,8 @@ contract Administerable is Shardable {
     }
 
     // modifier to make sure msg.sender is administrator of a specific bank
-    modifier onlyBankAdministrator(string bankName) {
-        require(isBankAdministrator(msg.sender, bankName));
+    modifier onlyBankAdmin(string bankName) {
+        require(isBankAdmin(msg.sender, bankName));
     }
 
     // modifier to make sure bank exists
@@ -201,13 +206,23 @@ contract Administerable is Shardable {
 
     /// @notice Creates a Bank - a container of funds with access limited to its administators.
     /// @param bankName The name of the Bank to be created
-    function createBank(string bankName, address bankAdministrator) external onlyWithPermit("manageBank") {
-       _createBank(bankName, bankAdministrator, msg.sender);
+    function createBank(string bankName, address bankAdmin) external onlyWithPermit("manageBank") {
+       _createBank(bankName, bankAdmin, msg.sender);
+    }
+
+    function addBankAdmin(string bankName, address bankAdmin) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
+        _addBankAdmin(bankName, bankAdmin);
+    }
+
+    function removeBankAdmin(string bankName, address bankAdmin) external {
+        require(isPermitAdmin("manageBank"));
+        require(isBankAdmin(bankName,bankAdmin));
+        _removeBankAdmin();
     }
 
     /// @notice Deletes an empty Bank 
     /// @param bankName The name of the Bank to be deleted
-    function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdministrator(bankName) {
+    function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         _deleteBank(bankName, msg.sender);
     }
 
@@ -216,7 +231,7 @@ contract Administerable is Shardable {
     /// @param tokenAddress The address of the token contract (address(0) if ether)
     /// @param toBankName The name of the Bank to move the money to.
     /// @param value The value to be moved
-    function transferToken(string fromBankName, address tokenAddress, uint256 value, address to) external onlyBankAdministrator(bankName) {
+    function transferToken(string fromBankName, address tokenAddress, uint256 value, address to) external onlyBankAdmin(bankName) {
         _transferToken(fromBankName,tokenAddress,value,to,msg.sender);
     }
 
@@ -225,7 +240,7 @@ contract Administerable is Shardable {
     /// @param toBankName The name of the Bank to move the money to.
     /// @param tokenAddress The address of the token to be moved (address(0) if ether)
     /// @param value The value to be moved
-    function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdministrator(fromBankName) {
+    function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
         _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
     }
 
@@ -284,33 +299,33 @@ contract Administerable is Shardable {
         require(!(hasPermit(shardHolder, permitName) && newState >= PermitState.authorized), "Shard Holder already has Permit '"+permitName+"'");
         switch (permitName) {
                     case "issueVote":
-                        require(isPermitAdministrator(msg.sender, "issueVote"));
-                        require(!isPermitAdministrator(shardHolder, "issueVote"));
+                        require(isPermitAdmin(msg.sender, "issueVote"));
+                        require(!isPermitAdmin(shardHolder, "issueVote"));
                         permits[shardHolder].issueVote = newState;
                         break;
                     case "issueDividend":
-                        require(isPermitAdministrator(msg.sender, "issueDividend"));
-                        require(!isPermitAdministrator(shardHolder, "issueDividend"));
+                        require(isPermitAdmin(msg.sender, "issueDividend"));
+                        require(!isPermitAdmin(shardHolder, "issueDividend"));
                         permits[shardHolder].issueDividend = newState;
                         break;
                     case "dissolveDividend":
-                        require(isPermitAdministrator(msg.sender, "dissolveDividend"));
-                        require(!isPermitAdministrator(shardHolder, "dissolveDividend"));
+                        require(isPermitAdmin(msg.sender, "dissolveDividend"));
+                        require(!isPermitAdmin(shardHolder, "dissolveDividend"));
                         permits[shardHolder].issueDividend = newState;
                         break;
                     case "manageBank":
-                        require(isPermitAdministrator(msg.sender, "manageBank"));
-                        require(!isPermitAdministrator(shardHolder, "manageBank"));
+                        require(isPermitAdmin(msg.sender, "manageBank"));
+                        require(!isPermitAdmin(shardHolder, "manageBank"));
                         permits[shardHolder].manageBank = newState;
                         break;
                     case "implementProposal":
-                        require(isPermitAdministrator(msg.sender, "implementProposal"));
-                        require(!isPermitAdministrator(shardHolder, "implementProposal"));
+                        require(isPermitAdmin(msg.sender, "implementProposal"));
+                        require(!isPermitAdmin(shardHolder, "implementProposal"));
                         permits[shardHolder].implementProposal = newState;
                         break;
                     case "liquidizeEntity":
-                        require(isPermitAdministrator(msg.sender, "liquidizeEntity"));
-                        require(!isPermitAdministrator(shardHolder, "liquidizeEntity"));
+                        require(isPermitAdmin(msg.sender, "liquidizeEntity"));
+                        require(!isPermitAdmin(shardHolder, "liquidizeEntity"));
                         permits[shardHolder].liquidizeEntity = newState;
                         break;
                     default:
@@ -338,8 +353,8 @@ contract Administerable is Shardable {
       return dividendIndex[dividend] > 0; // bigger than 0 because stored indices starts from 1
     }
 
-    function isBankAdministrator(address _administrator, string bankName) view returns(bool) {
-        return bankByName[bankName].administratorIndex[_administrator] > 0 || permits[_administrator].manageBank == PermitState.administrator;
+    function isBankAdmin(address _address, string bankName) view returns(bool) {
+        return bankByName[bankName].adminIndex[_address] > 0 || isPermitAdmin(_address,"manageBank");
     }
 
     function hasPermit(address holder, string permitName) view returns(bool) {
@@ -364,7 +379,7 @@ contract Administerable is Shardable {
 
     }
 
-    function isPermitAdministrator(address holder, string permitName) view returns(bool) {
+    function isPermitAdminf(address holder, string permitName) view returns(bool) {
         if (holder == this.address) {return true}
         if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
@@ -385,16 +400,37 @@ contract Administerable is Shardable {
         }
     }
 
-    function _createBank(string bankName, address bankAdministrator, address by) internal onlyIfActive {
+    function _createBank(string bankName, address bankAdmin, address by) internal onlyIfActive {
         require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
-        require(isShardHolder(bankAdministrator) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
-        require(hasPermit(bankAdministrator,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
+        require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         Bank memory bank = new Bank();
-        bank.administrators.push(bankAdministrator);
-        bank.administratorIndex[bankAdministrator] = 1;
+        bank.administrators.push(bankAdmin);
+        bank.administratorIndex[bankAdmin] = 1;
         bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1
         banks.push(bank);
-        emit BankCreated(bankName,bankAdministrator, by);
+        emit BankCreated(bankName,bankAdmin, by);
+    }
+
+    function _addBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
+        require(isBankAdmin(by,bankName))
+        require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
+        require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        Bank memory bank = bankByName[bankName];
+        bank.administrators.push(bankAdmin);
+        bank.administratorIndex[bankAdmin] = bank.administrators.length+1;
+        emit BankAdminAdded(bankName,bankAdmin,by);
+    }
+
+    function _removeBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
+        require(isBankAdmin(bankAdmin,bankName));
+        require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
+        require(isPermitAdmin(by,"manageBank"),"Only admins of the 'manageBank' Permit can remove Bank Administrators!");
+        Bank memory bank = bankByName[bankName];
+        bank.administrators[bank.administratorIndex[bankAdmin]-1] = bank.administrators[bank.administrators.length-1];
+        bank.administratorIndex[bankAdmin] = 0;
+        bank.administrators.pop();
+        emit BankAdminRemoved(bankName,bankAdmin,by);
     }
 
     function _deleteBank(string bankName, address by) internal onlyIfActive {
