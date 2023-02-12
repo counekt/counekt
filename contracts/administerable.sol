@@ -1,12 +1,9 @@
 pragma solidity ^0.8.4;
 
-import "../shardable.sol";
-
-/// @title A fractional DAO-like contract that through permits, banks and dividends can be administered by its shareholders
+/// @title A contract that works as the administrable interface to an Idea.
 /// @author Frederik W. L. Christoffersen
-/// @notice This contract is used as an administerable business entity. 
-/// @custom:beaware This is a commercial contract.
-contract Administerable is Shardable {
+/// @notice This contract is used as an administrable entity and only works with an Idea.
+contract Administration {
     
     function initialize() reinitializer(2) public {
         
@@ -21,6 +18,8 @@ contract Administerable is Shardable {
         permitSet.liquidizeEntity = PermitState.administrator;
         permits[msg.sender] = permitSet;
     }
+
+    address idea;
 
     // Rules
     /// @notice Rules that lay the ground for the fundamental logic of the entity. 
@@ -39,12 +38,6 @@ contract Administerable is Shardable {
     // Dividends
     Dividend[] internal dividends;
     mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
-
-    // Liquidization (in case of dissolvement of the administerable entity) - Dividends by token addresses
-    // is updated along the way
-    mapping(address => Dividend) liquidization;
-    address[] tokenAddresses;
-    mapping(address => uint256) tokenAddressIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     struct Bank {
         address[] tokenAddresses;
@@ -181,7 +174,7 @@ contract Administerable is Shardable {
 
     // modifier to make sure entity is active and not liquidized/dissolved
     modifier onlyIfActive() {
-        require(active == true, "Administerable entity isn't active.");
+        require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
     }
 
     /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
@@ -333,13 +326,6 @@ contract Administerable is Shardable {
         }
     }
 
-    /// @dev This fucntion won't work with other contracts inheriting from this - and certainly not with upgradable proxies!
-    function isAdministerable(address _address) returns(bool) {
-        bytes32 administerableBytecode = bytes32(keccak256(abi.encodePacked(type(Administerable).creationCode)));
-        bytes32 targetBytecode = bytes32(keccak256(abi.encodePacked(bytes(_address.code()))));
-        return administerableBytecode == targetBytecode;
-    }
-
     function bankExists(string bankName) returns(bool) {
         return bankIndex[bankByName[bankName]] > 0; // bigger than 0 because stored indices starts from 1
     }
@@ -379,7 +365,7 @@ contract Administerable is Shardable {
 
     }
 
-    function isPermitAdminf(address holder, string permitName) view returns(bool) {
+    function isPermitAdmin(address holder, string permitName) view returns(bool) {
         if (holder == this.address) {return true}
         if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
@@ -528,15 +514,7 @@ contract Administerable is Shardable {
     }
 
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        if (tokenAddress == address(0)) { _transferEther(value, to);}
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "Failed to approve transfer");
-            if (isAdministerable(to)) {
-                Administerable(to).receiveToken("main", tokenAddress, value);
-            }
-
-        }
+        idea._transferToken(tokenAddress,value,to);
     }
 
     function _registerTokenAddress(address tokenAddress) {
