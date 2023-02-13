@@ -14,6 +14,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 /// @custom:beaware This is a commercial contract.
 
 contract Shardable is Initializable {
+
+    function initialize() initializer public{
+        // pass full ownership to creator of contract
+        _pushShard(new Shard(1,1, msg.sender));
+    }
     
     Shard[] internal shards;
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
@@ -21,12 +26,19 @@ contract Shardable is Initializable {
     mapping(address => Shard) shardByOwner;
 
     bool active = true;
-    
-    function initialize() initializer public{
-        // pass full ownership to creator of contract
-        _pushShard(new Shard(1,1, msg.sender));
-    }
 
+    struct Shard {
+        bytes12 identity; // Shard ID
+        bool public forSale;
+        address public forSaleTo;
+        uint256 public salePrice;
+        uint256 creationTime;
+        uint256 expiredTime uint256(int256(-1)); // The maximum value: (2^256)-1
+        Fraction public fraction;
+        Fraction public fractionForsale;
+    }
+    
+    
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
     }
@@ -155,11 +167,6 @@ contract Shard is Ownable {
     uint256 creationTime;
     uint256 expiredTime uint256(int256(-1)); // The maximum value: (2^256)-1
 
-    struct Fraction {
-        uint256 numerator;
-        uint256 denominator;
-    }
-
     Fraction public fraction;
     Fraction public fractionForsale;
 
@@ -266,6 +273,11 @@ contract Shard is Ownable {
     function getDecimal() view returns(uint256) {
         return fraction.numerator/fraction.denominator;
     }
+}
+
+struct Fraction {
+        uint256 numerator;
+        uint256 denominator;
 }
 
 // Fractional Math
