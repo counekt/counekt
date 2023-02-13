@@ -5,7 +5,7 @@ pragma solidity ^0.8.4;
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used to make another contract upgradeable.
 /// @dev This contract is incomplete
-contract UpgradableProxy {
+contract Versionable {
 	
 	address forwardsTo;
 	address public agent;

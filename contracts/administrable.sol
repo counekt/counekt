@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 /// @title A contract that works as the administrable interface to an Idea.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable entity and only works with an Idea.
-contract Administration {
+contract Administrable {
     
     function initialize() reinitializer(2) public {
         
