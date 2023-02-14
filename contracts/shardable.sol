@@ -13,57 +13,148 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 /// @dev historicShards are used to show proof of ownership at different points of time.
 /// @custom:beaware This is a commercial contract.
 
-contract Shardable is Initializable {
+contract Shardable {
 
-    function initialize() initializer public{
+    function constructor() public{
         // pass full ownership to creator of contract
-        _pushShard(new Shard(1,1, msg.sender));
+        _pushShard(new Shard(Fraction(1,1), msg.sender, block.timestamp));
     }
-    
+
+    bool active = true;
+
     Shard[] internal shards;
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
     mapping(Shard => bool) historicShards;
     mapping(address => Shard) shardByOwner;
+    mapping(Shard => DynamicInfo) dynamicInfo;
 
-    bool active = true;
-
+    /// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable entity
+    // All of these variables are constant throughout the Shard's lifetime.
     struct Shard {
-        bytes12 identity; // Shard ID
+        Fraction public fraction;
+        address owner; // Shard Holder
+        uint256 creationTime;
+    }
+
+    struct DynamicInfo {
+        uint256 expiredTime = uint256(int256(-1)); // The maximum value: (2^256)-1
         bool public forSale;
         address public forSaleTo;
-        uint256 public salePrice;
-        uint256 creationTime;
-        uint256 expiredTime uint256(int256(-1)); // The maximum value: (2^256)-1
-        Fraction public fraction;
         Fraction public fractionForsale;
+        uint256 public salePrice;
     }
+
+    event SplitMade(
+        address to,
+        Fraction fraction
+        );
+
+    event SaleSold(
+        address indexed to,
+        Shard shard
+        );
+
+    event PutForSale(
+        address indexed to,
+        Shard shard
+        );
+
+    event SaleCancelled();
+
+    event Expired(
+        Shard shard,
+        address holder
+        );
     
     
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
     }
 
-    modifier onlyValidShard {
-        require(isValidShard(msg.sender), "msg.sender must be a valid shard!");
+    modifier onlyValidShard(Shard shard) {
+        require(isValidShard(shard), "must be a valid shard!");
     }
 
-    /// @dev Better
-    function splitShard(address to, Fraction toBeSplit) external onlyValidShard {
-        Shard memory senderShard = msg.sender;
+    // modifier to make sure entity is active and not liquidized/dissolved
+    modifier onlyIfActive() {
+        require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
+    }
+
+    modifier onlyHolder(Shard shard) {
+        shard.owner == msg.sender.address;
+    }
+
+    function putForSale(Shard shard, uint256 price, Fraction _fraction) external onlyHolder(shard) {
+        _putForSale(shard,price,_fraction);
+    }
+
+    function putForSaleTo(Shard shard, address to, uint256 price, Fraction _fraction) external onlyHolder(shard) {
+        _putForSaleTo(shard,to,price,_fraction);
+    }
+
+    function cancelSell() onlyOwner {
+        _cancelSell();
+        emit SellCancelled();
+    }
+
+    function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
+        require(dynamicInfo[shard].forsale, "Not for sale");
+        require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
+        require(msg.value >= dynamicInfo[shard].salePrice, "Not enough paid");
+        _cancelSell();
+        // Pay Service Fee of 2.5% to Counekt
+        (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
+        require(success, "Transfer failed.");
+        if (fractionForsale == fraction) {transferShard(shard,msg.sender);}
+        else {splitShard(msg.sender, fractionForsale);}
+        emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
+    }
+
+    function split(Shard shard, Fraction toBeSplit, address to) external onlyHolder(shard) {
+        _split(shard, toBeSplit, to);
+    }
+
+    function transferShard(Shard shard, address to) external onlyHolder(shard) {
+        _transferShard(shard,to)
+    }
+
+
+    function isValidShard(Shard shard) returns(bool) {
+        return shardIndex[shard] > 0;
+    }
+
+    /// @notice Checks if address is a shard holder - at least a partial owner of the contract
+    /// @param shardHolder The address to be checked
+    /// @return A boolean value - a shard holder or not. 
+    function isShardHolder(address shardHolder) returns(bool) {
+        return shardIndex[shardHolder] != 0;
+    }
+
+    function isHistoricShard(Shard shard) returns(bool) {
+        return historicShards[shard];
+    }
+
+    function shardExisted(Shard shard, uint256 time) returns(bool) {
+        return shard.creationTime <= time < shard.deathTime;
+    }
+
+    function _split(Shard shard, Fraction toBeSplit, address to) internal {
         require(toBeSplit.numerator/toBeSplit.denominator < senderShard.fraction.numerator/senderShard.fraction.denominator, "Can't split 100% or more of shard's fraction");
+        uint256 transferTime = block.timestamp;
+        require(transferTime > shard.creationTime, "Can't trade more than once per second! The shard to be split must be more than one second old. Wait a second.");
+
         address memory sender = senderShard.owner;
         bool memory receiverIsShardHolder = isShardHolder(to);
         Fraction memory newReceiverFraction;
-        uint256 transferTime = block.timestamp;
 
         if (receiverIsShardHolder) { // if Receiver already owns a shard
             Shard memory receiverShard = shardByOwner[to];
-            
+            require(transferTime > receiverShard.creationTime , "Can't trade more than once per second! The receiver's shard must be more than one second old. Wait a second.");
+
             newReceiverFraction = addFractions(receiverShard.fraction,toBeSplit); // The fractions are added and upgraded
             
-            // Destroy the Old Receiver Shard
-            _removeShard(receiverShard); 
-            receiverShard.expire(transferTime);
+            // Expire the Old Receiver Shard
+            _expireShard(receiverShard); 
 
         }
 
@@ -75,10 +166,8 @@ contract Shardable is Initializable {
         // The new Fraction of the Sender Shard has been subtracted by the Split Fraction.
         Fraction newSenderFraction = subtractFractions(senderShard.fraction,toBeSplit);
 
-        // Destroy the old Sender Shard
-        _removeShard(senderShard); 
-        senderShard.expire(transferTime);
-
+        // Expire the Old Sender Shard
+        _expireShard(senderShard); 
 
         // Push the new Shards
         Shard newReceiverShard = new Shard(newReceiverFraction,to,transferTime);
@@ -87,11 +176,9 @@ contract Shardable is Initializable {
         _pushShard(newReceiverShard);
         _pushShard(newSenderShard);
         }
-
     }
 
-    function transferShard(address to) external onlyValidShard {
-        Shard memory senderShard = msg.sender;
+    function _transferShard(Shard senderShard, address to) {
         uint256 transferTime = block.timestamp;
         Fraction newReceiverFraction;
         if (isShardHolder(to)) {
@@ -115,28 +202,29 @@ contract Shardable is Initializable {
         // Creating the New
         Shard newReceiverShard = new Shard(newReceiverFraction,to,transferTime);
         _pushShard(newReceiverShard);
-        
     }
 
 
-    function isValidShard(Shard shard) returns(bool) {
-        return shardIndex[shard] > 0;
+    function _putForSale(Shard shard, uint256 price, Fraction _fraction) internal onlyValidShard(shard) onlyIfActive {
+        require(_fraction.numerator/_fraction.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't put more than 100% of shard's fraction for sale!");
+        Fraction memory simplifiedFraction = simplifyFraction(_fraction);
+        dynamicInfo[shard].fractionForsale = simplifiedFraction;
+        dynamicInfo[shard].salePrice = price;
+        dynamicInfo[shard].forsale = True;
+        emit PutForSale(forSaleTo,price,simplifiedFraction);
     }
 
-    /// @notice Checks if address is a shard holder - at least a partial owner of the contract
-    /// @param shardHolder The address to be checked
-    /// @return A boolean value - a shard holder or not. 
-    function isShardHolder(address shardHolder) returns(bool) {
-        return shardIndex[shardHolder] != 0;
+    function _putForSaleTo(Shard shard, address to, uint256 price, Fraction _fraction) internal onlyValidShard(shard) onlyIfActive {
+        dynamicInfo[shard].forSaleTo = to;
+        _putForSale(shard,price,_fraction);
     }
 
-    function isHistoricShard(Shard shard) returns(bool) {
-        return historicShards[shard];
+    function _cancelSell(Shard shard) internal onlyValidShard(shard) onlyIfActive{
+        require(dynamicInfo[shard].forsale == true, "Shard not even for sale!");
+        dynamicInfo[shard].forSale = false;
+        dynamicInfo[shard].forSaleTo = 0x0;
     }
 
-    function shardExisted(Shard shard, uint256 time) returns(bool) {
-        return shard.creationTime <= time < shard.deathTime;
-    }
 
     function _pushShard(Shard _shard) internal {
         shardIndex[_shard] = shards.length+1;
@@ -147,7 +235,7 @@ contract Shardable is Initializable {
 
     function _removeShard(Shard shard) internal {
         require(isValidShard(shard), "Shard must be valid!");
-        shardByOwner[shard.owner] = 0;
+        shardByOwner[shard.owner] = Shard();
         Shard memory lastShard = shards[shards.length-1];
         shards[shardIndex[shard]-1] = lastShard; // move last element in array to shard's place // -1 because stored indices starts from 1
         shardIndex[lastShard] = shardIndex[shard]; // configure the index to show that as well
@@ -157,123 +245,6 @@ contract Shardable is Initializable {
 
 }
 
-/// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable contract
-/// @inheritdoc Shardable
-contract Shard is Ownable {
-    Shardable public shardable;
-    bool public forSale;
-    address public forSaleTo;
-    uint256 public salePrice;
-    uint256 creationTime;
-    uint256 expiredTime uint256(int256(-1)); // The maximum value: (2^256)-1
-
-    Fraction public fraction;
-    Fraction public fractionForsale;
-
-    constructor(Fraction _fraction, address holder, uint256 _creationTime) {
-        require(_fraction.denominator > 0);
-        require(1 <= _fraction.numerator/_fraction.denominator > 0);
-        shardable = msg.sender;
-        fraction = _fraction;
-        creationTime = _creationTime;
-        _transferOwnership(holder);
-    }
-
-    modifier onlyShardable {
-        require(msg.sender == shardable);
-    }
-
-    modifier onlyIfShardableIsActive {
-        require(shardable.active, "Shardable isn't active!")
-    }
-
-    event SplitMade(
-        address to,
-        Fraction fraction
-        );
-
-    event SaleSold(
-        address indexed to,
-        uint256 price,
-        Fraction fraction
-        );
-
-    event PutForSale(
-        address indexed to,
-        Fraction fraction,
-        uint256 price
-        );
-
-    event SaleCancelled();
-
-    event Expired(
-        Shardable shardable,
-        address holder
-        );
-
-    function putForSaleTo(address to, uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner onlyIfShardableIsActive {
-        forSaleTo = to;
-        putForSale(price,Fractíon(_numerator,_denominator));
-    }
-
-    function putForSale(uint256 price, uint256 _numerator, uint256 _denominator) external onlyOwner onlyIfShardableIsActive {
-        require(_numerator/_denominator >= fraction.numerator/fraction.denominator, "Can't put for sale more than shard's fraction");
-        fractionForsale = Fraction(simplify(_numerator, _denominator));
-        salePrice = price;
-        forsale = True;
-        emit PutForSale(forSaleTo,price,Fraction(_numerator,_denominator));
-    }
-
-
-    function cancelSell() onlyOwner {
-        _cancelSell();
-        emit SellCancelled();
-    }
-
-    function purchase() external payable onlyIfShardableIsActive {
-        require(forsale, "Not for sale");
-        require(forSaleTo == msg.sender.address || !forSaleTo, string.concat("Only for sale to "+string(address)));
-        require(msg.value >= salePrice, "Not enough paid");
-        _cancelSell();
-        // Pay Service Fee of 2.5% to Counekt
-        (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
-        require(success, "Transfer failed.");
-        if (fractionForsale == fraction) {transferOwnership(msg.sender);}
-        else {_split(msg.sender, fractionForsale);}
-        emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
-    }
-
-
-    function split(address to, uint256 _numerator, uint256 _denominator) external onlyOwner onlyIfShardableIsActive {
-        _split(to,Fraction(_numerator,_denominator));
-        emit SplitMade(to,_numerator,_denominator);
-    }
-
-    function transferOwnership(address to) external onlyOwner {
-        shardable.transferShard(to);
-    }
-
-    function expire(uint256 _expiredTime) external onlyShardable {
-        expiredTime = _expiredTime;
-    }
-
-    function _split(address to, Fraction toBeSplit) internal {
-        shardable.splitShard(to,toBeSplit);
-    }
-
-    function _cancelSell() internal {
-        forSale = false;
-        forSaleTo = 0x0;
-    }
-
-    function isEmpty() returns(bool) {
-        return getDecimal() == 0;
-    }
-
-    function getDecimal() view returns(uint256) {
-        return fraction.numerator/fraction.denominator;
-    }
-}
 
 struct Fraction {
         uint256 numerator;
@@ -281,6 +252,10 @@ struct Fraction {
 }
 
 // Fractional Math
+
+function getDecimal(Fraction _fraction) view returns(uint256) {
+        return _fraction.numerator/_fraction.denominator;
+    }
 
 function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
         while (b) {

@@ -7,7 +7,7 @@ import "../administerable.sol";
 /// @notice This contract is used as a votable administerable business entity.
 /// @dev Need to figure out how to keep Shards consistent during trades for full voting percentage. Hint: mapping(Shard => Shard) shardSplitFrom;
 /// @custom:beaware This is a commercial contract.
-contract Votable is Administerable {
+contract Votable is Administrable {
 
     // Referendums Not Yet Initialized
     Referendum[] referendumsNYI;

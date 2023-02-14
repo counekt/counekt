@@ -12,7 +12,7 @@ import "../shardable.sol";
 contract Idea is Shardable {
 
 	constructor(string administrationType) {
-		administration = VersionAdmin.createVersion(administrationType);
+		administration = VersionAdmin.createVersion(administrationType, this.address);
 	}
 
 	// Administration
@@ -25,8 +25,8 @@ contract Idea is Shardable {
     address[] tokenAddresses;
     mapping(address => uint256) tokenAddressIndex; // starts from 1 and up, to differentiate betweeen empty values
 
-    modifier onlyAdministerable {
-    	require(msg.sender == administerable);
+    modifier onlyAdministrable {
+    	require(msg.sender == administrable);
     }
 
     /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 

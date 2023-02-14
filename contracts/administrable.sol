@@ -5,8 +5,8 @@ pragma solidity ^0.8.4;
 /// @notice This contract is used as an administrable entity and only works with an Idea.
 contract Administrable {
     
-    function initialize() reinitializer(2) public {
-        
+    constructor(address _idea) {
+        idea = _idea;
         _createBank("main",msg.sender,this.address);
         // First Shard holder is initialized with all Permits
         PermitSet permitSet = PermitSet();
@@ -175,6 +175,10 @@ contract Administrable {
     // modifier to make sure entity is active and not liquidized/dissolved
     modifier onlyIfActive() {
         require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
+    }
+
+    function createNew(address _idea) public returns(address) {
+        return new Administrable(_idea);
     }
 
     /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
