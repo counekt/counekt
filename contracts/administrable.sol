@@ -152,6 +152,10 @@ contract Administrable {
         address by
     );
 
+    modifier onlyIdea() {
+        require(idea == msg.sender);
+    }
+
     // modifier to make sure msg.sender has specific permit
     modifier onlyWithPermit(string permitName) {
         require(hasPermit(msg.sender, permitName));
@@ -181,10 +185,9 @@ contract Administrable {
         return new Administrable(_idea);
     }
 
-    /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
-    receive() payable onlyIfActive {
-        require(active == true, "Can't transfer anything to a liquidized entity.");
-        _processTokenReceipt("main",address(0),msg.value,msg.sender);
+    /// @notice The administrable can't receive anything. Only the idea does.
+    receive() payable {
+        revert;
     }
 
     /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
@@ -241,12 +244,6 @@ contract Administrable {
         _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
     }
 
-    function receiveToken(string bankName, address tokenAddress, uint256 value) external {
-        ERC20 token = ERC20(tokenAddress);
-        require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens. Make sure the transfer is approved.");
-        _processTokenReceipt(bankName,tokenAddress,value,msg.sender);
-    }
-
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     /// @inheritdoc _liquidize
     function liquidize() external onlyWithPermit("liquidizeEntity") {
@@ -270,25 +267,6 @@ contract Administrable {
         if (dividend.value == 0) {
             _dissolveDividend(dividend);
         }
-    }
-
-    /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
-    /// @inheritdoc _liquidize
-    /// @dev NOT UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
-    function claimLiquid(address tokenAddress) external onlyShardHolder {
-        require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
-        require(tokenAddressIndex[tokenAddress] > 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
-        Dividend tokenLiquidization = liquidization[tokenAddress];
-        
-        require(!tokenLiquidization.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
-        tokenLiquidization.hasClaimed[msg.sender] = true;
-        liquidValue = shardByOwner[msg.sender].getDecimal() * tokenLiquidization.originalValue;
-        tokenLiquidization.value -= liquidValue;
-        if (tokenLiquidization.value == 0) {
-            _unregisterTokenAddress(tokenAddress);
-        }
-        _transferToken(tokenAddress,liquidValue,msg.sender);
-        emit LiquidClaimed(liquidValue,msg.sender);
     }
 
     function changePermit(address shardHolder, string permitName, PermitState newState) onlyIfActive {
@@ -461,7 +439,7 @@ contract Administrable {
     function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
-        _transferToken(tokenAddress,value,to);
+        idea.transferToken(tokenAddress,value,to);
         _processTokenTransfer(fromBank,tokenAddress,value,to,by);
     }
 
@@ -476,17 +454,10 @@ contract Administrable {
 
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     function _liquidize(address by) internal {
-        active = false; // stops trading of Shards
-        emit EntityLiquidized(by);
+        idea.liquidize();
     }
 
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        // First: Liquidization logic
-        liquidization[tokenAddress].originalValue -= value;
-        if (liquidization[tokenAddress].originalValue == 0) {
-            _unregisterTokenAddress(tokenAddress);
-        }
-        // Then: Bank logic
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
         if (bank.balance[tokenAddress] == 0) {
@@ -496,13 +467,6 @@ contract Administrable {
     }
 
     function _processTokenReceipt(string bankName, address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
-        // First: Liquidization logic
-        if (tokenAddressIndex[tokenAddress] != 0) {
-            _registerTokenAddress(tokenAddress);
-        }
-        else {
-            liquidization[tokenAddress].originalValue += value;
-        }
         // Then: Bank logic
         Bank memory bank = bankByName[bankName];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
@@ -512,24 +476,8 @@ contract Administrable {
         emit TokenReceived(bankName,tokenAddress,value,from);
     }
 
-    function _transferEther(uint256 value, address to) internal {
-        (bool success, ) = address(to).call.value(value)("");
-        require(success, "Transfer failed.");
-    }
-
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        idea._transferToken(tokenAddress,value,to);
-    }
-
-    function _registerTokenAddress(address tokenAddress) {
-        require(tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!");
-        tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1; // +1 to distinguish between empty values;
-        tokenAddresses.push(tokenAddress);
-        // Update liquidization
-        Dividend newDividend = new Dividend();
-        newDividend.tokenAddress = tokenAddress;
-        newDividend.originalValue = value;
-        liquidization[tokenAddress] = newDividend;
+        idea.transferToken(tokenAddress,value,to);
     }
 
     function _registerTokenAddressToBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
@@ -537,13 +485,6 @@ contract Administrable {
         require(bank.tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!"); // a stored index value of 0 means empty
         bank.tokenAddressIndex[tokenAddress] = bank.tokenAddresses.length + 1; // +1 to distinguish between empty values;
         bank.tokenAddresses.push(tokenAddress);
-    }
-
-    function _unregisterTokenAddress(address tokenAddress) {
-        require(tokenAddressIndex[tokenAddress] > 0, "Token address '"+string(tokenAddress)+"' NOT registered!");
-        tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1]; // -1 to distinguish between empty values;
-        tokenAddressIndex[tokenAddress] = 0; // a stored index value of 0 means empty
-        tokenAddress.pop();
     }
 
     function _unregisterTokenAddressFromBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
