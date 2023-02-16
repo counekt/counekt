@@ -34,6 +34,12 @@ contract Idea is Shardable {
     modifier onlyAdministrable {
     	require(msg.sender == administrable);
     }
+    
+    // when calling an unknown function, idea calls administrable
+    // idea => administrable => idea
+    fallback() external {
+      administrable.call(msg.data);
+    }
 
     /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
     receive() payable onlyIfActive {
@@ -41,10 +47,10 @@ contract Idea is Shardable {
         _processTokenReceipt("main",address(0),msg.value,msg.sender);
     }
 
-    function receiveToken(string bankName, address tokenAddress, uint256 value) external {
+    function receiveToken(address tokenAddress, uint256 value) external {
         ERC20 token = ERC20(tokenAddress);
         require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens. Make sure the transfer is approved.");
-        _processTokenReceipt(bankName,tokenAddress,value,msg.sender);
+        _processTokenReceipt(tokenAddress,value,msg.sender);
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
@@ -99,7 +105,7 @@ contract Idea is Shardable {
     }
 
 
-    function _processTokenReceipt(string bankName, address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
+    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
         // First: Liquid logic
         if (tokenAddressIndex[tokenAddress] != 0) {
             _registerTokenAddress(tokenAddress);
@@ -107,7 +113,8 @@ contract Idea is Shardable {
         else {
             liquid[tokenAddress].originalValue += value;
         }
-        emit TokenReceived(bankName,tokenAddress,value,from);
+        administrable.processTokenReceipt(tokenAddress, value, from);
+        emit TokenReceived(tokenAddress,value,from);
     }
 
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) internal {

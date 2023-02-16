@@ -102,7 +102,6 @@ contract Administrable {
 
     // triggers when money is received
     event TokenReceived(
-        string bankName,
         address tokenAddress,
         uint256 value,
         address from
@@ -466,14 +465,14 @@ contract Administrable {
         emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
     }
 
-    function _processTokenReceipt(string bankName, address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
+    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
         // Then: Bank logic
-        Bank memory bank = bankByName[bankName];
+        Bank memory bank = bankByName["main"];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
             _registerTokenAddressToBank(tokenAddress);
         }
         bank.balance[tokenAddress] += value;
-        emit TokenReceived(bankName,tokenAddress,value,from);
+        emit TokenReceived(tokenAddress,value,from);
     }
 
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
