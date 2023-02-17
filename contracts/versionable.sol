@@ -1,44 +1,19 @@
 pragma solidity ^0.8.4;
 
-/*
-/// @title A proxy contract to store a current version contract
-/// @author Frederik W. L. Christoffersen
-/// @notice This contract is used to make another contract upgradeable.
-/// @dev This contract is incomplete
-contract UpgradableProxy {
-  
-  address forwardsTo;
-  address public agent;
+import "../administable.sol";
 
-  constructor(string versionName) {
-    _upgradeTo(versionName);
-  }
-
-  fallback() external payable {
-    agent.delegatecall(msg.data);
-  }
-
-  function _upgradeTo(string versionName) public {
-    require(Upgrader.upgradeIsValid(versionName),"Version '"+versionName+"' doesn't exist!");
-     address newAgentContract = address(create(Upgrader.versionsByName[versionName]));
-        agent = newAgentContract;
-    }
-
-}
-*/
 
 /// @title Bottle neck of the Administrable versioning. An admin contract to manage valid Idea entity upgrades controlled by Counekt.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract will only have one instance, whose address will be used by the UpgradableProxy.
 /// @dev This contract needs to be deployed as one instance before all other ones.
-contract Versioner {
+contract AdministrableVersioner {
 
   constructor() {
-    versionNameIndex["Administration"] = 1;
-    versionNameIndex["Votable"] = 1;
+
   }
 
-  string[] versionNames = ["Administration", "Votable"];
+  string[] versionNames;
   mapping(string => uint256) versionNameIndex;
   mapping(string => address) versionByName;
 
@@ -59,14 +34,13 @@ contract Versioner {
   }
 
   function createVersion(string versionName, address idea) external returns(address) onlyValidVersion(versionName) {
-    address newVersionInstance = new 
-    newVersionInstance.deploy(versionByName[versionName]);
+    newVersionInstance = Administrable(versionName[versionName]).create(idea);
     return newVersionInstance;
   }
   
   function addVersion(string versionName, address version) external onlyCounekt {
     versionByName[versionName] = versionBytes;
-    versionNameIndex[versionName] = versionNames.length + 1;
+    versionNameIndex[versionName] = versionNames.length+1;
     versionNames.push(versionName);
     emit newVersion(versionName,version);
   }

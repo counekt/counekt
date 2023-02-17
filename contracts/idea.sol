@@ -12,7 +12,8 @@ import "../shardable.sol";
 contract Idea is Shardable {
 
 	constructor(string administrableType) {
-		administrable = VersionAdmin.createVersion(administrableType, this.address);
+        // AdministrableVersioner = *whatever the address of it will be*
+        _setAdministrable(AdministrableVersioner.createVersion(administrableType, this.address));
 	}
 
 	// Administration
@@ -35,18 +36,19 @@ contract Idea is Shardable {
     	require(msg.sender == administrable);
     }
     
-    // when calling an unknown function, idea calls administrable
+    // when calling an unknown function, the Idea calls the Administrable
     // idea => administrable => idea
     fallback() external {
       administrable.call(msg.data);
     }
 
-    /// @notice Receives money when there's no supplying data and puts it into the 'main' bank 
+    /// @notice Receives ether when there's no supplying data
     receive() payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
-        _processTokenReceipt("main",address(0),msg.value,msg.sender);
+        _processTokenReceipt(address(0),msg.value,msg.sender);
     }
 
+    /// @notice Receives a specified token and adds it to the registry
     function receiveToken(address tokenAddress, uint256 value) external {
         ERC20 token = ERC20(tokenAddress);
         require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens. Make sure the transfer is approved.");
@@ -55,7 +57,7 @@ contract Idea is Shardable {
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction when the entity has been liquidized/dissolved.
     /// @inheritdoc _liquidize
-    /// @dev NOT UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
+    /// @dev NOW UP TO DATE WITH THE TOKEN ECOSYSTEM IMPLEMENTATION
     function claimLiquid(address shardHolder, address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
         require(tokenAddressIndex[tokenAddress] > 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
@@ -72,13 +74,18 @@ contract Idea is Shardable {
         emit LiquidClaimed(liquidValue,msg.sender);
     }
 
-    function transferToken(address tokenAddress, uint256 value, address to) external onlyAdministrable {
+    function transferToken_(address tokenAddress, uint256 value, address to) external onlyAdministrable {
         _transferToken(tokenAddress,value,to);
     }
 
-    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
-    function liquidize() external onlyAdministrable {
+    /// @notice Liquidizes and dissolves the administrable entity. This cannot be undone.
+    function liquidize_() external onlyAdministrable {
         _liquidize(by);
+    }
+
+    /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
+    function isIdea() pure returns(bool) {
+        return true;
     }
 
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
@@ -86,16 +93,23 @@ contract Idea is Shardable {
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
-            if (isIdea(to)) {
+            if (to.isIdea()) {
                 Idea(to).receiveToken("main", tokenAddress, value);
             }
 
         }
+        _processTokenTransfer(tokenAddress,value,to);
     }
 
     function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
+    }
+
+
+    // @notice Sets a new address of the Administrable, which controls all unknown function calls and the Idea itself.
+    function _setAdministrable(address _administrable) internal {
+        administrable = _administrable;
     }
 
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
@@ -104,8 +118,9 @@ contract Idea is Shardable {
         emit EntityLiquidized();
     }
 
-
-    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
+    // Calls an Administrable.processTokenReceipt, since it else doesn't know about the Idea Receipt.
+    // Idea.receiveToken() => Idea._processTokenReceipt() => Administrable.processTokenReceipt()
+    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
         // First: Liquid logic
         if (tokenAddressIndex[tokenAddress] != 0) {
             _registerTokenAddress(tokenAddress);
@@ -117,13 +132,15 @@ contract Idea is Shardable {
         emit TokenReceived(tokenAddress,value,from);
     }
 
+    // Does NOT call an Administrable.processTokenTransfer, since transfer calls always stem from there
+    // Administrable.transferToken() => Idea.transferToken() + Administrable._processTokenTransfer() => Idea._processTokenTransfer()
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) internal {
         // First: Liquidization logic
         liquid[tokenAddress].originalValue -= value;
         if (liquid[tokenAddress].originalValue == 0) {
             _unregisterTokenAddress(tokenAddress);
         }
-        emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
+        emit TokenTransfered(tokenAddress,value,to);
     }
 
     function _registerTokenAddress(address tokenAddress) {

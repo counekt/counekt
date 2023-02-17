@@ -268,7 +268,7 @@ contract Administrable {
         }
     }
 
-    function changePermit(address shardHolder, string permitName, PermitState newState) onlyIfActive {
+    function changePermit(address shardHolder, string permitName, PermitState newState) external onlyIfActive {
         require(isShardHolder(shardHolder) || allowNonShardHolders, "Only Shard holders can have Permits");
         require(!(hasPermit(shardHolder, permitName) && newState >= PermitState.authorized), "Shard Holder already has Permit '"+permitName+"'");
         switch (permitName) {
@@ -307,24 +307,33 @@ contract Administrable {
         }
     }
 
-    function bankExists(string bankName) returns(bool) {
+    function processTokenReceipt(address tokenAddress, uint256 value, address from) external onlyIdea {
+        _processTokenReceipt(tokenAddress,value,from);
+    }
+
+    // @notice Creates and returns the address of a new Administrable instance.
+    function create(address _idea) public returns(address) {
+        return new Administrable(_idea);
+    }
+
+    function bankExists(string bankName) public view returns(bool) {
         return bankIndex[bankByName[bankName]] > 0; // bigger than 0 because stored indices starts from 1
     }
 
-    function bankIsEmpty(string bankName) returns(bool) {
+    function bankIsEmpty(string bankName) public view returns(bool) {
         Bank memory bank = bankByName[bankName];
         return bank.tokenAddresses.length == 0 && bank.balance[address(0)] == 0;
     }
     
-    function dividendExists(Dividend dividend) view returns(bool) {
+    function dividendExists(Dividend dividend) public view returns(bool) {
       return dividendIndex[dividend] > 0; // bigger than 0 because stored indices starts from 1
     }
 
-    function isBankAdmin(address _address, string bankName) view returns(bool) {
+    function isBankAdmin(address _address, string bankName) public view returns(bool) {
         return bankByName[bankName].adminIndex[_address] > 0 || isPermitAdmin(_address,"manageBank");
     }
 
-    function hasPermit(address holder, string permitName) view returns(bool) {
+    function hasPermit(address holder, string permitName) public view returns(bool) {
         if (holder == this.address) {return true}
         if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
@@ -346,7 +355,7 @@ contract Administrable {
 
     }
 
-    function isPermitAdmin(address holder, string permitName) view returns(bool) {
+    function isPermitAdmin(address holder, string permitName) public view returns(bool) {
         if (holder == this.address) {return true}
         if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
         switch (permitName) {
@@ -438,7 +447,7 @@ contract Administrable {
     function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
-        idea.transferToken(tokenAddress,value,to);
+        idea.transferToken_(tokenAddress,value,to);
         _processTokenTransfer(fromBank,tokenAddress,value,to,by);
     }
 
@@ -453,19 +462,15 @@ contract Administrable {
 
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     function _liquidize(address by) internal {
-        idea.liquidize();
+        idea.liquidize_();
     }
 
-    function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        Bank memory fromBank = bankByName[fromBankName];
-        fromBank.balance[tokenAddress] -= value;
-        if (bank.balance[tokenAddress] == 0) {
-            _unregisterTokenAddressFromBank(tokenAddress,bankName);
-        }
-        emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
+    function _transferToken(address tokenAddress, uint256 value, address to) internal {
+        idea.transferToken(tokenAddress,value,to);
     }
 
-    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal onlyExistingBank(toBankName) {
+    /// @notice Keeps track of a token receipt by adding it to the registry
+    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
         // Then: Bank logic
         Bank memory bank = bankByName["main"];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
@@ -475,8 +480,14 @@ contract Administrable {
         emit TokenReceived(tokenAddress,value,from);
     }
 
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        idea.transferToken(tokenAddress,value,to);
+    /// @notice Keeps track of a token transfer by subtracting it from the registry
+    function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        Bank memory fromBank = bankByName[fromBankName];
+        fromBank.balance[tokenAddress] -= value;
+        if (bank.balance[tokenAddress] == 0) {
+            _unregisterTokenAddressFromBank(tokenAddress,bankName);
+        }
+        emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
     }
 
     function _registerTokenAddressToBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {

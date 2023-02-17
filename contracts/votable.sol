@@ -1,6 +1,6 @@
 pragma solidity ^0.8.4;
 
-import "../administerable.sol";
+import "../administable.sol";
 
 /// @title A fractional DAO-like contract whose decisions can be voted upon by its shareholders
 /// @author Frederik W. L. Christoffersen
@@ -20,10 +20,6 @@ contract Votable is Administrable {
     // Referendums To Be Implemented
     Referendum[] referendumsTBI;
     mapping(Referendum => uint256) referendumTBIIndex; // starts from 1 and up, to differentiate betweeen empty values
-
-    function initialize() reinitializer(3) public {
-        
-    }
 
     struct Proposal {
         bytes4 functionSignifier;
