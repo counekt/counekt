@@ -25,15 +25,23 @@ contract AdministrableVersioner {
     require(versionIsValid(versionName),"Version '"+versionName+"' isn't valid!");
   }
   
-  function versionIsValid(string versionName) external view returns(bool){
+  /// @notice Checks if a given Administrable version is stored in the registry of valid versions.
+  /// @param versionName The version name of the Administrable version to be checked for.
+  function versionIsValid(string versionName) public view returns(bool){
     return versionNameIndex[versionName]>0;
   }
 
+  /// @notice Creates and returns a new Administrable entity.
+  /// @param versionName The version name of the Administrable version to be created.
+  /// @param idea The Idea that the Administrable will be attached to.
   function createVersion(string versionName, address idea) external returns(address) onlyValidVersion(versionName) {
     newVersionInstance = Administrable(versionName[versionName]).create(idea);
     return newVersionInstance;
   }
   
+  /// @notice Adds a new version of an Administrable entity to the registry of valid versions.
+  /// @param versionName The version name of the Administrable version to be added.
+  /// @param version The address of the new Administrable version to be added.
   function addVersion(string versionName, address version) external onlyCounekt {
     versionByName[versionName] = versionBytes;
     versionNameIndex[versionName] = versionNames.length+1;
@@ -41,6 +49,8 @@ contract AdministrableVersioner {
     emit newVersion(versionName,version);
   }
   
+  /// @notice Removes an Administrable version from the registry of valid versions.
+  /// @param versionName The version name of the Administrable version to be removed.
   function removeVersion(string versionName) external onlyCounekt {
     versionNames[versionNameIndex[versionName]-1] = versionNames[versiomNames.length-1];
     versionNames.pop();
