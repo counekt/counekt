@@ -49,6 +49,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Receives a specified token and adds it to the registry
+    /// First token.approve() should be called by msg.sender, then this function
     function receiveToken(address tokenAddress, uint256 value) external {
         require(acceptsToken(tokenAddress));
         ERC20 token = ERC20(tokenAddress);
@@ -83,12 +84,21 @@ contract Idea is Shardable {
     function liquidize_() external onlyAdministrable {
         _liquidize(by);
     }
+    
+    function registerTokenAddress_(address tokenAddress) external onlyAdministrable {
+      _registerTokenAddress(tokenAddress);
+    }
+    
+    function unregisterTokenAddress_(address tokenAddress) external onlyAdministrable {
+      _unregisterTokenAddress(tokenAddress);
+    }
 
     /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
     function isIdea() pure returns(bool) {
         return true;
     }
     
+    /// @notice Returns a boolean value depending on if a token address is registered as an acceptable one or not
     function acceptsToken(address tokenAddress) public view {
       return tokenAddressIndex[tokenAddress]>0;
     }
@@ -101,7 +111,6 @@ contract Idea is Shardable {
             if (to.isIdea()) {
                 Idea(to).receiveToken("main", tokenAddress, value);
             }
-
         }
         _processTokenTransfer(tokenAddress,value,to);
     }

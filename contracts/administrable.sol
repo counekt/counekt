@@ -159,6 +159,10 @@ contract Administrable {
     modifier onlyWithPermit(string permitName) {
         require(hasPermit(msg.sender, permitName));
     }
+    
+    modifier onlyPermitAdmin(string permitName) {
+      require(isPermitAdmin(msg.sender,permitName));
+    }
 
     // modifier to make sure msg.sender is administrator of a specific bank
     modifier onlyBankAdmin(string bankName) {
@@ -178,10 +182,6 @@ contract Administrable {
     // modifier to make sure entity is active and not liquidized/dissolved
     modifier onlyIfActive() {
         require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
-    }
-
-    function createNew(address _idea) public returns(address) {
-        return new Administrable(_idea);
     }
 
     /// @notice The administrable can't receive anything. Only the idea does.
@@ -268,43 +268,8 @@ contract Administrable {
         }
     }
 
-    function changePermit(address shardHolder, string permitName, PermitState newState) external onlyIfActive {
-        require(isShardHolder(shardHolder) || allowNonShardHolders, "Only Shard holders can have Permits");
-        require(!(hasPermit(shardHolder, permitName) && newState >= PermitState.authorized), "Shard Holder already has Permit '"+permitName+"'");
-        switch (permitName) {
-                    case "issueVote":
-                        require(isPermitAdmin(msg.sender, "issueVote"));
-                        require(!isPermitAdmin(shardHolder, "issueVote"));
-                        permits[shardHolder].issueVote = newState;
-                        break;
-                    case "issueDividend":
-                        require(isPermitAdmin(msg.sender, "issueDividend"));
-                        require(!isPermitAdmin(shardHolder, "issueDividend"));
-                        permits[shardHolder].issueDividend = newState;
-                        break;
-                    case "dissolveDividend":
-                        require(isPermitAdmin(msg.sender, "dissolveDividend"));
-                        require(!isPermitAdmin(shardHolder, "dissolveDividend"));
-                        permits[shardHolder].issueDividend = newState;
-                        break;
-                    case "manageBank":
-                        require(isPermitAdmin(msg.sender, "manageBank"));
-                        require(!isPermitAdmin(shardHolder, "manageBank"));
-                        permits[shardHolder].manageBank = newState;
-                        break;
-                    case "implementProposal":
-                        require(isPermitAdmin(msg.sender, "implementProposal"));
-                        require(!isPermitAdmin(shardHolder, "implementProposal"));
-                        permits[shardHolder].implementProposal = newState;
-                        break;
-                    case "liquidizeEntity":
-                        require(isPermitAdmin(msg.sender, "liquidizeEntity"));
-                        require(!isPermitAdmin(shardHolder, "liquidizeEntity"));
-                        permits[shardHolder].liquidizeEntity = newState;
-                        break;
-                    default:
-                        revert();
-        }
+    function changePermit(address shardHolder, string permitName, PermitState newState) external onlyPermitAdmin(permitName) {
+        _changePermit(shardHolder, permitName, newState);
     }
 
     function processTokenReceipt(address tokenAddress, uint256 value, address from) external onlyIdea {
@@ -374,6 +339,45 @@ contract Administrable {
                     default:
                         revert();
         }
+    }
+    
+    function _changePermit(address shardHolder, string permitName, PermitState newState) internal onlyIfActive {
+      require(isShardHolder(shardHolder) || allowNonShardHolders, "Only Shard holders can have Permits");
+      require(!(hasPermit(shardHolder, permitName) && newState >= PermitState.authorized), "Shard Holder already has Permit '" + permitName + "'");
+      switch (permitName) {
+        case "issueVote":
+          require(isPermitAdmin(msg.sender, "issueVote"));
+          require(!isPermitAdmin(shardHolder, "issueVote"));
+          permits[shardHolder].issueVote = newState;
+          break;
+        case "issueDividend":
+          require(isPermitAdmin(msg.sender, "issueDividend"));
+          require(!isPermitAdmin(shardHolder, "issueDividend"));
+          permits[shardHolder].issueDividend = newState;
+          break;
+        case "dissolveDividend":
+          require(isPermitAdmin(msg.sender, "dissolveDividend"));
+          require(!isPermitAdmin(shardHolder, "dissolveDividend"));
+          permits[shardHolder].issueDividend = newState;
+          break;
+        case "manageBank":
+          require(isPermitAdmin(msg.sender, "manageBank"));
+          require(!isPermitAdmin(shardHolder, "manageBank"));
+          permits[shardHolder].manageBank = newState;
+          break;
+        case "implementProposal":
+          require(isPermitAdmin(msg.sender, "implementProposal"));
+          require(!isPermitAdmin(shardHolder, "implementProposal"));
+          permits[shardHolder].implementProposal = newState;
+          break;
+        case "liquidizeEntity":
+          require(isPermitAdmin(msg.sender, "liquidizeEntity"));
+          require(!isPermitAdmin(shardHolder, "liquidizeEntity"));
+          permits[shardHolder].liquidizeEntity = newState;
+          break;
+        default:
+          revert();
+      }
     }
 
     function _createBank(string bankName, address bankAdmin, address by) internal onlyIfActive {
