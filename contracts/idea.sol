@@ -50,6 +50,7 @@ contract Idea is Shardable {
 
     /// @notice Receives a specified token and adds it to the registry
     function receiveToken(address tokenAddress, uint256 value) external {
+        require(acceptsToken(tokenAddress));
         ERC20 token = ERC20(tokenAddress);
         require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens. Make sure the transfer is approved.");
         _processTokenReceipt(tokenAddress,value,msg.sender);
@@ -87,6 +88,10 @@ contract Idea is Shardable {
     function isIdea() pure returns(bool) {
         return true;
     }
+    
+    function acceptsToken(address tokenAddress) public view {
+      return tokenAddressIndex[tokenAddress]>0;
+    }
 
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
         if (tokenAddress == address(0)) { _transferEther(value, to);}
@@ -122,12 +127,7 @@ contract Idea is Shardable {
     // Idea.receiveToken() => Idea._processTokenReceipt() => Administrable.processTokenReceipt()
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
         // First: Liquid logic
-        if (tokenAddressIndex[tokenAddress] != 0) {
-            _registerTokenAddress(tokenAddress);
-        }
-        else {
-            liquid[tokenAddress].originalValue += value;
-        }
+        liquid[tokenAddress].originalValue += value;
         administrable.processTokenReceipt(tokenAddress, value, from);
         emit TokenReceived(tokenAddress,value,from);
     }
@@ -144,18 +144,18 @@ contract Idea is Shardable {
     }
 
     function _registerTokenAddress(address tokenAddress) {
-        require(tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!");
+        require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
         tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1; // +1 to distinguish between empty values;
         tokenAddresses.push(tokenAddress);
         // Update liquidization
         TokenRegister newTokenRegister = new TokenRegister();
         newTokenRegister.tokenAddress = tokenAddress;
-        newTokenRegister.originalValue = value;
+        newTokenRegister.originalValue = 0;
         liquid[tokenAddress] = newTokenRegister;
     }
 
     function _unregisterTokenAddress(address tokenAddress) {
-        require(tokenAddressIndex[tokenAddress] > 0, "Token address '"+string(tokenAddress)+"' NOT registered!");
+        require(acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' NOT registered!");
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");
 
         tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1]; // -1 to distinguish between empty values;
