@@ -7,6 +7,41 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/extensions/draft-ERC20Permit.s
 import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+
+// Fractional Math
+
+struct Fraction {
+        uint256 numerator;
+        uint256 denominator;
+}
+
+function getDecimal(Fraction _fraction) view returns(uint256) {
+        return _fraction.numerator/_fraction.denominator;
+    }
+
+function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
+        while (b) {
+        a,b = b, a % b;
+        }
+        return a;
+}
+
+function simplifyFraction(Fraction _fraction) pure returns(Fraction) {
+    commonDenominator = getCommonDenominator(_fraction.numerator,_fraction.denominator);
+    return new Fraction(_fraction.numerator/commonDenominator,_fraction.denominator/commonDenominator);
+}
+
+function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
+    a.numerator = a.numerator * b.denominator;
+    b.numerator = b.numerator * a.denominator,
+    return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
+}
+
+function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
+    return addFractions(a,new Fraction(-b.numerator,b.denominator));
+}
+
+
 /// @title A shardable/fractional non-fungible token that can be fractually owned via Shards
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
@@ -14,19 +49,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 /// @custom:beaware This is a commercial contract.
 
 contract Shardable {
-
-    function constructor() public{
-        // pass full ownership to creator of contract
-        _pushShard(new Shard(Fraction(1,1), msg.sender, block.timestamp));
-    }
-
-    bool active = true;
-
-    Shard[] internal shards;
-    mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
-    mapping(Shard => bool) historicShards;
-    mapping(address => Shard) shardByOwner;
-    mapping(Shard => DynamicInfo) dynamicInfo;
 
     /// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable entity
     // All of these variables are constant throughout the Shard's lifetime.
@@ -43,6 +65,14 @@ contract Shardable {
         Fraction public fractionForsale;
         uint256 public salePrice;
     }
+
+    bool active = true;
+
+    Shard[] internal shards;
+    mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
+    mapping(Shard => bool) historicShards;
+    mapping(address => Shard) shardByOwner;
+    mapping(Shard => DynamicInfo) dynamicInfo;
 
     event SplitMade(
         address to,
@@ -82,6 +112,11 @@ contract Shardable {
 
     modifier onlyHolder(Shard shard) {
         shard.owner == msg.sender.address;
+    }
+
+    constructor() public{
+        // passes full ownership to creator of contract
+        _pushShard(new Shard(Fraction(1,1), msg.sender, block.timestamp));
     }
 
     function putForSale(Shard shard, uint256 price, Fraction _fraction) external onlyHolder(shard) {
@@ -243,38 +278,4 @@ contract Shardable {
         shards.pop();
     }
 
-}
-
-
-struct Fraction {
-        uint256 numerator;
-        uint256 denominator;
-}
-
-// Fractional Math
-
-function getDecimal(Fraction _fraction) view returns(uint256) {
-        return _fraction.numerator/_fraction.denominator;
-    }
-
-function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
-        while (b) {
-        a,b = b, a % b;
-        }
-        return a;
-}
-
-function simplifyFraction(Fraction _fraction) pure returns(Fraction) {
-    commonDenominator = getCommonDenominator(_fraction.numerator,_fraction.denominator);
-    return new Fraction(_fraction.numerator/commonDenominator,_fraction.denominator/commonDenominator);
-}
-
-function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
-    a.numerator = a.numerator * b.denominator;
-    b.numerator = b.numerator * a.denominator,
-    return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
-}
-
-function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
-    return addFractions(a,new Fraction(-b.numerator,b.denominator));
 }

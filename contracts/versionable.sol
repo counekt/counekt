@@ -9,10 +9,6 @@ import "../administable.sol";
 /// @dev This contract needs to be deployed as one instance before all other ones.
 contract AdministrableVersioner {
 
-  constructor() {
-
-  }
-
   string[] versionNames;
   mapping(string => uint256) versionNameIndex;
   mapping(string => address) versionByName;

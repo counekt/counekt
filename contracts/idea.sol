@@ -11,10 +11,11 @@ import "../shardable.sol";
 /// @custom:beaware This is a commercial contract.
 contract Idea is Shardable {
 
-	constructor(string administrableType) {
-        // AdministrableVersioner = *whatever the address of it will be*
-        _setAdministrable(AdministrableVersioner.createVersion(administrableType, this.address));
-	}
+    struct TokenRegister {
+        uint256 value;
+        uint256 originalValue;
+        mapping(Shard => bool) hasClaimed; // Ín case of liquidization - Shard Holders claim their fair share of the value.
+    }
 
 	// Administration
 	// this is the contract from which the Idea is administered.
@@ -26,26 +27,25 @@ contract Idea is Shardable {
     address[] tokenAddresses;
     mapping(address => uint256) tokenAddressIndex; // starts from 1 and up, to differentiate betweeen empty values
 
-    struct TokenRegister {
-        uint256 value;
-        uint256 originalValue;
-        mapping(Shard => bool) hasClaimed; // Ín case of liquidization - Shard Holders claim their fair share of the value.
-    }
-
     modifier onlyAdministrable {
     	require(msg.sender == administrable);
     }
-    
-    // when calling an unknown function, the Idea calls the Administrable
-    // idea => administrable => idea
-    fallback() external {
-      administrable.call(msg.data);
+
+    constructor(string administrableType) {
+        // AdministrableVersioner = *whatever the address of it will be*
+        _setAdministrable(AdministrableVersioner.createVersion(administrableType, this.address));
     }
 
     /// @notice Receives ether when there's no supplying data
     receive() payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
         _processTokenReceipt(address(0),msg.value,msg.sender);
+    }
+
+    // when calling an unknown function, the Idea calls the Administrable
+    // idea => administrable => idea
+    fallback() external {
+      administrable.call(msg.data);
     }
 
     /// @notice Receives a specified token and adds it to the registry
@@ -76,19 +76,27 @@ contract Idea is Shardable {
         emit LiquidClaimed(liquidValue,msg.sender);
     }
 
+    /// @inheritdoc _transferToken
     function transferToken_(address tokenAddress, uint256 value, address to) external onlyAdministrable {
         _transferToken(tokenAddress,value,to);
     }
 
-    /// @notice Liquidizes and dissolves the administrable entity. This cannot be undone.
+    /// @inheritdoc _liquidize
     function liquidize_() external onlyAdministrable {
         _liquidize(by);
     }
+
+    /// @inheritdoc _setAdministrable
+    function setAdministrable_(address _administrable) external onlyAdministrable {
+        _setAdministrable(_administrable);
+    }
     
+    /// @inheritdoc _registerTokenAddress
     function registerTokenAddress_(address tokenAddress) external onlyAdministrable {
       _registerTokenAddress(tokenAddress);
     }
     
+    /// @inheritdoc _unregisterTokenAddress
     function unregisterTokenAddress_(address tokenAddress) external onlyAdministrable {
       _unregisterTokenAddress(tokenAddress);
     }
@@ -103,6 +111,8 @@ contract Idea is Shardable {
       return tokenAddressIndex[tokenAddress]>0;
     }
 
+    /// @notice Transfers token from Idea to recipient. 
+    /// First token.approve() is called, then to.receiveToken if it's an Idea.
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
         if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
@@ -115,6 +125,7 @@ contract Idea is Shardable {
         _processTokenTransfer(tokenAddress,value,to);
     }
 
+    /// @notice Transfers ether from Idea to recipient
     function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");

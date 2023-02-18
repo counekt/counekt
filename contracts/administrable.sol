@@ -4,40 +4,6 @@ pragma solidity ^0.8.4;
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable entity and only works with an Idea.
 contract Administrable {
-    
-    constructor(address _idea) {
-        idea = _idea;
-        _createBank("main",msg.sender,this.address);
-        // First Shard holder is initialized with all Permits
-        PermitSet permitSet = PermitSet();
-        permitSet.issueVote = PermitState.administrator;
-        permitSet.issueDividend = PermitState.administrator;
-        permitSet.dissolveDividend = PermitState.administrator;
-        permitSet.manageBank = PermitState.administrator;
-        permitSet.implementProposal = PermitState.administrator;
-        permitSet.liquidizeEntity = PermitState.administrator;
-        permits[msg.sender] = permitSet;
-    }
-
-    address idea;
-
-    // Rules
-    /// @notice Rules that lay the ground for the fundamental logic of the entity. 
-    // @dev To be implemented. And next up: voting thresholds.
-    bool allowNonShardHolders;
-
-    // Banks
-    Bank[] banks;
-    mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
-    mapping(string => Bank) bankByName;
-
-    // Permits
-    mapping(address => PermitSet) permits;
-    PermitSet basePermits;
-
-    // Dividends
-    Dividend[] internal dividends;
-    mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     struct Bank {
         address[] tokenAddresses;
@@ -80,6 +46,26 @@ contract Administrable {
         uint256 originalValue;
         mapping(Shard => bool) hasClaimed;
     }
+
+    address idea;
+
+    // Rules
+    /// @notice Rules that lay the ground for the fundamental logic of the entity. 
+    // @dev To be implemented. And next up: voting thresholds.
+    bool allowNonShardHolders;
+
+    // Banks
+    Bank[] banks;
+    mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
+    mapping(string => Bank) bankByName;
+
+    // Permits
+    mapping(address => PermitSet) permits;
+    PermitSet basePermits;
+
+    // Dividends
+    Dividend[] internal dividends;
+    mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // triggers when a dividend is issued
     event DividendIssued(
@@ -182,6 +168,20 @@ contract Administrable {
     // modifier to make sure entity is active and not liquidized/dissolved
     modifier onlyIfActive() {
         require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
+    }
+
+    constructor(address _idea) {
+        idea = _idea;
+        _createBank("main",msg.sender,this.address);
+        // First Shard holder is initialized with all Permits
+        PermitSet permitSet = PermitSet();
+        permitSet.issueVote = PermitState.administrator;
+        permitSet.issueDividend = PermitState.administrator;
+        permitSet.dissolveDividend = PermitState.administrator;
+        permitSet.manageBank = PermitState.administrator;
+        permitSet.implementProposal = PermitState.administrator;
+        permitSet.liquidizeEntity = PermitState.administrator;
+        permits[msg.sender] = permitSet;
     }
 
     /// @notice The administrable can't receive anything. Only the idea does.
