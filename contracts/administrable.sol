@@ -19,26 +19,6 @@ contract Administrable {
         administrator
     }
 
-    struct PermitSet {
-        // Issue Vote
-        PermitState issueVote; // Permission to issue a vote
-
-        // Issue Dividend
-        PermitState issueDividend;
-
-        // Dissolve Dividend
-        PermitState dissolveDividend;
-
-        // Manage Bank
-        PermitState manageBank;
-
-        // Implement Proposal
-        PermitState implementProposal; // Permission to implement a proposal from a referendum which is to be implemented.
-
-        // Liquidize Entity
-        PermitState liquidizeEntity;
-    }
-
     struct Dividend {
         uint256 creationTime;
         address tokenAddress;
@@ -51,7 +31,7 @@ contract Administrable {
 
     // Rules
     /// @notice Rules that lay the ground for the fundamental logic of the entity. 
-    // @dev To be implemented. And next up: voting thresholds.
+    /// @dev To be implemented. And next up: voting thresholds.
     bool allowNonShardHolders;
 
     // Banks
@@ -59,8 +39,9 @@ contract Administrable {
     mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
     mapping(string => Bank) bankByName;
 
-    // Permits
-    mapping(address => PermitSet) permits;
+    // Permits: 
+    // permits[permitName][address] == PermitState.authorized || PermitState.administrator;
+    mapping(string => mapping(address => PermitState)) permits;
     PermitSet basePermits;
 
     // Dividends
@@ -174,13 +155,12 @@ contract Administrable {
         idea = _idea;
         _createBank("main",msg.sender,this.address);
         // First Shard holder is initialized with all Permits
-        PermitSet permitSet = PermitSet();
-        permitSet.issueVote = PermitState.administrator;
-        permitSet.issueDividend = PermitState.administrator;
-        permitSet.dissolveDividend = PermitState.administrator;
-        permitSet.manageBank = PermitState.administrator;
-        permitSet.implementProposal = PermitState.administrator;
-        permitSet.liquidizeEntity = PermitState.administrator;
+        permits["issueVote"][msg.sender.address] = PermitState.administrator;
+        permits["issueDividend"][msg.sender.address] = PermitState.administrator;
+        permits["issueVote"][msg.sender.address] = PermitState.administrator;
+        permits["manageBank"][msg.sender.address] = PermitState.administrator;
+        permits["implementProposal"][msg.sender.address] = PermitState.administrator;
+        permits["liquidizeEntity"][msg.sender.address] = PermitState.administrator;
         permits[msg.sender] = permitSet;
     }
 
@@ -298,86 +278,42 @@ contract Administrable {
         return bankByName[bankName].adminIndex[_address] > 0 || isPermitAdmin(_address,"manageBank");
     }
 
-    function hasPermit(address holder, string permitName) public view returns(bool) {
-        if (holder == this.address) {return true}
-        if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
-        switch (permitName) {
-                    case "issueVote":
-                        return permits[holder].issueVote >= PermitState.authorized || basePermits.issueVote >= PermitState.authorized;
-                    case "issueDividend":
-                        return permits[holder].issueDividend >= PermitState.authorized || basePermits.issueDividend >= PermitState.authorized;
-                    case "dissolveDividend":
-                        return permits[holder].dissolveDividend  >= PermitState.authorized || basePermits.dissolveDividend >= PermitState.authorized;
-                    case "manageBank":
-                        return permits[holder].manageBank >= PermitState.authorized || basePermits.manageBank >= PermitState.authorized;
-                    case "implementProposal":
-                        return permits[holder].implementProposal >= PermitState.administrator || basePermits.implementProposal >= PermitState.authorized;
-                    case "liquidizeEntity":
-                        return permits[holder].liquidizeEntity >= PermitState.authorized || basePermits.liquidizeEntity >= PermitState.authorized;
-                    default:
-                        revert();
-        }
-
+    function hasPermit(address _address, string permitName) public view returns(bool) {
+        if (_address == this.address) {return true}
+        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false}
+        return permits[permitName][_address] >= PermitState.authorized || basePermits.issueVote >= PermitState.authorized;
     }
 
-    function isPermitAdmin(address holder, string permitName) public view returns(bool) {
-        if (holder == this.address) {return true}
-        if (!(isShardHolder(holder) || allowNonShardHolders)) {return false}
+    function isPermitAdmin(address _address, string permitName) public view returns(bool) {
+        if (_address == this.address) {return true}
+        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false}
+        return permits[permitName][_address] == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
+    }
+
+    function isValidPermit(string permitName) public pure returns(bool) {
         switch (permitName) {
-                    case "issueVote":
-                        return permits[holder].issueVote == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
-                    case "issueDividend":
-                        return permits[holder].issueDividend == PermitState.administrator || basePermits.issueDividend  == PermitState.administrator;
-                    case "dissolveDividend":
-                        return permits[holder].dissolveDividend  == PermitState.administrator || basePermits.dissolveDividend  == PermitState.administrator;
-                    case "manageBank":
-                        return permits[holder].manageBank == PermitState.administrator || basePermits.manageBank == PermitState.administrator;
-                    case "implementProposal":
-                        return permits[holder].implementProposal == PermitState.administrator || basePermits.implementProposal == PermitState.administrator;
-                    case "liquidizeEntity":
-                        return permits[holder].liquidizeEntity == PermitState.administrator || basePermits.liquidizeEntity == PermitState.administrator;
-                    default:
-                        revert();
+            case "issueVote":
+                return true;
+            case "issueDividend":
+                return true;
+            case "dissolveDividend":
+                return true;
+            case "manageBank":
+                return true;
+            case "implementProposal":
+                return true;
+            case "liquidizeEntity":
+                return true;
+            default:
+                return false;
         }
     }
     
-    function _changePermit(address shardHolder, string permitName, PermitState newState) internal onlyIfActive {
-      require(isShardHolder(shardHolder) || allowNonShardHolders, "Only Shard holders can have Permits");
-      require(!(hasPermit(shardHolder, permitName) && newState >= PermitState.authorized), "Shard Holder already has Permit '" + permitName + "'");
-      switch (permitName) {
-        case "issueVote":
-          require(isPermitAdmin(msg.sender, "issueVote"));
-          require(!isPermitAdmin(shardHolder, "issueVote"));
-          permits[shardHolder].issueVote = newState;
-          break;
-        case "issueDividend":
-          require(isPermitAdmin(msg.sender, "issueDividend"));
-          require(!isPermitAdmin(shardHolder, "issueDividend"));
-          permits[shardHolder].issueDividend = newState;
-          break;
-        case "dissolveDividend":
-          require(isPermitAdmin(msg.sender, "dissolveDividend"));
-          require(!isPermitAdmin(shardHolder, "dissolveDividend"));
-          permits[shardHolder].issueDividend = newState;
-          break;
-        case "manageBank":
-          require(isPermitAdmin(msg.sender, "manageBank"));
-          require(!isPermitAdmin(shardHolder, "manageBank"));
-          permits[shardHolder].manageBank = newState;
-          break;
-        case "implementProposal":
-          require(isPermitAdmin(msg.sender, "implementProposal"));
-          require(!isPermitAdmin(shardHolder, "implementProposal"));
-          permits[shardHolder].implementProposal = newState;
-          break;
-        case "liquidizeEntity":
-          require(isPermitAdmin(msg.sender, "liquidizeEntity"));
-          require(!isPermitAdmin(shardHolder, "liquidizeEntity"));
-          permits[shardHolder].liquidizeEntity = newState;
-          break;
-        default:
-          revert();
-      }
+    function _changePermit(address _address, string permitName, PermitState newState) internal onlyIfActive {
+        require(isValidPermit(permitName), "The given permit name does NOT exist!");
+        require(isShardHolder(_address) || allowNonShardHolders, "Only Shard holders can have Permits");
+        require(!(hasPermit(_address, permitName) && newState >= PermitState.authorized), "Address already has Permit '" + permitName + "'");
+        permits[permitName][_address] = newState;
     }
 
     function _createBank(string bankName, address bankAdmin, address by) internal onlyIfActive {
