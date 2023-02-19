@@ -33,7 +33,7 @@ contract Idea is Shardable {
 
     constructor(string administrableType) {
         // AdministrableVersioner = *whatever the address of it will be*
-        _setAdministrable(AdministrableVersioner.createVersion(administrableType, this.address));
+        _setAdministrable(AdministrableVersioner.buildVersion(administrableType, this.address, msg.sender.address));
     }
 
     /// @notice Receives ether when there's no supplying data

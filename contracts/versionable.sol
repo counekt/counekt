@@ -7,6 +7,8 @@ import "../administable.sol";
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract will only have one instance, whose address will be used by the UpgradableProxy.
 /// @dev This contract needs to be deployed as one instance before all other ones.
+/// @dev NEXT UP => build Administrable up from another 
+
 contract AdministrableVersioner {
 
   string[] versionNames;
@@ -34,8 +36,8 @@ contract AdministrableVersioner {
   /// @notice Creates and returns a new Administrable entity.
   /// @param versionName The version name of the Administrable version to be created.
   /// @param idea The Idea that the Administrable will be attached to.
-  function createVersion(string versionName, address idea) external returns(address) onlyValidVersion(versionName) {
-    newVersionInstance = Administrable(versionName[versionName]).create(idea);
+  function buildVersion(string versionName, address idea, address _creator) external returns(address) onlyValidVersion(versionName) {
+    newVersionInstance = Administrable(versionName[versionName]).create(idea, _creator);
     return newVersionInstance;
   }
   

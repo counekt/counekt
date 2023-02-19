@@ -151,17 +151,9 @@ contract Administrable {
         require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
     }
 
-    constructor(address _idea) {
+    constructor(address _idea, address _creator) {
         idea = _idea;
-        _createBank("main",msg.sender,this.address);
-        // First Shard holder is initialized with all Permits
-        permits["issueVote"][msg.sender.address] = PermitState.administrator;
-        permits["issueDividend"][msg.sender.address] = PermitState.administrator;
-        permits["issueVote"][msg.sender.address] = PermitState.administrator;
-        permits["manageBank"][msg.sender.address] = PermitState.administrator;
-        permits["implementProposal"][msg.sender.address] = PermitState.administrator;
-        permits["liquidizeEntity"][msg.sender.address] = PermitState.administrator;
-        permits[msg.sender] = permitSet;
+        _createBank("main",_creator,this.address);
     }
 
     /// @notice The administrable can't receive anything. Only the idea does.
@@ -257,9 +249,16 @@ contract Administrable {
     }
 
     // @notice Creates and returns the address of a new Administrable instance.
-    function create(address _idea) public returns(address) {
-        return new Administrable(_idea);
+    // @dev NEXT UP => build administrable up from another
+    function build(address _idea, address _creator) public returns(address) {
+        return new Administrable(_idea, _creator);
     }
+
+    /*
+    function buildFrom(address _idea, address _administrable) public returns(address) {
+        return new Administrable(_idea)
+    }
+    */
 
     function bankExists(string bankName) public view returns(bool) {
         return bankIndex[bankByName[bankName]] > 0; // bigger than 0 because stored indices starts from 1
