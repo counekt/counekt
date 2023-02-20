@@ -15,8 +15,8 @@ struct Fraction {
         uint256 denominator;
 }
 
-function getDecimal(Fraction _fraction) view returns(uint256) {
-        return _fraction.numerator/_fraction.denominator;
+function getDecimal(Fraction fraction) view returns(uint256) {
+        return fraction.numerator/fraction.denominator;
     }
 
 function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
@@ -26,9 +26,9 @@ function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
         return a;
 }
 
-function simplifyFraction(Fraction _fraction) pure returns(Fraction) {
-    commonDenominator = getCommonDenominator(_fraction.numerator,_fraction.denominator);
-    return new Fraction(_fraction.numerator/commonDenominator,_fraction.denominator/commonDenominator);
+function simplifyFraction(Fraction fraction) pure returns(Fraction) {
+    commonDenominator = getCommonDenominator(fraction.numerator,fraction.denominator);
+    return new Fraction(fraction.numerator/commonDenominator,fraction.denominator/commonDenominator);
 }
 
 function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
@@ -64,6 +64,7 @@ contract Shardable {
         address public forSaleTo;
         Fraction public fractionForsale;
         uint256 public salePrice;
+        address public tokenAddress;
     }
 
     bool active = true;
@@ -85,8 +86,11 @@ contract Shardable {
         );
 
     event PutForSale(
-        address indexed to,
-        Shard shard
+        Shard shard,
+        Fraction fraction,
+        address tokenAddress,
+        uint256 price,
+        address to,
         );
 
     event SaleCancelled();
@@ -119,12 +123,12 @@ contract Shardable {
         _pushShard(new Shard(Fraction(1,1), msg.sender, block.timestamp));
     }
 
-    function putForSale(Shard shard, uint256 price, Fraction _fraction) external onlyHolder(shard) {
-        _putForSale(shard,price,_fraction);
+    function putForSale(Shard shard, Fraction fraction, address tokenAddress, uint256 price) external onlyHolder(shard) {
+        _putForSale(shard,tokenAddress,price,fraction);
     }
 
-    function putForSaleTo(Shard shard, address to, uint256 price, Fraction _fraction) external onlyHolder(shard) {
-        _putForSaleTo(shard,to,price,_fraction);
+    function putForSaleTo(Shard shard, Fraction fraction, address tokenAddress, uint256 price, address to) external onlyHolder(shard) {
+        _putForSaleTo(shard,tokenAddress,price,fraction,to);
     }
 
     function cancelSell() onlyOwner {
@@ -132,10 +136,11 @@ contract Shardable {
         emit SellCancelled();
     }
 
+    /// @dev NEXT UP - Take a look at erc20 approve (should be required to approve Shardable), then send fair share (-2,5%) to recipient.
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
         require(dynamicInfo[shard].forsale, "Not for sale");
         require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
-        require(msg.value >= dynamicInfo[shard].salePrice, "Not enough paid");
+        require(dynamicInfo[shard].tokenAddress != 0x0 || msg.value >= dynamicInfo[shard].salePrice, "Not enough ether paid");
         _cancelSell();
         // Pay Service Fee of 2.5% to Counekt
         (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
@@ -240,18 +245,19 @@ contract Shardable {
     }
 
 
-    function _putForSale(Shard shard, uint256 price, Fraction _fraction) internal onlyValidShard(shard) onlyIfActive {
-        require(_fraction.numerator/_fraction.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't put more than 100% of shard's fraction for sale!");
-        Fraction memory simplifiedFraction = simplifyFraction(_fraction);
+    function _putForSale(Shard shard,  Fraction fraction, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
+        require(fraction.numerator/fraction.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't put more than 100% of shard's fraction for sale!");
+        Fraction memory simplifiedFraction = simplifyFraction(fraction);
         dynamicInfo[shard].fractionForsale = simplifiedFraction;
+        dynamicInfo[shard].tokenAddress = tokenAddress;
         dynamicInfo[shard].salePrice = price;
         dynamicInfo[shard].forsale = True;
-        emit PutForSale(forSaleTo,price,simplifiedFraction);
+        emit PutForSale(shard,simplifiedFraction,tokenAddress,price,dynamicInfo[shard].forsaleTo);
     }
 
-    function _putForSaleTo(Shard shard, address to, uint256 price, Fraction _fraction) internal onlyValidShard(shard) onlyIfActive {
+    function _putForSaleTo(Shard shard, Fraction fraction, address to, address tokenAddress, uint256 price, ) internal onlyValidShard(shard) onlyIfActive {
         dynamicInfo[shard].forSaleTo = to;
-        _putForSale(shard,price,_fraction);
+        _putForSale(shard,fraction,tokenAddress,price);
     }
 
     function _cancelSell(Shard shard) internal onlyValidShard(shard) onlyIfActive{
@@ -259,7 +265,6 @@ contract Shardable {
         dynamicInfo[shard].forSale = false;
         dynamicInfo[shard].forSaleTo = 0x0;
     }
-
 
     function _pushShard(Shard _shard) internal {
         shardIndex[_shard] = shards.length+1;
