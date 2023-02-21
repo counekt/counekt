@@ -62,9 +62,9 @@ contract Shardable {
         uint256 expiredTime = uint256(int256(-1)); // The maximum value: (2^256)-1
         bool public forSale;
         address public forSaleTo;
-        Fraction public fractionForsale;
-        uint256 public salePrice;
+        Fraction public fractionForSale;
         address public tokenAddress;
+        uint256 public salePrice;
     }
 
     bool active = true;
@@ -76,13 +76,17 @@ contract Shardable {
     mapping(Shard => DynamicInfo) dynamicInfo;
 
     event SplitMade(
-        address to,
-        Fraction fraction
+        Shard shard,
+        Fraction fraction,
+        address to
         );
 
     event SaleSold(
-        address indexed to,
-        Shard shard
+        Shard shard,
+        Fraction fraction,
+        address tokenAddress,
+        uint256 price,
+        address to
         );
 
     event PutForSale(
@@ -99,7 +103,6 @@ contract Shardable {
         Shard shard,
         address holder
         );
-    
     
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
@@ -140,14 +143,33 @@ contract Shardable {
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
         require(dynamicInfo[shard].forsale, "Not for sale");
         require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
-        require(dynamicInfo[shard].tokenAddress != 0x0 || msg.value >= dynamicInfo[shard].salePrice, "Not enough ether paid");
         _cancelSell();
-        // Pay Service Fee of 2.5% to Counekt
-        (bool success, ) = address(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(msg.value*0.025)("");
-        require(success, "Transfer failed.");
-        if (fractionForsale == fraction) {transferShard(shard,msg.sender);}
-        else {splitShard(msg.sender, fractionForsale);}
-        emit SaleSold({to: msg.sender.address, numerator: fractionForsale.numerator, denominator: fractionForsale.denominator, price: salePrice});
+        uint256 profitToCounekt = dynamicInfo[shard].salePrice*0.025;
+        uint256 profitToSeller = dynamicInfo[shard].salePrice - profitToCounekt;
+        // if ether
+        if (dynamicInfo[shard].tokenAddress == 0x0) {
+            require(msg.value >= dynamicInfo[shard].salePrice, "Not enough ether paid");
+            // Pay Service Fee of 2.5% to Counekt
+            (bool success, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(profitToCounekt)("");
+            require(success, "Transfer failed.");
+            // Rest goes to the seller
+            (bool success, ) = payable(msg.sender).call.value(profitToSeller)("");
+            require(success, "Transfer failed.");
+        } 
+        else {
+            token = ERC20(dynamicInfo[shard].tokenAddress);
+            token.transferFrom(msg.sender, address(this), dynamicInfo[shard].salePrice);
+            // Pay Service Fee of 2.5% to Counekt
+            token.approve(0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
+            token.transferFrom(address(this), 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
+            // Rest goes to the seller
+            token.approve(msg.sender, profitToSeller);
+            token.transferFrom(address(this), msg.sender, profitToSeller);
+        } 
+        
+        if (dynamicInfo[shard].fraction == dynamicInfo[shard].fractionForSale) {transferShard(shard,msg.sender);}
+        else {splitShard(msg.sender, dynamicInfo[shard].fractionForSale);}
+        emit SaleSold(shard,dynamicInfo[shard].fractionForSale,dynamicInfo[shard].tokenAddress,dynamicInfo[shard].salePrice,msg.sender);
     }
 
     function split(Shard shard, Fraction toBeSplit, address to) external onlyHolder(shard) {
@@ -157,7 +179,6 @@ contract Shardable {
     function transferShard(Shard shard, address to) external onlyHolder(shard) {
         _transferShard(shard,to)
     }
-
 
     function isValidShard(Shard shard) returns(bool) {
         return shardIndex[shard] > 0;
@@ -244,11 +265,10 @@ contract Shardable {
         _pushShard(newReceiverShard);
     }
 
-
     function _putForSale(Shard shard,  Fraction fraction, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
         require(fraction.numerator/fraction.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't put more than 100% of shard's fraction for sale!");
         Fraction memory simplifiedFraction = simplifyFraction(fraction);
-        dynamicInfo[shard].fractionForsale = simplifiedFraction;
+        dynamicInfo[shard].fractionForSale = simplifiedFraction;
         dynamicInfo[shard].tokenAddress = tokenAddress;
         dynamicInfo[shard].salePrice = price;
         dynamicInfo[shard].forsale = True;
