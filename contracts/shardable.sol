@@ -139,7 +139,8 @@ contract Shardable {
         emit SellCancelled();
     }
 
-    /// @dev NEXT UP - Take a look at erc20 approve (should be required to approve Shardable), then send fair share (-2,5%) to recipient.
+    /// @notice Purchases a listed Shard for sale. 
+    /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
         require(dynamicInfo[shard].forsale, "Not for sale");
         require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
@@ -153,20 +154,16 @@ contract Shardable {
             (bool success, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(profitToCounekt)("");
             require(success, "Transfer failed.");
             // Rest goes to the seller
-            (bool success, ) = payable(msg.sender).call.value(profitToSeller)("");
+            (bool success, ) = payable(shard.owner).call.value(profitToSeller)("");
             require(success, "Transfer failed.");
         } 
         else {
             token = ERC20(dynamicInfo[shard].tokenAddress);
-            token.transferFrom(msg.sender, address(this), dynamicInfo[shard].salePrice);
             // Pay Service Fee of 2.5% to Counekt
-            token.approve(0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
-            token.transferFrom(address(this), 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
+            token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
-            token.approve(msg.sender, profitToSeller);
-            token.transferFrom(address(this), msg.sender, profitToSeller);
+            token.transferFrom(msg.sender,shard.owner,profitToSeller);
         } 
-        
         if (dynamicInfo[shard].fraction == dynamicInfo[shard].fractionForSale) {transferShard(shard,msg.sender);}
         else {splitShard(msg.sender, dynamicInfo[shard].fractionForSale);}
         emit SaleSold(shard,dynamicInfo[shard].fractionForSale,dynamicInfo[shard].tokenAddress,dynamicInfo[shard].salePrice,msg.sender);
