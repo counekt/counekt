@@ -26,18 +26,18 @@ function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
         return a;
 }
 
-function simplifyFraction(Fraction fraction) pure returns(Fraction) {
-    commonDenominator = getCommonDenominator(fraction.numerator,fraction.denominator);
+function simplifyFraction(Fraction fraction) constant pure returns(Fraction) {
+    uint256 commonDenominator = getCommonDenominator(fraction.numerator,fraction.denominator);
     return new Fraction(fraction.numerator/commonDenominator,fraction.denominator/commonDenominator);
 }
 
-function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
+function addFractions(Fraction a, Fraction b) constant pure returns (Fraction) {
     a.numerator = a.numerator * b.denominator;
     b.numerator = b.numerator * a.denominator,
     return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
 }
 
-function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
+function subtractFractions(Fraction a, Fraction b) constant pure returns (Fraction) {
     return addFractions(a,new Fraction(-b.numerator,b.denominator));
 }
 
@@ -73,7 +73,7 @@ contract Shardable {
     mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
     mapping(Shard => bool) historicShards;
     mapping(address => Shard) shardByOwner;
-    mapping(Shard => DynamicInfo) dynamicInfo;
+    mapping(Shard => DynamicInfo) public dynamicInfo;
 
     event SplitMade(
         Shard shard,
@@ -114,11 +114,11 @@ contract Shardable {
 
     // modifier to make sure entity is active and not liquidized/dissolved
     modifier onlyIfActive() {
-        require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
+        require(active == true, "Idea has been liquidized and isn't active anymore.");
     }
 
     modifier onlyHolder(Shard shard) {
-        shard.owner == msg.sender.address;
+        require(shard.owner == msg.sender.address);
     }
 
     constructor() public{
