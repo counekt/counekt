@@ -139,7 +139,8 @@ contract Shardable {
         emit SellCancelled();
     }
 
-    /// @notice Purchases a listed Shard for sale. 
+    /// @notice Purchases a listed Shard for sale.
+    /// @param shard The shard, of which a fraction will be purchased.
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
         require(dynamicInfo[shard].forsale, "Not for sale");
