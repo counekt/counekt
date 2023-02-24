@@ -231,7 +231,7 @@ contract Administrable {
         require(dividend.hasClaimed[msg.sender] == false, "Already claimed Dividend!");
         require(shardExisted(shard,dividend.creationTime), "Not applicable for Dividend!");
         dividend.hasClaimed[msg.sender] = true;
-        dividendValue = shardByOwner[msg.sender].getDecimal() * dividend.originalValue;
+        dividendValue = idea.shardByOwner[msg.sender].fraction.numerator / idea.shardByOwner[msg.sender].fraction.denominator * dividend.originalValue;
         dividend.value -= dividendValue;
         _transferToken(dividend.tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);

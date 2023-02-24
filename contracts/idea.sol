@@ -67,7 +67,7 @@ contract Idea is Shardable {
         
         require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
         tokenLiquid.hasClaimed[msg.sender] = true;
-        liquidValue = getDecimal(shardByOwner[shardHolder].fraction) * tokenLiquid.originalValue;
+        liquidValue = shardByOwner[shardHolder].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * tokenLiquid.originalValue;
         tokenLiquid.value -= liquidValue;
         if (tokenLiquid.value == 0) {
             _unregisterTokenAddress(tokenAddress);

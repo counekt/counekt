@@ -15,9 +15,25 @@ struct Fraction {
         uint256 denominator;
 }
 
-function getDecimal(Fraction fraction) view returns(uint256) {
-        return fraction.numerator/fraction.denominator;
-    }
+/// @notice Returns the quotient and the remainder of a division. Useful for dividing ether and tokens.
+/// @param dividend The dividend, which will be divided by the divisor.
+/// @param divisor The divisor, which the dividend will be divided into.
+function divideEquallyWithRemainder(uint256 dividend, uint256 divisor) returns(uint256, uint256) {
+    uint256 quotient = dividend/divisor;
+    uint256 remainder = dividend - quotient;
+    return (quotient, remainder);
+}
+
+/// @notice Returns the two quotients and the remainder of an uneven division with a fraction. Useful for dividing ether and tokens.
+/// @param dividend The dividend, which will be divided by the fraction.
+/// @param fraction The fraction, which the dividend will be divided into.
+function divideUnequallyIntoTwoWithRemainder(uint256 dividend, Fraction fraction) returns(uint256, uint256, uint256) {
+    require(fraction.denominator > fraction.numerator);
+    uint256 quotient1 = dividend*fraction.numerator/fraction.denominator;
+    uint256 quotient2 = dividend*(fraction.denominator-fraction.numerator)/fraction.denominator;
+    uint256 remainder = dividend - (quotient1 + quotient2);
+    return (quotient1,quotient2,remainder);
+}
 
 function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
         while (b) {
@@ -146,8 +162,8 @@ contract Shardable {
         require(dynamicInfo[shard].forsale, "Not for sale");
         require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
         _cancelSell();
-        uint256 profitToCounekt = dynamicInfo[shard].salePrice*0.025;
-        uint256 profitToSeller = dynamicInfo[shard].salePrice - profitToCounekt;
+        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(dynamicInfo[shard].salePrice,Fraction(25,1000));
+        profitToSeller += remainder; // remainder goes to seller
         // if ether
         if (dynamicInfo[shard].tokenAddress == 0x0) {
             require(msg.value >= dynamicInfo[shard].salePrice, "Not enough ether paid");
