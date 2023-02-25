@@ -102,7 +102,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
-    function isIdea() pure returns(bool) {
+    function isIdea() constant pure returns(bool) {
         return true;
     }
     
@@ -134,6 +134,7 @@ contract Idea is Shardable {
 
     // @notice Sets a new address of the Administrable, which controls all unknown function calls and the Idea itself.
     function _setAdministrable(address _administrable) internal {
+        require(Administrable(_administrable).isAdministrable())
         administrable = _administrable;
     }
 
@@ -163,6 +164,7 @@ contract Idea is Shardable {
         emit TokenTransfered(tokenAddress,value,to);
     }
 
+    /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     function _registerTokenAddress(address tokenAddress) {
         require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
         tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1; // +1 to distinguish between empty values;
@@ -174,6 +176,7 @@ contract Idea is Shardable {
         liquid[tokenAddress] = newTokenRegister;
     }
 
+    /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     function _unregisterTokenAddress(address tokenAddress) {
         require(acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' NOT registered!");
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");

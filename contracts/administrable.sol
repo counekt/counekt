@@ -289,6 +289,10 @@ contract Administrable {
         return permits[permitName][_address] == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
     }
 
+    function isAdministrable() constant pure returns(bool) {
+        return true;
+    }
+
     function isValidPermit(string permitName) public pure returns(bool) {
         switch (permitName) {
             case "issueVote":
