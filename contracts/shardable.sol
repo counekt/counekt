@@ -1,11 +1,6 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts@4.6.0/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts@4.6.0/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts@4.6.0/access/Ownable.sol";
-import "@openzeppelin/contracts@4.6.0/token/ERC20/extensions/draft-ERC20Permit.sol";
-import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 // Fractional Math
 
@@ -103,7 +98,6 @@ contract Shardable {
 
     /// @notice A boolean stating if the Shardable is active or not - changeable and tradeable or not.
     bool active = true;
-
     /// @notice Array containing all the currently valid Shard instances.
     Shard[] internal shards;
     /// @notice Mapping pointing to an index in the 'shards' array, given a unique Shard instance. It starts from 1 and up to differentiate between empty values.
