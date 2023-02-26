@@ -7,7 +7,6 @@ import "@openzeppelin/contracts@4.6.0/token/ERC20/extensions/draft-ERC20Permit.s
 import "@openzeppelin/contracts@4.6.0/token/ERC20/utils/ERC20Holder.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-
 // Fractional Math
 
 /// @notice A struct representing a fraction
@@ -77,14 +76,12 @@ function subtractFractions(Fraction a, Fraction b) constant pure returns (Fracti
 /// @notice This contract is used to fractionalize a non-fungible token. Be aware that a sell transfers a service fee of 2.5% to Counekt.
 /// @dev historicShards are used to show proof of ownership at different points of time.
 /// @custom:beaware This is a commercial contract.
-
 contract Shardable {
 
-    /// @title A non-fungible token that makes it possible via a fraction to represent ownership of a Shardable entity
-    // All of these variables are constant throughout the Shard's lifetime.
+    /// @notice A non-fungible token that makes it possible via a fraction to represent ownership of the Shardable entity. All of these variables are constant throughout the Shard's lifetime.
     struct Shard {
         Fraction public fraction;
-        address owner; // Shard Holder
+        address owner; 
         uint256 creationTime;
     }
 
@@ -96,7 +93,7 @@ contract Shardable {
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param salePrice The amount which the Shard is for sale as. The token address being the valuta.
     struct DynamicInfo {
-        uint256 expiredTime = uint256(int256(-1)); // The maximum value: (2^256)-1
+        uint256 expiredTime = type(uint256).max; // The maximum value: (2^256)-1
         bool public forSale;
         address public forSaleTo;
         Fraction public fractionForSale;
@@ -104,22 +101,28 @@ contract Shardable {
         uint256 public salePrice;
     }
 
-
     /// @notice A boolean stating if the Shardable is active or not - changeable and tradeable or not.
     bool active = true;
 
+    /// @notice Array containing all the currently valid Shard instances.
     Shard[] internal shards;
-    mapping(Shard => uint256) shardIndex; // starts from 1 and up to keep consistency
+    /// @notice Mapping pointing to an index in the 'shards' array, given a unique Shard instance. It starts from 1 and up to differentiate between empty values.
+    mapping(Shard => uint256) shardIndex;
+    /// @notice Mapping pointing to a boolean value stating if a Shard has ever been valid, given a unique Shard instance.
     mapping(Shard => bool) historicShards;
+    /// @notice Mapping pointing to a currently valid shard given the address of its owner.
     mapping(address => Shard) shardByOwner;
+    /// @notice Mapping pointing to dynamic info of a Shard given a unique Shard instance.
     mapping(Shard => DynamicInfo) public dynamicInfo;
 
+    /// @notice Event emitted when a Shard is split into two and fractionally transferred.
     event SplitMade(
         Shard shard,
         Fraction fraction,
         address to
         );
 
+    /// @notice Event emitted when a sale of a Shard is sold.
     event SaleSold(
         Shard shard,
         Fraction fraction,
@@ -128,6 +131,7 @@ contract Shardable {
         address to
         );
 
+    /// @notice Event emitted when a Shard is put up for sale.
     event PutForSale(
         Shard shard,
         Fraction fraction,
@@ -136,33 +140,46 @@ contract Shardable {
         address to,
         );
 
-    event SaleCancelled();
+    /// @notice Event emitted when a sale of a Shard is cancelled.
+    event SaleCancelled(Shard shard);
 
+    /// @notice Event emitted when the current validity of a Shard has expired.
     event Expired(
         Shard shard,
         address holder
         );
     
+    /// @notice Modifier that requires the msg.sender to be a current valid shard holder.
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
     }
 
+    /// @notice Modifier that requires a given shard to be currently valid.
     modifier onlyValidShard(Shard shard) {
         require(isValidShard(shard), "must be a valid shard!");
     }
 
-    // modifier to make sure entity is active and not liquidized/dissolved
+    /// @notice Modifier that requires the entity to be active and not liquidized/dissolved
     modifier onlyIfActive() {
         require(active == true, "Idea has been liquidized and isn't active anymore.");
     }
 
+    /// @notice Modifier that requires the msg.sender to be the owner of a given shard
+    /// @param shard The shard, whose ownership is tested for.
     modifier onlyHolder(Shard shard) {
         require(shard.owner == msg.sender.address);
     }
 
+    /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
     constructor() public{
         // passes full ownership to creator of contract
         _pushShard(new Shard(Fraction(1,1), msg.sender, block.timestamp));
+    }
+
+    /// @notice Fallback function that reverts any calls to non-registered functions.
+    /// @dev This is rewritten in the Idea contract.
+    fallback() external {
+        revert;
     }
 
     /// @inheritdoc _putForSale
@@ -175,10 +192,10 @@ contract Shardable {
         _putForSaleTo(shard,tokenAddress,price,fraction,to);
     }
 
-    /// @inheritdoc _cancelSell
-    function cancelSell() onlyOwner {
-        _cancelSell();
-        emit SellCancelled();
+    /// @inheritdoc _cancelSale
+    function cancelSale() onlyOwner {
+        _cancelSale();
+        emit SaleCancelled();
     }
 
     /// @notice Purchases a listed Shard for sale.
@@ -187,7 +204,7 @@ contract Shardable {
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
         require(dynamicInfo[shard].forsale, "Not for sale");
         require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
-        _cancelSell();
+        _cancelSale();
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(dynamicInfo[shard].salePrice,Fraction(25,1000));
         profitToSeller += remainder; // remainder goes to seller
         // if ether
@@ -346,7 +363,7 @@ contract Shardable {
 
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
-    function _cancelSell(Shard shard) internal onlyValidShard(shard) onlyIfActive{
+    function _cancelSale(Shard shard) internal onlyValidShard(shard) onlyIfActive{
         require(dynamicInfo[shard].forsale == true, "Shard not even for sale!");
         dynamicInfo[shard].forSale = false;
         dynamicInfo[shard].forSaleTo = 0x0;
