@@ -55,6 +55,8 @@ contract Idea is Shardable {
     }
 
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
+    /// @param tokenAddress The address of the token to be received.
+    /// @param value The value/amount of the token to be received.
     function receiveToken(address tokenAddress, uint256 value) external {
         require(acceptsToken(tokenAddress));
         ERC20 token = ERC20(tokenAddress);
@@ -110,13 +112,17 @@ contract Idea is Shardable {
         return true;
     }
     
-    /// @notice Returns a boolean value stating if the token address is registered as acceptable.
+    /// @notice Returns a boolean value, stating if the given token address is registered as acceptable or not.
+    /// @param tokenAddress The address of the token to be checked for.
     function acceptsToken(address tokenAddress) public view {
       return tokenAddressIndex[tokenAddress]>0;
     }
 
     /// @notice Transfers a token from the Idea to a recipient. 
-    /// First token.approve() is called, then to.receiveToken if it's an Idea.
+    /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
         if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
@@ -130,13 +136,15 @@ contract Idea is Shardable {
     }
 
     /// @notice Transfers ether from the Idea to a recipient
+    /// @param value The value/amount of ether to be transferred.
+    /// @param to The recipient of the ether to be transferred.
     function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
     }
 
-
-    // @notice Sets a new address of the Administrable, which controls all unknown function calls and the Idea itself.
+    /// @notice Sets a new address of the Administrable, which controls all unknown function calls and the Idea itself.
+    /// @param _administrable The address of the new Administrable entity.
     function _setAdministrable(address _administrable) internal {
         require(Administrable(_administrable).isAdministrable())
         administrable = _administrable;
@@ -151,6 +159,9 @@ contract Idea is Shardable {
     /// @notice Processes a token receipt and adds it to the token registry.
     /// @dev Calls an Administrable.processTokenReceipt, since it otherwise doesn't know about the Idea Receipt.
     /// @custom:illustration Idea.receiveToken() => Idea._processTokenReceipt() => Administrable.processTokenReceipt()
+    /// @param tokenAddress The address of the received token.
+    /// @param value The value/amount of the received token.
+    /// @param from The sender of the received token.
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
         // First: Liquid logic
         liquid[tokenAddress].originalValue += value;
@@ -161,6 +172,9 @@ contract Idea is Shardable {
     /// @notice Processes a token transfer and subtracts it from the token registry.
     /// @dev Does NOT call an Administrable.processTokenTransfer, since transfer calls always stem from there.
     /// @custom:illustration Administrable.transferToken() => Idea.transferToken() + Administrable._processTokenTransfer() => Idea._processTokenTransfer()
+    /// @param tokenAddress The address of the transferred token.
+    /// @param value The value/amount of the transferred token.
+    /// @param to The recipient of the transferred token.
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) internal {
         // First: Liquidization logic
         liquid[tokenAddress].originalValue -= value;
@@ -171,6 +185,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
+    /// @param tokenAddress The token address to be registered.
     function _registerTokenAddress(address tokenAddress) {
         require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
         tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1; // +1 to distinguish between empty values;
@@ -183,6 +198,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
+    /// @param tokenAddress The token address to be unregistered.
     function _unregisterTokenAddress(address tokenAddress) {
         require(acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' NOT registered!");
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");

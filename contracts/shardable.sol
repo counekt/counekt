@@ -74,6 +74,9 @@ function subtractFractions(Fraction a, Fraction b) constant pure returns (Fracti
 contract Shardable {
 
     /// @notice A non-fungible token that makes it possible via a fraction to represent ownership of the Shardable entity. All of these variables are constant throughout the Shard's lifetime.
+    /// @param fraction The fraction of the Shardable that the Shard represents.
+    /// @param owner The owner of the Shard.
+    /// @param creationTime The block.timestamp at which the Shard was created.
     struct Shard {
         Fraction public fraction;
         address owner; 
@@ -81,7 +84,7 @@ contract Shardable {
     }
 
     /// @notice A struct representing the dynamic (non-constant) info of a Shard struct.
-    /// @param expiredTime The block.timestamp in which the Shard expired. Default is set to the maximum value.
+    /// @param expiredTime The block.timestamp at which the Shard expired. Default is set to the maximum value.
     /// @param forSale Boolean value stating if the Shard is for sale or not.
     /// @param forSaleTo Address pointing to a potentially specifically set buyer of the sale.
     /// @param fractionForSale Fraction that is for sale. If it's the same as Shard.fraction, then a 100% of it is for sale.
@@ -193,8 +196,8 @@ contract Shardable {
     }
 
     /// @notice Purchases a listed Shard for sale.
-    /// @param shard The shard, of which a fraction will be purchased.
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
+    /// @param shard The shard, of which a fraction will be purchased.
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
         require(dynamicInfo[shard].forsale, "Not for sale");
         require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
@@ -364,6 +367,7 @@ contract Shardable {
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
+    /// @param shard The shard to be pushed.
     function _pushShard(Shard _shard) internal {
         shardIndex[_shard] = shards.length+1;
         shards.push(_shard);
@@ -372,6 +376,7 @@ contract Shardable {
     }
 
     /// @notice Removes a shard from the registry of currently valid shards. It will still remain as a historically valid shard.
+    /// @param shard The shard to be removed.
     function _removeShard(Shard shard) internal {
         require(isValidShard(shard), "Shard must be valid!");
         shardByOwner[shard.owner] = Shard();

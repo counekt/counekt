@@ -341,6 +341,10 @@ contract Administrable {
         emit BankAdminAdded(bankName,bankAdmin,by);
     }
 
+    /// @notice Removes a given administrator of a given Bank.
+    /// @param bankName The name of the Bank from which the given administrator is to be removed.
+    /// @param bankAdmin The address of the current Bank administrator to be removed.
+    /// @param by The initiator of the Bank Administrator removal.
     function _removeBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
         require(isBankAdmin(bankAdmin,bankName));
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
@@ -352,6 +356,9 @@ contract Administrable {
         emit BankAdminRemoved(bankName,bankAdmin,by);
     }
 
+    /// @notice Deletes a given Bank.
+    /// @param bankName The name of the Bank to be deleted.
+    /// @param by The initiator of the Bank deletion.
     function _deleteBank(string bankName, address by) internal onlyIfActive {
         require(bankName != "main", "Can't delete the main bank!");
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
@@ -363,6 +370,11 @@ contract Administrable {
         emit BankDeleted(bankName, by);
     }
 
+    /// @notice Creates and issues a Dividend of a token from a given Bank.
+    /// @param bankName The name of the Bank to issue the Dividend from.
+    /// @param tokenAddress The address of the token to make up the Dividend.
+    /// @param value The value/amount of the token to be issued in the Dividend.
+    /// @param by The initiator of the Dividend issuance.
     function _issueDividend(string bankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(bankName) {
         Bank memory bank = bankByName[bankName];
         require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
@@ -378,6 +390,9 @@ contract Administrable {
         emit DividendIssued(newDividend, by);
     }
 
+    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
+    /// @param dividend The Dividend to be dissolved.
+    /// @param by The initiator of the dissolution.
     function _dissolveDividend(Dividend dividend, address by) internal onlyIfActive {
         dividends[dividendIndex[dividend]-1] = dividends[dividends.lenght-1]; // -1 to distinguish between empty values;
         dividends.pop();
@@ -387,6 +402,12 @@ contract Administrable {
         emit DividendDissolved(dividend, valueLeft, by);
     }
 
+    /// @notice Transfers a token from a Bank to a recipient.
+    /// @param fromBankName The name of the Bank from which the token is to be transferred.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
+    /// @param by The initiator of the transfer.
     function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
@@ -394,6 +415,12 @@ contract Administrable {
         _processTokenTransfer(fromBank,tokenAddress,value,to,by);
     }
 
+    /// @notice Internally moves a token from one Bank to another.
+    /// @param fromBankName The name of the Bank from which the token is to be moved.
+    /// @param toBankName The name of the Bank to which the token is to be moved.
+    /// @param tokenAddress The address of the token to be moved.
+    /// @param value The value/amount of the token to be moved.
+    /// @param by The initiator of the move.
     function _moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
         Bank memory fromBank = bankByName[fromBankName];
         Bank memory toBank = bankByName[toBankName];
@@ -408,11 +435,18 @@ contract Administrable {
         idea.liquidize_();
     }
 
+    /// @notice Transfers a token from the Idea to a recipient.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
         idea.transferToken(tokenAddress,value,to);
     }
 
     /// @notice Keeps track of a token receipt by adding it to the registry
+    /// @param tokenAddress The address of the received token.
+    /// @param value The value/amount of the received token.
+    /// @param from The sender of the received token.
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
         // Then: Bank logic
         Bank memory bank = bankByName["main"];
@@ -423,7 +457,12 @@ contract Administrable {
         emit TokenReceived(tokenAddress,value,from);
     }
 
-    /// @notice Keeps track of a token transfer by subtracting it from the registry
+    /// @notice Keeps track of a token transfer and subtracts it from the registry.
+    /// @param fromBankName The name of the Bank from which the token is transferred.
+    /// @param tokenAddress The address of the transferred token.
+    /// @param value The value/amount of the transferred token.
+    /// @param to The recipient of the transferred token.
+    /// @param by The initiator of the transfer.
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
@@ -433,6 +472,9 @@ contract Administrable {
         emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
     }
 
+    /// @notice Adds a token to the Bank registry.
+    /// @param tokenAddress The address of the token to be registered.
+    /// @param bankName The name of the Bank from which the token is to be unregistered,
     function _registerTokenAddressToBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
         Bank memory bank = bankByName[bankName];
         require(bank.tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!"); // a stored index value of 0 means empty
@@ -440,6 +482,9 @@ contract Administrable {
         bank.tokenAddresses.push(tokenAddress);
     }
 
+    /// @notice Removes a token from the Bank registry.
+    /// @param tokenAddress The address of the token to be unregistered.
+    /// @param bankName The name of the Bank from which the token is to be unregistered.
     function _unregisterTokenAddressFromBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
         Bank memory bank = bankByName[bankName];
         require(bank.tokenAddressIndex[tokenAddress] > 0, "Token address '"+string(tokenAddress)+"' NOT registered!");
