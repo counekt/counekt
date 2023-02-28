@@ -43,7 +43,7 @@ contract Idea is Shardable {
         _setAdministrable(AdministrableVersioner.buildVersion(administrableType, this.address, msg.sender.address));
     }
 
-    /// @notice Receives ether when there's no supplying data
+    /// @notice Receive function that receives ether when there's no supplying data
     receive() payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
         _processTokenReceipt(address(0),msg.value,msg.sender);

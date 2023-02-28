@@ -118,90 +118,93 @@ contract Administrable {
         address by
     );
 
+    /// @notice Modifier requiring the msg.sender to be the Idea entity.
     modifier onlyIdea() {
         require(idea == msg.sender);
     }
 
-    // modifier to make sure msg.sender has specific permit
+    /// @notice Modifier that makes sure msg.sender has a given permit.
+    /// @param permitName The name of the permit to be checked for.
     modifier onlyWithPermit(string permitName) {
         require(hasPermit(msg.sender, permitName));
     }
     
+    /// @notice Modifier that makes sure msg.sender is an admin of a given permit.
+    /// @param permitName The name of the permit to be checked for.
     modifier onlyPermitAdmin(string permitName) {
       require(isPermitAdmin(msg.sender,permitName));
     }
 
-    // modifier to make sure msg.sender is administrator of a specific bank
+    /// @notice Modifier that makes sure msg.sender is admin of a given bank.
+    /// @param bankName The name of the Bank to be checked for.
     modifier onlyBankAdmin(string bankName) {
         require(isBankAdmin(msg.sender, bankName));
     }
 
-    // modifier to make sure bank exists
+    /// @notice Modifier that makes sure a given bank exists
+    /// @param bankName The name of the Bank to be checked for.
     modifier onlyExistingBank(string bankName) {
         require(bankExists(bankName), "Bank '"+bankName+"' does NOT exist!");
     }
     
-    // modifier to make sure dividend exists
+    /// @notice Modifier that makes sure a given dividend exists
+    /// @param dividend The Dividend to be checked for.
     modifier onlyExistingDividend(Dividend dividend) {
       require(dividendExists(dividend));
     }
 
-    // modifier to make sure entity is active and not liquidized/dissolved
+    /// @notice Modifier that makes sure the Idea entity is active and not liquidized/dissolved.
     modifier onlyIfActive() {
         require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
     }
 
+    /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
+    /// @dev Creation of the 'main' Bank is a PROBLEM, when connecting to Old Ideas with lots of tokens!!!
+    /// @param _idea The address of the Idea to be connected to the Administrable.
+    /// @param _creator The address to assigned as the administrator of the "main" Bank
     constructor(address _idea, address _creator) {
         idea = _idea;
         _createBank("main",_creator,this.address);
     }
 
-    /// @notice The administrable can't receive anything. Only the idea does.
+    /// @notice Receive function that makes sure the Administrable can't receive anything. Only the idea can.
     receive() payable {
         revert;
     }
 
-    /// @notice Issues a dividend to all current shareholders, which they'll have to claim themselves.
-    /// @dev There is a potential problem when selling and or splitting a shard. Then the Dividend Right sometimes perishes.
-    /// @param bankName The name of the bank to issue a dividend from.
-    /// @param value The value of the dividend to be issued.
+    /// @inheritdoc _issueDividend
     function issueDividend(string bankName, address tokenAddress, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) onlyIfActive {
         _issueDividend(bankName,tokenAddress,value, msg.sender);
     }
 
-    /// @notice Dissolves a dividend, releasing its remaining unclaimed value to the 'main' bank.
-    /// @param dividend The dividend to be dissolved.
+    /// @inheritdoc _dissolveDividend
     function dissolveDividend(Dividend dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
         _dissolveDividend(dividend, msg.sender);
     }
 
-    /// @notice Creates a Bank - a container of funds with access limited to its administators.
-    /// @param bankName The name of the Bank to be created
+    /// @inheritdoc _createBank
     function createBank(string bankName, address bankAdmin) external onlyWithPermit("manageBank") {
        _createBank(bankName, bankAdmin, msg.sender);
     }
 
+    /// @inheritdoc _addBankAdmin
     function addBankAdmin(string bankName, address bankAdmin) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         _addBankAdmin(bankName, bankAdmin);
     }
 
+    /// @inheritdoc _removeBankAdmin
     function removeBankAdmin(string bankName, address bankAdmin) external {
         require(isPermitAdmin("manageBank"));
         require(isBankAdmin(bankName,bankAdmin));
         _removeBankAdmin();
     }
 
-    /// @notice Deletes an empty Bank 
-    /// @param bankName The name of the Bank to be deleted
+    /// @inheritdoc _deleteBank
     function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         _deleteBank(bankName, msg.sender);
     }
 
-    /// @notice Transfers value from one bank to another.
-    /// @param fromBankName The name of the Bank to move money away from.
-    /// @param tokenAddress The address of the token contract (address(0) if ether)
-    /// @param toBankName The name of the Bank to move the money to.
-    /// @param value The value to be moved
+    /// @inheritdoc _transferToken
     function transferToken(string fromBankName, address tokenAddress, uint256 value, address to) external onlyBankAdmin(bankName) {
         _transferToken(fromBankName,tokenAddress,value,to,msg.sender);
     }
@@ -209,22 +212,20 @@ contract Administrable {
     /// @notice Moves money internally from one bank to another.
     /// @param fromBankName The name of the Bank to move money away from.
     /// @param toBankName The name of the Bank to move the money to.
-    /// @param tokenAddress The address of the token to be moved (address(0) if ether)
-    /// @param value The value to be moved
+    /// @param tokenAddress The address of the token to be moved (address(0) if ether).
+    /// @param value The value to be moved.
     function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
         _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
     }
 
-    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
     /// @inheritdoc _liquidize
     function liquidize() external onlyWithPermit("liquidizeEntity") {
         _liquidize(msg.sender);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
+    /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
-    /// @inheritdoc issueDividend
-    /// @dev Now only shards who exist at the time of Dividend creation are applicable. Next up: Must be claimed with reference to shard.
     function claimDividend(Shard shard, Dividend dividend) external onlyExistingDividend onlyIfActive {
         require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.")
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
@@ -240,16 +241,18 @@ contract Administrable {
         }
     }
 
+    /// @inheritdoc _changePermit
     function changePermit(address shardHolder, string permitName, PermitState newState) external onlyPermitAdmin(permitName) {
         _changePermit(shardHolder, permitName, newState);
     }
 
+    /// @inheritdoc _processTokenReceipt
     function processTokenReceipt(address tokenAddress, uint256 value, address from) external onlyIdea {
         _processTokenReceipt(tokenAddress,value,from);
     }
 
     // @notice Creates and returns the address of a new Administrable instance.
-    // @dev NEXT UP => build administrable up from another
+    // @dev NEXT UP => build administrable up from another one... or just from an old Idea
     function build(address _idea, address _creator) public returns(address) {
         return new Administrable(_idea, _creator);
     }
@@ -260,39 +263,57 @@ contract Administrable {
     }
     */
 
+    /// @notice Returns a boolean stating if a given Bank exists.
+    /// @param bankName The name of the Bank to be checked for.
     function bankExists(string bankName) public view returns(bool) {
         return bankIndex[bankByName[bankName]] > 0; // bigger than 0 because stored indices starts from 1
     }
 
+    /// @notice Returns a boolean stating if a given Bank is empty.
+    /// @param bankName The name of the Bank to be checked for.
     function bankIsEmpty(string bankName) public view returns(bool) {
         Bank memory bank = bankByName[bankName];
         return bank.tokenAddresses.length == 0 && bank.balance[address(0)] == 0;
     }
     
+    /// @notice Returns a boolean stating if a given Dividend exists.
+    /// @param dividend The Dividend to be checked for.
     function dividendExists(Dividend dividend) public view returns(bool) {
       return dividendIndex[dividend] > 0; // bigger than 0 because stored indices starts from 1
     }
 
+    /// @notice Returns a boolean stating if a given address is an admin of a given bank.
+    /// @param _address The address to be checked for.
+    /// @param bankName The name of the Bank to be checked for.
     function isBankAdmin(address _address, string bankName) public view returns(bool) {
         return bankByName[bankName].adminIndex[_address] > 0 || isPermitAdmin(_address,"manageBank");
     }
 
+    /// @notice Returns a boolean stating if a given address has a given permit or not.
+    /// @param _address The address to be checked for.
+    /// @param permitName The name of the permit to be checked for.
     function hasPermit(address _address, string permitName) public view returns(bool) {
         if (_address == this.address) {return true}
         if (!(isShardHolder(_address) || allowNonShardHolders)) {return false}
         return permits[permitName][_address] >= PermitState.authorized || basePermits.issueVote >= PermitState.authorized;
     }
 
+    /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.
+    /// @param _address The address to be checked for.
+    /// @param permitName The name of the permit to be checked for.
     function isPermitAdmin(address _address, string permitName) public view returns(bool) {
         if (_address == this.address) {return true}
         if (!(isShardHolder(_address) || allowNonShardHolders)) {return false}
         return permits[permitName][_address] == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
     }
 
+    /// @notice Returns true. Used for differentiating between Administrable and non-Administrable contracts.
     function isAdministrable() constant pure returns(bool) {
         return true;
     }
 
+    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
+    /// @param permitName The name of the permit to be checked for.
     function isValidPermit(string permitName) public pure returns(bool) {
         switch (permitName) {
             case "issueVote":
@@ -312,13 +333,23 @@ contract Administrable {
         }
     }
     
-    function _changePermit(address _address, string permitName, PermitState newState) internal onlyIfActive {
+    /// @notice Changes the state of a specified permit of a given address.
+    /// @param _address The address, whose permit state is to be changed.
+    /// @param permitName The name of the permit, whose state is to be changed.
+    /// @param newState The new Permit State to be applied.
+    /// @param by The initiator of the permit state change.
+    function _changePermit(address _address, string permitName, PermitState newState, address by) internal onlyIfActive {
         require(isValidPermit(permitName), "The given permit name does NOT exist!");
         require(isShardHolder(_address) || allowNonShardHolders, "Only Shard holders can have Permits");
         require(!(hasPermit(_address, permitName) && newState >= PermitState.authorized), "Address already has Permit '" + permitName + "'");
         permits[permitName][_address] = newState;
+        emit PermitChanged(_address,permitName,newState,by);
     }
 
+    /// @notice Creates a new Bank.
+    /// @param bankName The name of the Bank to be created.
+    /// @param bankAdmin The address of the first Bank administrator.
+    /// @param by The initiator of the Bank creation.
     function _createBank(string bankName, address bankAdmin, address by) internal onlyIfActive {
         require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
@@ -328,9 +359,13 @@ contract Administrable {
         bank.administratorIndex[bankAdmin] = 1;
         bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1
         banks.push(bank);
-        emit BankCreated(bankName,bankAdmin, by);
+        emit BankCreated(bankName,bankAdmin,by);
     }
 
+    /// @notice Adds a new given administrator to a given Bank.
+    /// @param bankName The name of the Bank to which the new administrator is to be added.
+    /// @param bankAdmin The address of the new Bank administrator to be added.
+    /// @param by The initiator of the Bank administrator addition.
     function _addBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
         require(isBankAdmin(by,bankName))
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
@@ -370,7 +405,7 @@ contract Administrable {
         emit BankDeleted(bankName, by);
     }
 
-    /// @notice Creates and issues a Dividend of a token from a given Bank.
+    /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
     /// @param bankName The name of the Bank to issue the Dividend from.
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
