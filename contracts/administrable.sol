@@ -5,6 +5,13 @@ pragma solidity ^0.8.4;
 /// @notice This contract is used as an administrable entity and only works with an Idea.
 contract Administrable {
 
+    /// @notice A struct representing a Bank used to encapsel funds and tokens restricted to a few spenders.
+    /// @dev GET RID OF THE FUNCTIONALLY USELESS ARRAYS ONLY USED FOR DISPLAY PURPOSES!!!
+    /// @param tokenAddresses An array of the token addresses registered in the Bank.
+    /// @param tokenAddressIndex A mapping pointing to an index of the 'tokenAddresses' array, given a token address.
+    /// @param balance A mapping pointing to a value/amount of a stored token, given a token address.
+    /// @param administrators An array of the Bank administrators that have restricted control of the Bank's funds.
+    /// @param administratorIndex A mapping pointing to an index of the 'administrators' array, given an address.
     struct Bank {
         address[] tokenAddresses;
         mapping(address => uint256) tokenAddressIndex;
@@ -13,12 +20,22 @@ contract Administrable {
         mapping(address => uint256) administratorIndex;
     }
 
+    /// @notice An enum representing a Permit State of one of the many permits.
+    /// @param unauthorized The permit is NOT authorized.
+    /// @param authorized The permit is authorized.
+    /// @param administrator The holder of the permit is not only authorized but also an administrator of it too.
     enum PermitState {
         unauthorized,
         authorized,
         administrator
     }
 
+    /// @notice A struct representing a Dividend given to all current Shard holders.
+    /// @param creationTime The block.timestamp at which the Dividend was created.
+    /// @param tokenAddress The address of the token, in which the value of the Dividend is issued.
+    /// @param value The value/amount of the Dividend.
+    /// @param originalValue The original value/amount of the Dividend before claimants.
+    /// @param hasClaimed Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend.
     struct Dividend {
         uint256 creationTime;
         address tokenAddress;
@@ -27,25 +44,26 @@ contract Administrable {
         mapping(Shard => bool) hasClaimed;
     }
 
+    /// @notice The Idea contract entity which the Administrable administers.
     address idea;
 
-    // Rules
-    /// @notice Rules that lay the ground for the fundamental logic of the entity. 
-    /// @dev To be implemented. And next up: voting thresholds.
+    /// @notice Boolean value stating if the Administrable allows non-shard-holders to have permits or not.
     bool allowNonShardHolders;
 
-    // Banks
+    /// @notice Array of Banks in the Administrable.
     Bank[] banks;
+    /// @notice bankIndex A mapping pointing to an index of the 'banks' array, given a Bank.
     mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
+    /// @notice bankByName A mapping pointing to a Bank, given the name of it.
     mapping(string => Bank) bankByName;
 
-    // Permits: 
-    // permits[permitName][address] == PermitState.authorized || PermitState.administrator;
+    /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
+    /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
     mapping(string => mapping(address => PermitState)) permits;
-    PermitSet basePermits;
-
-    // Dividends
+    
+    /// @notice Array of Dividends in the Administrable.
     Dividend[] internal dividends;
+    /// @notice dividendIndex A mapping pointing to an index of the 'dividends' array, given a Bank.
     mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
 
     // triggers when a dividend is issued
