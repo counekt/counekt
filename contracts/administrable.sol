@@ -6,18 +6,15 @@ pragma solidity ^0.8.4;
 contract Administrable {
 
     /// @notice A struct representing a Bank used to encapsel funds and tokens restricted to a few spenders.
-    /// @dev GET RID OF THE FUNCTIONALLY USELESS ARRAYS ONLY USED FOR DISPLAY PURPOSES!!!
-    /// @param tokenAddresses An array of the token addresses registered in the Bank.
-    /// @param tokenAddressIndex A mapping pointing to an index of the 'tokenAddresses' array, given a token address.
+    /// @param name The name of the Bank. Used for identification.
+    /// @param storedTokenAddresses An unsigned integer representing the amount of stored kinds of tokens.
     /// @param balance A mapping pointing to a value/amount of a stored token, given a token address.
-    /// @param administrators An array of the Bank administrators that have restricted control of the Bank's funds.
-    /// @param administratorIndex A mapping pointing to an index of the 'administrators' array, given an address.
+    /// @param isAdmin A mapping pointing to a boolean stating if a given address is a valid Bank administrator that have restricted control of the Bank's funds.
     struct Bank {
-        address[] tokenAddresses;
-        mapping(address => uint256) tokenAddressIndex;
+        string name;
+        uint256 storedTokenAddresses;
         mapping(address => uint256) balance;
-        address[] administrators;
-        mapping(address => uint256) administratorIndex;
+        mapping(address => bool) isAdmin;
     }
 
     /// @notice An enum representing a Permit State of one of the many permits.
@@ -50,21 +47,21 @@ contract Administrable {
     /// @notice Boolean value stating if the Administrable allows non-shard-holders to have permits or not.
     bool allowNonShardHolders;
 
-    /// @notice Array of Banks in the Administrable.
-    Bank[] banks;
-    /// @notice bankIndex A mapping pointing to an index of the 'banks' array, given a Bank.
-    mapping(Bank => uint256) bankIndex; // starts from 1 and up to keep consistency
-    /// @notice bankByName A mapping pointing to a Bank, given the name of it.
+    /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
+    mapping(Bank => bool) validBanks;
+    
+    /// @notice A mapping pointing to a Bank, given the name of it.
     mapping(string => Bank) bankByName;
 
     /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
     /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
     mapping(string => mapping(address => PermitState)) permits;
     
-    /// @notice Array of Dividends in the Administrable.
-    Dividend[] internal dividends;
-    /// @notice dividendIndex A mapping pointing to an index of the 'dividends' array, given a Bank.
-    mapping(Dividend => uint256) dividendIndex; // starts from 1 and up, to differentiate betweeen empty values
+    /// @notice A mapping pointing to a boolean stating if a given Dividend is valid or not.
+    mapping(Dividend => bool) validDividends;
+
+    /// @notice The Dividend latest and most recently issued.
+    Dividend latestDividend;
 
     // triggers when a dividend is issued
     event DividendIssued(
@@ -165,7 +162,7 @@ contract Administrable {
         require(bankExists(bankName), "Bank '"+bankName+"' does NOT exist!");
     }
     
-    /// @notice Modifier that makes sure a given dividend exists
+    /// @notice Modifier that makes sure a given dividend exists and is valid
     /// @param dividend The Dividend to be checked for.
     modifier onlyExistingDividend(Dividend dividend) {
       require(dividendExists(dividend));
@@ -233,7 +230,7 @@ contract Administrable {
     /// @param tokenAddress The address of the token to be moved (address(0) if ether).
     /// @param value The value to be moved.
     function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
-        _moveToken(fromBankName,bankTo,tokenAddress,value,msg.sender);
+        _moveToken(fromBankName,toBankName,tokenAddress,value,msg.sender);
     }
 
     /// @inheritdoc _liquidize
@@ -284,27 +281,27 @@ contract Administrable {
     /// @notice Returns a boolean stating if a given Bank exists.
     /// @param bankName The name of the Bank to be checked for.
     function bankExists(string bankName) public view returns(bool) {
-        return bankIndex[bankByName[bankName]] > 0; // bigger than 0 because stored indices starts from 1
+        return validBanks[bankByName[bankName]] == true;
     }
 
     /// @notice Returns a boolean stating if a given Bank is empty.
     /// @param bankName The name of the Bank to be checked for.
     function bankIsEmpty(string bankName) public view returns(bool) {
         Bank memory bank = bankByName[bankName];
-        return bank.tokenAddresses.length == 0 && bank.balance[address(0)] == 0;
+        return bank.storedTokenAddresses == 0 && bank.balance[address(0)] == 0;
     }
     
     /// @notice Returns a boolean stating if a given Dividend exists.
     /// @param dividend The Dividend to be checked for.
     function dividendExists(Dividend dividend) public view returns(bool) {
-      return dividendIndex[dividend] > 0; // bigger than 0 because stored indices starts from 1
+      return validDividends[dividend] == true;
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given bank.
     /// @param _address The address to be checked for.
     /// @param bankName The name of the Bank to be checked for.
     function isBankAdmin(address _address, string bankName) public view returns(bool) {
-        return bankByName[bankName].adminIndex[_address] > 0 || isPermitAdmin(_address,"manageBank");
+        return bankByName[bankName].isAdmin[_address] == true || isPermitAdmin(_address,"manageBank");
     }
 
     /// @notice Returns a boolean stating if a given address has a given permit or not.
@@ -373,10 +370,9 @@ contract Administrable {
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
         require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         Bank memory bank = new Bank();
-        bank.administrators.push(bankAdmin);
-        bank.administratorIndex[bankAdmin] = 1;
-        bankIndex[bank] = banks.length+1; // +1 because stored indices starts from 1
-        banks.push(bank);
+        bank.name = bankName;
+        bank.isAdmin[bankAdmin] = true;
+        validBanks[bank] = true;
         emit BankCreated(bankName,bankAdmin,by);
     }
 
@@ -389,8 +385,7 @@ contract Administrable {
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
         require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         Bank memory bank = bankByName[bankName];
-        bank.administrators.push(bankAdmin);
-        bank.administratorIndex[bankAdmin] = bank.administrators.length+1;
+        bank.isAdmin[bankAdmin] = true;
         emit BankAdminAdded(bankName,bankAdmin,by);
     }
 
@@ -403,9 +398,7 @@ contract Administrable {
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
         require(isPermitAdmin(by,"manageBank"),"Only admins of the 'manageBank' Permit can remove Bank Administrators!");
         Bank memory bank = bankByName[bankName];
-        bank.administrators[bank.administratorIndex[bankAdmin]-1] = bank.administrators[bank.administrators.length-1];
-        bank.administratorIndex[bankAdmin] = 0;
-        bank.administrators.pop();
+        bank.isAdmin[bankAdmin] = false;
         emit BankAdminRemoved(bankName,bankAdmin,by);
     }
 
@@ -417,9 +410,7 @@ contract Administrable {
         require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
         require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
         Bank memory bank = bankByName[bankName];
-        banks[bankIndex[bank]-1] = banks[banks.length-1]; // -1 because stored indices starts from 1
-        banks.pop();
-        bankByName[bankName] = new Bank();
+        validBanks[bank] = false;
         emit BankDeleted(bankName, by);
     }
 
@@ -430,25 +421,27 @@ contract Administrable {
     /// @param by The initiator of the Dividend issuance.
     function _issueDividend(string bankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(bankName) {
         Bank memory bank = bankByName[bankName];
+        require(block.timestamp > latestDividend.creationTime, "Dividends must be issued at least one second between each other.");
         require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
         bank.balance[tokenAddress] -= value;
-        Dividend newDividend = new Dividend();
-        newDividend.creationTime = block.timestamp;
-        newDividend.tokenAddress = tokenAddress;
-        newDividend.originalValue = value;
-        newDividend.value = value; 
-        newDividend.applicable = validShards;
-        dividendIndex[dividend] = dividends.lenght+1; // +1 to distinguish between empty values;
-        dividends.push(newDividend);
-        emit DividendIssued(newDividend, by);
+        if (bank.balance[tokenAddress] == 0) {
+            toBank.storedTokenAddresses -= 1;
+        }
+        Dividend dividend = new Dividend();
+        dividend.creationTime = block.timestamp;
+        dividend.tokenAddress = tokenAddress;
+        dividend.originalValue = value;
+        dividend.value = value; 
+        validDividends[dividend] = true;
+        latestDividend = dividend;
+        emit DividendIssued(dividend, by);
     }
 
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
     /// @param dividend The Dividend to be dissolved.
     /// @param by The initiator of the dissolution.
     function _dissolveDividend(Dividend dividend, address by) internal onlyIfActive {
-        dividends[dividendIndex[dividend]-1] = dividends[dividends.lenght-1]; // -1 to distinguish between empty values;
-        dividends.pop();
+        validDividends[dividend] = false; // -1 to distinguish between empty values;
         uint256 memory valueLeft = dividend.value;
         dividend.value = 0;
         bankByName["main"].balance[dividend.tokenAddress] += valueLeft;
@@ -478,8 +471,15 @@ contract Administrable {
         Bank memory fromBank = bankByName[fromBankName];
         Bank memory toBank = bankByName[toBankName];
         require(value <= fromBankName.balance[tokenAddress], "The value to be moved "+string(value)+" from '"+fromBankName+"' to '"+toBankName+"' can't be more than the value of '"+fromBankName+"':"+fromBank.balance[tokenAddress]);
-        bankFrom.balance[tokenAddress] -= value;
-        bankTo.balance[tokenAddress] += value;
+        fromBank.balance[tokenAddress] -= value;
+        if (fromBank.balance[tokenAddress] == 0) {
+            fromBank.storedTokenAddresses -= 1;
+
+        }
+        if (toBank.balance[tokenAddress] == 0) {
+            toBank.storedTokenAddresses += 1;
+        }
+        toBank.balance[tokenAddress] += value;
         emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
     }
 
@@ -504,7 +504,7 @@ contract Administrable {
         // Then: Bank logic
         Bank memory bank = bankByName["main"];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
-            _registerTokenAddressToBank(tokenAddress);
+            bank.storedTokenAddresses += 1;
         }
         bank.balance[tokenAddress] += value;
         emit TokenReceived(tokenAddress,value,from);
@@ -519,31 +519,10 @@ contract Administrable {
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
-        if (bank.balance[tokenAddress] == 0) {
-            _unregisterTokenAddressFromBank(tokenAddress,bankName);
+        if (fromBank.balance[tokenAddress] == 0) {
+            fromBank.storedTokenAddresses[tokenAddress] -= 1;
         }
         emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
-    }
-
-    /// @notice Adds a token to the Bank registry.
-    /// @param tokenAddress The address of the token to be registered.
-    /// @param bankName The name of the Bank from which the token is to be unregistered,
-    function _registerTokenAddressToBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
-        Bank memory bank = bankByName[bankName];
-        require(bank.tokenAddressIndex[tokenAddress] == 0, "Token address '"+string(tokenAddress)+"' ALREADY registered!"); // a stored index value of 0 means empty
-        bank.tokenAddressIndex[tokenAddress] = bank.tokenAddresses.length + 1; // +1 to distinguish between empty values;
-        bank.tokenAddresses.push(tokenAddress);
-    }
-
-    /// @notice Removes a token from the Bank registry.
-    /// @param tokenAddress The address of the token to be unregistered.
-    /// @param bankName The name of the Bank from which the token is to be unregistered.
-    function _unregisterTokenAddressFromBank(address tokenAddress, string bankName) onlyExistingBank(bankName) {
-        Bank memory bank = bankByName[bankName];
-        require(bank.tokenAddressIndex[tokenAddress] > 0, "Token address '"+string(tokenAddress)+"' NOT registered!");
-        bank.tokenAddresses[bank.tokenAddressIndex[tokenAddress]-1] = bank.tokenAddresses[bank.tokenAddresses.length-1]; // -1 to distinguish between empty values;
-        bank.tokenAddressIndex[tokenAddress] = 0; // a stored index value of 0 means empty
-        bank.tokenAddresses.pop();
     }
 
 }

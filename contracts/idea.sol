@@ -4,7 +4,7 @@ import "../versionControl.sol";
 import "../shardable.sol";
 
 
-/// @title A proof of fractional ownership of an entity with valuables (administered by Administerable).
+/// @title A proof of fractional ownership of an entity with valuables (administered by Administrable).
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable business entity. 
 /// @custom:illustration Idea => Idea.Administration => Idea
@@ -26,10 +26,9 @@ contract Idea is Shardable {
 
 	/// @notice Mapping pointing to a Token Register given the address of the ERC20 token contract.
     mapping(address => TokenRegister) liquid;
-    /// @notice Array storing all the registered token addresses.
-    address[] tokenAddresses;
-    /// @notice Mapping pointing to an index of the 'tokenAddresses' array, given a token address.
-    mapping(address => uint256) tokenAddressIndex; // starts from 1 and up, to differentiate betweeen empty values
+
+    /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
+    mapping(address => bool) validTokenAddresses;
 
     /// @notice Modifier requiring the msg.sender to be the administrable entity.
     modifier onlyAdministrable {
@@ -68,7 +67,7 @@ contract Idea is Shardable {
     /// @inheritdoc _liquidize
     function claimLiquid(address shardHolder, address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
-        require(tokenAddressIndex[tokenAddress] > 0, "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
+        require(acceptsToken(tokenAddress) , "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
         Dividend tokenLiquid = liquid[tokenAddress];
         
         require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
@@ -115,7 +114,7 @@ contract Idea is Shardable {
     /// @notice Returns a boolean value, stating if the given token address is registered as acceptable or not.
     /// @param tokenAddress The address of the token to be checked for.
     function acceptsToken(address tokenAddress) public view {
-      return tokenAddressIndex[tokenAddress]>0;
+      return validTokenAddresses[tokenAddress] == true;
     }
 
     /// @notice Transfers a token from the Idea to a recipient. 
@@ -188,8 +187,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The token address to be registered.
     function _registerTokenAddress(address tokenAddress) {
         require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
-        tokenAddressIndex[tokenAddress] = tokenAddresses.length + 1; // +1 to distinguish between empty values;
-        tokenAddresses.push(tokenAddress);
+        validTokenAddresses[tokenAddress] = true;
         // Update liquidization
         TokenRegister newTokenRegister = new TokenRegister();
         newTokenRegister.tokenAddress = tokenAddress;
@@ -202,10 +200,7 @@ contract Idea is Shardable {
     function _unregisterTokenAddress(address tokenAddress) {
         require(acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' NOT registered!");
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");
-
-        tokenAddresses[tokenAddressIndex[tokenAddress]-1] = tokenAddresses[tokenAddresses.length-1]; // -1 to distinguish between empty values;
-        tokenAddressIndex[tokenAddress] = 0; // a stored index value of 0 means empty
-        tokenAddress.pop();
+        validTokenAddresses[tokenAddress] = false;
     }
 
 }

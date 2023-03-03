@@ -11,8 +11,7 @@ import "../administable.sol";
 
 contract AdministrableVersioner {
 
-  string[] versionNames;
-  mapping(string => uint256) versionNameIndex;
+  mapping(string => bool) validVersions;
   mapping(string => address) versionByName;
 
   event newVersion(string name, address version);
@@ -30,14 +29,14 @@ contract AdministrableVersioner {
   /// @notice Checks if a given Administrable version is stored in the registry of valid versions.
   /// @param versionName The version name of the Administrable version to be checked for.
   function versionIsValid(string versionName) public view returns(bool){
-    return versionNameIndex[versionName]>0;
+    return validVersions[versionName]>0;
   }
 
   /// @notice Creates and returns a new Administrable entity.
   /// @param versionName The version name of the Administrable version to be created.
   /// @param idea The Idea that the Administrable will be attached to.
   function buildVersion(string versionName, address idea, address _creator) external returns(address) onlyValidVersion(versionName) {
-    newVersionInstance = Administrable(versionName[versionName]).create(idea, _creator);
+    newVersionInstance = Administrable(versionByName[versionName]).create(idea, _creator);
     return newVersionInstance;
   }
   
@@ -45,18 +44,15 @@ contract AdministrableVersioner {
   /// @param versionName The version name of the Administrable version to be added.
   /// @param version The address of the new Administrable version to be added.
   function addVersion(string versionName, address version) external onlyCounekt {
-    versionByName[versionName] = versionBytes;
-    versionNameIndex[versionName] = versionNames.length+1;
-    versionNames.push(versionName);
+    versionByName[versionName] = version;
+    validVersions[versionName] = true;
     emit newVersion(versionName,version);
   }
   
   /// @notice Removes an Administrable version from the registry of valid versions.
   /// @param versionName The version name of the Administrable version to be removed.
   function removeVersion(string versionName) external onlyCounekt {
-    versionNames[versionNameIndex[versionName]-1] = versionNames[versiomNames.length-1];
-    versionNames.pop();
-    versionNameIndex[versionName] = 0;
+    validVersions[versionName] = false;
     emit depricatedVersion(versionName,versionByName[versionName]);
   }
 }

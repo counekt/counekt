@@ -101,12 +101,10 @@ contract Shardable {
 
     /// @notice A boolean stating if the Shardable is active or not - changeable and tradeable or not.
     bool active = true;
-    /// @notice Array containing all the currently valid Shard instances.
-    Shard[] internal shards;
-    /// @notice Mapping pointing to an index in the 'shards' array, given a unique Shard instance. It starts from 1 and up to differentiate between empty values.
-    mapping(Shard => uint256) shardIndex;
+    /// @notice Mapping pointing to a boolean value stating if a Shard is currently valid, given a unique Shard instance.
+    mapping(Shard => bool) currentlyValidShards;
     /// @notice Mapping pointing to a boolean value stating if a Shard has ever been valid, given a unique Shard instance.
-    mapping(Shard => bool) historicShards;
+    mapping(Shard => bool) historicallyValidShards;
     /// @notice Mapping pointing to a currently valid shard given the address of its owner.
     mapping(address => Shard) shardByOwner;
     /// @notice Mapping pointing to dynamic info of a Shard given a unique Shard instance.
@@ -239,20 +237,20 @@ contract Shardable {
     /// @notice Returns a boolean stating if a given shard is currently valid or not.
     /// @param shard The shard, whose validity is to be checked for.
     function isValidShard(Shard shard) view returns(bool) {
-        return shardIndex[shard] > 0;
+        return currentlyValidShards[shard] == true;
     }
 
     /// @notice Checks if address is a shard holder - at least a partial owner of the contract
     /// @param shardHolder The address to be checked
     /// @return A boolean value - a shard holder or not. 
     function isShardHolder(address shardHolder) view returns(bool) {
-        return shardIndex[shardHolder] != 0;
+        return isValidShard(shardByOwner[shardHolder]) == true;
     }
 
     /// @notice Returns a boolean stating if a given shard has ever been valid or not.
     /// @param shard The shard, whose validity is to be checked for.
     function isHistoricShard(Shard shard) view returns(bool) {
-        return historicShards[shard];
+        return historicallyValidShards[shard] == true;
     }
 
     /// @notice Returns a boolean stating if the given shard was valid at a given timestamp.
@@ -369,10 +367,9 @@ contract Shardable {
     /// @notice Pushes a shard to the registry of currently valid shards.
     /// @param shard The shard to be pushed.
     function _pushShard(Shard _shard) internal {
-        shardIndex[_shard] = shards.length+1;
-        shards.push(_shard);
         shardByOwner[shard.owner] = shard;
-        historicShards[shard] = true;
+        currentlyValidShards[shard] = true;
+        historicallyValidShards[shard] = true;
     }
 
     /// @notice Removes a shard from the registry of currently valid shards. It will still remain as a historically valid shard.
@@ -380,11 +377,7 @@ contract Shardable {
     function _removeShard(Shard shard) internal {
         require(isValidShard(shard), "Shard must be valid!");
         shardByOwner[shard.owner] = Shard();
-        Shard memory lastShard = shards[shards.length-1];
-        shards[shardIndex[shard]-1] = lastShard; // move last element in array to shard's place // -1 because stored indices starts from 1
-        shardIndex[lastShard] = shardIndex[shard]; // configure the index to show that as well
-        shardIndex[shard] = 0;
-        shards.pop();
+        currentlyValidShards[shard] = false;
     }
 
 }
