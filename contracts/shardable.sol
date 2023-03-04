@@ -90,7 +90,7 @@ contract Shardable {
     /// @param fractionForSale Fraction that is for sale. If it's the same as Shard.fraction, then a 100% of it is for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param salePrice The amount which the Shard is for sale as. The token address being the valuta.
-    struct DynamicInfo {
+    struct DynamicShardInfo {
         uint256 expiredTime = type(uint256).max; // The maximum value: (2^256)-1
         bool public forSale;
         address public forSaleTo;
@@ -108,7 +108,7 @@ contract Shardable {
     /// @notice Mapping pointing to a currently valid shard given the address of its owner.
     mapping(address => Shard) shardByOwner;
     /// @notice Mapping pointing to dynamic info of a Shard given a unique Shard instance.
-    mapping(Shard => DynamicInfo) public dynamicInfo;
+    mapping(Shard => DynamicShardInfo) public dynamicShardInfo;
 
     /// @notice Event emitted when a Shard is split into two and fractionally transferred.
     event SplitMade(
@@ -197,14 +197,14 @@ contract Shardable {
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard, of which a fraction will be purchased.
     function purchase(Shard shard) external payable onlyIfActive onlyValidShard(shard) {
-        require(dynamicInfo[shard].forsale, "Not for sale");
-        require(dynamicInfo[shard].forSaleTo == msg.sender.address || !dynamicInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
+        require(dynamicShardInfo[shard].forsale, "Not for sale");
+        require(dynamicShardInfo[shard].forSaleTo == msg.sender.address || !dynamicShardInfo[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
         _cancelSale();
-        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(dynamicInfo[shard].salePrice,Fraction(25,1000));
+        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(dynamicShardInfo[shard].salePrice,Fraction(25,1000));
         profitToSeller += remainder; // remainder goes to seller
         // if ether
-        if (dynamicInfo[shard].tokenAddress == 0x0) {
-            require(msg.value >= dynamicInfo[shard].salePrice, "Not enough ether paid");
+        if (dynamicShardInfo[shard].tokenAddress == 0x0) {
+            require(msg.value >= dynamicShardInfo[shard].salePrice, "Not enough ether paid");
             // Pay Service Fee of 2.5% to Counekt
             (bool success, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(profitToCounekt)("");
             require(success, "Transfer failed.");
@@ -213,15 +213,15 @@ contract Shardable {
             require(success, "Transfer failed.");
         } 
         else {
-            token = ERC20(dynamicInfo[shard].tokenAddress);
+            token = ERC20(dynamicShardInfo[shard].tokenAddress);
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
             token.transferFrom(msg.sender,shard.owner,profitToSeller);
         } 
-        if (dynamicInfo[shard].fraction == dynamicInfo[shard].fractionForSale) {transferShard(shard,msg.sender);}
-        else {splitShard(msg.sender, dynamicInfo[shard].fractionForSale);}
-        emit SaleSold(shard,dynamicInfo[shard].fractionForSale,dynamicInfo[shard].tokenAddress,dynamicInfo[shard].salePrice,msg.sender);
+        if (dynamicShardInfo[shard].fraction == dynamicShardInfo[shard].fractionForSale) {transferShard(shard,msg.sender);}
+        else {splitShard(msg.sender, dynamicShardInfo[shard].fractionForSale);}
+        emit SaleSold(shard,dynamicShardInfo[shard].fractionForSale,dynamicShardInfo[shard].tokenAddress,dynamicShardInfo[shard].salePrice,msg.sender);
     }
 
     /// @inheritdoc _split
@@ -341,27 +341,27 @@ contract Shardable {
     function _putForSale(Shard shard,  Fraction fraction, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
         require(fraction.numerator/fraction.denominator >= shard.fraction.numerator/shard.fraction.denominator, "Can't put more than 100% of shard's fraction for sale!");
         Fraction memory simplifiedFraction = simplifyFraction(fraction);
-        dynamicInfo[shard].fractionForSale = simplifiedFraction;
-        dynamicInfo[shard].tokenAddress = tokenAddress;
-        dynamicInfo[shard].salePrice = price;
-        dynamicInfo[shard].forsale = True;
-        emit PutForSale(shard,simplifiedFraction,tokenAddress,price,dynamicInfo[shard].forsaleTo);
+        dynamicShardInfo[shard].fractionForSale = simplifiedFraction;
+        dynamicShardInfo[shard].tokenAddress = tokenAddress;
+        dynamicShardInfo[shard].salePrice = price;
+        dynamicShardInfo[shard].forsale = True;
+        emit PutForSale(shard,simplifiedFraction,tokenAddress,price,dynamicShardInfo[shard].forsaleTo);
     }
 
     /// @inheritdoc _putForSale
     /// @notice Puts a given shard for sale only to a specifically set buyer.
     /// @param to The specifically set buyer of the sale.
     function _putForSaleTo(Shard shard, Fraction fraction, address to, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
-        dynamicInfo[shard].forSaleTo = to;
+        dynamicShardInfo[shard].forSaleTo = to;
         _putForSale(shard,fraction,tokenAddress,price);
     }
 
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function _cancelSale(Shard shard) internal onlyValidShard(shard) onlyIfActive{
-        require(dynamicInfo[shard].forsale == true, "Shard not even for sale!");
-        dynamicInfo[shard].forSale = false;
-        dynamicInfo[shard].forSaleTo = 0x0;
+        require(dynamicShardInfo[shard].forsale == true, "Shard not even for sale!");
+        dynamicShardInfo[shard].forSale = false;
+        dynamicShardInfo[shard].forSaleTo = 0x0;
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.

@@ -9,17 +9,16 @@ import "../administable.sol";
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administrable {
 
-    // Referendums Not Yet Initialized
-    Referendum[] referendumsNYI;
-    mapping(Referendum => uint256) referendumNYIIndex; // starts from 1 and up, to differentiate betweeen empty values
+    Referendum latestReferendum;
+
+    // Referendums To Be Approved
+    mapping(Referendum => bool) referendumsToBeApproved;
 
 	// Pending Referendums
-    Referendum[] pendingReferendums;
-    mapping(Referendum => uint256) pendingReferendumIndex; // starts from 1 and up, to differentiate betweeen empty values
+    mapping(Referendum => bool) referendumsPending;
 
     // Referendums To Be Implemented
-    Referendum[] referendumsTBI;
-    mapping(Referendum => uint256) referendumTBIIndex; // starts from 1 and up, to differentiate betweeen empty values
+    mapping(Referendum => bool) referendumsToBeImplemented;
 
     struct Proposal {
         bytes4 functionSignifier;
@@ -28,12 +27,15 @@ contract Votable is Administrable {
 
     struct Referendum {
         uint256 creationTime;
+    }
+
+    struct DynamicReferendumInfo {
         Proposal[] proposals;
         mapping(Proposal => uint256) proposalIndex; // starts from 1 and up, to differentiate betweeen empty values
         Fraction forFraction;
         Fraction againstFraction;
         mapping(Shard => bool) hasVoted;
-    }
+    } 
 
     // triggers when a referendum is issued
     event ReferendumIssued(
@@ -118,11 +120,11 @@ contract Votable is Administrable {
     }
 
     function referendumExists(Referendum referendum) returns(bool) {
-        return referendumIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
+        return referendumsPending[referendum] ; // bigger than 0 because stored indices start from 1
     }
 
     function referendumTBIExists(Referendum referendum) returns(bool) {
-        return referendumsTBIIndex[referendum] > 0; // bigger than 0 because stored indices start from 1
+        return referendumsToBeImplemented[referendum] == true; // bigger than 0 because stored indices start from 1
     }
 
     function proposalExists(Referendum referendum, Proposal proposal) returns(bool) {
@@ -141,10 +143,7 @@ contract Votable is Administrable {
     function _closeReferendum(Referendum referendum) internal onlyExistingReferendum(referendum) onlyIfActive {
         bool memory result = getReferendumResult(referendum);
         // remove the now closed Referendum from 'pendingReferendums'
-        pendingReferendums[pendingReferendumIndex[referendum]-1] = pendingReferendums[pendingReferendums.length-1]; // -1 because stored indices starts from 1
-        pendingReferendumIndex[referendum] = 0; // a stored index value of 0 means empty
-        pendingReferendums.pop()
-
+        pendingReferendums[referendum] = false;
         if (result) { // if it got voted through
             // the proposals are pushed to 'proposalsToBeImplemented'
             proposalsToBeImplemented.push(referendum.proposals);
@@ -212,8 +211,7 @@ contract Votable is Administrable {
     }
 
     function _unregisterReferendumTBI(Referendum referendum) onlyExistingReferendumTBI(referendum) {
-        referendumsTBI[referendumTBIIndex[referendum]-1] = referendumsTBI[referendumsTBI.length-1];
-        referendumsTBI.pop();
+        referendumsToBeImplemented[referendum] = false;
     }
 
 }
