@@ -99,7 +99,7 @@ contract Shardable {
         uint256 public salePrice;
     }
 
-    /// @notice A boolean stating if the Shardable is active or not - changeable and tradeable or not.
+    /// @notice Boolean stating if the Shardable is active or not - changeable and tradeable or not.
     bool active = true;
     /// @notice Mapping pointing to a boolean value stating if a Shard is currently valid, given a unique Shard instance.
     mapping(Shard => bool) currentlyValidShards;

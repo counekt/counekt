@@ -5,36 +5,47 @@ import "../administable.sol";
 /// @title A fractional DAO-like contract whose decisions can be voted upon by its shareholders
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as a votable administerable business entity.
-/// @dev Need to figure out how to keep Shards consistent during trades for full voting percentage. Hint: mapping(Shard => Shard) shardSplitFrom;
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administrable {
 
+    /// @notice The latest and most recent Referendum to be issued.
     Referendum latestReferendum;
 
-    // Referendums To Be Approved
-    mapping(Referendum => bool) referendumsToBeApproved;
+    /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
+    mapping(Referendum => DynamicReferendumInfo) dynamicReferendumInfo;
 
-	// Pending Referendums
+    /// @notice Mapping pointing to a boolean stating if a given Referendum is pending.
     mapping(Referendum => bool) referendumsPending;
 
-    // Referendums To Be Implemented
+    /// @notice Mapping pointing to a boolean stating if a given Referendum is to be implemented.
     mapping(Referendum => bool) referendumsToBeImplemented;
 
+    /// @notice A struct representing a Proposal that can be implemented by executing its specific function call data.
+    /// @param functionName The name of the function to be called as a result of the implementation of the Proposal.
+    /// @param argumentData The parameters passed to the function call as part of the implementation of the Proposal.
     struct Proposal {
-        bytes4 functionSignifier;
+        string functionName;
         bytes argumentData;
     }
 
+    /// @notice A struct representing a Referendum that has proposals tied to it.
+    /// @param creationTime The block.timestamp at which the Referendum was created. Used for identification.
+    /// @param proposals An array of proposals connected to the Referendum.
     struct Referendum {
         uint256 creationTime;
+        Proposal[] proposals;
     }
 
+    /// @notice A struct representing the dynamic (non-constant) info of a Referendum struct.
+    /// @param forFraction The fraction of Shard-holders who voting FOR the proposals.
+    /// @param againstFraction The fraction of Shard-holders who voted AGAINST the proposals.
+    /// @param hasVoted Mapping pointing to a boolean stating if the holder of a given Shard has voted on the Referendum.
+    /// @param amountImplemented Amount of proposals implemented.
     struct DynamicReferendumInfo {
-        Proposal[] proposals;
-        mapping(Proposal => uint256) proposalIndex; // starts from 1 and up, to differentiate betweeen empty values
         Fraction forFraction;
         Fraction againstFraction;
         mapping(Shard => bool) hasVoted;
+        uint256 amountImplemented;
     } 
 
     // triggers when a referendum is issued
@@ -62,12 +73,12 @@ contract Votable is Administrable {
         bool for
         );
 
-    // modifier to make sure msg.sender has NOT voted on a specific referendum
+    /// @notice Modifier that makes sure msg.sender has NOT voted on a specific referendum
     modifier hasNotVoted(Referendum referendum) {
         require(!hasVoted(msg.sender,referendum));
     }
 
-    // modifier to make sure referendum exists
+    /// @notice Modifier that makes sure a given Referendum exists
     modifier onlyExistingReferendum(Referendum referendum) {
         require(referendumExists(referendum), "Referendum does NOT exist!");
     }
@@ -91,8 +102,7 @@ contract Votable is Administrable {
 
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
     /// @param referendum The referendum to be voted on.
-    /// @param for The boolean value signalling a for or against vote.
-    /// @dev I f'cked it up. Now it's time based. Only Shards born before creation and potentially burned afterwards can vote.
+    /// @param for The boolean value signalling a FOR or AGAINST vote.
     function vote(Shard shard, Referendum referendum, bool for) external onlyHistoricShardHolder onlyExistingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
         require(shardExisted(referendum.creationTime), "Shard is not applicable for this vote!");
@@ -120,23 +130,23 @@ contract Votable is Administrable {
     }
 
     function referendumExists(Referendum referendum) returns(bool) {
-        return referendumsPending[referendum] ; // bigger than 0 because stored indices start from 1
+        return referendumsPending[referendum] == true; 
     }
 
     function referendumTBIExists(Referendum referendum) returns(bool) {
-        return referendumsToBeImplemented[referendum] == true; // bigger than 0 because stored indices start from 1
+        return referendumsToBeImplemented[referendum] == true; 
     }
 
-    function proposalExists(Referendum referendum, Proposal proposal) returns(bool) {
-        return referendum.proposalIndex[proposal] > 0;
+    function proposalExists(Referendum referendum, uint256 proposalIndex) returns(bool) {
+        return referendum.proposals.length > proposalIndex;
     }
 
+    /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
     function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
         Referendum referendum = new Referendum();
         referendum.creationTime = block.timestamp;
         referendum.proposals = proposals;
-        pendingReferendumIndex[referendum] = pendingReferendums.length+1; // +1 to distinguish between empty values
-        pendingReferendums.push(referendum);
+        pendingReferendums[referendum] = true;
         emit ReferendumIssued(referendum, by);
     }
 
@@ -145,14 +155,14 @@ contract Votable is Administrable {
         // remove the now closed Referendum from 'pendingReferendums'
         pendingReferendums[referendum] = false;
         if (result) { // if it got voted through
-            // the proposals are pushed to 'proposalsToBeImplemented'
-            proposalsToBeImplemented.push(referendum.proposals);
+            referendumsToBeImplemented[referendum] = true;
         }
         emit ReferendumClosed(referendum, result);
     }
 
-    function _implementProposal(Referendum referendum, Proposal proposal) internal onlyIfActive onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum,proposal) {
-        _unregisterProposal(proposal);
+    function _implementProposal(Referendum referendum, uint256 proposalIndex) internal onlyIfActive onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum,proposal) {
+        require(dynamicReferendumInfo[referendum].proposalsImplemented == proposalIndex, "Proposals must be executed in the correct order.");
+        dynamicReferendumInfo[referendum].amountImplemented += 1;
         switch (proposal.functionName) {
                     case "issueVote":
                         require(issueVote.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
@@ -199,15 +209,10 @@ contract Votable is Administrable {
                         _liquidize();
                         break;
         }
-        if (referendum.proposals.length==0) {
+        if (referendum.amountImplemented == referendum.proposals.length) {
             // remove fully implemented referendum from referendumsToBeImplemented
           _unregisterReferendumTBI(referendum);
         }
-    }
-
-    function _unregisterProposal(Referendum referendum, Proposal proposal) onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum, proposal) {
-        referendum.proposals[referendum.proposalIndex[proposal]-1] = referendum.proposals[referendum.proposals.length-1];
-        referendum.proposals.pop();
     }
 
     function _unregisterReferendumTBI(Referendum referendum) onlyExistingReferendumTBI(referendum) {
