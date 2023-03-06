@@ -15,10 +15,10 @@ contract Votable is Administrable {
     mapping(Referendum => DynamicReferendumInfo) dynamicReferendumInfo;
 
     /// @notice Mapping pointing to a boolean stating if a given Referendum is pending.
-    mapping(Referendum => bool) referendumsPending;
+    mapping(Referendum => bool) pendingReferendums;
 
     /// @notice Mapping pointing to a boolean stating if a given Referendum is to be implemented.
-    mapping(Referendum => bool) referendumsToBeImplemented;
+    mapping(Referendum => bool) passedReferendums;
 
     /// @notice A struct representing a Proposal that can be implemented by executing its specific function call data.
     /// @param functionName The name of the function to be called as a result of the implementation of the Proposal.
@@ -48,24 +48,25 @@ contract Votable is Administrable {
         uint256 amountImplemented;
     } 
 
-    // triggers when a referendum is issued
+    /// @notice Event that triggers when a Referendum is issued.
     event ReferendumIssued(
         Referendum referendum,
         address by
         );
 
-    // triggers when a referendum is closed
+    /// @notice Event that triggers when a Referendum is closed.
     event ReferendumClosed(
         Referendum referendum,
         bool result
         );
-        
+    
+    /// @notice Event that triggers when a Proposal is implemented.
     event ProposalImplemented(
       Proposal proposal,
       Referendum referendum
       );
 
-    // triggers when a vote is cast
+    /// @notice Event that triggers when a vote is cast on a Referendum.
     event VoteCast(
         address by,
         Referendum referendum,
@@ -73,29 +74,36 @@ contract Votable is Administrable {
         bool for
         );
 
-    /// @notice Modifier that makes sure msg.sender has NOT voted on a specific referendum
+    /// @notice Modifier that makes sure msg.sender has NOT voted on a specific referendum.
+    /// @param referendum The Referendum to be checked for.
     modifier hasNotVoted(Referendum referendum) {
         require(!hasVoted(msg.sender,referendum));
     }
 
-    /// @notice Modifier that makes sure a given Referendum exists
-    modifier onlyExistingReferendum(Referendum referendum) {
-        require(referendumExists(referendum), "Referendum does NOT exist!");
+    /// @inheritdoc referendumIsPending
+    /// @notice Modifier that makes sure a given Referendum is pending.
+    modifier onlyPendingReferendum(Referendum referendum) {
+        require(referendumIsPending(referendum), "Referendum is NOT pending!");
     }
 
-    // modifier to make sure referendumTBI exists
-    modifier onlyExistingReferendumTBI(Referendum referendum) {
-        require(referendumTBIExists(referendum), "Referendum To Be Implemented does NOT exist!");
+    /// @inheritdoc referendumIsPassed
+    /// @notice Modifier that makes sure a given Referendum is passed.
+    modifier onlyPassedReferendum(Referendum referendum) {
+        require(referendumIsPassed(referendum), "Referendum has NOT been passed!");
     }
 
-    modifier onlyExistingProposal(Referendum referendum, Proposal proposal) {
-        require(proposalExists(referendum,proposal), "Proposal does NOT exists!");
+    /// @inheritdoc proposalExists
+    /// @notice Modifier that makes sure a given Proposal exists within a given Referendum.
+    modifier onlyExistingProposal(Referendum referendum, uint256 proposalIndex) {
+        require(proposalExists(referendum,proposalIndex), "Proposal does NOT exists!");
     }
 
-     function issueVote(Proposal[] proposals) external onlyWithPermit("issueVote") {
+    /// @inheritdoc _issueVote
+    function issueVote(Proposal[] proposals) external onlyWithPermit("issueVote") {
         _issueVote(proposals);
     }
 
+    /// @inheritdoc _implementProposal
     function implementProposal(Referendum referendum, Proposal proposal) external onlyWithPermit("implementProposal") {
         _implementProposal(referendum, proposal);
     }
@@ -103,7 +111,7 @@ contract Votable is Administrable {
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
     /// @param referendum The referendum to be voted on.
     /// @param for The boolean value signalling a FOR or AGAINST vote.
-    function vote(Shard shard, Referendum referendum, bool for) external onlyHistoricShardHolder onlyExistingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
+    function vote(Shard shard, Referendum referendum, bool for) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
         require(shardExisted(referendum.creationTime), "Shard is not applicable for this vote!");
         referendum.hasVoted[shard] = true;
@@ -116,11 +124,15 @@ contract Votable is Administrable {
         emit VoteCast(msg.sender, referendum, shard, for);
     }
 
-
+    /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
+    /// @param shardHolder The address of the potential Shard Holder voter to be checked for.
+    /// @param referendum The Referendum to be checked for.
     function hasVoted(address shardHolder, Referendum referendum) view returns(bool) {
         return referendum.hasVoted[shardByOwner[shardholder]];
     }
 
+    /// @notice Returns a boolean stating if a given Referendum has been voted through (>=50% FOR) or not.
+    /// @param referendum The Referendum to be checked for.
     function getReferendumResult(Referendum referendum) pure returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
         if (referendum.forFraction.numerator / referendum.forFraction.denominator > 0.5) {
@@ -128,15 +140,21 @@ contract Votable is Administrable {
         }
         return false;
     }
-
-    function referendumExists(Referendum referendum) returns(bool) {
-        return referendumsPending[referendum] == true; 
+    /// @notice Returns a boolean stating if a given Referendum is pending or not.
+    /// @param referendum The Referendum to be checked for.
+    function referendumIsPending(Referendum referendum) returns(bool) {
+        return pendingReferendums[referendum] == true; 
     }
 
-    function referendumTBIExists(Referendum referendum) returns(bool) {
-        return referendumsToBeImplemented[referendum] == true; 
+    /// @notice Returns a boolean stating if a given Referendum is passed or not.
+    /// @param referendum The Referendum to be checked for.
+    function referendumIsPassed(Referendum referendum) returns(bool) {
+        return passedReferendums[referendum] == true; 
     }
 
+    /// @notice Returns a boolean stating if a given Proposal exists within a given Referendum.
+    /// @param referendum The Referendum to be checked for.
+    /// @param proposalIndex The index of the proposal to be checked for.
     function proposalExists(Referendum referendum, uint256 proposalIndex) returns(bool) {
         return referendum.proposals.length > proposalIndex;
     }
@@ -150,17 +168,22 @@ contract Votable is Administrable {
         emit ReferendumIssued(referendum, by);
     }
 
-    function _closeReferendum(Referendum referendum) internal onlyExistingReferendum(referendum) onlyIfActive {
+    /// @notice Closes a given Referendum, leading to a pass or not.
+    /// @param referendum The Referendum to be closed.
+    function _closeReferendum(Referendum referendum) internal onlyPendingReferendum(referendum) onlyIfActive {
         bool memory result = getReferendumResult(referendum);
         // remove the now closed Referendum from 'pendingReferendums'
         pendingReferendums[referendum] = false;
         if (result) { // if it got voted through
-            referendumsToBeImplemented[referendum] = true;
+            passedReferendums[referendum] = true;
         }
         emit ReferendumClosed(referendum, result);
     }
 
-    function _implementProposal(Referendum referendum, uint256 proposalIndex) internal onlyIfActive onlyExistingReferendumTBI(referendum) onlyExistingProposal(referendum,proposal) {
+    /// @notice Implements a given Proposal, within a given passed Referendum.
+    /// @param referendum The passed Referendum containing the Proposal.
+    /// @param proposalIndex The index of the proposal to be implemented.
+    function _implementProposal(Referendum referendum, uint256 proposalIndex) internal onlyIfActive onlyPassedReferendum(referendum) onlyExistingProposal(referendum,proposalIndex) {
         require(dynamicReferendumInfo[referendum].proposalsImplemented == proposalIndex, "Proposals must be executed in the correct order.");
         dynamicReferendumInfo[referendum].amountImplemented += 1;
         switch (proposal.functionName) {
@@ -209,14 +232,5 @@ contract Votable is Administrable {
                         _liquidize();
                         break;
         }
-        if (referendum.amountImplemented == referendum.proposals.length) {
-            // remove fully implemented referendum from referendumsToBeImplemented
-          _unregisterReferendumTBI(referendum);
-        }
     }
-
-    function _unregisterReferendumTBI(Referendum referendum) onlyExistingReferendumTBI(referendum) {
-        referendumsToBeImplemented[referendum] = false;
-    }
-
 }
