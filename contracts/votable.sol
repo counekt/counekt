@@ -205,8 +205,8 @@ contract Votable is Administrable {
         switch (proposal.functionName) {
                     case "issueVote":
                         require(issueVote.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
-                        Proposal[] proposals = abi.decode(proposal.argumentData, (Proposal[]));
-                        _issueVote(proposals, this.address);
+                        Proposal[] proposals, allowDivision = abi.decode(proposal.argumentData, (Proposal[], bool));
+                        _issueVote(proposals, allowDivision, this.address);
                         break;
                     case "changePermit":
                         require(changePermit.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
