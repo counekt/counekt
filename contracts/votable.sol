@@ -30,9 +30,11 @@ contract Votable is Administrable {
 
     /// @notice A struct representing a Referendum that has proposals tied to it.
     /// @param creationTime The block.timestamp at which the Referendum was created. Used for identification.
+    /// @param allowDivision A boolean stating if the Referendum is allowed to be implemented gradually.
     /// @param proposals An array of proposals connected to the Referendum.
     struct Referendum {
         uint256 creationTime;
+        bool allowDivision;
         Proposal[] proposals;
     }
 
@@ -59,6 +61,11 @@ contract Votable is Administrable {
         Referendum referendum,
         bool result
         );
+
+    /// @notice Event that triggers when a whole Referendum has been implemented.
+    event ReferendumImplemented(
+        Referendum referendum
+        );
     
     /// @notice Event that triggers when a Proposal is implemented.
     event ProposalImplemented(
@@ -68,10 +75,10 @@ contract Votable is Administrable {
 
     /// @notice Event that triggers when a vote is cast on a Referendum.
     event VoteCast(
-        address by,
         Referendum referendum,
         Shard shard,
-        bool for
+        bool for,
+        address by
         );
 
     /// @notice Modifier that makes sure msg.sender has NOT voted on a specific referendum.
@@ -99,12 +106,18 @@ contract Votable is Administrable {
     }
 
     /// @inheritdoc _issueVote
-    function issueVote(Proposal[] proposals) external onlyWithPermit("issueVote") {
-        _issueVote(proposals);
+    function issueVote(Proposal[] proposals, bool allowDivision) external onlyWithPermit("issueVote") {
+        _issueVote(proposals, allowDivision);
+    }
+
+    /// @inheritdoc _implementReferendum
+    function implementReferendum(Referendum referendum) external onlyWithPermit("implementProposal") {
+        _implementReferendum(referendum);
     }
 
     /// @inheritdoc _implementProposal
     function implementProposal(Referendum referendum, Proposal proposal) external onlyWithPermit("implementProposal") {
+        require(referendum.allowDivision, "This Referendum is not allowed to be gradually implemented. Consider using the 'implementReferendum' function instead.")
         _implementProposal(referendum, proposal);
     }
 
@@ -121,7 +134,7 @@ contract Votable is Administrable {
         else {
             referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,shard.fraction));
         }
-        emit VoteCast(msg.sender, referendum, shard, for);
+        emit VoteCast(referendum, shard, for, msg.sender);
     }
 
     /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
@@ -140,6 +153,7 @@ contract Votable is Administrable {
         }
         return false;
     }
+    
     /// @notice Returns a boolean stating if a given Referendum is pending or not.
     /// @param referendum The Referendum to be checked for.
     function referendumIsPending(Referendum referendum) returns(bool) {
@@ -160,9 +174,10 @@ contract Votable is Administrable {
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
-    function _issueVote(Proposal[] proposals, address by) internal onlyIfActive {
+    function _issueVote(Proposal[] proposals, bool allowDivision, address by) internal onlyIfActive {
         Referendum referendum = new Referendum();
         referendum.creationTime = block.timestamp;
+        referendum.allowDivision = allowDivision;
         referendum.proposals = proposals;
         pendingReferendums[referendum] = true;
         emit ReferendumIssued(referendum, by);
@@ -184,8 +199,9 @@ contract Votable is Administrable {
     /// @param referendum The passed Referendum containing the Proposal.
     /// @param proposalIndex The index of the proposal to be implemented.
     function _implementProposal(Referendum referendum, uint256 proposalIndex) internal onlyIfActive onlyPassedReferendum(referendum) onlyExistingProposal(referendum,proposalIndex) {
-        require(dynamicReferendumInfo[referendum].proposalsImplemented == proposalIndex, "Proposals must be executed in the correct order.");
+        require(dynamicReferendumInfo[referendum].amountImplemented == proposalIndex, "Proposals must be executed in the correct order!");
         dynamicReferendumInfo[referendum].amountImplemented += 1;
+        Proposal memory proposal = referendum.proposals[proposalIndex];
         switch (proposal.functionName) {
                     case "issueVote":
                         require(issueVote.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
@@ -231,6 +247,21 @@ contract Votable is Administrable {
                         require(_liquidize.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         _liquidize();
                         break;
+
+        }
+        emit ProposalImplemented(proposal, referendum);
+        if (referendum.amountImplemented == referendum.proposals.length) {
+            emit ReferendumImplemented(referendum);
+        }
+
+    }
+
+    /// @notice Fully implements a given passed Referendum.
+    /// @param referendum The passed Referendum to be fully implemented.
+    function _implementReferendum(Referendum referendum) internal onlyIfActive onlyPassedReferendum(referendum) {
+        require(referendum.amountImplemented < referendum.proposals.length, "Referendum ALREADY implemented!!!")
+        for (uint256 pIndex=referendum.amountImplemented; pIndex<referendum.proposals.length; pIndex++) {
+            _implementProposal(referendum,pIndex);
         }
     }
 }
