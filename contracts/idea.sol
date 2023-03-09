@@ -30,6 +30,32 @@ contract Idea is Shardable {
     /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
     mapping(address => bool) validTokenAddresses;
 
+    /// @notice Event that triggers when a token is received.
+    event TokenReceived(
+        address tokenAddress,
+        uint256 value,
+        address from
+    );
+
+    /// @notice Event that triggers when a token is transferred.
+    event TokenTransfered(
+        string bankName,
+        address tokenAddress,
+        uint256 value,
+        address to,
+        address by
+    );
+
+    /// @notice Event that triggers when the entity is liquidized. Can only be emitted once during the lifetime of an entity.
+    event EntityLiquidized();
+
+    /// @notice Event that triggers when part of the liquid is claimed following a liquidization.
+    event LiquidClaimed(
+        address tokenAddress,
+        uint256 value,
+        address by
+    );
+
     /// @notice Modifier requiring the msg.sender to be the administrable entity.
     modifier onlyAdministrable {
     	require(msg.sender == administrable);
@@ -69,16 +95,12 @@ contract Idea is Shardable {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
         require(acceptsToken(tokenAddress) , "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
         Dividend tokenLiquid = liquid[tokenAddress];
-        
         require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
         tokenLiquid.hasClaimed[msg.sender] = true;
         liquidValue = shardByOwner[shardHolder].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * tokenLiquid.originalValue;
         tokenLiquid.value -= liquidValue;
-        if (tokenLiquid.value == 0) {
-            _unregisterTokenAddress(tokenAddress);
-        }
         _transferToken(tokenAddress,liquidValue,msg.sender);
-        emit LiquidClaimed(liquidValue,msg.sender);
+        emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
     }
 
     /// @inheritdoc _transferToken
@@ -88,7 +110,7 @@ contract Idea is Shardable {
 
     /// @inheritdoc _liquidize
     function liquidize_() external onlyAdministrable {
-        _liquidize(by);
+        _liquidize();
     }
 
     /// @inheritdoc _setAdministrable
@@ -177,9 +199,6 @@ contract Idea is Shardable {
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) internal {
         // First: Liquidization logic
         liquid[tokenAddress].originalValue -= value;
-        if (liquid[tokenAddress].originalValue == 0) {
-            _unregisterTokenAddress(tokenAddress);
-        }
         emit TokenTransfered(tokenAddress,value,to);
     }
 

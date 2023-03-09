@@ -63,42 +63,26 @@ contract Administrable {
     /// @notice The Dividend latest and most recently issued.
     Dividend latestDividend;
 
-    // triggers when a dividend is issued
+    /// @notice Event that triggers when a Dividend is issued.
     event DividendIssued(
         Dividend dividend,
         address by
     );
 
-    // triggers when a dividend is dissolved
+    /// @notice Event that triggers when a Dividend is dissolved.
     event DividendDissolved(
         Dividend dividend,
         uint256 valueLeft,
         address by
     );
 
-    // triggers when a dividend is claimed
+    /// @notice Event that triggers when a Dividend is claimed.
     event DividendClaimed(
         Dividend dividend,
         address by
     );
 
-    // triggers when money is received
-    event TokenReceived(
-        address tokenAddress,
-        uint256 value,
-        address from
-    );
-
-    // triggers when token is transferred
-    event TokenTransfered(
-        string bankName,
-        address tokenAddress,
-        uint256 value,
-        address to,
-        address by
-    );
-
-    // triggers when a token is moved from one bank to another
+    /// @notice Event that triggers when a token is moved from one Bank to another.
     event TokenMoved(
         string fromBankName,
         string toBankName,
@@ -107,29 +91,22 @@ contract Administrable {
         address by
     );
 
-    // triggers when bank is created
+    /// @notice Event that triggers when a new Bank is created.
     event BankCreated(
         string name,
         address by
     );
 
+    /// @notice Event that triggers when a new admin has been added to a given Bank.
     event BankAdminAdded(string name, address admin, address by);
 
+    /// @notice Event that triggers when a former admin has been removed from a given Bank.
     event BankAdminRemoved(string name,address admin, address by);
 
 
-    // triggers when a bank is deleted
+    /// @notice Event that triggers when a Bank is deleted.
     event BankDeleted(
         string name,
-        address by
-    );
-
-    // triggers when the entity is liquidized
-    event EntityLiquidized(address by);
-
-    // triggers when a liquid is claimed
-    event LiquidClaimed(
-        uint256 value,
         address by
     );
 
@@ -331,15 +308,11 @@ contract Administrable {
     /// @param permitName The name of the permit to be checked for.
     function isValidPermit(string permitName) public pure returns(bool) {
         switch (permitName) {
-            case "issueVote":
-                return true;
             case "issueDividend":
                 return true;
             case "dissolveDividend":
                 return true;
             case "manageBank":
-                return true;
-            case "implementProposal":
                 return true;
             case "liquidizeEntity":
                 return true;
