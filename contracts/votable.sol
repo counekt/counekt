@@ -137,6 +137,27 @@ contract Votable is Administrable {
         emit VoteCast(referendum, shard, for, msg.sender);
     }
 
+    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
+    /// @param permitName The name of the permit to be checked for.
+    function isValidPermit(string permitName) public pure returns(bool) {
+        switch (permitName) {
+            case "issueVote":
+                return true;
+            case "issueDividend":
+                return true;
+            case "dissolveDividend":
+                return true;
+            case "manageBank":
+                return true;
+            case "implementProposal":
+                return true;
+            case "liquidizeEntity":
+                return true;
+            default:
+                return false;
+        }
+    }
+
     /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
     /// @param shardHolder The address of the potential Shard Holder voter to be checked for.
     /// @param referendum The Referendum to be checked for.
@@ -171,27 +192,6 @@ contract Votable is Administrable {
     /// @param proposalIndex The index of the proposal to be checked for.
     function proposalExists(Referendum referendum, uint256 proposalIndex) returns(bool) {
         return referendum.proposals.length > proposalIndex;
-    }
-
-    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
-    /// @param permitName The name of the permit to be checked for.
-    function isValidPermit(string permitName) public pure returns(bool) {
-        switch (permitName) {
-            case "issueVote":
-                return true;
-            case "issueDividend":
-                return true;
-            case "dissolveDividend":
-                return true;
-            case "manageBank":
-                return true;
-            case "implementProposal":
-                return true;
-            case "liquidizeEntity":
-                return true;
-            default:
-                return false;
-        }
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!

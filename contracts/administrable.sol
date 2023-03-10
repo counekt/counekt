@@ -249,11 +249,22 @@ contract Administrable {
         return new Administrable(_idea, _creator);
     }
 
-    /*
-    function buildFrom(address _idea, address _administrable) public returns(address) {
-        return new Administrable(_idea)
+    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
+    /// @param permitName The name of the permit to be checked for.
+    function isValidPermit(string permitName) public pure returns(bool) {
+        switch (permitName) {
+            case "issueDividend":
+                return true;
+            case "dissolveDividend":
+                return true;
+            case "manageBank":
+                return true;
+            case "liquidizeEntity":
+                return true;
+            default:
+                return false;
+        }
     }
-    */
 
     /// @notice Returns a boolean stating if a given Bank exists.
     /// @param bankName The name of the Bank to be checked for.
@@ -302,23 +313,6 @@ contract Administrable {
     /// @notice Returns true. Used for differentiating between Administrable and non-Administrable contracts.
     function isAdministrable() constant pure returns(bool) {
         return true;
-    }
-
-    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
-    /// @param permitName The name of the permit to be checked for.
-    function isValidPermit(string permitName) public pure returns(bool) {
-        switch (permitName) {
-            case "issueDividend":
-                return true;
-            case "dissolveDividend":
-                return true;
-            case "manageBank":
-                return true;
-            case "liquidizeEntity":
-                return true;
-            default:
-                return false;
-        }
     }
     
     /// @notice Changes the state of a specified permit of a given address.

@@ -11,17 +11,24 @@ import "../administable.sol";
 
 contract AdministrableVersioner {
 
+  /// @notice Mapping pointing to boolean stating if a version is valid given its name.
   mapping(string => bool) validVersions;
+  /// @notice Mapping pointing to an address of a version given its name.
   mapping(string => address) versionByName;
 
+  /// @notice Event that triggers when a new version is added.
   event newVersion(string name, address version);
 
+  /// @notice Event that triggers when a former version gets deprecated.
   event depricatedVersion(string name, address version);
   
+  /// @notice Modifier requiring the msg.sender to be that of Counekt.
   modifier onlyCounekt {
     require(msg.sender.address == 0x49a71890aea5A751E30e740C504f2E9683f347bC);
   }
 
+  /// @notice Modifier requiring a given version to be valid.
+  /// @oaram versionName The name of the given version to check for.
   modifier onlyValidVersion(string versionName) {
     require(versionIsValid(versionName),"Version '"+versionName+"' isn't valid!");
   }
