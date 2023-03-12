@@ -1,6 +1,6 @@
 pragma solidity ^0.8.4;
 
-import "../administable.sol";
+import "./administrable.sol";
 
 /// @title A fractional DAO-like contract whose decisions can be voted upon by its shareholders
 /// @author Frederik W. L. Christoffersen
@@ -44,7 +44,7 @@ contract Votable is Administrable {
     /// @param hasVoted Mapping pointing to a boolean stating if the holder of a given Shard has voted on the Referendum.
     /// @param amountImplemented Amount of proposals implemented.
     struct DynamicReferendumInfo {
-        Fraction forFraction;
+        Fraction favorFraction;
         Fraction againstFraction;
         mapping(Shard => bool) hasVoted;
         uint256 amountImplemented;
@@ -76,8 +76,8 @@ contract Votable is Administrable {
     /// @notice Event that triggers when a vote is cast on a Referendum.
     event VoteCast(
         Referendum referendum,
-        Shard shard,
-        bool for,
+        Shard shard, 
+        bool favor,
         address by
         );
 
@@ -117,45 +117,50 @@ contract Votable is Administrable {
 
     /// @inheritdoc _implementProposal
     function implementProposal(Referendum referendum, Proposal proposal) external onlyWithPermit("implementProposal") {
-        require(referendum.allowDivision, "This Referendum is not allowed to be gradually implemented. Consider using the 'implementReferendum' function instead.")
+        require(referendum.allowDivision, "This Referendum is not allowed to be gradually implemented. Consider using the 'implementReferendum' function instead.");
         _implementProposal(referendum, proposal);
     }
 
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
     /// @param referendum The referendum to be voted on.
     /// @param for The boolean value signalling a FOR or AGAINST vote.
-    function vote(Shard shard, Referendum referendum, bool for) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
+    function vote(Shard shard, Referendum referendum, bool favor) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
         require(shardExisted(referendum.creationTime), "Shard is not applicable for this vote!");
         referendum.hasVoted[shard] = true;
-        if (for) {
-            referendum.forFraction = simplifyFraction(addFractions(referendum.forFraction,shard.fraction));
+        if (favor) {
+            referendum.favorFraction = simplifyFraction(addFractions(referendum.favorFraction,shard.fraction));
         }
         else {
             referendum.againstFraction = simplifyFraction(addFractions(referendum.againstFraction,shard.fraction));
         }
-        emit VoteCast(referendum, shard, for, msg.sender);
+        emit VoteCast(referendum, shard, favor, msg.sender);
     }
 
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
     /// @param permitName The name of the permit to be checked for.
     function isValidPermit(string permitName) public pure returns(bool) {
-        switch (permitName) {
-            case "issueVote":
+            if (permitName ==  "issueVote") {
                 return true;
-            case "issueDividend":
+            }
+            if (permitName ==  "issueDividend") {
                 return true;
-            case "dissolveDividend":
+            }
+            if (permitName ==  "dissolveDividend") {
                 return true;
-            case "manageBank":
+            }
+            if (permitName ==  "manageBank") {
                 return true;
-            case "implementProposal":
+            }
+            if (permitName ==  "implementProposal") {
                 return true;
-            case "liquidizeEntity":
+            }
+            if (permitName ==  "liquidizeEntity") {
                 return true;
-            default:
+            }
+            else {
                 return false;
-        }
+            }
     }
 
     /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
@@ -165,11 +170,11 @@ contract Votable is Administrable {
         return referendum.hasVoted[shardByOwner[shardholder]];
     }
 
-    /// @notice Returns a boolean stating if a given Referendum has been voted through (>=50% FOR) or not.
+    /// @notice Returns a boolean stating if a given Referendum has been voted through (>=50% FAVOR) or not.
     /// @param referendum The Referendum to be checked for.
     function getReferendumResult(Referendum referendum) pure returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
-        if (referendum.forFraction.numerator / referendum.forFraction.denominator > 0.5) {
+        if (referendum.favorFraction.numerator / referendum.favorFraction.denominator > 0.5) {
             return true;
         }
         return false;
@@ -223,53 +228,50 @@ contract Votable is Administrable {
         require(dynamicReferendumInfo[referendum].amountImplemented == proposalIndex, "Proposals must be executed in the correct order!");
         dynamicReferendumInfo[referendum].amountImplemented += 1;
         Proposal memory proposal = referendum.proposals[proposalIndex];
-        switch (proposal.functionName) {
-                    case "issueVote":
+                    if (proposal.functionName == "issueVote") {
                         require(issueVote.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
-                        Proposal[] proposals, allowDivision = abi.decode(proposal.argumentData, (Proposal[], bool));
+                        (Proposal[] proposals, bool allowDivision) = abi.decode(proposal.argumentData, (Proposal[], bool));
                         _issueVote(proposals, allowDivision, this.address);
-                        break;
-                    case "changePermit":
+                    }
+                    if (proposal.functionName == "changePermit") {
                         require(changePermit.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         (address shardHolder, string permitName, bool newState) = abi.decode(proposal.argumentData, (address, string, bool));
                         _changePermit(shardholder,permitName,newState,this.address);
-                        break;
-                    case "transferToken":
+                    }
+                    if (proposal.functionName == "transferToken") {
                         require(transferToken.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         (string fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposal.argumentData, (string, address, uint256,address));
                         _transferTokenFromBank(fromBankName,tokenAddress,value,to,this.address);
-                        break;
-                    case "moveToken":
+                    }
+                    if (proposal.functionName == "moveToken") {
                         require(moveToken.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         (string fromBankName, string toBankName, address tokenAddress, uint256 value) = abi.decode(proposal.argumentData, (string, string, address, uint256));
                         _moveToken(fromBankName,toBankName,tokenAddress,value,this.address);
-                        break;
-                    case "issueDividend":
+                    }
+                    if (proposal.functionName == "issueDividend") {
                         require(issueDividend.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         (string bankName, address tokenAddress, uint256 value) = abi.decode(proposal.argumentData, (string,address,uint256));
                         _issueDividend(bankName,tokenAddress,value,this.address);
-                        break;
-                    case "dissolveDividend":
+                    }
+                    if (proposal.functionName == "dissolveDividend") {
                         require(dissolveDividend.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         (Dividend dividend) = abi.decode(proposal.argumentData, (Dividend));
                         _dissolveDividend(dividend,this.address);
-                        break;
-                    case "createBank":
+                    }
+                    if (proposal.functionName == "createBank") {
                         require(createBank.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
-                        (string bankName, bankAdministrator) = abi.decode(proposal.argumentData, (string, address));
+                        (string bankName, address bankAdministrator) = abi.decode(proposal.argumentData, (string, address));
                         _createBank(bankName,bankAdministrator,this.address);
-                        break;
-                    case "deleteBank":
+                    }
+                    if (proposal.functionName == "deleteBank") {
                         require(deleteBank.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         (string bankName) = abi.decode(proposal.argumentData, (string));
                         _deleteBank(bankName, this.address);
-                        break;
-                    case "liquidize":
+                    }
+                    if (proposal.functionName == "liquidize") {
                         require(_liquidize.selector == abi.decode(proposal.argumentData,(bytes4)), "Arguments don't fit!");
                         _liquidize();
-                        break;
-
-        }
+                    }
         emit ProposalImplemented(proposal, referendum);
         if (referendum.amountImplemented == referendum.proposals.length) {
             emit ReferendumImplemented(referendum);
@@ -280,7 +282,7 @@ contract Votable is Administrable {
     /// @notice Fully implements a given passed Referendum.
     /// @param referendum The passed Referendum to be fully implemented.
     function _implementReferendum(Referendum referendum) internal onlyIfActive onlyPassedReferendum(referendum) {
-        require(referendum.amountImplemented < referendum.proposals.length, "Referendum ALREADY implemented!!!")
+        require(referendum.amountImplemented < referendum.proposals.length, "Referendum ALREADY implemented!!!");
         for (uint256 pIndex=referendum.amountImplemented; pIndex<referendum.proposals.length; pIndex++) {
             _implementProposal(referendum,pIndex);
         }

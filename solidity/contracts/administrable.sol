@@ -219,7 +219,7 @@ contract Administrable {
     /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
     function claimDividend(Shard shard, Dividend dividend) external onlyExistingDividend onlyIfActive {
-        require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.")
+        require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.");
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
         require(dividend.hasClaimed[msg.sender] == false, "Already claimed Dividend!");
         require(shardExisted(shard,dividend.creationTime), "Not applicable for Dividend!");
@@ -252,18 +252,21 @@ contract Administrable {
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
     /// @param permitName The name of the permit to be checked for.
     function isValidPermit(string permitName) public pure returns(bool) {
-        switch (permitName) {
-            case "issueDividend":
+            if(permitName == "issueDividend") {
                 return true;
-            case "dissolveDividend":
+            }
+            if(permitName == "dissolveDividend") {
                 return true;
-            case "manageBank":
+            }
+            if(permitName == "manageBank") {
                 return true;
-            case "liquidizeEntity":
+            }
+            if(permitName == "liquidizeEntity") {
                 return true;
-            default:
+            }
+            else {
                 return false;
-        }
+            }
     }
 
     /// @notice Returns a boolean stating if a given Bank exists.
@@ -296,8 +299,8 @@ contract Administrable {
     /// @param _address The address to be checked for.
     /// @param permitName The name of the permit to be checked for.
     function hasPermit(address _address, string permitName) public view returns(bool) {
-        if (_address == this.address) {return true}
-        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false}
+        if (_address == this.address) {return true;}
+        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false;}
         return permits[permitName][_address] >= PermitState.authorized || basePermits.issueVote >= PermitState.authorized;
     }
 
@@ -305,13 +308,13 @@ contract Administrable {
     /// @param _address The address to be checked for.
     /// @param permitName The name of the permit to be checked for.
     function isPermitAdmin(address _address, string permitName) public view returns(bool) {
-        if (_address == this.address) {return true}
-        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false}
+        if (_address == this.address) {return true;}
+        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false;}
         return permits[permitName][_address] == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
     }
 
     /// @notice Returns true. Used for differentiating between Administrable and non-Administrable contracts.
-    function isAdministrable() constant pure returns(bool) {
+    function isAdministrable() pure returns(bool) {
         return true;
     }
     
@@ -348,7 +351,7 @@ contract Administrable {
     /// @param bankAdmin The address of the new Bank administrator to be added.
     /// @param by The initiator of the Bank administrator addition.
     function _addBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(isBankAdmin(by,bankName))
+        require(isBankAdmin(by,bankName));
         require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
         require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         Bank memory bank = bankByName[bankName];

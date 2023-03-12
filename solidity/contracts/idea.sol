@@ -1,7 +1,7 @@
 pragma solidity ^0.8.4;
 
-import "../versionControl.sol";
-import "../shardable.sol";
+import "./versionable.sol";
+import "./shardable.sol";
 
 
 /// @title A proof of fractional ownership of an entity with valuables (administered by Administrable).
@@ -129,7 +129,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
-    function isIdea() constant pure returns(bool) {
+    function isIdea() pure returns(bool) {
         return true;
     }
     
@@ -167,7 +167,7 @@ contract Idea is Shardable {
     /// @notice Sets a new address of the Administrable, which controls all unknown function calls and the Idea itself.
     /// @param _administrable The address of the new Administrable entity.
     function _setAdministrable(address _administrable) internal {
-        require(Administrable(_administrable).isAdministrable())
+        require(Administrable(_administrable).isAdministrable());
         administrable = _administrable;
     }
 

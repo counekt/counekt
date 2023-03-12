@@ -1,6 +1,6 @@
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts@4.6.0/token/ERC20/ERC20.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // Fractional Math
 
@@ -37,14 +37,14 @@ function divideUnequallyIntoTwoWithRemainder(uint256 dividend, Fraction fraction
 /// @param b Second integer.
 function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
         while (b) {
-        a,b = b, a % b;
+        (a, b) = (b, a % b);
         }
         return a;
 }
 
 /// @notice Returns a simplified version of a fraction.
 /// @param fraction The fraction to be simplified.
-function simplifyFraction(Fraction fraction) constant pure returns(Fraction) {
+function simplifyFraction(Fraction fraction) pure returns(Fraction) {
     uint256 commonDenominator = getCommonDenominator(fraction.numerator,fraction.denominator);
     return new Fraction(fraction.numerator/commonDenominator,fraction.denominator/commonDenominator);
 }
@@ -52,16 +52,16 @@ function simplifyFraction(Fraction fraction) constant pure returns(Fraction) {
 /// @notice Adds two fractions together.
 /// @param a First fraction.
 /// @param b Second fraction.
-function addFractions(Fraction a, Fraction b) constant pure returns (Fraction) {
+function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
     a.numerator = a.numerator * b.denominator;
-    b.numerator = b.numerator * a.denominator,
+    b.numerator = b.numerator * a.denominator;
     return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
 }
 
 /// @notice Subtracts a fraction from another and returns the difference.
 /// @param a The minuend fraction to be subtracted from.
 /// @param b The subtrahend fraction that subtracts from the minuend.
-function subtractFractions(Fraction a, Fraction b) constant pure returns (Fraction) {
+function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
     return addFractions(a,new Fraction(-b.numerator,b.denominator));
 }
 
@@ -78,7 +78,7 @@ contract Shardable {
     /// @param owner The owner of the Shard.
     /// @param creationTime The block.timestamp at which the Shard was created.
     struct Shard {
-        Fraction public fraction;
+        Fraction fraction;
         address owner; 
         uint256 creationTime;
     }
@@ -91,12 +91,12 @@ contract Shardable {
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param salePrice The amount which the Shard is for sale as. The token address being the valuta.
     struct DynamicShardInfo {
-        uint256 expiredTime = type(uint256).max; // The maximum value: (2^256)-1
-        bool public forSale;
-        address public forSaleTo;
-        Fraction public fractionForSale;
-        address public tokenAddress;
-        uint256 public salePrice;
+        uint256 expiredTime;
+        bool forSale;
+        address forSaleTo;
+        Fraction fractionForSale;
+        address tokenAddress;
+        uint256 salePrice;
     }
 
     /// @notice Boolean stating if the Shardable is active or not - changeable and tradeable or not.
@@ -132,7 +132,7 @@ contract Shardable {
         Fraction fraction,
         address tokenAddress,
         uint256 price,
-        address to,
+        address to
         );
 
     /// @notice Event emitted when a sale of a Shard is cancelled.
@@ -231,7 +231,7 @@ contract Shardable {
 
     /// @inheritdoc _transferShard
     function transferShard(Shard shard, address to) external onlyHolder(shard) {
-        _transferShard(shard,to)
+        _transferShard(shard,to);
     }
 
     /// @notice Returns a boolean stating if a given shard is currently valid or not.
@@ -301,8 +301,8 @@ contract Shardable {
         Shard newSenderShard = new Shard(newSenderFraction,sender,transferTime);
         _pushShard(newReceiverShard);
         _pushShard(newSenderShard);
-        }
     }
+    
 
     /// @notice Sends a whole shard to a receiver.
     /// @param senderShard The shard to be transferred.
@@ -367,6 +367,7 @@ contract Shardable {
     /// @notice Pushes a shard to the registry of currently valid shards.
     /// @param shard The shard to be pushed.
     function _pushShard(Shard _shard) internal {
+        dynamicShardInfo[shard].expiredTime = type(uint256).max; // The maximum value: (2^256)-1
         shardByOwner[shard.owner] = shard;
         currentlyValidShards[shard] = true;
         historicallyValidShards[shard] = true;

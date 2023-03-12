@@ -1,6 +1,6 @@
 pragma solidity ^0.8.4;
 
-import "../administable.sol";
+import "./administrable.sol";
 
 
 /// @title Bottle neck of the Administrable versioning. An admin contract to manage valid Idea entity upgrades controlled by Counekt.
@@ -35,15 +35,15 @@ contract AdministrableVersioner {
   
   /// @notice Checks if a given Administrable version is stored in the registry of valid versions.
   /// @param versionName The version name of the Administrable version to be checked for.
-  function versionIsValid(string versionName) public view returns(bool){
+  function versionIsValid(string versionName) public view returns(bool) {
     return validVersions[versionName]>0;
   }
 
   /// @notice Creates and returns a new Administrable entity.
   /// @param versionName The version name of the Administrable version to be created.
   /// @param idea The Idea that the Administrable will be attached to.
-  function buildVersion(string versionName, address idea, address _creator) external returns(address) onlyValidVersion(versionName) {
-    newVersionInstance = Administrable(versionByName[versionName]).create(idea, _creator);
+  function buildVersion(string versionName, address idea, address _creator) external onlyValidVersion(versionName) returns(address) {
+    Administrable newVersionInstance = Administrable(versionByName[versionName]).create(idea, _creator);
     return newVersionInstance;
   }
   
