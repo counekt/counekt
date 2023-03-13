@@ -1,9 +1,11 @@
 pragma solidity ^0.8.4;
 
-/// @title A contract that works as the administrable interface to an Idea.
+import "./idea.sol";
+
+/// @title An extension of the Idea providing an administrable interface.
 /// @author Frederik W. L. Christoffersen
-/// @notice This contract is used as an administrable entity and only works with an Idea.
-contract Administrable {
+/// @notice This contract adds administrability via permits and internally closed money supplies.
+contract Administrable is Idea {
 
     /// @notice A struct representing a Bank used to encapsel funds and tokens restricted to a few spenders.
     /// @param name The name of the Bank. Used for identification.
@@ -40,9 +42,6 @@ contract Administrable {
         uint256 originalValue;
         mapping(Shard => bool) hasClaimed;
     }
-
-    /// @notice The Idea contract entity which the Administrable administers.
-    address idea;
 
     /// @notice Boolean value stating if the Administrable allows non-shard-holders to have permits or not.
     bool allowNonShardHolders;
@@ -110,52 +109,53 @@ contract Administrable {
         address by
     );
 
-    /// @notice Modifier requiring the msg.sender to be the Idea entity.
-    modifier onlyIdea() {
-        require(idea == msg.sender);
-    }
-
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permitName The name of the permit to be checked for.
     modifier onlyWithPermit(string permitName) {
         require(hasPermit(msg.sender, permitName));
+        _;
     }
     
     /// @notice Modifier that makes sure msg.sender is an admin of a given permit.
     /// @param permitName The name of the permit to be checked for.
     modifier onlyPermitAdmin(string permitName) {
       require(isPermitAdmin(msg.sender,permitName));
+      _;
+
     }
 
     /// @notice Modifier that makes sure msg.sender is admin of a given bank.
     /// @param bankName The name of the Bank to be checked for.
     modifier onlyBankAdmin(string bankName) {
         require(isBankAdmin(msg.sender, bankName));
+        _;
     }
 
     /// @notice Modifier that makes sure a given bank exists
     /// @param bankName The name of the Bank to be checked for.
     modifier onlyExistingBank(string bankName) {
         require(bankExists(bankName), "Bank '"+bankName+"' does NOT exist!");
+        _;
     }
     
     /// @notice Modifier that makes sure a given dividend exists and is valid
     /// @param dividend The Dividend to be checked for.
     modifier onlyExistingDividend(Dividend dividend) {
       require(dividendExists(dividend));
+      _;
     }
 
     /// @notice Modifier that makes sure the Idea entity is active and not liquidized/dissolved.
     modifier onlyIfActive() {
-        require(idea.active == true, "Idea has been liquidized and isn't active anymore.");
+        require(active == true, "Idea has been liquidized and isn't active anymore.");
+        _;
     }
 
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     /// @dev Creation of the 'main' Bank is a PROBLEM, when connecting to Old Ideas with lots of tokens!!!
     /// @param _idea The address of the Idea to be connected to the Administrable.
     /// @param _creator The address to assigned as the administrator of the "main" Bank
-    constructor(address _idea, address _creator) {
-        idea = _idea;
+    constructor(address _creator) {
         _createBank("main",_creator,this.address);
     }
 
@@ -239,7 +239,7 @@ contract Administrable {
     }
 
     /// @inheritdoc _processTokenReceipt
-    function processTokenReceipt(address tokenAddress, uint256 value, address from) external onlyIdea {
+    function processTokenReceipt(address tokenAddress, uint256 value, address from) external {
         _processTokenReceipt(tokenAddress,value,from);
     }
 
@@ -471,6 +471,7 @@ contract Administrable {
     /// @param value The value/amount of the received token.
     /// @param from The sender of the received token.
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
+        super._processTokenReceipt(tokenAddress, value, from);
         // Then: Bank logic
         Bank memory bank = bankByName["main"];
         if (bank.balance[tokenAddress] == 0 && tokenAddress != address(0)) {
@@ -487,6 +488,7 @@ contract Administrable {
     /// @param to The recipient of the transferred token.
     /// @param by The initiator of the transfer.
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+        super._processTokenTransfer(tokenAddress, value, from);
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
         if (fromBank.balance[tokenAddress] == 0) {

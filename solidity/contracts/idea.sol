@@ -4,7 +4,7 @@ import "./versionable.sol";
 import "./shardable.sol";
 
 
-/// @title A proof of fractional ownership of an entity with valuables (administered by Administrable).
+/// @title A proof of fractional ownership of an entity with valuables.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable business entity. 
 /// @custom:illustration Idea => Idea.Administration => Idea
@@ -20,9 +20,6 @@ contract Idea is Shardable {
         uint256 originalValue;
         mapping(Shard => bool) hasClaimed;
     }
-
-	/// @notice The Administrable contract entity from which the Idea is administered.
-	address administrable;
 
 	/// @notice Mapping pointing to a Token Register given the address of the ERC20 token contract.
     mapping(address => TokenRegister) liquid;
@@ -56,27 +53,10 @@ contract Idea is Shardable {
         address by
     );
 
-    /// @notice Modifier requiring the msg.sender to be the administrable entity.
-    modifier onlyAdministrable {
-    	require(msg.sender == administrable);
-    }
-
-    /// @notice Constructor function setting up the Administrable entity, given the name of the Administrable type.
-    /// @param administrableType The type of Administrable to be set up.
-    constructor(string administrableType) {
-        // AdministrableVersioner = *whatever the address of it will be*
-        _setAdministrable(AdministrableVersioner.buildVersion(administrableType, this.address, msg.sender.address));
-    }
-
     /// @notice Receive function that receives ether when there's no supplying data
     receive() payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
         _processTokenReceipt(address(0),msg.value,msg.sender);
-    }
-
-    /// @notice Fallback function that forwards unregistered function calls to the Administrable entity.
-    fallback() external {
-      administrable.call(msg.data);
     }
 
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
@@ -186,13 +166,10 @@ contract Idea is Shardable {
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
         // First: Liquid logic
         liquid[tokenAddress].originalValue += value;
-        administrable.processTokenReceipt(tokenAddress, value, from);
         emit TokenReceived(tokenAddress,value,from);
     }
 
     /// @notice Processes a token transfer and subtracts it from the token registry.
-    /// @dev Does NOT call an Administrable.processTokenTransfer, since transfer calls always stem from there.
-    /// @custom:illustration Administrable.transferToken() => Idea.transferToken() + Administrable._processTokenTransfer() => Idea._processTokenTransfer()
     /// @param tokenAddress The address of the transferred token.
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
