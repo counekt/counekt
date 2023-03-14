@@ -85,37 +85,49 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     modifier hasNotVoted(Referendum referendum) {
         require(!hasVoted(msg.sender,referendum));
+        _;
+
     }
 
-    /// @inheritdoc referendumIsPending
     /// @notice Modifier that makes sure a given Referendum is pending.
+    /// @param referendum The Referendum to be checked for.
     modifier onlyPendingReferendum(Referendum referendum) {
         require(referendumIsPending(referendum), "Referendum is NOT pending!");
+        _;
     }
 
-    /// @inheritdoc referendumIsPassed
     /// @notice Modifier that makes sure a given Referendum is passed.
+    /// @param referendum The Referendum to be checked for.
     modifier onlyPassedReferendum(Referendum referendum) {
         require(referendumIsPassed(referendum), "Referendum has NOT been passed!");
+        _;
     }
 
-    /// @inheritdoc proposalExists
     /// @notice Modifier that makes sure a given Proposal exists within a given Referendum.
+    /// @param referendum The Referendum to be checked for.
+    /// @param proposalIndex The index of the proposal to be checked for.
     modifier onlyExistingProposal(Referendum referendum, uint256 proposalIndex) {
         require(proposalExists(referendum,proposalIndex), "Proposal does NOT exists!");
+        _;
     }
 
-    /// @inheritdoc _issueVote
+    /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
+    /// @param proposals The array of proposals to be tied to the Referendum.
+    /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
+    /// @param by The issuer of the Referendum.
     function issueVote(Proposal[] proposals, bool allowDivision) external onlyWithPermit("issueVote") {
         _issueVote(proposals, allowDivision);
     }
 
-    /// @inheritdoc _implementReferendum
+    /// @notice Fully implements a given passed Referendum.
+    /// @param referendum The passed Referendum to be fully implemented.
     function implementReferendum(Referendum referendum) external onlyWithPermit("implementProposal") {
         _implementReferendum(referendum);
     }
 
-    /// @inheritdoc _implementProposal
+    /// @notice Implements a given Proposal, within a given passed Referendum.
+    /// @param referendum The passed Referendum containing the Proposal.
+    /// @param proposalIndex The index of the proposal to be implemented.
     function implementProposal(Referendum referendum, Proposal proposal) external onlyWithPermit("implementProposal") {
         require(referendum.allowDivision, "This Referendum is not allowed to be gradually implemented. Consider using the 'implementReferendum' function instead.");
         _implementProposal(referendum, proposal);
@@ -200,6 +212,9 @@ contract Votable is Administrable {
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
+    /// @param proposals The array of proposals to be tied to the Referendum.
+    /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
+    /// @param by The issuer of the Referendum.
     function _issueVote(Proposal[] proposals, bool allowDivision, address by) internal onlyIfActive {
         Referendum referendum = new Referendum();
         referendum.creationTime = block.timestamp;

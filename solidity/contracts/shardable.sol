@@ -1,6 +1,8 @@
 pragma solidity ^0.8.4;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 
 // Fractional Math
 
@@ -172,25 +174,34 @@ contract Shardable {
     }
 
     /// @notice Fallback function that reverts any calls to non-registered functions.
-    /// @dev This is rewritten in the Idea contract.
     fallback() external {
         revert;
     }
 
-    /// @inheritdoc _putForSale
+    /// @notice Puts a given shard for sale.
+    /// @param shard The shard to be put for sale.
+    /// @param fraction The absolute Fraction of the shard to be put for sale.
+    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     function putForSale(Shard shard, Fraction fraction, address tokenAddress, uint256 price) external onlyHolder(shard) {
         _putForSale(shard,tokenAddress,price,fraction);
     }
 
-    /// @inheritdoc _putForSaleTo
+    /// @notice Puts a given shard for sale only to a specifically set buyer.
+    /// @param shard The shard to be put for sale.
+    /// @param fraction The absolute Fraction of the shard to be put for sale.
+    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
+    /// @param to The specifically set buyer of the sale.
     function putForSaleTo(Shard shard, Fraction fraction, address tokenAddress, uint256 price, address to) external onlyHolder(shard) {
         _putForSaleTo(shard,tokenAddress,price,fraction,to);
     }
 
-    /// @inheritdoc _cancelSale
-    function cancelSale() onlyOwner {
-        _cancelSale();
-        emit SaleCancelled();
+    /// @notice Cancels a sell of a given Shard.
+    /// @param shard The shard to be put off sale.
+    function cancelSale(Shard shard) onlyHolder(shard) {
+        _cancelSale(shard);
+        emit SaleCancelled(shard);
     }
 
     /// @notice Purchases a listed Shard for sale.
@@ -213,23 +224,28 @@ contract Shardable {
             require(success, "Transfer failed.");
         } 
         else {
-            token = ERC20(dynamicShardInfo[shard].tokenAddress);
+            ERC20 token = ERC20(dynamicShardInfo[shard].tokenAddress);
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
             token.transferFrom(msg.sender,shard.owner,profitToSeller);
         } 
-        if (dynamicShardInfo[shard].fraction == dynamicShardInfo[shard].fractionForSale) {transferShard(shard,msg.sender);}
-        else {splitShard(msg.sender, dynamicShardInfo[shard].fractionForSale);}
+        if (dynamicShardInfo[shard].fraction == dynamicShardInfo[shard].fractionForSale) {_transferShard(shard,msg.sender);}
+        else {_split(shard, dynamicShardInfo[shard].fractionForSale,msg.sender);}
         emit SaleSold(shard,dynamicShardInfo[shard].fractionForSale,dynamicShardInfo[shard].tokenAddress,dynamicShardInfo[shard].salePrice,msg.sender);
     }
 
-    /// @inheritdoc _split
+    /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
+    /// @param senderShard The shard to be split.
+    /// @param toBeSplit The absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
+    /// @param to The receiver of the new Shard.
     function split(Shard shard, Fraction toBeSplit, address to) external onlyHolder(shard) {
         _split(shard, toBeSplit, to);
     }
 
-    /// @inheritdoc _transferShard
+    /// @notice Sends a whole shard to a receiver.
+    /// @param senderShard The shard to be transferred.
+    /// @param to The receiver of the new Shard.
     function transferShard(Shard shard, address to) external onlyHolder(shard) {
         _transferShard(shard,to);
     }
@@ -264,11 +280,10 @@ contract Shardable {
     /// @param senderShard The shard to be split.
     /// @param toBeSplit The absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(Shard senderhard, Fraction toBeSplit, address to) internal {
+    function _split(Shard senderShard, Fraction toBeSplit, address to) internal {
         require(toBeSplit.numerator/toBeSplit.denominator < senderShard.fraction.numerator/senderShard.fraction.denominator, "Can't split 100% or more of shard's fraction");
         uint256 transferTime = block.timestamp;
-        require(transferTime > shard.creationTime, "Can't trade more than once per second! The shard to be split must be more than one second old. Wait a second.");
-
+        require(transferTime > senderShard.creationTime, "Can't trade more than once per second! The shard to be split must be more than one second old. Wait a second.");
         address memory sender = senderShard.owner;
         bool memory receiverIsShardHolder = isShardHolder(to);
         Fraction memory newReceiverFraction;
@@ -280,7 +295,7 @@ contract Shardable {
             newReceiverFraction = addFractions(receiverShard.fraction,toBeSplit); // The fractions are added and upgraded
             
             // Expire the Old Receiver Shard
-            _expireShard(receiverShard); 
+            _removeShard(receiverShard); 
 
         }
 
@@ -293,7 +308,7 @@ contract Shardable {
         Fraction newSenderFraction = subtractFractions(senderShard.fraction,toBeSplit);
 
         // Expire the Old Sender Shard
-        _expireShard(senderShard); 
+        _removeShard(senderShard); 
 
         // Push the new Shards
         Shard newReceiverShard = new Shard(newReceiverFraction,to,transferTime);
@@ -344,14 +359,17 @@ contract Shardable {
         dynamicShardInfo[shard].fractionForSale = simplifiedFraction;
         dynamicShardInfo[shard].tokenAddress = tokenAddress;
         dynamicShardInfo[shard].salePrice = price;
-        dynamicShardInfo[shard].forsale = True;
+        dynamicShardInfo[shard].forsale = true;
         emit PutForSale(shard,simplifiedFraction,tokenAddress,price,dynamicShardInfo[shard].forsaleTo);
     }
 
-    /// @inheritdoc _putForSale
     /// @notice Puts a given shard for sale only to a specifically set buyer.
+    /// @param shard The shard to be put for sale.
+    /// @param fraction The absolute Fraction of the shard to be put for sale.
+    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale.
-    function _putForSaleTo(Shard shard, Fraction fraction, address to, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
+    function _putForSaleTo(Shard shard, Fraction fraction, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
         dynamicShardInfo[shard].forSaleTo = to;
         _putForSale(shard,fraction,tokenAddress,price);
     }
@@ -366,7 +384,7 @@ contract Shardable {
 
     /// @notice Pushes a shard to the registry of currently valid shards.
     /// @param shard The shard to be pushed.
-    function _pushShard(Shard _shard) internal {
+    function _pushShard(Shard shard) internal {
         dynamicShardInfo[shard].expiredTime = type(uint256).max; // The maximum value: (2^256)-1
         shardByOwner[shard.owner] = shard;
         currentlyValidShards[shard] = true;

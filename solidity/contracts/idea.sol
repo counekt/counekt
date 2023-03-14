@@ -1,6 +1,5 @@
 pragma solidity ^0.8.4;
 
-import "./versionable.sol";
 import "./shardable.sol";
 
 
@@ -70,42 +69,17 @@ contract Idea is Shardable {
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
-    /// @inheritdoc _liquidize
-    function claimLiquid(address shardHolder, address tokenAddress) external onlyShardHolder {
+    /// @param tokenAddress The address of the token to be claimed.
+    function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
         require(acceptsToken(tokenAddress) , "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
-        Dividend tokenLiquid = liquid[tokenAddress];
+        TokenRegister tokenLiquid = liquid[tokenAddress];
         require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
         tokenLiquid.hasClaimed[msg.sender] = true;
-        liquidValue = shardByOwner[shardHolder].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * tokenLiquid.originalValue;
+        uint256 liquidValue = shardByOwner[msg.sender].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * tokenLiquid.originalValue;
         tokenLiquid.value -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
-    }
-
-    /// @inheritdoc _transferToken
-    function transferToken_(address tokenAddress, uint256 value, address to) external onlyAdministrable {
-        _transferToken(tokenAddress,value,to);
-    }
-
-    /// @inheritdoc _liquidize
-    function liquidize_() external onlyAdministrable {
-        _liquidize();
-    }
-
-    /// @inheritdoc _setAdministrable
-    function setAdministrable_(address _administrable) external onlyAdministrable {
-        _setAdministrable(_administrable);
-    }
-    
-    /// @inheritdoc _registerTokenAddress
-    function registerTokenAddress_(address tokenAddress) external onlyAdministrable {
-      _registerTokenAddress(tokenAddress);
-    }
-    
-    /// @inheritdoc _unregisterTokenAddress
-    function unregisterTokenAddress_(address tokenAddress) external onlyAdministrable {
-      _unregisterTokenAddress(tokenAddress);
     }
 
     /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
@@ -142,13 +116,6 @@ contract Idea is Shardable {
     function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call.value(value)("");
         require(success, "Transfer failed.");
-    }
-
-    /// @notice Sets a new address of the Administrable, which controls all unknown function calls and the Idea itself.
-    /// @param _administrable The address of the new Administrable entity.
-    function _setAdministrable(address _administrable) internal {
-        require(Administrable(_administrable).isAdministrable());
-        administrable = _administrable;
     }
 
     /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.

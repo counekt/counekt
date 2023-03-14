@@ -164,41 +164,62 @@ contract Administrable is Idea {
         revert;
     }
 
-    /// @inheritdoc _issueDividend
-    function issueDividend(string bankName, address tokenAddress, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdministrator(bankName) onlyIfActive {
+    /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
+    /// @param bankName The name of the Bank to issue the Dividend from.
+    /// @param tokenAddress The address of the token to make up the Dividend.
+    /// @param value The value/amount of the token to be issued in the Dividend.
+    /// @param by The initiator of the Dividend issuance.
+    function issueDividend(string bankName, address tokenAddress, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdmin(bankName) onlyIfActive {
         _issueDividend(bankName,tokenAddress,value, msg.sender);
     }
 
-    /// @inheritdoc _dissolveDividend
+    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
+    /// @param dividend The Dividend to be dissolved.
+    /// @param by The initiator of the dissolution.
     function dissolveDividend(Dividend dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
         _dissolveDividend(dividend, msg.sender);
     }
 
-    /// @inheritdoc _createBank
+    /// @notice Creates a new Bank.
+    /// @param bankName The name of the Bank to be created.
+    /// @param bankAdmin The address of the first Bank administrator.
+    /// @param by The initiator of the Bank creation.
     function createBank(string bankName, address bankAdmin) external onlyWithPermit("manageBank") {
        _createBank(bankName, bankAdmin, msg.sender);
     }
 
-    /// @inheritdoc _addBankAdmin
+    /// @notice Adds a new given administrator to a given Bank.
+    /// @param bankName The name of the Bank to which the new administrator is to be added.
+    /// @param bankAdmin The address of the new Bank administrator to be added.
+    /// @param by The initiator of the Bank administrator addition.
     function addBankAdmin(string bankName, address bankAdmin) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         _addBankAdmin(bankName, bankAdmin);
     }
 
-    /// @inheritdoc _removeBankAdmin
+    /// @notice Removes a given administrator of a given Bank.
+    /// @param bankName The name of the Bank from which the given administrator is to be removed.
+    /// @param bankAdmin The address of the current Bank administrator to be removed.
+    /// @param by The initiator of the Bank Administrator removal.
     function removeBankAdmin(string bankName, address bankAdmin) external {
         require(isPermitAdmin("manageBank"));
         require(isBankAdmin(bankName,bankAdmin));
         _removeBankAdmin();
     }
 
-    /// @inheritdoc _deleteBank
+    /// @notice Deletes a given Bank.
+    /// @param bankName The name of the Bank to be deleted.
+    /// @param by The initiator of the Bank deletion.
     function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         _deleteBank(bankName, msg.sender);
     }
 
-    /// @inheritdoc _transferToken
-    function transferToken(string fromBankName, address tokenAddress, uint256 value, address to) external onlyBankAdmin(bankName) {
-        _transferToken(fromBankName,tokenAddress,value,to,msg.sender);
+    /// @notice Transfers a token from a Bank to a recipient.
+    /// @param fromBankName The name of the Bank from which the token is to be transferred.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
+    function transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to) external onlyBankAdmin(fromBankName) {
+        _transferTokenFromBank(fromBankName,tokenAddress,value,to,msg.sender);
     }
 
     /// @notice Moves money internally from one bank to another.
@@ -208,11 +229,6 @@ contract Administrable is Idea {
     /// @param value The value to be moved.
     function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
         _moveToken(fromBankName,toBankName,tokenAddress,value,msg.sender);
-    }
-
-    /// @inheritdoc _liquidize
-    function liquidize() external onlyWithPermit("liquidizeEntity") {
-        _liquidize(msg.sender);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
@@ -233,20 +249,13 @@ contract Administrable is Idea {
         }
     }
 
-    /// @inheritdoc _changePermit
+    /// @notice Changes the state of a specified permit of a given address.
+    /// @param _address The address, whose permit state is to be changed.
+    /// @param permitName The name of the permit, whose state is to be changed.
+    /// @param newState The new Permit State to be applied.
+    /// @param by The initiator of the permit state change.
     function changePermit(address shardHolder, string permitName, PermitState newState) external onlyPermitAdmin(permitName) {
         _changePermit(shardHolder, permitName, newState);
-    }
-
-    /// @inheritdoc _processTokenReceipt
-    function processTokenReceipt(address tokenAddress, uint256 value, address from) external {
-        _processTokenReceipt(tokenAddress,value,from);
-    }
-
-    // @notice Creates and returns the address of a new Administrable instance.
-    // @dev NEXT UP => build administrable up from another one... or just from an old Idea
-    function build(address _idea, address _creator) public returns(address) {
-        return new Administrable(_idea, _creator);
     }
 
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
@@ -311,11 +320,6 @@ contract Administrable is Idea {
         if (_address == this.address) {return true;}
         if (!(isShardHolder(_address) || allowNonShardHolders)) {return false;}
         return permits[permitName][_address] == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
-    }
-
-    /// @notice Returns true. Used for differentiating between Administrable and non-Administrable contracts.
-    function isAdministrable() pure returns(bool) {
-        return true;
     }
     
     /// @notice Changes the state of a specified permit of a given address.
@@ -395,7 +399,7 @@ contract Administrable is Idea {
         require(value <= bank.balance[tokenAddress], "Dividend value "+string(value)+" can't be more than bank value "+bank.balance[tokenAddress]);
         bank.balance[tokenAddress] -= value;
         if (bank.balance[tokenAddress] == 0) {
-            toBank.storedTokenAddresses -= 1;
+            bank.storedTokenAddresses -= 1;
         }
         Dividend dividend = new Dividend();
         dividend.creationTime = block.timestamp;
@@ -427,7 +431,7 @@ contract Administrable is Idea {
     function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
         Bank memory fromBank = bankByName[fromBankName];
         require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
-        idea.transferToken_(tokenAddress,value,to);
+        _transferToken(tokenAddress,value,to);
         _processTokenTransfer(fromBank,tokenAddress,value,to,by);
     }
 
@@ -453,19 +457,6 @@ contract Administrable is Idea {
         emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
     }
 
-    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
-    function _liquidize(address by) internal {
-        idea.liquidize_();
-    }
-
-    /// @notice Transfers a token from the Idea to a recipient.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        idea.transferToken(tokenAddress,value,to);
-    }
-
     /// @notice Keeps track of a token receipt by adding it to the registry
     /// @param tokenAddress The address of the received token.
     /// @param value The value/amount of the received token.
@@ -488,7 +479,7 @@ contract Administrable is Idea {
     /// @param to The recipient of the transferred token.
     /// @param by The initiator of the transfer.
     function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        super._processTokenTransfer(tokenAddress, value, from);
+        super._processTokenTransfer(tokenAddress, value, to);
         Bank memory fromBank = bankByName[fromBankName];
         fromBank.balance[tokenAddress] -= value;
         if (fromBank.balance[tokenAddress] == 0) {
