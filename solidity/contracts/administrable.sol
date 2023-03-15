@@ -43,8 +43,8 @@ contract Administrable is Idea {
         mapping(Shard => bool) hasClaimed;
     }
 
-    /// @notice Boolean value stating if the Administrable allows non-shard-holders to have permits or not.
-    bool allowNonShardHolders;
+    /// @notice A mapping pointing to a Boolean rule, given the name of the rule.
+    mapping(string => bool) rules;
 
     /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
     mapping(Bank => bool) validBanks;
@@ -55,6 +55,9 @@ contract Administrable is Idea {
     /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
     /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
     mapping(string => mapping(address => PermitState)) permits;
+
+    /// @notice A mapping pointing to a base Permit State, given the name of the permit.
+    mapping(string => PermitState) basePermits;
     
     /// @notice A mapping pointing to a boolean stating if a given Dividend is valid or not.
     mapping(Dividend => bool) validDividends;
@@ -63,12 +66,18 @@ contract Administrable is Idea {
     Dividend latestDividend;
 
     /// @notice Event that triggers when a Dividend is issued.
+    /// @param dividend The Dividend that was issued.
+    /// @param by The initiator of the Dividend issuance.
     event DividendIssued(
         Dividend dividend,
         address by
     );
 
     /// @notice Event that triggers when a Dividend is dissolved.
+    /// @param dividend The Dividend that was dissolved.
+    /// @param valueLeft The remaining value of the Dividend that was dissolved (goes to the 'main' Bank).
+    /// @param by The initiator of the Dividend dissolution.
+
     event DividendDissolved(
         Dividend dividend,
         uint256 valueLeft,
@@ -76,12 +85,33 @@ contract Administrable is Idea {
     );
 
     /// @notice Event that triggers when a Dividend is claimed.
+    /// @param dividend The Dividend that was claimed.
+    /// @param by The claimant of the Dividend.
     event DividendClaimed(
         Dividend dividend,
         address by
     );
 
-    /// @notice Event that triggers when a token is moved from one Bank to another.
+    /// @notice Event that triggers when a token is transferred.
+    /// @param bankName The name of the Bank where the token was transferred from.
+    /// @param tokenAddress The address of the transferred token.
+    /// @param value The value/amount of the transferred token.
+    /// @param to The recipient of the transferred token.
+    /// @param by The initiator of the Token transfer.
+    event TokenTransferedFromBank(
+        string bankName,
+        address tokenAddress,
+        uint256 value,
+        address to,
+        address by
+    );
+
+    /// @notice Event that triggers when a token is moved internally from one Bank to another.
+    /// @param fromBankName The name of the Bank where the token was moved away from.
+    /// @param toBankName The name of the Bank where the token was moved to.
+    /// @param tokenAddress The address of the token that was moved (address(0) if ether).
+    /// @param value The value/amount that was moved.
+    /// @param by The initiator of the Token movement.
     event TokenMoved(
         string fromBankName,
         string toBankName,
@@ -91,23 +121,72 @@ contract Administrable is Idea {
     );
 
     /// @notice Event that triggers when a new Bank is created.
+    /// @param name The name of the newly created Bank.
+    /// @param by The initiator of the Bank creation.
     event BankCreated(
         string name,
         address by
     );
 
     /// @notice Event that triggers when a new admin has been added to a given Bank.
+    /// @param name The name of the Bank to from an admin was added.
+    /// @param admin The address of the admin that was added.
+    /// @param by The initiator of the Bank admin addition.
     event BankAdminAdded(string name, address admin, address by);
 
     /// @notice Event that triggers when a former admin has been removed from a given Bank.
+    /// @param name The name of the Bank where from an admin was removed.
+    /// @param admin The address of the admin that was removed.
+    /// @param by The initiator of the Bank admin removal.
     event BankAdminRemoved(string name,address admin, address by);
 
 
     /// @notice Event that triggers when a Bank is deleted.
+    /// @param name The name of the Bank that was deleted.
+    /// @param by The initiator of the Bank deletion.
     event BankDeleted(
         string name,
         address by
     );
+
+    /// @notice Event that triggers when a permit is set.
+    /// @param holder The address of the holder of the permit that was set.
+    /// @param name The name of the permit that was set.
+    /// @param newState The new state of the permit.
+    /// @param by The initiator of the Permit State setting.
+    event PermitSet(
+        address holder,
+        string name,
+        PermitState newState,
+        address by
+    );
+
+    /// @notice Event that triggers when a base permit is set.
+    /// @param name The name of the permit that was set.
+    /// @param newState The new state of the permit.
+    /// @param by The initiator of the base Permit State setting.
+    event BasePermitSet(
+        string name,
+        PermitState newState,
+        address by
+    );
+
+    /// @notice Event that triggers when a rule is set.
+    /// @param name The name of the rule that was set.
+    /// @param newState The new state of the permit.
+    /// @param by The initiator of the rule setting.
+    event RuleSet(
+        string name,
+        bool newState,
+        address by
+    );
+    
+    /// @notice Modifier that makes sure a given permit exists.
+    /// @param permitName The name of the permit to be checked for.
+    modifier onlyValidPermit(string permitName) {
+        require(isValidPermit(permitName), "The given permit name does NOT exist!");
+        _;
+    }
 
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permitName The name of the permit to be checked for.
@@ -119,8 +198,8 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure msg.sender is an admin of a given permit.
     /// @param permitName The name of the permit to be checked for.
     modifier onlyPermitAdmin(string permitName) {
-      require(isPermitAdmin(msg.sender,permitName));
-      _;
+        require(isPermitAdmin(msg.sender,permitName));
+        _;
 
     }
 
@@ -141,8 +220,8 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure a given dividend exists and is valid
     /// @param dividend The Dividend to be checked for.
     modifier onlyExistingDividend(Dividend dividend) {
-      require(dividendExists(dividend));
-      _;
+        require(dividendExists(dividend));
+        _;
     }
 
     /// @notice Modifier that makes sure the Idea entity is active and not liquidized/dissolved.
@@ -201,7 +280,7 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the current Bank administrator to be removed.
     /// @param by The initiator of the Bank Administrator removal.
     function removeBankAdmin(string bankName, address bankAdmin) external {
-        require(isPermitAdmin("manageBank"));
+        require(isPermitAdmin(msg.sender, "manageBank"));
         require(isBankAdmin(bankName,bankAdmin));
         _removeBankAdmin();
     }
@@ -210,6 +289,7 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to be deleted.
     /// @param by The initiator of the Bank deletion.
     function deleteBank(string bankName) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
+        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
         _deleteBank(bankName, msg.sender);
     }
 
@@ -222,11 +302,11 @@ contract Administrable is Idea {
         _transferTokenFromBank(fromBankName,tokenAddress,value,to,msg.sender);
     }
 
-    /// @notice Moves money internally from one bank to another.
-    /// @param fromBankName The name of the Bank to move money away from.
-    /// @param toBankName The name of the Bank to move the money to.
-    /// @param tokenAddress The address of the token to be moved (address(0) if ether).
-    /// @param value The value to be moved.
+    /// @notice Internally moves a token from one Bank to another.
+    /// @param fromBankName The name of the Bank from which the token is to be moved.
+    /// @param toBankName The name of the Bank to which the token is to be moved.
+    /// @param tokenAddress The address of the token to be moved.
+    /// @param value The value/amount of the token to be moved.
     function moveToken(string fromBankName, string toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
         _moveToken(fromBankName,toBankName,tokenAddress,value,msg.sender);
     }
@@ -240,7 +320,7 @@ contract Administrable is Idea {
         require(dividend.hasClaimed[msg.sender] == false, "Already claimed Dividend!");
         require(shardExisted(shard,dividend.creationTime), "Not applicable for Dividend!");
         dividend.hasClaimed[msg.sender] = true;
-        dividendValue = idea.shardByOwner[msg.sender].fraction.numerator / idea.shardByOwner[msg.sender].fraction.denominator * dividend.originalValue;
+        uint256 dividendValue = shardByOwner[msg.sender].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * dividend.originalValue;
         dividend.value -= dividendValue;
         _transferToken(dividend.tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
@@ -249,18 +329,48 @@ contract Administrable is Idea {
         }
     }
 
-    /// @notice Changes the state of a specified permit of a given address.
-    /// @param _address The address, whose permit state is to be changed.
-    /// @param permitName The name of the permit, whose state is to be changed.
+    /// @notice Sets the state of a specified permit of a given address.
+    /// @param _address The address, whose permit state is to be set.
+    /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
-    /// @param by The initiator of the permit state change.
-    function changePermit(address shardHolder, string permitName, PermitState newState) external onlyPermitAdmin(permitName) {
-        _changePermit(shardHolder, permitName, newState);
+    function setPermit(address _address, string permitName, PermitState newState) external onlyPermitAdmin(permitName) {
+        require(permits[permitName][_address] != newState, "Address already has Permit '" + permitName + "="+string(newState)+"'");
+        _setPermit(_address, permitName, newState, msg.sender);
+    }
+
+    /// @notice Sets the state of a specified base permit.
+    /// @param permitName The name of the base permit, whose state is to be set.
+    /// @param newState The new base Permit State to be applied.
+    function setBasePermit(string permitName, PermitState newState) external onlyPermitAdmin(permitName) {
+        require(basePermits[permitName] != newState, "BasePermit already existing '" + permitName + "="+string(newState)+"'");
+        _setBasePermit(permitName,newState,msg.sender);
+    }
+
+    /// @notice Sets the state of a specified rule.
+    /// @param ruleName The name of the rule, whose state is to be set.
+    /// @param newState The Boolean rule state to be applied.
+    function setRule(string ruleName, bool newState) external hasPermit("setRule") {
+        require(rules[ruleName] != newState, "Rule is already set to '" + ruleName + "="+string(newState)+"'");
+        _setRule(ruleName, newState, msg.sender);
+    }
+
+    /// @notice Returns a boolean stating if a given rule is valid/exists or not.
+    /// @param ruleName The name of the rule to be checked for.
+    function isValidRule(string ruleName) public pure returns(bool) {
+        if(ruleName == "allowNonShardHolders") {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
     /// @param permitName The name of the permit to be checked for.
     function isValidPermit(string permitName) public pure returns(bool) {
+            if(permitName == "setRule") {
+                return true;
+            }
             if(permitName == "issueDividend") {
                 return true;
             }
@@ -309,8 +419,8 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     function hasPermit(address _address, string permitName) public view returns(bool) {
         if (_address == this.address) {return true;}
-        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false;}
-        return permits[permitName][_address] >= PermitState.authorized || basePermits.issueVote >= PermitState.authorized;
+        if (!(isShardHolder(_address) || rules["allowNonShardHolders"])) {return false;}
+        return permits[permitName][_address] >= PermitState.authorized || basePermits[permitName] >= PermitState.authorized;
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.
@@ -318,21 +428,37 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     function isPermitAdmin(address _address, string permitName) public view returns(bool) {
         if (_address == this.address) {return true;}
-        if (!(isShardHolder(_address) || allowNonShardHolders)) {return false;}
-        return permits[permitName][_address] == PermitState.administrator || basePermits.issueVote == PermitState.administrator;
+        if (!(isShardHolder(_address) || rules["allowNonShardHolders"])) {return false;}
+        return permits[permitName][_address] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
     }
     
-    /// @notice Changes the state of a specified permit of a given address.
-    /// @param _address The address, whose permit state is to be changed.
-    /// @param permitName The name of the permit, whose state is to be changed.
+    /// @notice Sets the state of a specified permit of a given address.
+    /// @param _address The address, whose permit state is to be set.
+    /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
-    /// @param by The initiator of the permit state change.
-    function _changePermit(address _address, string permitName, PermitState newState, address by) internal onlyIfActive {
-        require(isValidPermit(permitName), "The given permit name does NOT exist!");
-        require(isShardHolder(_address) || allowNonShardHolders, "Only Shard holders can have Permits");
-        require(!(hasPermit(_address, permitName) && newState >= PermitState.authorized), "Address already has Permit '" + permitName + "'");
+    /// @param by The initiator of the Permit State setting.
+    function _setPermit(address _address, string permitName, PermitState newState, address by) internal onlyIfActive onlyValidPermit(permitName) {
         permits[permitName][_address] = newState;
-        emit PermitChanged(_address,permitName,newState,by);
+        emit PermitSet(_address,permitName,newState,by);
+    }
+
+    /// @notice Sets the state of a specified permit of a given address.
+    /// @param permitName The name of the Base Permit, whose State is to be set.
+    /// @param newState The new Base Permit State to be applied.
+    /// @param by The initiator of the Base Permit State setting.
+    function _setBasePermit(string permitName, PermitState newState, address by) internal onlyIfActive onlyValidPermit(permitName) {
+        basePermits[permitName] = newState;
+        emit BasePermitSet(permitName,newState,by);
+    }
+
+    /// @notice Sets the state of a specified rule.
+    /// @param ruleName The name of the permit, whose state is to be set.
+    /// @param newState The new Boolean rule state to be applied.
+    /// @param by The initiator of the rule state setting.
+    function _setRule(string ruleName, bool newState, address by) internal onlyIfActive {
+        require(isValidRule(ruleName), "The rule name, '"+ruleName+"' doesn't exist and isn't valid!");
+        rules[ruleName] = newState;
+        emit RuleSet(ruleName,newState,by);
     }
 
     /// @notice Creates a new Bank.
@@ -341,7 +467,6 @@ contract Administrable is Idea {
     /// @param by The initiator of the Bank creation.
     function _createBank(string bankName, address bankAdmin, address by) internal onlyIfActive {
         require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
-        require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
         require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         Bank memory bank = new Bank();
         bank.name = bankName;
@@ -356,7 +481,6 @@ contract Administrable is Idea {
     /// @param by The initiator of the Bank administrator addition.
     function _addBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
         require(isBankAdmin(by,bankName));
-        require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
         require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         Bank memory bank = bankByName[bankName];
         bank.isAdmin[bankAdmin] = true;
@@ -368,9 +492,6 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the current Bank administrator to be removed.
     /// @param by The initiator of the Bank Administrator removal.
     function _removeBankAdmin(string bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(isBankAdmin(bankAdmin,bankName));
-        require(isShardHolder(bankAdmin) || allowNonShardHolders, "Only Shard holders can be Bank Administrators!");
-        require(isPermitAdmin(by,"manageBank"),"Only admins of the 'manageBank' Permit can remove Bank Administrators!");
         Bank memory bank = bankByName[bankName];
         bank.isAdmin[bankAdmin] = false;
         emit BankAdminRemoved(bankName,bankAdmin,by);
@@ -381,7 +502,6 @@ contract Administrable is Idea {
     /// @param by The initiator of the Bank deletion.
     function _deleteBank(string bankName, address by) internal onlyIfActive {
         require(bankName != "main", "Can't delete the main bank!");
-        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
         require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
         Bank memory bank = bankByName[bankName];
         validBanks[bank] = false;
@@ -428,11 +548,12 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be transferred.
     /// @param to The recipient of the token to be transferred.
     /// @param by The initiator of the transfer.
-    function _transferTokenFromBank(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
-        Bank memory fromBank = bankByName[fromBankName];
-        require(value <= fromBank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+fromBankName+"' can't be more than the value of that bank:"+fromBank.balance[tokenAddress]);
+    function _transferTokenFromBank(string bankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(bankName) {
+        Bank memory bank = bankByName[bankName];
+        require(value <= bank.balance[tokenAddress], "The value transferred "+string(value)+" from '"+bankName+"' can't be more than the value of that bank:"+bank.balance[tokenAddress]);
         _transferToken(tokenAddress,value,to);
-        _processTokenTransfer(fromBank,tokenAddress,value,to,by);
+        _processTokenTransfer(bank,tokenAddress,value,to,by);
+        emit TokenTransferedFromBank(bankName,tokenAddress,value,to,by);
     }
 
     /// @notice Internally moves a token from one Bank to another.
@@ -478,14 +599,14 @@ contract Administrable is Idea {
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
     /// @param by The initiator of the transfer.
-    function _processTokenTransfer(string fromBankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(fromBankName) {
+    function _processTokenTransferFromBank(string bankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(bankName) {
         super._processTokenTransfer(tokenAddress, value, to);
-        Bank memory fromBank = bankByName[fromBankName];
-        fromBank.balance[tokenAddress] -= value;
-        if (fromBank.balance[tokenAddress] == 0) {
-            fromBank.storedTokenAddresses[tokenAddress] -= 1;
+        Bank memory bank = bankByName[bankName];
+        bank.balance[tokenAddress] -= value;
+        if (bank.balance[tokenAddress] == 0) {
+            bank.storedTokenAddresses[tokenAddress] -= 1;
         }
-        emit TokenTransfered(fromBankName,tokenAddress,value,to,by);
+        emit TokenTransfered(bankName,tokenAddress,value,to,by);
     }
 
 }

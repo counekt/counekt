@@ -27,6 +27,9 @@ contract Idea is Shardable {
     mapping(address => bool) validTokenAddresses;
 
     /// @notice Event that triggers when a token is received.
+    /// @param tokenAddress The address of the received token.
+    /// @param value The value/amount of the received token.
+    /// @param from The sender of the received token.
     event TokenReceived(
         address tokenAddress,
         uint256 value,
@@ -34,18 +37,22 @@ contract Idea is Shardable {
     );
 
     /// @notice Event that triggers when a token is transferred.
+    /// @param tokenAddress The address of the transferred token.
+    /// @param value The value/amount of the transferred token.
+    /// @param to The recipient of the transferred token.
     event TokenTransfered(
-        string bankName,
         address tokenAddress,
         uint256 value,
-        address to,
-        address by
+        address to
     );
 
     /// @notice Event that triggers when the entity is liquidized. Can only be emitted once during the lifetime of an entity.
-    event EntityLiquidized();
+    /// @param by The initiator of the liquidization.
+    event EntityLiquidized(address by);
 
     /// @notice Event that triggers when part of the liquid is claimed following a liquidization.
+    /// @param tokenAddress The address of the claimed token.
+    /// @param value The value/amount of the claimed token.
     event LiquidClaimed(
         address tokenAddress,
         uint256 value,
@@ -118,20 +125,17 @@ contract Idea is Shardable {
         require(success, "Transfer failed.");
     }
 
-    /// @notice Liquidizes and dissolves the administerable entity. This cannot be undone.
-    function _liquidize() internal {
+    /// @notice Liquidizes and dissolves the entity. This cannot be undone.
+    function _liquidize(address by) internal {
         active = false; // stops trading of Shards
-        emit EntityLiquidized();
+        emit EntityLiquidized(by);
     }
 
     /// @notice Processes a token receipt and adds it to the token registry.
-    /// @dev Calls an Administrable.processTokenReceipt, since it otherwise doesn't know about the Idea Receipt.
-    /// @custom:illustration Idea.receiveToken() => Idea._processTokenReceipt() => Administrable.processTokenReceipt()
     /// @param tokenAddress The address of the received token.
     /// @param value The value/amount of the received token.
     /// @param from The sender of the received token.
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
-        // First: Liquid logic
         liquid[tokenAddress].originalValue += value;
         emit TokenReceived(tokenAddress,value,from);
     }
@@ -141,7 +145,6 @@ contract Idea is Shardable {
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) internal {
-        // First: Liquidization logic
         liquid[tokenAddress].originalValue -= value;
         emit TokenTransfered(tokenAddress,value,to);
     }

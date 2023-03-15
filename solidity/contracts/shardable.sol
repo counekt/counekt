@@ -26,7 +26,7 @@ function divideEquallyWithRemainder(uint256 dividend, uint256 divisor) returns(u
 /// @notice Returns the two quotients and the remainder of an uneven division with a fraction. Useful for dividing ether and tokens.
 /// @param dividend The dividend, which will be divided by the fraction.
 /// @param fraction The fraction, which the dividend will be divided into.
-function divideUnequallyIntoTwoWithRemainder(uint256 dividend, Fraction fraction) returns(uint256, uint256, uint256) {
+function divideUnequallyIntoTwoWithRemainder(uint256 dividend, Fraction memory fraction) returns(uint256, uint256, uint256) {
     require(fraction.denominator > fraction.numerator);
     uint256 quotient1 = dividend*fraction.numerator/fraction.denominator;
     uint256 quotient2 = dividend*(fraction.denominator-fraction.numerator)/fraction.denominator;
@@ -46,7 +46,7 @@ function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
 
 /// @notice Returns a simplified version of a fraction.
 /// @param fraction The fraction to be simplified.
-function simplifyFraction(Fraction fraction) pure returns(Fraction) {
+function simplifyFraction(Fraction memory fraction) pure returns(Fraction memory) {
     uint256 commonDenominator = getCommonDenominator(fraction.numerator,fraction.denominator);
     return new Fraction(fraction.numerator/commonDenominator,fraction.denominator/commonDenominator);
 }
@@ -54,7 +54,7 @@ function simplifyFraction(Fraction fraction) pure returns(Fraction) {
 /// @notice Adds two fractions together.
 /// @param a First fraction.
 /// @param b Second fraction.
-function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
+function addFractions(Fraction memory a, Fraction memory b) pure returns (Fraction memory) {
     a.numerator = a.numerator * b.denominator;
     b.numerator = b.numerator * a.denominator;
     return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
@@ -63,7 +63,7 @@ function addFractions(Fraction a, Fraction b) pure returns (Fraction) {
 /// @notice Subtracts a fraction from another and returns the difference.
 /// @param a The minuend fraction to be subtracted from.
 /// @param b The subtrahend fraction that subtracts from the minuend.
-function subtractFractions(Fraction a, Fraction b) pure returns (Fraction) {
+function subtractFractions(Fraction memory a, Fraction memory b) pure returns (Fraction memory) {
     return addFractions(a,new Fraction(-b.numerator,b.denominator));
 }
 
@@ -146,25 +146,35 @@ contract Shardable {
         address holder
         );
     
-    /// @notice Modifier that requires the msg.sender to be a current valid shard holder.
+    /// @notice Modifier that requires the msg.sender to be a current valid Shard holder.
     modifier onlyShardHolder {
         require(isShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
+        _;
     }
 
-    /// @notice Modifier that requires a given shard to be currently valid.
+    /// @notice Modifier that requires the msg.sender to have been a historic Shard holder.
+    modifier onlyHistoricShardHolder {
+        require(isHistoricShard(msg.sender), "msg.sender must be a valid shard holder!");
+        _;
+    }
+
+    /// @notice Modifier that requires a given Shard to be currently valid.
     modifier onlyValidShard(Shard shard) {
         require(isValidShard(shard), "must be a valid shard!");
+        _;
     }
 
     /// @notice Modifier that requires the entity to be active and not liquidized/dissolved
     modifier onlyIfActive() {
         require(active == true, "Idea has been liquidized and isn't active anymore.");
+        _;
     }
 
-    /// @notice Modifier that requires the msg.sender to be the owner of a given shard
-    /// @param shard The shard, whose ownership is tested for.
+    /// @notice Modifier that requires the msg.sender to be the owner of a given Shard
+    /// @param shard The Shard, whose ownership is tested for.
     modifier onlyHolder(Shard shard) {
         require(shard.owner == msg.sender.address);
+        _;
     }
 
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
@@ -199,7 +209,7 @@ contract Shardable {
 
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
-    function cancelSale(Shard shard) onlyHolder(shard) {
+    function cancelSale(Shard shard) external onlyHolder(shard) {
         _cancelSale(shard);
         emit SaleCancelled(shard);
     }
@@ -252,27 +262,32 @@ contract Shardable {
 
     /// @notice Returns a boolean stating if a given shard is currently valid or not.
     /// @param shard The shard, whose validity is to be checked for.
-    function isValidShard(Shard shard) view returns(bool) {
+    function isValidShard(Shard shard) public view returns(bool) {
         return currentlyValidShards[shard] == true;
     }
 
-    /// @notice Checks if address is a shard holder - at least a partial owner of the contract
-    /// @param shardHolder The address to be checked
-    /// @return A boolean value - a shard holder or not. 
-    function isShardHolder(address shardHolder) view returns(bool) {
-        return isValidShard(shardByOwner[shardHolder]) == true;
+    /// @notice Checks if address is a shard holder - at least a partial owner of the contract.
+    /// @param shardHolder The address to be checked for.
+    function isShardHolder(address _address) public view returns(bool) {
+        return isValidShard(shardByOwner[_address]) == true;
     }
 
     /// @notice Returns a boolean stating if a given shard has ever been valid or not.
     /// @param shard The shard, whose validity is to be checked for.
-    function isHistoricShard(Shard shard) view returns(bool) {
+    function isHistoricShard(Shard shard) public view returns(bool) {
         return historicallyValidShards[shard] == true;
+    }
+
+    /// @notice Checks if address is a historic Shard holder - at least a previous partial owner of the contract
+    /// @param shardHolder The address to be checked for.
+    function isHistoricShardHolder(address _address) public view returns(bool) {
+        return isHistoricShard(shardByOwner[_address]);
     }
 
     /// @notice Returns a boolean stating if the given shard was valid at a given timestamp.
     /// @param shard The shard, whose validity is to be checked for.
     /// @param time The timestamp to be checked for.
-    function shardExisted(Shard shard, uint256 time) view returns(bool) {
+    function shardExisted(Shard shard, uint256 time) public view returns(bool) {
         return shard.creationTime <= time < shard.deathTime;
     }
 
@@ -395,7 +410,6 @@ contract Shardable {
     /// @param shard The shard to be removed.
     function _removeShard(Shard shard) internal {
         require(isValidShard(shard), "Shard must be valid!");
-        shardByOwner[shard.owner] = Shard();
         currentlyValidShards[shard] = false;
     }
 
