@@ -17,7 +17,7 @@ contract Idea is Shardable {
     struct TokenRegister {
         uint256 value;
         uint256 originalValue;
-        mapping(Shard => bool) hasClaimed;
+        mapping(bytes32 => bool) hasClaimed;
     }
 
 	/// @notice Mapping pointing to a Token Register given the address of the ERC20 token contract.
@@ -83,7 +83,7 @@ contract Idea is Shardable {
         TokenRegister tokenLiquid = liquid[tokenAddress];
         require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
         tokenLiquid.hasClaimed[msg.sender] = true;
-        uint256 liquidValue = shardByOwner[msg.sender].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * tokenLiquid.originalValue;
+        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * tokenLiquid.originalValue;
         tokenLiquid.value -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);

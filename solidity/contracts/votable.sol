@@ -69,7 +69,7 @@ contract Votable is Administrable {
     /// @notice Event that triggers when a whole Referendum has been implemented.
     /// @param referendum The passed Referendum that was implemented.
     event ReferendumImplemented(
-        Referendum referendum,
+        Referendum referendum
         );
     
     /// @notice Event that triggers when a Proposal is implemented.

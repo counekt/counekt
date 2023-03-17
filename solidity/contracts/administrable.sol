@@ -7,12 +7,12 @@ import "./idea.sol";
 /// @notice This contract adds administrability via permits and internally closed money supplies.
 contract Administrable is Idea {
 
-    /// @notice A struct representing a Bank used to encapsel funds and tokens restricted to a few spenders.
+    /// @notice A struct representing the information of a Bank used to encapsel funds and tokens restricted to a few spenders.
     /// @param name The name of the Bank. Used for identification.
     /// @param storedTokenAddresses An unsigned integer representing the amount of stored kinds of tokens.
     /// @param balance A mapping pointing to a value/amount of a stored token, given a token address.
     /// @param isAdmin A mapping pointing to a boolean stating if a given address is a valid Bank administrator that have restricted control of the Bank's funds.
-    struct Bank {
+    struct BankInfo {
         string name;
         uint256 storedTokenAddresses;
         mapping(address => uint256) balance;
@@ -29,28 +29,28 @@ contract Administrable is Idea {
         administrator
     }
 
-    /// @notice A struct representing a Dividend given to all current Shard holders.
+    /// @notice A struct representing the information of a Dividend given to all current Shard holders.
     /// @param creationTime The block.timestamp at which the Dividend was created.
     /// @param tokenAddress The address of the token, in which the value of the Dividend is issued.
-    /// @param value The value/amount of the Dividend.
     /// @param originalValue The original value/amount of the Dividend before claimants.
+    /// @param value The value/amount of the Dividend.
     /// @param hasClaimed Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend.
-    struct Dividend {
+    struct DividendInfo {
         uint256 creationTime;
         address tokenAddress;
-        uint256 value;
         uint256 originalValue;
-        mapping(Shard => bool) hasClaimed;
+        uint256 value;
+        mapping(bytes32  => bool) hasClaimed;
     }
 
     /// @notice A mapping pointing to a Boolean rule, given the name of the rule.
     mapping(string => bool) rules;
 
     /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
-    mapping(Bank => bool) validBanks;
+    mapping(string => bool) validBanks;
     
-    /// @notice A mapping pointing to a Bank, given the name of it.
-    mapping(string => Bank) bankByName;
+    /// @notice A mapping pointing to the info of a Bank, given the name of it.
+    mapping(string => BankInfo) infoByBank;
 
     /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
     /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
@@ -60,16 +60,20 @@ contract Administrable is Idea {
     mapping(string => PermitState) basePermits;
     
     /// @notice A mapping pointing to a boolean stating if a given Dividend is valid or not.
-    mapping(Dividend => bool) validDividends;
+    mapping(bytes32 => bool) validDividends;
+
+    /// @notice A mapping pointing to the info of a Dividend given the creation time of the Dividend.
+    mapping(uint256 => DividendInfo) infoByDividend;
+
 
     /// @notice The Dividend latest and most recently issued.
-    Dividend latestDividend;
+    uint256 latestDividend;
 
     /// @notice Event that triggers when a Dividend is issued.
     /// @param dividend The Dividend that was issued.
     /// @param by The initiator of the Dividend issuance.
     event DividendIssued(
-        Dividend dividend,
+        uint256 dividend,
         address by
     );
 
@@ -77,9 +81,8 @@ contract Administrable is Idea {
     /// @param dividend The Dividend that was dissolved.
     /// @param valueLeft The remaining value of the Dividend that was dissolved (goes to the 'main' Bank).
     /// @param by The initiator of the Dividend dissolution.
-
     event DividendDissolved(
-        Dividend dividend,
+        uint256 dividend,
         uint256 valueLeft,
         address by
     );
@@ -88,7 +91,7 @@ contract Administrable is Idea {
     /// @param dividend The Dividend that was claimed.
     /// @param by The claimant of the Dividend.
     event DividendClaimed(
-        Dividend dividend,
+        uint256 dividend,
         address by
     );
 
@@ -219,7 +222,7 @@ contract Administrable is Idea {
     
     /// @notice Modifier that makes sure a given dividend exists and is valid
     /// @param dividend The Dividend to be checked for.
-    modifier onlyExistingDividend(Dividend dividend) {
+    modifier onlyExistingDividend(uint256 dividend) {
         require(dividendExists(dividend));
         _;
     }
@@ -255,7 +258,7 @@ contract Administrable is Idea {
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
     /// @param dividend The Dividend to be dissolved.
     /// @param by The initiator of the dissolution.
-    function dissolveDividend(Dividend dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
+    function dissolveDividend(uint256 dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
         _dissolveDividend(dividend, msg.sender);
     }
 
@@ -314,19 +317,16 @@ contract Administrable is Idea {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
-    function claimDividend(Shard shard, Dividend dividend) external onlyExistingDividend onlyIfActive {
+    function claimDividend(bytes32 shard, uint256 dividend) external onlyExistingDividend onlyIfActive {
         require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.");
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
-        require(dividend.hasClaimed[msg.sender] == false, "Already claimed Dividend!");
-        require(shardExisted(shard,dividend.creationTime), "Not applicable for Dividend!");
+        require(infoByDividend[dividend.hasClaimed[msg.sender]] == false, "Already claimed Dividend!");
+        require(shardExisted(shard,dividend), "Not applicable for Dividend!");
         dividend.hasClaimed[msg.sender] = true;
-        uint256 dividendValue = shardByOwner[msg.sender].fraction.numerator / shardByOwner[msg.sender].fraction.denominator * dividend.originalValue;
+        uint256 dividendValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * infoByDividend[dividend].originalValue;
         dividend.value -= dividendValue;
-        _transferToken(dividend.tokenAddress,dividendValue,msg.sender);
+        _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
-        if (dividend.value == 0) {
-            _dissolveDividend(dividend);
-        }
     }
 
     /// @notice Sets the state of a specified permit of a given address.

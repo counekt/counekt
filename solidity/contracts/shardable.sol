@@ -114,7 +114,7 @@ contract Shardable {
     /// @param fraction The absolute fraction of the splitted Shard, which was transferred to the receiver.
     /// @param to The receiver of the splitted Shard.
     event SplitMade(
-        Shard shard,
+        bytes32 shard,
         Fraction fraction,
         address to
         );
@@ -126,7 +126,7 @@ contract Shardable {
     /// @param price The amount which the Shard was for sale for. The token address being the valuta.
     /// @param to The buyer of the sale.
     event SaleSold(
-        Shard shard,
+        bytes32 shard,
         Fraction fraction,
         address tokenAddress,
         uint256 price,
@@ -140,7 +140,7 @@ contract Shardable {
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale, if any.
     event PutForSale(
-        Shard shard,
+        bytes32 shard,
         Fraction fraction,
         address tokenAddress,
         uint256 price,
@@ -149,7 +149,7 @@ contract Shardable {
 
     /// @notice Event emitted when a sale of a Shard is cancelled.
     /// @param shard The Shard, which has been taken off sale.
-    event SaleCancelled(Shard shard);
+    event SaleCancelled(bytes32 shard);
     
     /// @notice Modifier that requires the msg.sender to be a current valid Shard holder.
     modifier onlyShardHolder {
@@ -185,7 +185,7 @@ contract Shardable {
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
     constructor() public{
         // passes full ownership to creator of contract
-        _pushShard(new Shard(Fraction(1,1), msg.sender, block.timestamp));
+        _pushShard(Fraction(1,1), msg.sender, block.timestamp);
     }
 
     /// @notice Fallback function that reverts any calls to non-registered functions.
@@ -245,7 +245,7 @@ contract Shardable {
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
-        if (infoByShard[shardBytes].fraction == infoByShard[shardBytes].fractionForSale) {_transferShard(shard,msg.sender);}
+        if (infoByShard[shard].fraction == infoByShard[shard].fractionForSale) {_transferShard(shard,msg.sender);}
         else {_split(shard, infoByShard[shard].fractionForSale,msg.sender);}
         emit SaleSold(shard,infoByShard[shard].fractionForSale,infoByShard[shard].tokenAddress,infoByShard[shard].salePrice,msg.sender);
     }
