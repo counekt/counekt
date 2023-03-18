@@ -14,6 +14,13 @@ struct Fraction {
     uint256 denominator;
 }
 
+/// @notice Returns a boolean stating if two given fractions are identical.
+/// @param a First fraction.
+/// @param b Second fraction.
+function fractionsAreIdentical(Fraction memory a, Fraction memory b) returns(bool) {
+    return a.numerator == b.numerator && a.denominator == b.denominator;
+}
+
 /// @notice Returns the quotient and the remainder of a division. Useful for dividing ether and tokens.
 /// @param dividend The dividend, which will be divided by the divisor.
 /// @param divisor The divisor, which the dividend will be divided into.
@@ -38,7 +45,7 @@ function divideUnequallyIntoTwoWithRemainder(uint256 dividend, Fraction memory f
 /// @param a First integer.
 /// @param b Second integer.
 function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
-        while (b) {
+        while (b > 0) {
         (a, b) = (b, a % b);
         }
         return a;
@@ -48,7 +55,7 @@ function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
 /// @param fraction The fraction to be simplified.
 function simplifyFraction(Fraction memory fraction) pure returns(Fraction memory) {
     uint256 commonDenominator = getCommonDenominator(fraction.numerator,fraction.denominator);
-    return new Fraction(fraction.numerator/commonDenominator,fraction.denominator/commonDenominator);
+    return Fraction(fraction.numerator/commonDenominator,fraction.denominator/commonDenominator);
 }
 
 /// @notice Adds two fractions together.
@@ -57,14 +64,16 @@ function simplifyFraction(Fraction memory fraction) pure returns(Fraction memory
 function addFractions(Fraction memory a, Fraction memory b) pure returns (Fraction memory) {
     a.numerator = a.numerator * b.denominator;
     b.numerator = b.numerator * a.denominator;
-    return new Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
+    return Fraction(a.numerator+b.numerator,a.denominator*b.denominator);
 }
 
 /// @notice Subtracts a fraction from another and returns the difference.
 /// @param a The minuend fraction to be subtracted from.
 /// @param b The subtrahend fraction that subtracts from the minuend.
 function subtractFractions(Fraction memory a, Fraction memory b) pure returns (Fraction memory) {
-    return addFractions(a,new Fraction(-b.numerator,b.denominator));
+    a.numerator = a.numerator * b.denominator;
+    b.numerator = b.numerator * a.denominator;
+    return Fraction(a.numerator-b.numerator,a.denominator-b.denominator);
 }
 
 
@@ -159,7 +168,7 @@ contract Shardable {
 
     /// @notice Modifier that requires the msg.sender to have been a historic Shard holder.
     modifier onlyHistoricShardHolder {
-        require(isHistoricShard(msg.sender), "msg.sender must be a valid shard holder!");
+        require(isHistoricShardHolder(msg.sender), "msg.sender must be a valid shard holder!");
         _;
     }
 
@@ -169,28 +178,23 @@ contract Shardable {
         _;
     }
 
-    /// @notice Modifier that requires the entity to be active and not liquidized/dissolved
+    /// @notice Modifier that makes sure the entity is active and not liquidized/dissolved.
     modifier onlyIfActive() {
-        require(active == true, "Idea has been liquidized and isn't active anymore.");
+        require(active == true, "Entity has been liquidized and isn't active anymore.");
         _;
     }
 
     /// @notice Modifier that requires the msg.sender to be the owner of a given Shard
     /// @param shard The Shard, whose ownership is tested for.
     modifier onlyHolder(bytes32 shard) {
-        require(infoByShard[shard].owner == msg.sender.address);
+        require(infoByShard[shard].owner == msg.sender);
         _;
     }
 
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
-    constructor() public{
+    constructor() {
         // passes full ownership to creator of contract
         _pushShard(Fraction(1,1), msg.sender, block.timestamp);
-    }
-
-    /// @notice Fallback function that reverts any calls to non-registered functions.
-    fallback() external {
-        revert;
     }
 
     /// @notice Puts a given shard for sale.
@@ -198,8 +202,8 @@ contract Shardable {
     /// @param fraction The absolute Fraction of the shard to be put for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    function putForSale(bytes32 shard, Fraction fraction, address tokenAddress, uint256 price) external onlyHolder(shard) {
-        _putForSale(shard,tokenAddress,price,fraction);
+    function putForSale(bytes32 shard, Fraction memory fraction, address tokenAddress, uint256 price) external onlyHolder(shard) {
+        _putForSale(shard,fraction,tokenAddress,price);
     }
 
     /// @notice Puts a given shard for sale only to a specifically set buyer.
@@ -208,8 +212,8 @@ contract Shardable {
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale.
-    function putForSaleTo(bytes32 shard, Fraction fraction, address tokenAddress, uint256 price, address to) external onlyHolder(shard) {
-        _putForSaleTo(shard,tokenAddress,price,fraction,to);
+    function putForSaleTo(bytes32 shard, Fraction memory fraction, address tokenAddress, uint256 price, address to) external onlyHolder(shard) {
+        _putForSaleTo(shard,fraction,tokenAddress,price,to);
     }
 
     /// @notice Cancels a sell of a given Shard.
@@ -223,20 +227,20 @@ contract Shardable {
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard) external payable onlyIfActive onlyValidShard(shard) {
-        require(infoByShard[shard].forsale, "Not for sale");
-        require(infoByShard[shard].forSaleTo == msg.sender.address || !infoByShard[shard].forSaleTo, string.concat("Only for sale to "+string(address)));
-        _cancelSale();
+        require(infoByShard[shard].forSale, "Not for sale");
+        require(infoByShard[shard].forSaleTo == msg.sender || !infoByShard[shard].forSaleTo, string.concat("Only for sale to ",string(address)));
+        _cancelSale(shard);
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(infoByShard[shard].salePrice,Fraction(25,1000));
         profitToSeller += remainder; // remainder goes to seller
         // if ether
-        if (infoByShard[shard].tokenAddress == 0x0) {
+        if (infoByShard[shard].tokenAddress == address(0x0)) {
             require(msg.value >= infoByShard[shard].salePrice, "Not enough ether paid");
             // Pay Service Fee of 2.5% to Counekt
-            (bool success, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call.value(profitToCounekt)("");
-            require(success, "Transfer failed.");
+            (bool successCounekt, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call({value:profitToCounekt});
+            require(successCounekt, "Transfer failed.");
             // Rest goes to the seller
-            (bool success, ) = payable(shard.owner).call.value(profitToSeller)("");
-            require(success, "Transfer failed.");
+            (bool successSeller, ) = payable(infoByShard[shard].owner).call({value:profitToSeller});
+            require(successSeller, "Transfer failed.");
         } 
         else {
             ERC20 token = ERC20(infoByShard[shard].tokenAddress);
@@ -245,7 +249,7 @@ contract Shardable {
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
-        if (infoByShard[shard].fraction == infoByShard[shard].fractionForSale) {_transferShard(shard,msg.sender);}
+        if (fractionsAreIdentical(infoByShard[shard].fraction,infoByShard[shard].fractionForSale)) {_transferShard(shard,msg.sender);}
         else {_split(shard, infoByShard[shard].fractionForSale,msg.sender);}
         emit SaleSold(shard,infoByShard[shard].fractionForSale,infoByShard[shard].tokenAddress,infoByShard[shard].salePrice,msg.sender);
     }
@@ -254,7 +258,7 @@ contract Shardable {
     /// @param shard The shard to be split.
     /// @param toBeSplit The absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function split(bytes32 shard, Fraction toBeSplit, address to) external onlyHolder(shard) {
+    function split(bytes32 shard, Fraction memory toBeSplit, address to) external onlyHolder(shard) {
         _split(shard, toBeSplit, to);
         emit SplitMade(shard,toBeSplit,to);
     }
@@ -270,7 +274,7 @@ contract Shardable {
 
     /// @notice Returns the information of a unique Shard.
     /// @param shard The shard to get the information on.
-    function getShardInfo(bytes32 shard) returns(ShardInfo) {
+    function getShardInfo(bytes32 shard) public view returns(ShardInfo memory) {
         return infoByShard[shard];
     }
 
@@ -281,7 +285,7 @@ contract Shardable {
     }
 
     /// @notice Checks if address is a shard holder - at least a partial owner of the contract.
-    /// @param shardHolder The address to be checked for.
+    /// @param _address The address to be checked for.
     function isShardHolder(address _address) public view returns(bool) {
         return isValidShard(shardByOwner[_address]);
     }
@@ -293,7 +297,7 @@ contract Shardable {
     }
 
     /// @notice Checks if address is a historic Shard holder - at least a previous partial owner of the contract
-    /// @param shardHolder The address to be checked for.
+    /// @param _address The address to be checked for.
     function isHistoricShardHolder(address _address) public view returns(bool) {
         return isHistoricShard(shardByOwner[_address]);
     }
@@ -302,24 +306,24 @@ contract Shardable {
     /// @param shard The shard, whose validity is to be checked for.
     /// @param time The timestamp to be checked for.
     function shardExisted(bytes32 shard, uint256 time) public view returns(bool) {
-        return infoByShard[shard].creationTime <= time < infoByShard[shard].deathTime;
+        return infoByShard[shard].creationTime <= time && time < infoByShard[shard].expiredTime;
     }
 
     /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
     /// @param senderShard The shard to be split.
     /// @param toBeSplit The absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(bytes32 senderShard, Fraction toBeSplit, address to) internal {
-        require(toBeSplit.numerator/toBeSplit.denominator < senderShard.fraction.numerator/senderShard.fraction.denominator, "Can't split 100% or more of shard's fraction");
+    function _split(bytes32 senderShard, Fraction memory toBeSplit, address to) internal {
+        require(toBeSplit.numerator/toBeSplit.denominator < infoByShard[senderShard].fraction.numerator/infoByShard[senderShard].fraction.denominator, "Can't split 100% or more of shard's fraction");
         uint256 transferTime = block.timestamp;
-        require(transferTime > senderShard.creationTime, "Can't trade more than once per second! The shard to be split must be more than one second old. Wait a second.");
+        require(transferTime > infoByShard[senderShard].creationTime, "Can't trade more than once per second! The shard to be split must be more than one second old. Wait a second.");
         ShardInfo memory senderShardInfo = infoByShard[senderShard];
-        address memory sender = senderShardInfo.owner;
-        bool memory receiverIsShardHolder = isShardHolder(to);
+        address sender = senderShardInfo.owner;
+        bool receiverIsShardHolder = isShardHolder(to);
         Fraction memory newReceiverFraction;
 
         if (receiverIsShardHolder) { // if Receiver already owns a shard
-            bytes32 memory receiverShard = shardByOwner[to];
+            bytes32 receiverShard = shardByOwner[to];
             ShardInfo memory receiverShardInfo = infoByShard[receiverShard];
             require(transferTime > receiverShardInfo.creationTime , "Can't trade more than once per second! The receiver's shard must be more than one second old. Wait a second.");
 
@@ -336,7 +340,7 @@ contract Shardable {
         }
 
         // The new Fraction of the Sender Shard has been subtracted by the Split Fraction.
-        Fraction newSenderFraction = subtractFractions(senderShardInfo.fraction,toBeSplit);
+        Fraction memory newSenderFraction = subtractFractions(senderShardInfo.fraction,toBeSplit);
 
         // Expire the Old Sender Shard
         _expireShard(senderShard, transferTime); 
@@ -357,7 +361,7 @@ contract Shardable {
         require(transferTime > senderShardInfo.creationTime , "Can't trade more than once per second! The shard must be more than one second old. Wait a second.");
 
         if (isShardHolder(to)) {
-            bytes32 memory receiverShard = shardByOwner[to];
+            bytes32 receiverShard = shardByOwner[to];
             ShardInfo memory receiverShardInfo = infoByShard[receiverShard];
 
             // Destroying the Old receiver
@@ -382,7 +386,7 @@ contract Shardable {
     /// @param fraction The absolute Fraction of the shard to be put for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    function _putForSale(bytes32 shard,  Fraction fraction, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
+    function _putForSale(bytes32 shard, Fraction memory fraction, address tokenAddress, uint256 price) internal onlyValidShard(shard) onlyIfActive {
         ShardInfo memory shardInfo = infoByShard[shard];
         require(fraction.numerator/fraction.denominator >= shardInfo.fraction.numerator/shardInfo.fraction.denominator, "Can't put more than 100% of shard's fraction for sale!");
         Fraction memory simplifiedFraction = simplifyFraction(fraction);
@@ -399,7 +403,7 @@ contract Shardable {
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale.
-    function _putForSaleTo(bytes32 shard, Fraction fraction, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
+    function _putForSaleTo(bytes32 shard, Fraction memory fraction, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
         infoByShard[shard].forSaleTo = to;
         _putForSale(shard,fraction,tokenAddress,price);
     }
@@ -413,8 +417,10 @@ contract Shardable {
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
-    /// @param shard The shard to be pushed.
-    function _pushShard(Fraction fraction, address owner, uint256 creationTime) internal {
+    /// @param fraction The fraction of the Shardable that the Shard represents.
+    /// @param owner The owner of the Shard.
+    /// @param creationTime The block.timestamp at which the Shard will be created.
+    function _pushShard(Fraction memory fraction, address owner, uint256 creationTime) internal {
         // The representation, bytes and hash
         bytes32 shard = keccak256(owner,creationTime);
         shardByOwner[owner] = shard;
@@ -422,7 +428,7 @@ contract Shardable {
         historicallyValidShards[shard] = true;
 
         // The info, attributes and details
-        ShardInfo shardInfo = ShardInfo();
+        ShardInfo memory shardInfo = ShardInfo();
         shardInfo.fraction = fraction;
         shardInfo.owner = owner;
         shardInfo.creationTime = creationTime;
@@ -432,6 +438,7 @@ contract Shardable {
 
     /// @notice Removes a shard from the registry of currently valid shards. It will still remain as a historically valid shard.
     /// @param shard The shard to be removed.
+    /// @param expiredTime The block.timestamp at which the Shard will expire.
     function _expireShard(bytes32 shard, uint256 expiredTime) internal onlyValidShard(shard) {
         infoByShard[shard].expiredTime = expiredTime;
         currentlyValidShards[shard] = false;

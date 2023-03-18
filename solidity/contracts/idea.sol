@@ -60,7 +60,7 @@ contract Idea is Shardable {
     );
 
     /// @notice Receive function that receives ether when there's no supplying data
-    receive() payable onlyIfActive {
+    receive() external payable onlyIfActive {
         require(active == true, "Can't transfer anything to a liquidized entity.");
         _processTokenReceipt(address(0),msg.value,msg.sender);
     }
@@ -80,7 +80,7 @@ contract Idea is Shardable {
     function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
         require(acceptsToken(tokenAddress) , "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
-        TokenRegister tokenLiquid = liquid[tokenAddress];
+        TokenRegister memory tokenLiquid = liquid[tokenAddress];
         require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
         tokenLiquid.hasClaimed[msg.sender] = true;
         uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * tokenLiquid.originalValue;
@@ -90,7 +90,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
-    function isIdea() pure returns(bool) {
+    function isIdea() public pure returns(bool) {
         return true;
     }
     
@@ -135,7 +135,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the received token.
     /// @param value The value/amount of the received token.
     /// @param from The sender of the received token.
-    function _processTokenReceipt(address tokenAddress, uint256 value, address from) internal {
+    function _processTokenReceipt(address tokenAddress, uint256 value, address from) virtual internal {
         liquid[tokenAddress].originalValue += value;
         emit TokenReceived(tokenAddress,value,from);
     }
@@ -144,18 +144,18 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the transferred token.
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
-    function _processTokenTransfer(address tokenAddress, uint256 value, address to) internal {
+    function _processTokenTransfer(address tokenAddress, uint256 value, address to) virtual internal {
         liquid[tokenAddress].originalValue -= value;
         emit TokenTransfered(tokenAddress,value,to);
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
-    function _registerTokenAddress(address tokenAddress) {
+    function _registerTokenAddress(address tokenAddress) internal {
         require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
         validTokenAddresses[tokenAddress] = true;
         // Update liquidization
-        TokenRegister newTokenRegister = new TokenRegister();
+        TokenRegister memory newTokenRegister = new TokenRegister();
         newTokenRegister.tokenAddress = tokenAddress;
         newTokenRegister.originalValue = 0;
         liquid[tokenAddress] = newTokenRegister;
@@ -163,7 +163,7 @@ contract Idea is Shardable {
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
-    function _unregisterTokenAddress(address tokenAddress) {
+    function _unregisterTokenAddress(address tokenAddress) internal {
         require(acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' NOT registered!");
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");
         validTokenAddresses[tokenAddress] = false;
