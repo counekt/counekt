@@ -79,12 +79,11 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be claimed.
     function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
-        require(acceptsToken(tokenAddress) , "Liquid doesn't contain token with address '"+string(tokenAddress)+"'");
-        TokenRegister memory tokenLiquid = liquid[tokenAddress];
-        require(!tokenLiquid.hasClaimed[msg.sender], "Liquid token'"+string(tokenAddress)+"' already claimed!");
-        tokenLiquid.hasClaimed[msg.sender] = true;
-        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * tokenLiquid.originalValue;
-        tokenLiquid.value -= liquidValue;
+        require(acceptsToken(tokenAddress), string.concat("Liquid doesn't contain token with address: ",string(tokenAddress)));
+        require(!liquid[tokenAddress].hasClaimed[msg.sender], string.concat("Liquid token already claimed: ",string(tokenAddress)));
+        liquid[tokenAddress].hasClaimed[msg.sender] = true;
+        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * liquid[tokenAddress].originalValue;
+        liquid[tokenAddress].value -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
     }
@@ -96,7 +95,7 @@ contract Idea is Shardable {
     
     /// @notice Returns a boolean value, stating if the given token address is registered as acceptable or not.
     /// @param tokenAddress The address of the token to be checked for.
-    function acceptsToken(address tokenAddress) public view {
+    function acceptsToken(address tokenAddress) public view returns(bool) {
       return validTokenAddresses[tokenAddress] == true;
     }
 
@@ -110,7 +109,7 @@ contract Idea is Shardable {
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
-            if (to.isIdea()) {
+            if (Idea(to).isIdea()) {
                 Idea(to).receiveToken("main", tokenAddress, value);
             }
         }
@@ -155,9 +154,7 @@ contract Idea is Shardable {
         require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
         validTokenAddresses[tokenAddress] = true;
         // Update liquidization
-        TokenRegister memory newTokenRegister = new TokenRegister();
-        newTokenRegister.tokenAddress = tokenAddress;
-        newTokenRegister.originalValue = 0;
+        TokenRegister memory newTokenRegister = new TokenRegister({value:0,originalValue:0});
         liquid[tokenAddress] = newTokenRegister;
     }
 

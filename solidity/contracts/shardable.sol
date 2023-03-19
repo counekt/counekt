@@ -228,7 +228,7 @@ contract Shardable {
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard) external payable onlyIfActive onlyValidShard(shard) {
         require(infoByShard[shard].forSale, "Not for sale");
-        require(infoByShard[shard].forSaleTo == msg.sender || !infoByShard[shard].forSaleTo, string.concat("Only for sale to ",string(address)));
+        require(infoByShard[shard].forSaleTo == msg.sender || !infoByShard[shard].forSaleTo, string.concat("Only for sale to ",string(infoByShard[shard].forSaleTo)));
         _cancelSale(shard);
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(infoByShard[shard].salePrice,Fraction(25,1000));
         profitToSeller += remainder; // remainder goes to seller
@@ -236,10 +236,10 @@ contract Shardable {
         if (infoByShard[shard].tokenAddress == address(0x0)) {
             require(msg.value >= infoByShard[shard].salePrice, "Not enough ether paid");
             // Pay Service Fee of 2.5% to Counekt
-            (bool successCounekt, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call({value:profitToCounekt});
+            (bool successCounekt, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call{value:profitToCounekt}("");
             require(successCounekt, "Transfer failed.");
             // Rest goes to the seller
-            (bool successSeller, ) = payable(infoByShard[shard].owner).call({value:profitToSeller});
+            (bool successSeller, ) = payable(infoByShard[shard].owner).call{value:profitToSeller}("");
             require(successSeller, "Transfer failed.");
         } 
         else {
@@ -393,8 +393,8 @@ contract Shardable {
         shardInfo.fractionForSale = simplifiedFraction;
         shardInfo.tokenAddress = tokenAddress;
         shardInfo.salePrice = price;
-        shardInfo.forsale = true;
-        emit PutForSale(shard,simplifiedFraction,tokenAddress,price,shardInfo.forsaleTo);
+        shardInfo.forSale = true;
+        emit PutForSale(shard,simplifiedFraction,tokenAddress,price,shardInfo.forSaleTo);
     }
 
     /// @notice Puts a given shard for sale only to a specifically set buyer.
@@ -411,9 +411,9 @@ contract Shardable {
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function _cancelSale(bytes32 shard) internal onlyValidShard(shard) onlyIfActive{
-        require(infoByShard[shard].forsale == true, "Shard not even for sale!");
+        require(infoByShard[shard].forSale == true, "Shard not even for sale!");
         infoByShard[shard].forSale = false;
-        infoByShard[shard].forSaleTo = 0x0;
+        infoByShard[shard].forSaleTo = address(0x0);
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
@@ -422,17 +422,22 @@ contract Shardable {
     /// @param creationTime The block.timestamp at which the Shard will be created.
     function _pushShard(Fraction memory fraction, address owner, uint256 creationTime) internal {
         // The representation, bytes and hash
-        bytes32 shard = keccak256(owner,creationTime);
+        bytes32 shard = keccak256(abi.encodePacked(owner,creationTime));
         shardByOwner[owner] = shard;
         currentlyValidShards[shard] = true;
         historicallyValidShards[shard] = true;
 
         // The info, attributes and details
-        ShardInfo memory shardInfo = ShardInfo();
-        shardInfo.fraction = fraction;
-        shardInfo.owner = owner;
-        shardInfo.creationTime = creationTime;
-        shardInfo.expiredTime = type(uint256).max; // The maximum value: (2^256)-1
+        ShardInfo memory shardInfo = ShardInfo({
+                                fraction: fraction,
+                                owner: owner,
+                                creationTime: creationTime,
+                                expiredTime: type(uint256).max, // The maximum value: (2^256)-1;
+                                forSale: false,
+                                forSaleTo: address(0x0),
+                                fractionForSale: Fraction(0,1),
+                                tokenAddress: Fraction(0x0),
+                                salePrice: 0});
         infoByShard[shard] = shardInfo;
     }
 
