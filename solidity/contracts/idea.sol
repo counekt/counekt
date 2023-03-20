@@ -110,7 +110,7 @@ contract Idea is Shardable {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
             if (Idea(to).isIdea()) {
-                Idea(to).receiveToken("main", tokenAddress, value);
+                Idea(to).receiveToken(tokenAddress, value);
             }
         }
         _processTokenTransfer(tokenAddress,value,to);
@@ -120,7 +120,7 @@ contract Idea is Shardable {
     /// @param value The value/amount of ether to be transferred.
     /// @param to The recipient of the ether to be transferred.
     function _transferEther(uint256 value, address to) internal {
-        (bool success, ) = address(to).call.value(value)("");
+        (bool success, ) = address(to).call{value:value}("");
         require(success, "Transfer failed.");
     }
 
@@ -151,10 +151,10 @@ contract Idea is Shardable {
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
     function _registerTokenAddress(address tokenAddress) internal {
-        require(!acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' ALREADY registered!");
+        require(!acceptsToken(tokenAddress), string.concat("Token address ALREADY registered: '",string(tokenAddress)));
         validTokenAddresses[tokenAddress] = true;
         // Update liquidization
-        TokenRegister memory newTokenRegister = new TokenRegister({value:0,originalValue:0});
+        TokenRegister memory newTokenRegister = TokenRegister({value:0,originalValue:0});
         liquid[tokenAddress] = newTokenRegister;
     }
 
