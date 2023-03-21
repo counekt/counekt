@@ -216,7 +216,7 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure a given bank exists
     /// @param bankName The name of the Bank to be checked for.
     modifier onlyExistingBank(string memory bankName) {
-        require(bankExists(bankName), "Bank '"+bankName+"' does NOT exist!");
+        require(bankExists(bankName), string.concat("Bank does NOT exist!: ",bankName));
         _;
     }
     
@@ -229,7 +229,7 @@ contract Administrable is Idea {
 
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     constructor() {
-        _createBank("main",msg.sender,this.address);
+        _createBank("main",msg.sender,this);
     }
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.

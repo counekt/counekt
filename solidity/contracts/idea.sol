@@ -13,18 +13,19 @@ contract Idea is Shardable {
     /// @notice A struct representing a registration of an owned ERC20 token and its value/amount.
     /// @param value The value/amount of the token.
     /// @param originalValue The value/amount of the token before liquidization/inactivation of the Idea.
-    /// @param hasClaimed Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share following a liquidization.
     struct TokenRegister {
         uint256 value;
         uint256 originalValue;
-        mapping(bytes32 => bool) hasClaimed;
     }
+
+    /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
+    mapping(address => bool) validTokenAddresses;
 
 	/// @notice Mapping pointing to a Token Register given the address of the ERC20 token contract.
     mapping(address => TokenRegister) liquid;
 
-    /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
-    mapping(address => bool) validTokenAddresses;
+    /// @notice Mapping pointing to another mapping (given a token address) pointing to a boolean stating if the owner of a given Shard has claimed their fair share following a liquidization.
+    mapping(address => mapping(bytes32 => bool)) hasClaimedLiquid;
 
     /// @notice Event that triggers when a token is received.
     /// @param tokenAddress The address of the received token.
@@ -80,8 +81,8 @@ contract Idea is Shardable {
     function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
         require(acceptsToken(tokenAddress), string.concat("Liquid doesn't contain token with address: ",string(tokenAddress)));
-        require(!liquid[tokenAddress].hasClaimed[msg.sender], string.concat("Liquid token already claimed: ",string(tokenAddress)));
-        liquid[tokenAddress].hasClaimed[msg.sender] = true;
+        require(!hasClaimedLiquid[tokenAddress][msg.sender], string.concat("Liquid token already claimed: ",string(tokenAddress)));
+        hasClaimedLiquid[tokenAddress][msg.sender] = true;
         uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * liquid[tokenAddress].originalValue;
         liquid[tokenAddress].value -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
@@ -109,8 +110,8 @@ contract Idea is Shardable {
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "Failed to approve transfer");
-            if (Idea(to).isIdea()) {
-                Idea(to).receiveToken(tokenAddress, value);
+            if (Idea(payable(to)).isIdea()) {
+                Idea(payable(to)).receiveToken(tokenAddress, value);
             }
         }
         _processTokenTransfer(tokenAddress,value,to);
@@ -161,7 +162,7 @@ contract Idea is Shardable {
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
     function _unregisterTokenAddress(address tokenAddress) internal {
-        require(acceptsToken(tokenAddress), "Token address '"+string(tokenAddress)+"' NOT registered!");
+        require(acceptsToken(tokenAddress), string.concat("Token address NOT registered!: ",string(tokenAddress)));
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");
         validTokenAddresses[tokenAddress] = false;
     }
