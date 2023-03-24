@@ -105,7 +105,7 @@ contract Administrable is Idea {
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
     /// @param by The initiator of the Token transfer.
-    event TokenTransferedFromBank(
+    event TokenTransferredFromBank(
         string bankName,
         address tokenAddress,
         uint256 value,
@@ -487,8 +487,8 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to be deleted.
     /// @param by The initiator of the Bank deletion.
     function _deleteBank(string memory bankName, address by) internal onlyIfActive {
-        require(bankName != "main", "Can't delete the main bank!");
-        require(bankIsEmpty(bankName), "Bank '"+bankName+"' must be empty before being deleted!");
+        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "Can't delete the main bank!");
+        require(bankIsEmpty(bankName), string.concat("Bank must be empty before being deleted!: ",bankName));
         validBanks[bankName] = false;
         emit BankDeleted(bankName, by);
     }
@@ -540,8 +540,7 @@ contract Administrable is Idea {
         BankInfo memory bankInfo = infoByBank[bankName];
         require(value <= balanceByBank[bankName][tokenAddress], string.concat("The value transferred can't be more than the value of the bank: ",Strings.toString(balanceByBank[bankName][tokenAddress])));
         _transferToken(tokenAddress,value,to);
-        _processTokenTransfer(tokenAddress,value,to);
-        emit TokenTransferedFromBank(bankName,tokenAddress,value,to,by);
+        _processTokenTransferFromBank(bankName,tokenAddress,value,to,by);
     }
 
     /// @notice Internally moves a token from one Bank to another.
@@ -588,13 +587,13 @@ contract Administrable is Idea {
     /// @param to The recipient of the transferred token.
     /// @param by The initiator of the transfer.
     function _processTokenTransferFromBank(string memory bankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(bankName) {
-        super._processTokenTransfer(tokenAddress, value, to);
+        _processTokenTransfer(tokenAddress, value, to);
         BankInfo memory bankInfo = infoByBank[bankName];
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0) {
             bankInfo.storedTokenAddresses -= 1;
         }
-        emit TokenTransfered(bankName,tokenAddress,value,to,by);
+        emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
     }
 
 }

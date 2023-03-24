@@ -41,7 +41,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the transferred token.
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
-    event TokenTransfered(
+    event TokenTransferred(
         address tokenAddress,
         uint256 value,
         address to
@@ -146,7 +146,7 @@ contract Idea is Shardable {
     /// @param to The recipient of the transferred token.
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) virtual internal {
         liquid[tokenAddress].originalValue -= value;
-        emit TokenTransfered(tokenAddress,value,to);
+        emit TokenTransferred(tokenAddress,value,to);
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
