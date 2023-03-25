@@ -147,7 +147,7 @@ contract Votable is Administrable {
     /// @param favor The boolean value signalling a FOR or AGAINST vote.
     function vote(bytes32 shard, uint256 referendum, bool favor) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
-        require(shardExisted(infoByReferendum[referendum].creationTime), "Shard is not applicable for this vote!");
+        require(shardExisted(shard,infoByReferendum[referendum].creationTime), "Shard is not applicable for this vote!");
         hasVotedOnReferendum[referendum][shard] = true;
         if (favor) {
             infoByReferendum[referendum].favorFraction = simplifyFraction(addFractions(infoByReferendum[referendum].favorFraction,infoByShard[shard].fraction));
@@ -197,9 +197,9 @@ contract Votable is Administrable {
 
     /// @notice Returns a boolean stating if a given Referendum has been voted through (>=50% FAVOR) or not.
     /// @param referendum The Referendum to be checked for.
-    function getReferendumResult(uint256 referendum) public pure returns(bool) {
+    function getReferendumResult(uint256 referendum) public view returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
-        if ((infoByReferendum[referendum].favorFraction.numerator / infoByReferendum[referendum].favorFraction.denominator) > 0.5) {
+        if ((infoByReferendum[referendum].favorFraction.numerator / infoByReferendum[referendum].favorFraction.denominator) * 2 > 1) {
             return true;
         }
         return false;
@@ -269,8 +269,8 @@ contract Votable is Administrable {
                         _issueVote(proposals, allowDivision, address(this));
                     }
                     if (functionNameHash == keccak256(bytes("setPermit"))) {
-                        (address _address, string memory permitName, PermitState newState) = abi.decode(proposal.argumentData, (address, string, PermitState));
-                        _setPermit(_address,permitName,newState,address(this));
+                        (string memory permitName, PermitState newState, address _address) = abi.decode(proposal.argumentData, (string, PermitState,address));
+                        _setPermit(permitName,newState,_address,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("setBasePermit"))) {
                         (string memory permitName, PermitState newState) = abi.decode(proposal.argumentData, (string, PermitState));
@@ -303,6 +303,14 @@ contract Votable is Administrable {
                     if (functionNameHash == keccak256(bytes("deleteBank"))) {
                         (string memory bankName) = abi.decode(proposal.argumentData, (string));
                         _deleteBank(bankName, address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("addBankAdmin"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposal.argumentData, (string, address));
+                        _addBankAdmin(bankName,bankAdmin,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("removeBankAdmin"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposal.argumentData, (string, address));
+                        _removeBankAdmin(bankName,bankAdmin,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("liquidize"))) {
                         _liquidize(address(this));

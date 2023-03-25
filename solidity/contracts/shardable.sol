@@ -2,6 +2,7 @@ pragma solidity ^0.8.4;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../node_modules/@openzeppelin/contracts/utils/Strings.sol";
 
 
 // Fractional Math
@@ -228,7 +229,7 @@ contract Shardable {
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard) external payable onlyIfActive onlyValidShard(shard) {
         require(infoByShard[shard].forSale, "Not for sale");
-        require(infoByShard[shard].forSaleTo == msg.sender || !infoByShard[shard].forSaleTo, string.concat("Only for sale to ",string(infoByShard[shard].forSaleTo)));
+        require((infoByShard[shard].forSaleTo == msg.sender) || (infoByShard[shard].forSaleTo == address(0x0)), string.concat("Only for sale to ",Strings.toHexString(uint256(uint160(infoByShard[shard].forSaleTo)), 20)));
         _cancelSale(shard);
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(infoByShard[shard].salePrice,Fraction(25,1000));
         profitToSeller += remainder; // remainder goes to seller
@@ -436,7 +437,7 @@ contract Shardable {
                                 forSale: false,
                                 forSaleTo: address(0x0),
                                 fractionForSale: Fraction(0,1),
-                                tokenAddress: Fraction(0x0),
+                                tokenAddress: address(0x0),
                                 salePrice: 0});
         infoByShard[shard] = shardInfo;
     }

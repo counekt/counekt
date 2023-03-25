@@ -96,6 +96,7 @@ contract Administrable is Idea {
     /// @param by The claimant of the Dividend.
     event DividendClaimed(
         uint256 dividend,
+        uint256 value,
         address by
     );
 
@@ -158,14 +159,14 @@ contract Administrable is Idea {
     );
 
     /// @notice Event that triggers when a permit is set.
-    /// @param holder The address of the holder of the permit that was set.
     /// @param name The name of the permit that was set.
     /// @param newState The new state of the permit.
+    /// @param _address The address of the holder of the permit that was set.
     /// @param by The initiator of the Permit State setting.
     event PermitSet(
-        address holder,
         string name,
         PermitState newState,
+        address _address,
         address by
     );
 
@@ -199,14 +200,14 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permitName The name of the permit to be checked for.
     modifier onlyWithPermit(string memory permitName) {
-        require(hasPermit(msg.sender, permitName));
+        require(hasPermit(permitName, msg.sender));
         _;
     }
     
     /// @notice Modifier that makes sure msg.sender is an admin of a given permit.
     /// @param permitName The name of the permit to be checked for.
     modifier onlyPermitAdmin(string memory permitName) {
-        require(isPermitAdmin(msg.sender,permitName));
+        require(isPermitAdmin(permitName, msg.sender));
         _;
 
     }
@@ -214,7 +215,7 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure msg.sender is admin of a given bank.
     /// @param bankName The name of the Bank to be checked for.
     modifier onlyBankAdmin(string memory bankName) {
-        require(isBankAdmin(msg.sender, bankName));
+        require(isBankAdmin(bankName, msg.sender));
         _;
     }
 
@@ -234,7 +235,7 @@ contract Administrable is Idea {
 
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     constructor() {
-        _createBank("main",msg.sender,this);
+        _createBank("main",msg.sender,address(this));
     }
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
@@ -247,7 +248,7 @@ contract Administrable is Idea {
 
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
     /// @param dividend The Dividend to be dissolved.
-    function dissolveDividend(uint256 dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend onlyIfActive {
+    function dissolveDividend(uint256 dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend(dividend) onlyIfActive {
         _dissolveDividend(dividend, msg.sender);
     }
 
@@ -262,22 +263,22 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to which the new administrator is to be added.
     /// @param bankAdmin The address of the new Bank administrator to be added.
     function addBankAdmin(string memory bankName, address bankAdmin) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
-        _addBankAdmin(bankName, bankAdmin);
+        _addBankAdmin(bankName, bankAdmin, msg.sender);
     }
 
     /// @notice Removes a given administrator of a given Bank.
     /// @param bankName The name of the Bank from which the given administrator is to be removed.
     /// @param bankAdmin The address of the current Bank administrator to be removed.
     function removeBankAdmin(string memory bankName, address bankAdmin) external {
-        require(isPermitAdmin(msg.sender, "manageBank"));
+        require(isPermitAdmin("manageBank",msg.sender));
         require(isBankAdmin(bankName,bankAdmin));
-        _removeBankAdmin();
+        _removeBankAdmin(bankName,bankAdmin,msg.sender);
     }
 
     /// @notice Deletes a given Bank.
     /// @param bankName The name of the Bank to be deleted.
     function deleteBank(string memory bankName) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
-        require(bankExists(bankName), "Bank '"+bankName+"' doesn't exists!");
+        require(bankExists(bankName), string.concat("Bank does NOT exist!: ", bankName));
         _deleteBank(bankName, msg.sender);
     }
 
@@ -302,13 +303,13 @@ contract Administrable is Idea {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
-    function claimDividend(bytes32 shard, uint256 dividend) external onlyExistingDividend onlyIfActive {
+    function claimDividend(bytes32 shard, uint256 dividend) external onlyExistingDividend(dividend) onlyIfActive {
         require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.");
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
-        require(hasClaimedDividend[dividend][msg.sender] == false, "Already claimed Dividend!");
+        require(hasClaimedDividend[dividend][shard] == false, "Already claimed Dividend!");
         require(shardExisted(shard,dividend), "Not applicable for Dividend!");
-        hasClaimedDividend[dividend][msg.sender] = true;
-        uint256 dividendValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * infoByDividend[dividend].originalValue;
+        hasClaimedDividend[dividend][shard] = true;
+        uint256 dividendValue = infoByShard[shard].fraction.numerator / infoByShard[shard].fraction.denominator * infoByDividend[dividend].originalValue;
         infoByDividend[dividend].value -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
@@ -318,23 +319,23 @@ contract Administrable is Idea {
     /// @param _address The address, whose permit state is to be set.
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
-    function setPermit(address _address, string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(permits[permitName][_address] != newState, "Address already has Permit '" + permitName + "="+Strings.toString(newState)+"'");
-        _setPermit(_address, permitName, newState, msg.sender);
+    function setPermit(string memory permitName, PermitState newState, address _address) external onlyPermitAdmin(permitName) {
+        require(permits[permitName][_address] != newState, string.concat("Address already has Permit: ", permitName));
+        _setPermit(permitName, newState, _address, msg.sender);
     }
 
     /// @notice Sets the state of a specified base permit.
     /// @param permitName The name of the base permit, whose state is to be set.
     /// @param newState The new base Permit State to be applied.
     function setBasePermit(string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(basePermits[permitName] != newState, string.concat("BasePermit already existing: ",permitName));
+        require(basePermits[permitName] != newState, string.concat("BasePermit already exist: ",permitName));
         _setBasePermit(permitName,newState,msg.sender);
     }
 
     /// @notice Sets the state of a specified rule.
     /// @param ruleName The name of the rule, whose state is to be set.
     /// @param newState The Boolean rule state to be applied.
-    function setRule(string memory ruleName, bool newState) external hasPermit("setRule") {
+    function setRule(string memory ruleName, bool newState) external onlyWithPermit("setRule") {
         require(rules[ruleName] != newState, string.concat("Rule is already set: ",ruleName));
         _setRule(ruleName, newState, msg.sender);
     }
@@ -396,14 +397,14 @@ contract Administrable is Idea {
     /// @notice Returns a boolean stating if a given address is an admin of a given bank.
     /// @param _address The address to be checked for.
     /// @param bankName The name of the Bank to be checked for.
-    function isBankAdmin(address _address, string memory bankName) public view returns(bool) {
-        return adminOfBank[bankName][_address] == true || isPermitAdmin(_address,"manageBank");
+    function isBankAdmin(string memory bankName, address _address) public view returns(bool) {
+        return adminOfBank[bankName][_address] == true || isPermitAdmin("manageBank",_address);
     }
 
     /// @notice Returns a boolean stating if a given address has a given permit or not.
     /// @param _address The address to be checked for.
     /// @param permitName The name of the permit to be checked for.
-    function hasPermit(address _address, string memory permitName) public view returns(bool) {
+    function hasPermit(string memory permitName, address _address) public view returns(bool) {
         if (_address == address(this)) {return true;}
         if (!(isShardHolder(_address) || rules["allowNonShardHolders"])) {return false;}
         return permits[permitName][_address] >= PermitState.authorized || basePermits[permitName] >= PermitState.authorized;
@@ -412,7 +413,7 @@ contract Administrable is Idea {
     /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.
     /// @param _address The address to be checked for.
     /// @param permitName The name of the permit to be checked for.
-    function isPermitAdmin(address _address, string memory permitName) public view returns(bool) {
+    function isPermitAdmin(string memory permitName, address _address) public view returns(bool) {
         if (_address == address(this)) {return true;}
         if (!(isShardHolder(_address) || rules["allowNonShardHolders"])) {return false;}
         return permits[permitName][_address] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
@@ -423,9 +424,9 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
     /// @param by The initiator of the Permit State setting.
-    function _setPermit(address _address, string memory permitName, PermitState newState, address by) internal onlyIfActive onlyValidPermit(permitName) {
+    function _setPermit(string memory permitName, PermitState newState, address _address, address by) internal onlyIfActive onlyValidPermit(permitName) {
         permits[permitName][_address] = newState;
-        emit PermitSet(_address,permitName,newState,by);
+        emit PermitSet(permitName,newState,_address,by);
     }
 
     /// @notice Sets the state of a specified permit of a given address.
@@ -442,7 +443,7 @@ contract Administrable is Idea {
     /// @param newState The new Boolean rule state to be applied.
     /// @param by The initiator of the rule state setting.
     function _setRule(string memory ruleName, bool newState, address by) internal onlyIfActive {
-        require(isValidRule(ruleName), "The rule name, '"+ruleName+"' doesn't exist and isn't valid!");
+        require(isValidRule(ruleName), string.concat("The following rule doesn't exist!: ", ruleName));
         rules[ruleName] = newState;
         emit RuleSet(ruleName,newState,by);
     }
@@ -452,10 +453,12 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the first Bank administrator.
     /// @param by The initiator of the Bank creation.
     function _createBank(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(!bankExists(bankName), "Bank '"+bankName+"' already exists!");
-        require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
-        BankInfo memory bankInfo = BankInfo();
-        bankInfo.name = bankName;
+        require(!bankExists(bankName), string.concat("Bank already exists!: ", bankName));
+        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        BankInfo memory bankInfo = BankInfo({
+            name:bankName,
+            storedTokenAddresses:0
+            });
         adminOfBank[bankName][bankAdmin] = true;
         infoByBank[bankName] = bankInfo;
         validBanks[bankName] = true;
@@ -467,8 +470,8 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the new Bank administrator to be added.
     /// @param by The initiator of the Bank administrator addition.
     function _addBankAdmin(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(isBankAdmin(by,bankName));
-        require(hasPermit(bankAdmin,"manageBank"),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        require(isBankAdmin(bankName,by));
+        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
         adminOfBank[bankName][bankAdmin] = true;
         emit BankAdminAdded(bankName,bankAdmin,by);
     }
