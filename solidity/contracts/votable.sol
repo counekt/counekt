@@ -8,25 +8,19 @@ import "./administrable.sol";
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administrable {
 
-    /// @notice A struct representing a Proposal that can be implemented by executing its specific function call data.
-    /// @param functionName The name of the function to be called as a result of the implementation of the Proposal.
-    /// @param argumentData The parameters passed to the function call as part of the implementation of the Proposal.
-    struct Proposal {
-        string functionName;
-        bytes argumentData;
-    }
-
     /// @notice A struct representing the information of a Referendum that has proposals tied to it.
     /// @param creationTime The block.timestamp at which the Referendum was created. Used for identification.
     /// @param allowDivision A boolean stating if the Referendum is allowed to be implemented gradually.
-    /// @param proposals An array of proposals connected to the Referendum.
+    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     /// @param forFraction The fraction of Shard-holders who voting FOR the proposals.
     /// @param againstFraction The fraction of Shard-holders who voted AGAINST the proposals.
     /// @param amountImplemented Amount of proposals implemented.
     struct ReferendumInfo {
         uint256 creationTime;
         bool allowDivision;
-        Proposal[] proposals;
+        string[] proposalFunctionNames;
+        bytes[] proposalArgumentData;
         Fraction favorFraction;
         Fraction againstFraction;
         uint256 amountImplemented;
@@ -71,11 +65,12 @@ contract Votable is Administrable {
         );
     
     /// @notice Event that triggers when a Proposal is implemented.
-    /// @param proposal The Proposal that was implemented.
-    /// @param referendum The passed Referendum from which the Proposal was implemented.
+    /// @param proposalFunctionName The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.    /// @param referendum The passed Referendum from which the Proposal was implemented.
     /// @param by The initiator of the Proposal implementation.
     event ProposalImplemented(
-      Proposal proposal,
+      string proposalFunctionName,
+      bytes proposalArgumentData,
       uint256 referendum,
       address by
       );
@@ -121,10 +116,11 @@ contract Votable is Administrable {
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
-    /// @param proposals The array of proposals to be tied to the Referendum.
+    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
-    function issueVote(Proposal[] memory proposals, bool allowDivision) external onlyWithPermit("issueVote") {
-        _issueVote(proposals, allowDivision, msg.sender);
+    function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision) external onlyWithPermit("issueVote") {
+        _issueVote(proposalFunctionNames, proposalArgumentData, allowDivision, msg.sender);
     }
 
     /// @notice Fully implements a given passed Referendum.
@@ -221,19 +217,22 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     /// @param proposalIndex The index of the proposal to be checked for.
     function proposalExists(uint256 referendum, uint256 proposalIndex) public view returns(bool) {
-        return infoByReferendum[referendum].proposals.length > proposalIndex;
+        return infoByReferendum[referendum].proposalFunctionNames.length > proposalIndex;
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
-    /// @param proposals The array of proposals to be tied to the Referendum.
+    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
     /// @param by The issuer of the Referendum.
-    function _issueVote(Proposal[] memory proposals, bool allowDivision, address by) internal onlyIfActive {
+    function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision, address by) internal onlyIfActive {
+        require(proposalFunctionNames.length == proposalArgumentData.length, "There must be just as many function names as grouped parameters!");
         uint256 referendum = block.timestamp;
         ReferendumInfo memory referendumInfo = ReferendumInfo({
             creationTime:referendum,
             allowDivision:allowDivision,
-            proposals:proposals,
+            proposalFunctionNames: proposalFunctionNames,
+            proposalArgumentData: proposalArgumentData,
             favorFraction: Fraction(0,1),
             againstFraction: Fraction(0,1),
             amountImplemented: 0
@@ -262,61 +261,62 @@ contract Votable is Administrable {
     function _implementProposal(uint256 referendum, uint256 proposalIndex, address by) internal onlyIfActive onlyPassedReferendum(referendum) onlyExistingProposal(referendum,proposalIndex) {
         require(infoByReferendum[referendum].amountImplemented == proposalIndex, "Proposals must be executed in the correct order!");
         infoByReferendum[referendum].amountImplemented += 1;
-        Proposal memory proposal = infoByReferendum[referendum].proposals[proposalIndex];
-        bytes32 functionNameHash = keccak256(bytes(proposal.functionName));
+        string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
+        bytes memory proposalArgumentData = infoByReferendum[referendum].proposalArgumentData[proposalIndex];
+        bytes32 functionNameHash = keccak256(bytes(proposalFunctionName));
                     if (functionNameHash == keccak256(bytes("issueVote"))) {
-                        (Proposal[] memory proposals, bool allowDivision) = abi.decode(proposal.argumentData, (Proposal[], bool));
-                        _issueVote(proposals, allowDivision, address(this));
+                        (string[] memory proposalFunctionNames, bytes[] memory _proposalArgumentData, bool allowDivision) = abi.decode(proposalArgumentData, (string[], bytes[], bool));
+                        _issueVote(proposalFunctionNames, _proposalArgumentData, allowDivision, address(this));
                     }
                     if (functionNameHash == keccak256(bytes("setPermit"))) {
-                        (string memory permitName, PermitState newState, address _address) = abi.decode(proposal.argumentData, (string, PermitState,address));
+                        (string memory permitName, PermitState newState, address _address) = abi.decode(proposalArgumentData, (string, PermitState,address));
                         _setPermit(permitName,newState,_address,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("setBasePermit"))) {
-                        (string memory permitName, PermitState newState) = abi.decode(proposal.argumentData, (string, PermitState));
+                        (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
                         _setBasePermit(permitName,newState,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("setRule"))) {
-                        (string memory ruleName, bool newState) = abi.decode(proposal.argumentData, (string, bool));
+                        (string memory ruleName, bool newState) = abi.decode(proposalArgumentData, (string, bool));
                         _setRule(ruleName,newState,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("transferToken"))) {
-                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposal.argumentData, (string, address, uint256,address));
+                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgumentData, (string, address, uint256,address));
                         _transferTokenFromBank(fromBankName,tokenAddress,value,to,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("moveToken"))) {
-                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposal.argumentData, (string, string, address, uint256));
+                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string, string, address, uint256));
                         _moveToken(fromBankName,toBankName,tokenAddress,value,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("issueDividend"))) {
-                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposal.argumentData, (string,address,uint256));
+                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string,address,uint256));
                         _issueDividend(bankName,tokenAddress,value,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("dissolveDividend"))) {
-                        (uint256 dividend) = abi.decode(proposal.argumentData, (uint256));
+                        (uint256 dividend) = abi.decode(proposalArgumentData, (uint256));
                         _dissolveDividend(dividend,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("createBank"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposal.argumentData, (string, address));
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
                         _createBank(bankName,bankAdmin,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("deleteBank"))) {
-                        (string memory bankName) = abi.decode(proposal.argumentData, (string));
+                        (string memory bankName) = abi.decode(proposalArgumentData, (string));
                         _deleteBank(bankName, address(this));
                     }
                     if (functionNameHash == keccak256(bytes("addBankAdmin"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposal.argumentData, (string, address));
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
                         _addBankAdmin(bankName,bankAdmin,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("removeBankAdmin"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposal.argumentData, (string, address));
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
                         _removeBankAdmin(bankName,bankAdmin,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("liquidize"))) {
                         _liquidize(address(this));
                     }
-        emit ProposalImplemented(proposal, referendum, by);
-        if (infoByReferendum[referendum].amountImplemented == infoByReferendum[referendum].proposals.length) {
+        emit ProposalImplemented(proposalFunctionName, proposalArgumentData, referendum, by);
+        if (infoByReferendum[referendum].amountImplemented == infoByReferendum[referendum].proposalFunctionNames.length) {
             emit ReferendumImplemented(referendum);
         }
 
@@ -326,8 +326,8 @@ contract Votable is Administrable {
     /// @param referendum The passed Referendum to be fully implemented.
     /// @param by The initiator of the Referendum implementation.
     function _implementReferendum(uint256 referendum, address by) internal onlyIfActive onlyPassedReferendum(referendum) {
-        require(infoByReferendum[referendum].amountImplemented < infoByReferendum[referendum].proposals.length, "Referendum ALREADY implemented!!!");
-        for (uint256 pIndex=infoByReferendum[referendum].amountImplemented; pIndex<infoByReferendum[referendum].proposals.length; pIndex++) {
+        require(infoByReferendum[referendum].amountImplemented < infoByReferendum[referendum].proposalFunctionNames.length, "Referendum ALREADY implemented!!!");
+        for (uint256 pIndex=infoByReferendum[referendum].amountImplemented; pIndex<infoByReferendum[referendum].proposalFunctionNames.length; pIndex++) {
             _implementProposal(referendum,pIndex,by);
         }
     }
