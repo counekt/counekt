@@ -543,7 +543,13 @@ contract Administrable is Idea {
         BankInfo memory bankInfo = infoByBank[bankName];
         require(value <= balanceByBank[bankName][tokenAddress], string.concat("The value transferred can't be more than the value of the bank: ",Strings.toString(balanceByBank[bankName][tokenAddress])));
         _transferToken(tokenAddress,value,to);
-        _processTokenTransferFromBank(bankName,tokenAddress,value,to,by);
+        /// Process token transfer from bank:
+        _processTokenTransfer(tokenAddress, value, to);
+        balanceByBank[bankName][tokenAddress] -= value;
+        if (balanceByBank[bankName][tokenAddress] == 0) {
+            bankInfo.storedTokenAddresses -= 1;
+        }
+        emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
     }
 
     /// @notice Internally moves a token from one Bank to another.
@@ -581,22 +587,6 @@ contract Administrable is Idea {
         }
         balanceByBank["main"][tokenAddress] += value;
         emit TokenReceived(tokenAddress,value,from);
-    }
-
-    /// @notice Keeps track of a token transfer and subtracts it from the registry.
-    /// @param bankName The name of the Bank from which the token is transferred.
-    /// @param tokenAddress The address of the transferred token.
-    /// @param value The value/amount of the transferred token.
-    /// @param to The recipient of the transferred token.
-    /// @param by The initiator of the transfer.
-    function _processTokenTransferFromBank(string memory bankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(bankName) {
-        _processTokenTransfer(tokenAddress, value, to);
-        BankInfo memory bankInfo = infoByBank[bankName];
-        balanceByBank[bankName][tokenAddress] -= value;
-        if (balanceByBank[bankName][tokenAddress] == 0) {
-            bankInfo.storedTokenAddresses -= 1;
-        }
-        emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
     }
 
 }

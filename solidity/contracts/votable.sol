@@ -8,10 +8,10 @@ import "./administrable.sol";
 /// @custom:beaware This is a commercial contract.
 contract Votable is Administrable {
 
-    /// @notice A struct representing the information of a Referendum that has proposals tied to it.
-    /// @param creationTime The block.timestamp at which the Referendum was created. Used for identification.
-    /// @param allowDivision A boolean stating if the Referendum is allowed to be implemented gradually.
-    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
+    /// @notice Struct representing info of a Referendum.
+    /// @param creationTime Time when Referendum was created. Used for identification.
+    /// @param allowDivision Boolean stating if Referendum allows for gradual implementation.
+    /// @param proposalFunctionNames Names of functions to be called during implementation.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     /// @param forFraction The fraction of Shard-holders who voting FOR the proposals.
     /// @param againstFraction The fraction of Shard-holders who voted AGAINST the proposals.
@@ -23,23 +23,23 @@ contract Votable is Administrable {
         bytes[] proposalArgumentData;
         Fraction favorFraction;
         Fraction againstFraction;
-        uint256 amountImplemented;
+        uint8 amountImplemented;
     }
 
     /// @notice The latest and most recent Referendum to be issued.
-    uint256 latestReferendum;
+    uint32 latestReferendum;
 
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
-    mapping(uint256 => ReferendumInfo) infoByReferendum;
+    mapping(uint32 => ReferendumInfo) infoByReferendum;
 
     /// @notice Mapping pointing to a boolean stating if the holder of a given Shard has voted on the given Referendum.
-    mapping(uint256 => mapping(bytes32 => bool)) hasVotedOnReferendum;
+    mapping(uint32 => mapping(bytes32 => bool)) hasVotedOnReferendum;
 
     /// @notice Mapping pointing to a boolean stating if a given Referendum is pending.
-    mapping(uint256 => bool) pendingReferendums;
+    mapping(uint32 => bool) pendingReferendums;
 
     /// @notice Mapping pointing to a boolean stating if a given Referendum is to be implemented.
-    mapping(uint256 => bool) passedReferendums;
+    mapping(uint32 => bool) passedReferendums;
 
 
     /// @notice Event that triggers when a Referendum is issued.
@@ -87,22 +87,22 @@ contract Votable is Administrable {
 
     /// @notice Modifier that makes sure msg.sender has NOT voted on a specific referendum.
     /// @param referendum The Referendum to be checked for.
-    modifier hasNotVoted(uint256 referendum) {
-        require(!hasVoted(msg.sender,referendum));
+    modifier hasNotVoted(uint32 referendum) {
+        require(!hasVoted(referendum, msg.sender));
         _;
 
     }
 
     /// @notice Modifier that makes sure a given Referendum is pending.
     /// @param referendum The Referendum to be checked for.
-    modifier onlyPendingReferendum(uint256 referendum) {
+    modifier onlyPendingReferendum(uint32 referendum) {
         require(referendumIsPending(referendum), "Referendum is NOT pending!");
         _;
     }
 
     /// @notice Modifier that makes sure a given Referendum is passed.
     /// @param referendum The Referendum to be checked for.
-    modifier onlyPassedReferendum(uint256 referendum) {
+    modifier onlyPassedReferendum(uint32 referendum) {
         require(referendumIsPassed(referendum), "Referendum has NOT been passed!");
         _;
     }
@@ -110,7 +110,7 @@ contract Votable is Administrable {
     /// @notice Modifier that makes sure a given Proposal exists within a given Referendum.
     /// @param referendum The Referendum to be checked for.
     /// @param proposalIndex The index of the proposal to be checked for.
-    modifier onlyExistingProposal(uint256 referendum, uint256 proposalIndex) {
+    modifier onlyExistingProposal(uint32 referendum, uint8 proposalIndex) {
         require(proposalExists(referendum,proposalIndex), "Proposal does NOT exists!");
         _;
     }
@@ -123,16 +123,10 @@ contract Votable is Administrable {
         _issueVote(proposalFunctionNames, proposalArgumentData, allowDivision, msg.sender);
     }
 
-    /// @notice Fully implements a given passed Referendum.
-    /// @param referendum The passed Referendum to be fully implemented.
-    function implementReferendum(uint256 referendum) external onlyWithPermit("implementProposal") {
-        _implementReferendum(referendum, msg.sender);
-    }
-
     /// @notice Implements a given Proposal, within a given passed Referendum.
     /// @param referendum The passed Referendum containing the Proposal.
     /// @param proposalIndex The index of the proposal to be implemented.
-    function implementProposal(uint256 referendum, uint256 proposalIndex) external onlyWithPermit("implementProposal") {
+    function implementProposal(uint32 referendum, uint8 proposalIndex) external onlyWithPermit("implementProposal") {
         require(infoByReferendum[referendum].allowDivision, "This Referendum is not allowed to be gradually implemented. Consider using the 'implementReferendum' function instead.");
         _implementProposal(referendum, proposalIndex, msg.sender);
     }
@@ -141,7 +135,7 @@ contract Votable is Administrable {
     /// @param shard The Shard to vote with.
     /// @param referendum The referendum to be voted on.
     /// @param favor The boolean value signalling a FOR or AGAINST vote.
-    function vote(bytes32 shard, uint256 referendum, bool favor) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
+    function vote(bytes32 shard, uint32 referendum, bool favor) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
         require(shardExisted(shard,infoByReferendum[referendum].creationTime), "Shard is not applicable for this vote!");
         hasVotedOnReferendum[referendum][shard] = true;
@@ -187,13 +181,13 @@ contract Votable is Administrable {
     /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
     /// @param _address The address of the potential Shard Holder voter to be checked for.
     /// @param referendum The Referendum to be checked for.
-    function hasVoted(address _address, uint256 referendum) public view returns(bool) {
+    function hasVoted(uint32 referendum, address _address) public view returns(bool) {
         return hasVotedOnReferendum[referendum][shardByOwner[_address]];
     }
 
     /// @notice Returns a boolean stating if a given Referendum has been voted through (>=50% FAVOR) or not.
     /// @param referendum The Referendum to be checked for.
-    function getReferendumResult(uint256 referendum) public view returns(bool) {
+    function getReferendumResult(uint32 referendum) public view returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
         if ((infoByReferendum[referendum].favorFraction.numerator / infoByReferendum[referendum].favorFraction.denominator) * 2 > 1) {
             return true;
@@ -203,20 +197,20 @@ contract Votable is Administrable {
     
     /// @notice Returns a boolean stating if a given Referendum is pending or not.
     /// @param referendum The Referendum to be checked for.
-    function referendumIsPending(uint256 referendum) public view returns(bool) {
+    function referendumIsPending(uint32 referendum) public view returns(bool) {
         return pendingReferendums[referendum] == true; 
     }
 
     /// @notice Returns a boolean stating if a given Referendum is passed or not.
     /// @param referendum The Referendum to be checked for.
-    function referendumIsPassed(uint256 referendum) public view returns(bool) {
+    function referendumIsPassed(uint32 referendum) public view returns(bool) {
         return passedReferendums[referendum] == true; 
     }
 
     /// @notice Returns a boolean stating if a given Proposal exists within a given Referendum.
     /// @param referendum The Referendum to be checked for.
     /// @param proposalIndex The index of the proposal to be checked for.
-    function proposalExists(uint256 referendum, uint256 proposalIndex) public view returns(bool) {
+    function proposalExists(uint32 referendum, uint8 proposalIndex) public view returns(bool) {
         return infoByReferendum[referendum].proposalFunctionNames.length > proposalIndex;
     }
 
@@ -227,9 +221,9 @@ contract Votable is Administrable {
     /// @param by The issuer of the Referendum.
     function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision, address by) internal onlyIfActive {
         require(proposalFunctionNames.length == proposalArgumentData.length, "There must be just as many function names as grouped parameters!");
-        uint256 referendum = block.timestamp;
+        uint32 referendum = latestReferendum+1;
         ReferendumInfo memory referendumInfo = ReferendumInfo({
-            creationTime:referendum,
+            creationTime:block.timestamp,
             allowDivision:allowDivision,
             proposalFunctionNames: proposalFunctionNames,
             proposalArgumentData: proposalArgumentData,
@@ -244,7 +238,7 @@ contract Votable is Administrable {
 
     /// @notice Closes a given Referendum, leading to a pass or not.
     /// @param referendum The Referendum to be closed.
-    function _closeReferendum(uint256 referendum) internal onlyPendingReferendum(referendum) onlyIfActive {
+    function _closeReferendum(uint32 referendum) internal onlyPendingReferendum(referendum) onlyIfActive {
         bool result = getReferendumResult(referendum);
         // remove the now closed Referendum from 'pendingReferendums'
         pendingReferendums[referendum] = false;
@@ -258,7 +252,7 @@ contract Votable is Administrable {
     /// @param referendum The passed Referendum containing the Proposal.
     /// @param proposalIndex The index of the proposal to be implemented.
     /// @param by The initiator of the Proposal implementation.
-    function _implementProposal(uint256 referendum, uint256 proposalIndex, address by) internal onlyIfActive onlyPassedReferendum(referendum) onlyExistingProposal(referendum,proposalIndex) {
+    function _implementProposal(uint32 referendum, uint8 proposalIndex, address by) internal onlyIfActive onlyPassedReferendum(referendum) onlyExistingProposal(referendum,proposalIndex) {
         require(infoByReferendum[referendum].amountImplemented == proposalIndex, "Proposals must be executed in the correct order!");
         infoByReferendum[referendum].amountImplemented += 1;
         string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
@@ -318,17 +312,6 @@ contract Votable is Administrable {
         emit ProposalImplemented(proposalFunctionName, proposalArgumentData, referendum, by);
         if (infoByReferendum[referendum].amountImplemented == infoByReferendum[referendum].proposalFunctionNames.length) {
             emit ReferendumImplemented(referendum);
-        }
-
-    }
-
-    /// @notice Fully implements a given passed Referendum.
-    /// @param referendum The passed Referendum to be fully implemented.
-    /// @param by The initiator of the Referendum implementation.
-    function _implementReferendum(uint256 referendum, address by) internal onlyIfActive onlyPassedReferendum(referendum) {
-        require(infoByReferendum[referendum].amountImplemented < infoByReferendum[referendum].proposalFunctionNames.length, "Referendum ALREADY implemented!!!");
-        for (uint256 pIndex=infoByReferendum[referendum].amountImplemented; pIndex<infoByReferendum[referendum].proposalFunctionNames.length; pIndex++) {
-            _implementProposal(referendum,pIndex,by);
         }
     }
 }
