@@ -127,6 +127,7 @@ contract Idea is Shardable {
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
+    /// @param by The initiator of the liquidization.
     function _liquidize(address by) internal {
         active = false; // stops trading of Shards
         emit EntityLiquidized(by);

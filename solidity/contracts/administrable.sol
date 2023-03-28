@@ -235,69 +235,7 @@ contract Administrable is Idea {
 
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     constructor() {
-        _createBank("main",msg.sender,address(this));
-    }
-
-    /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
-    /// @param bankName The name of the Bank to issue the Dividend from.
-    /// @param tokenAddress The address of the token to make up the Dividend.
-    /// @param value The value/amount of the token to be issued in the Dividend.
-    function issueDividend(string memory bankName, address tokenAddress, uint256 value) external onlyWithPermit("issueDividend") onlyBankAdmin(bankName) onlyIfActive {
-        _issueDividend(bankName,tokenAddress,value, msg.sender);
-    }
-
-    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
-    /// @param dividend The Dividend to be dissolved.
-    function dissolveDividend(uint256 dividend) external onlyWithPermit("dissolveDividend") onlyExistingDividend(dividend) onlyIfActive {
-        _dissolveDividend(dividend, msg.sender);
-    }
-
-    /// @notice Creates a new Bank.
-    /// @param bankName The name of the Bank to be created.
-    /// @param bankAdmin The address of the first Bank administrator.
-    function createBank(string memory bankName, address bankAdmin) external onlyWithPermit("manageBank") {
-       _createBank(bankName, bankAdmin, msg.sender);
-    }
-
-    /// @notice Adds a new given administrator to a given Bank.
-    /// @param bankName The name of the Bank to which the new administrator is to be added.
-    /// @param bankAdmin The address of the new Bank administrator to be added.
-    function addBankAdmin(string memory bankName, address bankAdmin) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
-        _addBankAdmin(bankName, bankAdmin, msg.sender);
-    }
-
-    /// @notice Removes a given administrator of a given Bank.
-    /// @param bankName The name of the Bank from which the given administrator is to be removed.
-    /// @param bankAdmin The address of the current Bank administrator to be removed.
-    function removeBankAdmin(string memory bankName, address bankAdmin) external {
-        require(isPermitAdmin("manageBank",msg.sender));
-        require(isBankAdmin(bankName,bankAdmin));
-        _removeBankAdmin(bankName,bankAdmin,msg.sender);
-    }
-
-    /// @notice Deletes a given Bank.
-    /// @param bankName The name of the Bank to be deleted.
-    function deleteBank(string memory bankName) external onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
-        require(bankExists(bankName), string.concat("Bank does NOT exist!: ", bankName));
-        _deleteBank(bankName, msg.sender);
-    }
-
-    /// @notice Transfers a token from a Bank to a recipient.
-    /// @param bankName The name of the Bank from which the token is to be transferred.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    function transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to) external onlyBankAdmin(bankName) {
-        _transferTokenFromBank(bankName,tokenAddress,value,to,msg.sender);
-    }
-
-    /// @notice Internally moves a token from one Bank to another.
-    /// @param fromBankName The name of the Bank from which the token is to be moved.
-    /// @param toBankName The name of the Bank to which the token is to be moved.
-    /// @param tokenAddress The address of the token to be moved.
-    /// @param value The value/amount of the token to be moved.
-    function moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
-        _moveToken(fromBankName,toBankName,tokenAddress,value,msg.sender);
+        createBank("main",msg.sender);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
@@ -315,29 +253,159 @@ contract Administrable is Idea {
         emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
+    /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
+    /// @param bankName The name of the Bank to issue the Dividend from.
+    /// @param tokenAddress The address of the token to make up the Dividend.
+    /// @param value The value/amount of the token to be issued in the Dividend.
+    function issueDividend(string memory bankName, address tokenAddress, uint256 value) public onlyWithPermit("issueDividend") onlyBankAdmin(bankName) onlyIfActive {
+        uint256 transferTime = block.timestamp;
+        BankInfo memory bankInfo = infoByBank[bankName];
+        require(transferTime > latestDividend, "Dividends must be issued at least one second between each other.");
+        require(value <= balanceByBank[bankName][tokenAddress], string.concat("Dividend value can't be more than bank value ",Strings.toString(balanceByBank[bankName][tokenAddress])));
+        balanceByBank[bankName][tokenAddress] -= value;
+        if (balanceByBank[bankName][tokenAddress] == 0) {
+            bankInfo.storedTokenAddresses -= 1;
+        }
+        DividendInfo memory dividendInfo = DividendInfo({
+            creationTime:transferTime,
+            tokenAddress:tokenAddress,
+            originalValue:value,
+            value:value
+        });
+        infoByDividend[transferTime] = dividendInfo; 
+        validDividends[transferTime] = true;
+        latestDividend = transferTime;
+        emit DividendIssued(transferTime, msg.sender);    
+    }
+
+    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
+    /// @param dividend The Dividend to be dissolved.
+    function dissolveDividend(uint256 dividend) public onlyWithPermit("dissolveDividend") onlyExistingDividend(dividend) onlyIfActive {
+        validDividends[dividend] = false; // -1 to distinguish between empty values;
+        uint256 valueLeft = infoByDividend[dividend].value;
+        infoByDividend[dividend].value = 0;
+        balanceByBank["main"][infoByDividend[dividend].tokenAddress] += valueLeft;
+        emit DividendDissolved(dividend, valueLeft, msg.sender);
+    }
+
+    /// @notice Creates a new Bank.
+    /// @param bankName The name of the Bank to be created.
+    /// @param bankAdmin The address of the first Bank administrator.
+    function createBank(string memory bankName, address bankAdmin) public onlyWithPermit("manageBank") onlyIfActive {
+       require(!bankExists(bankName), string.concat("Bank already exists!: ", bankName));
+        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        BankInfo memory bankInfo = BankInfo({
+            name:bankName,
+            storedTokenAddresses:0
+            });
+        adminOfBank[bankName][bankAdmin] = true;
+        infoByBank[bankName] = bankInfo;
+        validBanks[bankName] = true;
+        emit BankCreated(bankName,bankAdmin,msg.sender);
+    }
+
+    /// @notice Adds a new given administrator to a given Bank.
+    /// @param bankName The name of the Bank to which the new administrator is to be added.
+    /// @param bankAdmin The address of the new Bank administrator to be added.
+    function addBankAdmin(string memory bankName, address bankAdmin) public onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
+        require(isBankAdmin(bankName,msg.sender));
+        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        adminOfBank[bankName][bankAdmin] = true;
+        emit BankAdminAdded(bankName,bankAdmin,msg.sender);
+    }
+
+    /// @notice Removes a given administrator of a given Bank.
+    /// @param bankName The name of the Bank from which the given administrator is to be removed.
+    /// @param bankAdmin The address of the current Bank administrator to be removed.
+    function removeBankAdmin(string memory bankName, address bankAdmin) public {
+        require(isPermitAdmin("manageBank",msg.sender));
+        require(isBankAdmin(bankName,bankAdmin));
+        BankInfo memory bankInfo = infoByBank[bankName];
+        adminOfBank[bankName][bankAdmin] = false;
+        emit BankAdminRemoved(bankName,bankAdmin,msg.sender);
+    }
+
+    /// @notice Deletes a given Bank.
+    /// @param bankName The name of the Bank to be deleted.
+    function deleteBank(string memory bankName) public onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
+        require(bankExists(bankName), string.concat("Bank does NOT exist!: ", bankName));
+        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "Can't delete the main bank!");
+        require(bankIsEmpty(bankName), string.concat("Bank must be empty before being deleted!: ",bankName));
+        validBanks[bankName] = false;
+        emit BankDeleted(bankName, msg.sender);
+    }
+
+    /// @notice Transfers a token from a Bank to a recipient.
+    /// @param bankName The name of the Bank from which the token is to be transferred.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
+    function transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to) public onlyBankAdmin(bankName) {
+        BankInfo memory bankInfo = infoByBank[bankName];
+        require(value <= balanceByBank[bankName][tokenAddress], string.concat("The value transferred can't be more than the value of the bank: ",Strings.toString(balanceByBank[bankName][tokenAddress])));
+        _transferToken(tokenAddress,value,to);
+        /// Process token transfer from bank:
+        _processTokenTransfer(tokenAddress, value, to);
+        balanceByBank[bankName][tokenAddress] -= value;
+        if (balanceByBank[bankName][tokenAddress] == 0) {
+            bankInfo.storedTokenAddresses -= 1;
+        }
+        emit TokenTransferredFromBank(bankName,tokenAddress,value,to,msg.sender);
+    }
+
+    /// @notice Internally moves a token from one Bank to another.
+    /// @param fromBankName The name of the Bank from which the token is to be moved.
+    /// @param toBankName The name of the Bank to which the token is to be moved.
+    /// @param tokenAddress The address of the token to be moved.
+    /// @param value The value/amount of the token to be moved.
+    function moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) public onlyBankAdmin(fromBankName) onlyExistingBank(toBankName) {
+        BankInfo memory fromBankInfo = infoByBank[fromBankName];
+        BankInfo memory toBankInfo = infoByBank[toBankName];
+        require(value <= balanceByBank[fromBankName][tokenAddress], string.concat("The value to be moved can't be more than: ",Strings.toString(balanceByBank[fromBankName][tokenAddress])));
+        balanceByBank[fromBankName][tokenAddress] -= value;
+        if (balanceByBank[fromBankName][tokenAddress] == 0) {
+            fromBankInfo.storedTokenAddresses -= 1;
+
+        }
+        if (balanceByBank[toBankName][tokenAddress] == 0) {
+            toBankInfo.storedTokenAddresses += 1;
+        }
+        balanceByBank[toBankName][tokenAddress] += value;
+        emit TokenMoved(fromBankName,toBankName,tokenAddress,value,msg.sender);
+    }
+
     /// @notice Sets the state of a specified permit of a given address.
     /// @param _address The address, whose permit state is to be set.
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
-    function setPermit(string memory permitName, PermitState newState, address _address) external onlyPermitAdmin(permitName) {
+    function setPermit(string memory permitName, PermitState newState, address _address) public onlyPermitAdmin(permitName) onlyIfActive{
         require(permits[permitName][_address] != newState, string.concat("Address already has Permit: ", permitName));
-        _setPermit(permitName, newState, _address, msg.sender);
+        permits[permitName][_address] = newState;
+        emit PermitSet(permitName,newState,_address,msg.sender);
     }
 
     /// @notice Sets the state of a specified base permit.
     /// @param permitName The name of the base permit, whose state is to be set.
     /// @param newState The new base Permit State to be applied.
-    function setBasePermit(string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
+    function setBasePermit(string memory permitName, PermitState newState) public onlyPermitAdmin(permitName) onlyIfActive {
         require(basePermits[permitName] != newState, string.concat("BasePermit already exist: ",permitName));
-        _setBasePermit(permitName,newState,msg.sender);
+        basePermits[permitName] = newState;
+        emit BasePermitSet(permitName,newState,msg.sender);
     }
 
     /// @notice Sets the state of a specified rule.
     /// @param ruleName The name of the rule, whose state is to be set.
     /// @param newState The Boolean rule state to be applied.
-    function setRule(string memory ruleName, bool newState) external onlyWithPermit("setRule") {
+    function setRule(string memory ruleName, bool newState) public onlyWithPermit("setRule") onlyIfActive {
         require(rules[ruleName] != newState, string.concat("Rule is already set: ",ruleName));
-        _setRule(ruleName, newState, msg.sender);
+        require(isValidRule(ruleName), string.concat("The following rule doesn't exist!: ", ruleName));
+        rules[ruleName] = newState;
+        emit RuleSet(ruleName,newState,msg.sender);
+    }
+
+    /// @notice Liquidizes and dissolves the entity. This cannot be undone.
+    function liquidize() public onlyWithPermit("liquidizeEntity") onlyIfActive {
+        _liquidize(msg.sender);
     }
 
     /// @notice Returns a boolean stating if a given rule is valid/exists or not.
@@ -417,161 +485,6 @@ contract Administrable is Idea {
         if (_address == address(this)) {return true;}
         if (!(isShardHolder(_address) || rules["allowNonShardHolders"])) {return false;}
         return permits[permitName][_address] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
-    }
-    
-    /// @notice Sets the state of a specified permit of a given address.
-    /// @param _address The address, whose permit state is to be set.
-    /// @param permitName The name of the permit, whose state is to be set.
-    /// @param newState The new Permit State to be applied.
-    /// @param by The initiator of the Permit State setting.
-    function _setPermit(string memory permitName, PermitState newState, address _address, address by) internal onlyIfActive onlyValidPermit(permitName) {
-        permits[permitName][_address] = newState;
-        emit PermitSet(permitName,newState,_address,by);
-    }
-
-    /// @notice Sets the state of a specified permit of a given address.
-    /// @param permitName The name of the Base Permit, whose State is to be set.
-    /// @param newState The new Base Permit State to be applied.
-    /// @param by The initiator of the Base Permit State setting.
-    function _setBasePermit(string memory permitName, PermitState newState, address by) internal onlyIfActive onlyValidPermit(permitName) {
-        basePermits[permitName] = newState;
-        emit BasePermitSet(permitName,newState,by);
-    }
-
-    /// @notice Sets the state of a specified rule.
-    /// @param ruleName The name of the permit, whose state is to be set.
-    /// @param newState The new Boolean rule state to be applied.
-    /// @param by The initiator of the rule state setting.
-    function _setRule(string memory ruleName, bool newState, address by) internal onlyIfActive {
-        require(isValidRule(ruleName), string.concat("The following rule doesn't exist!: ", ruleName));
-        rules[ruleName] = newState;
-        emit RuleSet(ruleName,newState,by);
-    }
-
-    /// @notice Creates a new Bank.
-    /// @param bankName The name of the Bank to be created.
-    /// @param bankAdmin The address of the first Bank administrator.
-    /// @param by The initiator of the Bank creation.
-    function _createBank(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(!bankExists(bankName), string.concat("Bank already exists!: ", bankName));
-        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
-        BankInfo memory bankInfo = BankInfo({
-            name:bankName,
-            storedTokenAddresses:0
-            });
-        adminOfBank[bankName][bankAdmin] = true;
-        infoByBank[bankName] = bankInfo;
-        validBanks[bankName] = true;
-        emit BankCreated(bankName,bankAdmin,by);
-    }
-
-    /// @notice Adds a new given administrator to a given Bank.
-    /// @param bankName The name of the Bank to which the new administrator is to be added.
-    /// @param bankAdmin The address of the new Bank administrator to be added.
-    /// @param by The initiator of the Bank administrator addition.
-    function _addBankAdmin(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(isBankAdmin(bankName,by));
-        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
-        adminOfBank[bankName][bankAdmin] = true;
-        emit BankAdminAdded(bankName,bankAdmin,by);
-    }
-
-    /// @notice Removes a given administrator of a given Bank.
-    /// @param bankName The name of the Bank from which the given administrator is to be removed.
-    /// @param bankAdmin The address of the current Bank administrator to be removed.
-    /// @param by The initiator of the Bank Administrator removal.
-    function _removeBankAdmin(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        BankInfo memory bankInfo = infoByBank[bankName];
-        adminOfBank[bankName][bankAdmin] = false;
-        emit BankAdminRemoved(bankName,bankAdmin,by);
-    }
-
-    /// @notice Deletes a given Bank.
-    /// @param bankName The name of the Bank to be deleted.
-    /// @param by The initiator of the Bank deletion.
-    function _deleteBank(string memory bankName, address by) internal onlyIfActive {
-        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "Can't delete the main bank!");
-        require(bankIsEmpty(bankName), string.concat("Bank must be empty before being deleted!: ",bankName));
-        validBanks[bankName] = false;
-        emit BankDeleted(bankName, by);
-    }
-
-    /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
-    /// @param bankName The name of the Bank to issue the Dividend from.
-    /// @param tokenAddress The address of the token to make up the Dividend.
-    /// @param value The value/amount of the token to be issued in the Dividend.
-    /// @param by The initiator of the Dividend issuance.
-    function _issueDividend(string memory bankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(bankName) {
-        uint256 transferTime = block.timestamp;
-        BankInfo memory bankInfo = infoByBank[bankName];
-        require(transferTime > latestDividend, "Dividends must be issued at least one second between each other.");
-        require(value <= balanceByBank[bankName][tokenAddress], string.concat("Dividend value can't be more than bank value ",Strings.toString(balanceByBank[bankName][tokenAddress])));
-        balanceByBank[bankName][tokenAddress] -= value;
-        if (balanceByBank[bankName][tokenAddress] == 0) {
-            bankInfo.storedTokenAddresses -= 1;
-        }
-        DividendInfo memory dividendInfo = DividendInfo({
-            creationTime:transferTime,
-            tokenAddress:tokenAddress,
-            originalValue:value,
-            value:value
-        });
-        infoByDividend[transferTime] = dividendInfo; 
-        validDividends[transferTime] = true;
-        latestDividend = transferTime;
-        emit DividendIssued(transferTime, by);
-    }
-
-    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
-    /// @param dividend The Dividend to be dissolved.
-    /// @param by The initiator of the dissolution.
-    function _dissolveDividend(uint256 dividend, address by) internal onlyIfActive {
-        validDividends[dividend] = false; // -1 to distinguish between empty values;
-        uint256 valueLeft = infoByDividend[dividend].value;
-        infoByDividend[dividend].value = 0;
-        balanceByBank["main"][infoByDividend[dividend].tokenAddress] += valueLeft;
-        emit DividendDissolved(dividend, valueLeft, by);
-    }
-
-    /// @notice Transfers a token from a Bank to a recipient.
-    /// @param bankName The name of the Bank from which the token is to be transferred.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    /// @param by The initiator of the transfer.
-    function _transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to, address by) internal onlyExistingBank(bankName) {
-        BankInfo memory bankInfo = infoByBank[bankName];
-        require(value <= balanceByBank[bankName][tokenAddress], string.concat("The value transferred can't be more than the value of the bank: ",Strings.toString(balanceByBank[bankName][tokenAddress])));
-        _transferToken(tokenAddress,value,to);
-        /// Process token transfer from bank:
-        _processTokenTransfer(tokenAddress, value, to);
-        balanceByBank[bankName][tokenAddress] -= value;
-        if (balanceByBank[bankName][tokenAddress] == 0) {
-            bankInfo.storedTokenAddresses -= 1;
-        }
-        emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
-    }
-
-    /// @notice Internally moves a token from one Bank to another.
-    /// @param fromBankName The name of the Bank from which the token is to be moved.
-    /// @param toBankName The name of the Bank to which the token is to be moved.
-    /// @param tokenAddress The address of the token to be moved.
-    /// @param value The value/amount of the token to be moved.
-    /// @param by The initiator of the move.
-    function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
-        BankInfo memory fromBankInfo = infoByBank[fromBankName];
-        BankInfo memory toBankInfo = infoByBank[toBankName];
-        require(value <= balanceByBank[fromBankName][tokenAddress], string.concat("The value to be moved can't be more than: ",Strings.toString(balanceByBank[fromBankName][tokenAddress])));
-        balanceByBank[fromBankName][tokenAddress] -= value;
-        if (balanceByBank[fromBankName][tokenAddress] == 0) {
-            fromBankInfo.storedTokenAddresses -= 1;
-
-        }
-        if (balanceByBank[toBankName][tokenAddress] == 0) {
-            toBankInfo.storedTokenAddresses += 1;
-        }
-        balanceByBank[toBankName][tokenAddress] += value;
-        emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
     }
 
     /// @notice Keeps track of a token receipt by adding it to the registry
