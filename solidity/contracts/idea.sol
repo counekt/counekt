@@ -1,8 +1,6 @@
 pragma solidity ^0.8.4;
 
-import "../node_modules/@openzeppelin/contracts/utils/Strings.sol";
 import "./shardable.sol";
-
 
 /// @title A proof of fractional ownership of an entity with valuables.
 /// @author Frederik W. L. Christoffersen
@@ -63,7 +61,7 @@ contract Idea is Shardable {
 
     /// @notice Receive function that receives ether when there's no supplying data
     receive() external payable onlyIfActive {
-        require(active == true, "Can't transfer anything to a liquidized entity.");
+        require(active == true, "EL");
         _processTokenReceipt(address(0),msg.value,msg.sender);
     }
 
@@ -81,10 +79,10 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be claimed.
     function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
-        require(acceptsToken(tokenAddress), string.concat("Liquid doesn't contain token with address: ", Strings.toHexString(uint256(uint160(tokenAddress)), 20)));
-        require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], string.concat("Liquid token already claimed: ", Strings.toHexString(uint256(uint160(tokenAddress)), 20)));
+        require(acceptsToken(tokenAddress), "Liquid doesn't contain any token with the provided address!");
+        require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], "Liquid token already claimed!");
         hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]] = true;
-        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].fraction.numerator / infoByShard[shardByOwner[msg.sender]].fraction.denominator * liquid[tokenAddress].originalValue;
+        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress].originalValue;
         liquid[tokenAddress].value -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
@@ -154,17 +152,16 @@ contract Idea is Shardable {
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
     function _registerTokenAddress(address tokenAddress) internal {
-        require(!acceptsToken(tokenAddress), string.concat("Token address ALREADY registered: '", Strings.toHexString(uint256(uint160(tokenAddress)), 20)));
+        require(!acceptsToken(tokenAddress), "Token address ALREADY registered!");
         validTokenAddresses[tokenAddress] = true;
         // Update liquidization
-        TokenRegister memory newTokenRegister = TokenRegister({value:0,originalValue:0});
-        liquid[tokenAddress] = newTokenRegister;
+        liquid[tokenAddress] = TokenRegister({value:0,originalValue:0});
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
     function _unregisterTokenAddress(address tokenAddress) internal {
-        require(acceptsToken(tokenAddress), string.concat("Token address NOT registered!: ",Strings.toHexString(uint256(uint160(tokenAddress)), 20)));
+        require(acceptsToken(tokenAddress), "Token address NOT yet registered!");
         require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");
         validTokenAddresses[tokenAddress] = false;
     }
