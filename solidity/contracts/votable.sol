@@ -139,7 +139,7 @@ contract Votable is Administrable {
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
     function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision) public onlyWithPermit("issueVote") onlyIfActive{
-        uint256 transferTime = block.timestamp;
+        uint256 transferTime = clock;
         require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
         require(transferTime > latestReferendum, "RTY");
         pendingReferendums[transferTime] = true;

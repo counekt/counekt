@@ -26,7 +26,7 @@ contract Administrable is Idea {
     }
 
     /// @notice A struct representing the information of a Dividend given to all current Shard holders.
-    /// @param creationTime The block.timestamp at which the Dividend was created.
+    /// @param creationTime The clock at which the Dividend was created.
     /// @param tokenAddress The address of the token, in which the value of the Dividend is issued.
     /// @param originalValue The original value/amount of the Dividend before claimants.
     /// @param value The value/amount of the Dividend.
@@ -181,7 +181,7 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure a given permit exists.
     /// @param permitName The name of the permit to be checked for.
     modifier onlyValidPermit(string memory permitName) {
-        require(isValidPermit(permitName), "The given permit name does NOT exist!");
+        require(isValidPermit(permitName), "DNE");
         _;
     }
 
@@ -210,7 +210,7 @@ contract Administrable is Idea {
     /// @notice Modifier that makes sure a given bank exists
     /// @param bankName The name of the Bank to be checked for.
     modifier onlyExistingBank(string memory bankName) {
-        require(bankExists(bankName), "Bank does NOT exist!");
+        require(bankExists(bankName), "DNE");
         _;
     }
     
@@ -230,10 +230,9 @@ contract Administrable is Idea {
     /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
     function claimDividend(bytes32 shard, uint256 dividend) external onlyExistingDividend(dividend) onlyIfActive {
-        require(active == true, "Can't claim dividends from a liquidized entity! Check liquidization instead.");
-        require(isHistoricShard(shard), "Shard must be historic part of Shardable!");
-        require(hasClaimedDividend[dividend][shard] == false, "Already claimed Dividend!");
-        require(shardExisted(shard,dividend), "Not applicable for Dividend!");
+        require(isHistoricShard(shard), "NHVS");
+        require(hasClaimedDividend[dividend][shard] == false, "AC");
+        require(shardExisted(shard,dividend), "NAF");
         hasClaimedDividend[dividend][shard] = true;
         uint256 dividendValue = infoByShard[shard].numerator / infoByShard[shard].denominator * infoByDividend[dividend].originalValue;
         infoByDividend[dividend].value -= dividendValue;
@@ -246,9 +245,9 @@ contract Administrable is Idea {
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
     function issueDividend(string memory bankName, address tokenAddress, uint256 value) public onlyWithPermit("issueDividend") onlyBankAdmin(bankName) onlyIfActive {
-        uint256 transferTime = block.timestamp;
-        require(transferTime > latestDividend, "Dividends must be issued at least one second between each other!d");
-        require(value <= balanceByBank[bankName][tokenAddress], "Dividend value can't be more than bank value!");
+        uint256 transferTime = clock;
+        require(transferTime > latestDividend, "WAS");
+        require(value <= balanceByBank[bankName][tokenAddress], "MTV");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0) {
             infoByBank[bankName].storedTokenAddresses -= 1;
@@ -279,8 +278,8 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to be created.
     /// @param bankAdmin The address of the first Bank administrator.
     function createBank(string memory bankName, address bankAdmin) public onlyWithPermit("manageBank") onlyIfActive {
-       require(!bankExists(bankName), "Bank already exists!");
-        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+       require(!bankExists(bankName), "AE");
+        require(hasPermit("manageBank",bankAdmin),"NP");
         adminOfBank[bankName][bankAdmin] = true;
         infoByBank[bankName] = BankInfo({
             name:bankName,
@@ -295,7 +294,7 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the new Bank administrator to be added.
     function addBankAdmin(string memory bankName, address bankAdmin) public onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         require(isBankAdmin(bankName,msg.sender));
-        require(hasPermit("manageBank",bankAdmin),"Only holders of the 'manageBank' Permit can be Bank Administrators!");
+        require(hasPermit("manageBank",bankAdmin),"OH");
         adminOfBank[bankName][bankAdmin] = true;
         emit BankAdminAdded(bankName,bankAdmin,msg.sender);
     }
@@ -314,8 +313,8 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to be deleted.
     function deleteBank(string memory bankName) public onlyWithPermit("manageBank") onlyBankAdmin(bankName) {
         require(bankExists(bankName), "Bank does NOT exist!");
-        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "Can't delete the main bank!");
-        require(bankIsEmpty(bankName), "Bank must be empty before being deleted!");
+        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "NDMB");
+        require(bankIsEmpty(bankName), "MBE");
         validBanks[bankName] = false;
         emit BankDeleted(bankName, msg.sender);
     }
@@ -326,7 +325,7 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be transferred.
     /// @param to The recipient of the token to be transferred.
     function transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to) public onlyBankAdmin(bankName) {
-        require(value <= balanceByBank[bankName][tokenAddress], "The value transferred can't be more than the value of the bank!");
+        require(value <= balanceByBank[bankName][tokenAddress], "MTV");
         _transferToken(tokenAddress,value,to);
         /// Process token transfer from bank:
         _processTokenTransfer(tokenAddress, value, to);
@@ -343,7 +342,7 @@ contract Administrable is Idea {
     /// @param tokenAddress The address of the token to be moved.
     /// @param value The value/amount of the token to be moved.
     function moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) public onlyBankAdmin(fromBankName) onlyExistingBank(toBankName) {
-        require(value <= balanceByBank[fromBankName][tokenAddress], "The value to be moved can't be more than the value contained in the bank!");
+        require(value <= balanceByBank[fromBankName][tokenAddress], "MTV");
         balanceByBank[fromBankName][tokenAddress] -= value;
         if (balanceByBank[fromBankName][tokenAddress] == 0) {
             infoByBank[fromBankName].storedTokenAddresses -= 1;
@@ -378,7 +377,7 @@ contract Administrable is Idea {
     /// @notice Sets the state of the Non Shard Holders.
     /// @param newState The Boolean state to be applied.
     function setNonShardHolderState(bool newState) public onlyWithPermit("setNonShardHolderState") onlyIfActive {
-        require(allowNonShardHolders == newState, "Non Shard Holder State is already set to provided boolean!");
+        require(allowNonShardHolders == newState, "AS");
         allowNonShardHolders = newState;
     }
 

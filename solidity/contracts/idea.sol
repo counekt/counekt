@@ -71,16 +71,15 @@ contract Idea is Shardable {
     function receiveToken(address tokenAddress, uint256 value) external {
         require(acceptsToken(tokenAddress));
         ERC20 token = ERC20(tokenAddress);
-        require(token.transferFrom(msg.sender, address(this), value), "Failed to transfer tokens. Make sure the transfer is approved.");
+        require(token.transferFrom(msg.sender, address(this), value), "NAT");
         _processTokenReceipt(tokenAddress,value,msg.sender);
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
     /// @param tokenAddress The address of the token to be claimed.
-    function claimLiquid(address tokenAddress) external onlyShardHolder {
-        require(active == false, "Can't claim liquid, when the entity isn't dissolved and liquidized.");
-        require(acceptsToken(tokenAddress), "Liquid doesn't contain any token with the provided address!");
-        require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], "Liquid token already claimed!");
+    function claimLiquid(address tokenAddress) external onlyShardHolder onlyIfActive {
+        require(acceptsToken(tokenAddress), "PANT");
+        require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], "AC");
         hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]] = true;
         uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress].originalValue;
         liquid[tokenAddress].value -= liquidValue;
@@ -108,7 +107,7 @@ contract Idea is Shardable {
         if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
             ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "Failed to approve transfer");
+            require(token.approve(to, value), "NA");
             if (Idea(payable(to)).isIdea()) {
                 Idea(payable(to)).receiveToken(tokenAddress, value);
             }
@@ -121,7 +120,7 @@ contract Idea is Shardable {
     /// @param to The recipient of the ether to be transferred.
     function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call{value:value}("");
-        require(success, "Transfer failed.");
+        require(success, "TF");
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
@@ -152,7 +151,7 @@ contract Idea is Shardable {
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
     function _registerTokenAddress(address tokenAddress) internal {
-        require(!acceptsToken(tokenAddress), "Token address ALREADY registered!");
+        require(!acceptsToken(tokenAddress), "AR");
         validTokenAddresses[tokenAddress] = true;
         // Update liquidization
         liquid[tokenAddress] = TokenRegister({value:0,originalValue:0});
@@ -161,8 +160,8 @@ contract Idea is Shardable {
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
     function _unregisterTokenAddress(address tokenAddress) internal {
-        require(acceptsToken(tokenAddress), "Token address NOT yet registered!");
-        require(liquid[tokenAddress].originalValue == 0, "Token amount must be 0 before unregistering!");
+        require(acceptsToken(tokenAddress), "TNR");
+        require(liquid[tokenAddress].originalValue == 0, "NZ");
         validTokenAddresses[tokenAddress] = false;
     }
 
