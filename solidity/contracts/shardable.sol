@@ -185,7 +185,7 @@ contract Shardable {
     /// @notice Modifier that requires the msg.sender to be the owner of a given Shard
     /// @param shard The Shard, whose ownership is tested for.
     modifier onlyHolder(bytes32 shard) {
-        require(infoByShard[shard].owner == msg.sender || msg.sender == address(this));
+        require(infoByShard[shard].owner == msg.sender);
         _;
     }
 
@@ -198,7 +198,7 @@ contract Shardable {
     /// @notice Purchases a listed Shard for sale.
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
-    function purchase(bytes32 shard) external payable onlyIfActive onlyValidShard(shard) incrementClock {
+    function purchase(bytes32 shard) external payable onlyIfActive onlyValidShard(shard) {
         require(infoByShard[shard].forSale, "NFS");
         require((infoByShard[shard].forSaleTo == msg.sender) || (infoByShard[shard].forSaleTo == address(0x0)), "OFSTS");
         _cancelSale(shard);
@@ -221,8 +221,8 @@ contract Shardable {
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
-        if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale)) {transferShard(shard,msg.sender);}
-        else {split(shard, infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,msg.sender);}
+        if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale)) {_transferShard(shard,msg.sender);}
+        else {_split(shard, infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,msg.sender);}
         emit SaleSold(shard,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,infoByShard[shard].tokenAddress,infoByShard[shard].salePrice,msg.sender);
     }
 
@@ -232,13 +232,8 @@ contract Shardable {
     /// @param denominator Denominator of the absolute fraction of the Shard to be put for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    function putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price) public onlyHolder(shard) {
-        require(numerator/denominator <= infoByShard[shard].numerator/infoByShard[shard].denominator, "MTW");
-        (infoByShard[shard].numeratorForSale, infoByShard[shard].denominatorForSale) = simplifyFraction(numerator,denominator);
-        infoByShard[shard].tokenAddress = tokenAddress;
-        infoByShard[shard].salePrice = price;
-        infoByShard[shard].forSale = true;
-        emit PutForSale(shard,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,tokenAddress,price,infoByShard[shard].forSaleTo);
+    function putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price) public onlyHolder(shard) onlyValidShard(shard) {
+        _putForSale(shard,numerator,denominator,tokenAddress,price);
     }
 
     /// @notice Puts a given shard for sale only to a specifically set buyer.
@@ -248,9 +243,9 @@ contract Shardable {
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale.
-    function putForSaleTo(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
+    function putForSaleTo(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price, address to) public onlyHolder(shard) {
         infoByShard[shard].forSaleTo = to;
-        putForSale(shard,numerator,denominator,tokenAddress,price);
+        _putForSale(shard,numerator,denominator,tokenAddress,price);
     }
 
     /// @notice Cancels a sell of a given Shard.
@@ -264,7 +259,62 @@ contract Shardable {
     /// @param numerator Numerator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param denominator Denominator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) public onlyHolder(senderShard) onlyValidShard(senderShard) incrementClock {
+    function split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) public onlyHolder(senderShard) onlyValidShard(senderShard) {
+        _split(senderShard,numerator,denominator,to);
+    }
+
+    /// @notice Sends a whole shard to a receiver.
+    /// @param senderShard The shard to be transferred.
+    /// @param to The receiver of the new Shard.
+    function transferShard(bytes32 senderShard, address to) public onlyHolder(senderShard) onlyValidShard(senderShard) {
+        _transferShard(senderShard,to);
+    }
+
+    /// @notice Returns a boolean stating if a given shard is currently valid or not.
+    /// @param shard The shard, whose validity is to be checked for.
+    function isValidShard(bytes32 shard) public view returns(bool) {
+        return infoByShard[shard].expiredTime > clock && validShards[shard];
+    }
+
+    /// @notice Checks if address is a shard holder - at least a partial owner of the contract.
+    /// @param _address The address to be checked for.
+    function isShardHolder(address _address) public view returns(bool) {
+        return isValidShard(shardByOwner[_address]);
+    }
+
+    /// @notice Returns a boolean stating if a given shard has ever been valid or not.
+    /// @param shard The shard, whose validity is to be checked for.
+    function isHistoricShard(bytes32 shard) public view returns(bool) {
+        return validShards[shard];
+    }
+
+    /// @notice Checks if address is a historic Shard holder - at least a previous partial owner of the contract
+    /// @param _address The address to be checked for.
+    function isHistoricShardHolder(address _address) public view returns(bool) {
+        return isHistoricShard(shardByOwner[_address]);
+    }
+
+    /// @notice Returns a boolean stating if the given shard was valid at a given timestamp.
+    /// @param shard The shard, whose validity is to be checked for.
+    /// @param time The timestamp to be checked for.
+    function shardExisted(bytes32 shard, uint256 time) public view returns(bool) {
+        return infoByShard[shard].creationTime <= time && time < infoByShard[shard].expiredTime;
+    }
+
+    /// @notice Cancels a sell of a given Shard.
+    /// @param shard The shard to be put off sale.
+    function _cancelSale(bytes32 shard) internal onlyValidShard(shard) {
+        require(infoByShard[shard].forSale == true, "Shard not even for sale!");
+        infoByShard[shard].forSale = false;
+        infoByShard[shard].forSaleTo = address(0x0);
+    }
+
+    /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
+    /// @param senderShard The shard to be split.
+    /// @param numerator Numerator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
+    /// @param denominator Denominator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
+    /// @param to The receiver of the new Shard.
+    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) {
         require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "MTW");
         uint256 transferTime = clock;
         require(transferTime > infoByShard[senderShard].creationTime, "WAS");
@@ -300,7 +350,7 @@ contract Shardable {
     /// @notice Sends a whole shard to a receiver.
     /// @param senderShard The shard to be transferred.
     /// @param to The receiver of the new Shard.
-    function transferShard(bytes32 senderShard, address to) public onlyHolder(senderShard) onlyValidShard(senderShard) incrementClock {
+    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) {
         uint256 transferTime = clock;
         require(transferTime > infoByShard[senderShard].creationTime , "WAS");
 
@@ -323,47 +373,21 @@ contract Shardable {
         if (msg.sender != address(this)) {
             emit SplitMade(senderShard,infoByShard[senderShard].numerator,infoByShard[senderShard].numerator,to);
         }
-        
-
     }
 
-    /// @notice Returns a boolean stating if a given shard is currently valid or not.
-    /// @param shard The shard, whose validity is to be checked for.
-    function isValidShard(bytes32 shard) public view returns(bool) {
-        return infoByShard[shard].expiredTime > clock;
-    }
-
-    /// @notice Checks if address is a shard holder - at least a partial owner of the contract.
-    /// @param _address The address to be checked for.
-    function isShardHolder(address _address) public view returns(bool) {
-        return isValidShard(shardByOwner[_address]);
-    }
-
-    /// @notice Returns a boolean stating if a given shard has ever been valid or not.
-    /// @param shard The shard, whose validity is to be checked for.
-    function isHistoricShard(bytes32 shard) public view returns(bool) {
-        return validShards[shard];
-    }
-
-    /// @notice Checks if address is a historic Shard holder - at least a previous partial owner of the contract
-    /// @param _address The address to be checked for.
-    function isHistoricShardHolder(address _address) public view returns(bool) {
-        return isHistoricShard(shardByOwner[_address]);
-    }
-
-    /// @notice Returns a boolean stating if the given shard was valid at a given timestamp.
-    /// @param shard The shard, whose validity is to be checked for.
-    /// @param time The timestamp to be checked for.
-    function shardExisted(bytes32 shard, uint256 time) public view returns(bool) {
-        return infoByShard[shard].creationTime <= time && time < infoByShard[shard].expiredTime;
-    }
-
-    /// @notice Cancels a sell of a given Shard.
-    /// @param shard The shard to be put off sale.
-    function _cancelSale(bytes32 shard) internal {
-        require(infoByShard[shard].forSale == true, "Shard not even for sale!");
-        infoByShard[shard].forSale = false;
-        infoByShard[shard].forSaleTo = address(0x0);
+    /// @notice Puts a given shard for sale.
+    /// @param shard The shard to be put for sale.
+    /// @param numerator Numerator of the absolute fraction of the Shard to be put for sale.
+    /// @param denominator Denominator of the absolute fraction of the Shard to be put for sale.
+    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
+    function _putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price) internal onlyValidShard(shard) {
+        require(numerator/denominator <= infoByShard[shard].numerator/infoByShard[shard].denominator, "MTW");
+        (infoByShard[shard].numeratorForSale, infoByShard[shard].denominatorForSale) = simplifyFraction(numerator,denominator);
+        infoByShard[shard].tokenAddress = tokenAddress;
+        infoByShard[shard].salePrice = price;
+        infoByShard[shard].forSale = true;
+        emit PutForSale(shard,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,tokenAddress,price,infoByShard[shard].forSaleTo);
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
