@@ -59,7 +59,7 @@ function addFractions(uint256 numerator1, uint256  denominator1, uint256 numerat
 function subtractFractions(uint256 numerator1, uint256 numerator2, uint256  denominator1, uint256 denominator2) pure returns (uint256,uint256) {
     numerator1 = numerator1 * denominator2;
     numerator2 = numerator2 * denominator1;
-    return (numerator1-numerator2,denominator1-denominator2);
+    return (numerator1-numerator2,denominator1*denominator2);
 }
 
 
@@ -154,8 +154,8 @@ contract Shardable {
         );
 
     modifier incrementClock {
-        _;
         clock++;
+        _;
     }
     
     /// @notice Modifier that requires the msg.sender to be a current valid Shard holder.
@@ -317,10 +317,7 @@ contract Shardable {
     function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) {
         require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "MTW");
         uint256 transferTime = clock;
-        require(transferTime > infoByShard[senderShard].creationTime, "WAS");
         if (isShardHolder(to)) { // if Receiver already owns a shard
-            require(transferTime > infoByShard[shardByOwner[to]].creationTime , "WAS");
-
             // The fractions are added and upgraded
             (uint256 sumNumerator, uint256 sumDenominator) = addFractions(infoByShard[shardByOwner[to]].numerator,infoByShard[shardByOwner[to]].denominator,numerator,denominator);
             _pushShard(sumNumerator,sumDenominator,to,transferTime);
@@ -352,8 +349,6 @@ contract Shardable {
     /// @param to The receiver of the new Shard.
     function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) {
         uint256 transferTime = clock;
-        require(transferTime > infoByShard[senderShard].creationTime , "WAS");
-
         if (isShardHolder(to)) {
 
             // Destroying the Old receiver

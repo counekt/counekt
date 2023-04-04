@@ -21,7 +21,7 @@ contract Idea is Shardable {
     mapping(address => bool) validTokenAddresses;
 
 	/// @notice Mapping pointing to a Token Register given the address of the ERC20 token contract.
-    mapping(address => TokenRegister) liquid;
+    mapping(address => TokenRegister) public liquid;
 
     /// @notice Mapping pointing to another mapping (given a token address) pointing to a boolean stating if the owner of a given Shard has claimed their fair share following a liquidization.
     mapping(address => mapping(bytes32 => bool)) hasClaimedLiquid;
@@ -69,7 +69,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be received.
     /// @param value The value/amount of the token to be received.
     function receiveToken(address tokenAddress, uint256 value) external {
-        require(acceptsToken(tokenAddress));
+        require(acceptsToken(tokenAddress),"NAT");
         ERC20 token = ERC20(tokenAddress);
         require(token.transferFrom(msg.sender, address(this), value), "NAT");
         _processTokenReceipt(tokenAddress,value,msg.sender);
