@@ -29,4 +29,7 @@ def test_trade(shardable):
 	assert shardable.isShardHolder(accounts[1])
 
 def test_receive(idea):
-	#idea.receive(5000, {"from":accounts[1]})
+	assert idea.liquid(NULL_ADDRESS)[0] == 0
+	tx = accounts[1].transfer(idea,"10 ether")
+	tx.wait(1)
+	assert idea.liquid(NULL_ADDRESS)[0] != 0

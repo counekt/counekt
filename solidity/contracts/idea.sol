@@ -11,10 +11,10 @@ contract Idea is Shardable {
 
     /// @notice A struct representing a registration of an owned ERC20 token and its value/amount.
     /// @param value The value/amount of the token.
-    /// @param originalValue The value/amount of the token before liquidization/inactivation of the Idea.
+    /// @param residualValue The value/amount of the token after liquidization/inactivation of the Idea left to be claimed.
     struct TokenRegister {
         uint256 value;
-        uint256 originalValue;
+        uint256 residualValue;
     }
 
     /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
@@ -81,8 +81,8 @@ contract Idea is Shardable {
         require(acceptsToken(tokenAddress), "PANT");
         require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], "AC");
         hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]] = true;
-        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress].originalValue;
-        liquid[tokenAddress].value -= liquidValue;
+        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress].value;
+        liquid[tokenAddress].residualValue -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
     }
@@ -135,7 +135,8 @@ contract Idea is Shardable {
     /// @param value The value/amount of the received token.
     /// @param from The sender of the received token.
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) virtual internal {
-        liquid[tokenAddress].originalValue += value;
+        liquid[tokenAddress].value += value;
+        liquid[tokenAddress].residualValue += value;
         emit TokenReceived(tokenAddress,value,from);
     }
 
@@ -144,7 +145,9 @@ contract Idea is Shardable {
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) virtual internal {
-        liquid[tokenAddress].originalValue -= value;
+        liquid[tokenAddress].value -= value;
+        liquid[tokenAddress].residualValue -= value;
+
         emit TokenTransferred(tokenAddress,value,to);
     }
 
@@ -154,14 +157,14 @@ contract Idea is Shardable {
         require(!acceptsToken(tokenAddress), "AR");
         validTokenAddresses[tokenAddress] = true;
         // Update liquidization
-        liquid[tokenAddress] = TokenRegister({value:0,originalValue:0});
+        liquid[tokenAddress] = TokenRegister({value:0,residualValue:0});
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
     function _unregisterTokenAddress(address tokenAddress) internal {
         require(acceptsToken(tokenAddress), "TNR");
-        require(liquid[tokenAddress].originalValue == 0, "NZ");
+        require(liquid[tokenAddress].value == 0, "NZ");
         validTokenAddresses[tokenAddress] = false;
     }
 
