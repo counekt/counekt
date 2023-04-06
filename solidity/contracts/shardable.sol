@@ -277,9 +277,9 @@ contract Shardable {
     }
 
     /// @notice Checks if address is a shard holder - at least a partial owner of the contract.
-    /// @param _address The address to be checked for.
-    function isShardHolder(address _address) public view returns(bool) {
-        return isValidShard(shardByOwner[_address]);
+    /// @param account The address to be checked for.
+    function isShardHolder(address account) public view returns(bool) {
+        return isValidShard(shardByOwner[account]);
     }
 
     /// @notice Returns a boolean stating if a given shard has ever been valid or not.
@@ -289,9 +289,9 @@ contract Shardable {
     }
 
     /// @notice Checks if address is a historic Shard holder - at least a previous partial owner of the contract
-    /// @param _address The address to be checked for.
-    function isHistoricShardHolder(address _address) public view returns(bool) {
-        return isHistoricShard(shardByOwner[_address]);
+    /// @param account The address to be checked for.
+    function isHistoricShardHolder(address account) public view returns(bool) {
+        return isHistoricShard(shardByOwner[account]);
     }
 
     /// @notice Returns a boolean stating if the given shard was valid at a given timestamp.

@@ -115,6 +115,11 @@ contract Votable is Administrable {
         _;
     }
 
+    constructor() {
+        _setPermit("lE",PermitState.administrator,msg.sender,address(this));
+        _setPermit("iP",PermitState.administrator,msg.sender,address(this));
+    }
+
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
     /// @param shard The Shard to vote with.
     /// @param referendum The referendum to be voted on.
@@ -138,114 +143,43 @@ contract Votable is Administrable {
     /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
-    function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision) public onlyWithPermit("issueVote") onlyIfActive incrementClock {
-        uint256 transferTime = clock;
-        require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
-        require(transferTime > latestReferendum, "RTY");
-        pendingReferendums[transferTime] = true;
-        infoByReferendum[transferTime] = ReferendumInfo({
-            allowDivision:allowDivision,
-            proposalFunctionNames: proposalFunctionNames,
-            proposalArgumentData: proposalArgumentData,
-            favorNumerator:0,
-            favorDenominator:1,
-            againstNumerator:0,
-            againstDenominator:1,
-            amountImplemented: 0
-            });
-        emit ReferendumIssued(transferTime, msg.sender);
+    function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision) external onlyWithPermit("iV") {
+        _issueVote(proposalFunctionNames,proposalArgumentData,allowDivision,msg.sender);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
     /// @param referendum The passed Referendum containing the Proposal.
     /// @param proposalIndex The index of the proposal to be implemented.
-    function implementProposal(uint256 referendum, uint8 proposalIndex) public onlyWithPermit("implementProposal") onlyIfActive {
-        require(infoByReferendum[referendum].allowDivision, "GINA");
-        require(infoByReferendum[referendum].amountImplemented == proposalIndex, "WPO");
-        infoByReferendum[referendum].amountImplemented += 1;
-        string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
-        bytes memory proposalArgumentData = infoByReferendum[referendum].proposalArgumentData[proposalIndex];
-        bytes32 functionNameHash = keccak256(bytes(proposalFunctionName));
-                    if (functionNameHash == keccak256(bytes("issueVote"))) {
-                        (string[] memory proposalFunctionNames, bytes[] memory _proposalArgumentData, bool allowDivision) = abi.decode(proposalArgumentData, (string[], bytes[], bool));
-                        issueVote(proposalFunctionNames, _proposalArgumentData, allowDivision);
-                    }
-                    if (functionNameHash == keccak256(bytes("setPermit"))) {
-                        (string memory permitName, PermitState newState, address _address) = abi.decode(proposalArgumentData, (string, PermitState,address));
-                        setPermit(permitName,newState,_address);
-                    }
-                    if (functionNameHash == keccak256(bytes("setBasePermit"))) {
-                        (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
-                        setBasePermit(permitName,newState);
-                    }
-                    if (functionNameHash == keccak256(bytes("setNonShardHolderState"))) {
-                        (bool newState) = abi.decode(proposalArgumentData, (bool));
-                        setNonShardHolderState(newState);
-                    }
-                    if (functionNameHash == keccak256(bytes("transferToken"))) {
-                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgumentData, (string, address, uint256,address));
-                        transferTokenFromBank(fromBankName,tokenAddress,value,to);
-                    }
-                    if (functionNameHash == keccak256(bytes("moveToken"))) {
-                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string, string, address, uint256));
-                        moveToken(fromBankName,toBankName,tokenAddress,value);
-                    }
-                    if (functionNameHash == keccak256(bytes("issueDividend"))) {
-                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string,address,uint256));
-                        issueDividend(bankName,tokenAddress,value);
-                    }
-                    if (functionNameHash == keccak256(bytes("dissolveDividend"))) {
-                        (uint256 dividend) = abi.decode(proposalArgumentData, (uint256));
-                        dissolveDividend(dividend);
-                    }
-                    if (functionNameHash == keccak256(bytes("createBank"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
-                        createBank(bankName,bankAdmin);
-                    }
-                    if (functionNameHash == keccak256(bytes("deleteBank"))) {
-                        (string memory bankName) = abi.decode(proposalArgumentData, (string));
-                        deleteBank(bankName);
-                    }
-                    if (functionNameHash == keccak256(bytes("addBankAdmin"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
-                        addBankAdmin(bankName,bankAdmin);
-                    }
-                    if (functionNameHash == keccak256(bytes("removeBankAdmin"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
-                        removeBankAdmin(bankName,bankAdmin);
-                    }
-                    if (functionNameHash == keccak256(bytes("liquidize"))) {
-                        liquidize();
-                    }
-        emit ProposalImplemented(proposalFunctionName, proposalArgumentData, referendum, msg.sender);
-        if (infoByReferendum[referendum].amountImplemented == infoByReferendum[referendum].proposalFunctionNames.length) {
-            emit ReferendumImplemented(referendum);
-        }
+    function implementProposal(uint256 referendum, uint8 proposalIndex) external onlyWithPermit("iP") {
+        _implementProposal(referendum,proposalIndex,msg.sender);
     }
 
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
     /// @param permitName The name of the permit to be checked for.
     function isValidPermit(string memory permitName) override public pure returns(bool) {
             bytes32 permitHash = keccak256(bytes(permitName));
-            if (permitHash == keccak256(bytes("setNonShardHolderState"))) {
+            if (permitHash == keccak256(bytes("sNSHS"))) {
                 return true;
             }
-            if (permitHash ==  keccak256(bytes(("issueVote")))) {
+            if(permitHash == keccak256(bytes("mAT"))) {
                 return true;
             }
-            if (permitHash ==  keccak256(bytes("issueDividend"))) {
+            if (permitHash ==  keccak256(bytes("iV"))) {
                 return true;
             }
-            if (permitHash ==  keccak256(bytes("dissolveDividend"))) {
+            if (permitHash ==  keccak256(bytes("iD"))) {
                 return true;
             }
-            if (permitHash ==  keccak256(bytes("manageBank"))) {
+            if (permitHash ==  keccak256(bytes("dD"))) {
                 return true;
             }
-            if (permitHash ==  keccak256(bytes("implementProposal"))) {
+            if (permitHash ==  keccak256(bytes("mB"))) {
                 return true;
             }
-            if (permitHash ==  keccak256(bytes("liquidizeEntity"))) {
+            if (permitHash ==  keccak256(bytes("iP"))) {
+                return true;
+            }
+            if (permitHash ==  keccak256(bytes("lE"))) {
                 return true;
             }
             else {
@@ -254,10 +188,10 @@ contract Votable is Administrable {
     }
 
     /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
-    /// @param _address The address of the potential Shard Holder voter to be checked for.
     /// @param referendum The Referendum to be checked for.
-    function hasVoted(uint256 referendum, address _address) public view returns(bool) {
-        return hasVotedOnReferendum[referendum][shardByOwner[_address]];
+    /// @param account The address of the potential Shard Holder voter to be checked for.
+    function hasVoted(uint256 referendum, address account) public view returns(bool) {
+        return hasVotedOnReferendum[referendum][shardByOwner[account]];
     }
 
     /// @notice Returns a boolean stating if a given Referendum has been voted through (>=50% FAVOR) or not.
@@ -288,6 +222,96 @@ contract Votable is Administrable {
     function proposalExists(uint256 referendum, uint8 proposalIndex) public view returns(bool) {
         return infoByReferendum[referendum].proposalFunctionNames.length > proposalIndex;
     }
+
+    /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
+    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
+    /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
+    function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision, address by) internal onlyIfActive incrementClock {
+        uint256 transferTime = clock;
+        require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
+        require(transferTime > latestReferendum, "RTY");
+        pendingReferendums[transferTime] = true;
+        infoByReferendum[transferTime] = ReferendumInfo({
+            allowDivision:allowDivision,
+            proposalFunctionNames: proposalFunctionNames,
+            proposalArgumentData: proposalArgumentData,
+            favorNumerator:0,
+            favorDenominator:1,
+            againstNumerator:0,
+            againstDenominator:1,
+            amountImplemented: 0
+            });
+        emit ReferendumIssued(transferTime, by);
+    }
+
+    /// @notice Implements a given Proposal, within a given passed Referendum.
+    /// @param referendum The passed Referendum containing the Proposal.
+    /// @param proposalIndex The index of the proposal to be implemented.
+    function _implementProposal(uint256 referendum, uint8 proposalIndex, address by) internal onlyIfActive {
+        require(infoByReferendum[referendum].allowDivision, "GINA");
+        require(infoByReferendum[referendum].amountImplemented == proposalIndex, "WPO");
+        infoByReferendum[referendum].amountImplemented += 1;
+        string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
+        bytes memory proposalArgumentData = infoByReferendum[referendum].proposalArgumentData[proposalIndex];
+        bytes32 functionNameHash = keccak256(bytes(proposalFunctionName));
+                    if (functionNameHash == keccak256(bytes("iV"))) {
+                        (string[] memory proposalFunctionNames, bytes[] memory _proposalArgumentData, bool allowDivision) = abi.decode(proposalArgumentData, (string[], bytes[], bool));
+                        _issueVote(proposalFunctionNames, _proposalArgumentData, allowDivision,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("sP"))) {
+                        (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgumentData, (string, PermitState,address));
+                        _setPermit(permitName,newState,account,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("sBP"))) {
+                        (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
+                        _setBasePermit(permitName,newState,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("sNSHS"))) {
+                        (bool newState) = abi.decode(proposalArgumentData, (bool));
+                        _setNonShardHolderState(newState,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("tT"))) {
+                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgumentData, (string, address, uint256,address));
+                        _transferTokenFromBank(fromBankName,tokenAddress,value,to,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("mT"))) {
+                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string, string, address, uint256));
+                        _moveToken(fromBankName,toBankName,tokenAddress,value,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("iD"))) {
+                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string,address,uint256));
+                        _issueDividend(bankName,tokenAddress,value,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("dD"))) {
+                        (uint256 dividend) = abi.decode(proposalArgumentData, (uint256));
+                        _dissolveDividend(dividend,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("cB"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
+                        _createBank(bankName,bankAdmin,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("dB"))) {
+                        (string memory bankName) = abi.decode(proposalArgumentData, (string));
+                        _deleteBank(bankName,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("aBA"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
+                        _addBankAdmin(bankName,bankAdmin,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("rBA"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
+                        _removeBankAdmin(bankName,bankAdmin,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("l"))) {
+                        _liquidize(address(this));
+                    }
+        emit ProposalImplemented(proposalFunctionName, proposalArgumentData, referendum, by);
+        if (infoByReferendum[referendum].amountImplemented == infoByReferendum[referendum].proposalFunctionNames.length) {
+            emit ReferendumImplemented(referendum);
+        }
+    }
+
 
     /// @notice Closes a given Referendum, leading to a pass or not.
     /// @param referendum The Referendum to be closed.
