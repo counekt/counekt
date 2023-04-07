@@ -59,9 +59,23 @@ contract Idea is Shardable {
         address by
     );
 
+    /// @notice Event that triggers when a token is registered.
+    /// @param tokenAddress The address of the registered token.
+    event TokenRegistered(
+        address tokenAddress,
+        address by
+
+    );
+
+    /// @notice Event that triggers when a token is registered
+    /// @param tokenAddress The address of the unregistered token.
+    event TokenUnregistered(
+        address tokenAddress,
+        address by
+    );
+
     /// @notice Receive function that receives ether when there's no supplying data
     receive() external payable onlyIfActive {
-        require(active == true, "EL");
         _processTokenReceipt(address(0),msg.value,msg.sender);
     }
 
@@ -71,7 +85,8 @@ contract Idea is Shardable {
     function receiveToken(address tokenAddress, uint256 value) external {
         require(acceptsToken(tokenAddress),"NAT");
         ERC20 token = ERC20(tokenAddress);
-        require(token.transferFrom(msg.sender, address(this), value), "NAT");
+        require(token.allowance(msg.sender,this(address)) >= value,"NETP");
+        require(token.transferFrom(msg.sender,address(this), value), "NAT");
         _processTokenReceipt(tokenAddress,value,msg.sender);
     }
 
@@ -88,8 +103,8 @@ contract Idea is Shardable {
     }
 
     /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
-    function isIdea() public pure returns(bool) {
-        return true;
+    function isIdea() public pure virtual returns(bool) {
+        return this instanceOf Idea
     }
     
     /// @notice Returns a boolean value, stating if the given token address is registered as acceptable or not.
@@ -103,7 +118,8 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be transferred.
     /// @param value The value/amount of the token to be transferred.
     /// @param to The recipient of the token to be transferred.
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
+    function _transferToken(address tokenAddress, uint256 value, address to, bool recipientIsIdea) internal {
+        require(liquid[tokenAddress].value >= value, "NET");
         if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
             ERC20 token = ERC20(tokenAddress);
@@ -153,19 +169,20 @@ contract Idea is Shardable {
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
-    function _registerTokenAddress(address tokenAddress) internal {
+    function _registerTokenAddress(address tokenAddress, address by) internal {
         require(!acceptsToken(tokenAddress), "AR");
         validTokenAddresses[tokenAddress] = true;
-        // Update liquidization
-        liquid[tokenAddress] = TokenRegister({value:0,residualValue:0});
+        emit TokenRegistered(tokenAddress,by);
+
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
-    function _unregisterTokenAddress(address tokenAddress) internal {
+    function _unregisterTokenAddress(address tokenAddress, address by) internal {
         require(acceptsToken(tokenAddress), "TNR");
         require(liquid[tokenAddress].value == 0, "NZ");
         validTokenAddresses[tokenAddress] = false;
+        emit TokenUnregistered(tokenAddress,by);
     }
 
 }

@@ -303,6 +303,14 @@ contract Votable is Administrable {
                         (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
                         _removeBankAdmin(bankName,bankAdmin,address(this));
                     }
+                    if (functionNameHash == keccak256(bytes("rTA"))) {
+                        (address tokenAddress) = abi.decode(proposalArgumentData, (address));
+                        _registerTokenAddress(tokenAddress,address(this));
+                    }
+                    if (functionNameHash == keccak256(bytes("urTA"))) {
+                        (address tokenAddress) = abi.decode(proposalArgumentData, (address));
+                        _unregisterTokenAddress(tokenAddress,address(this));
+                    }
                     if (functionNameHash == keccak256(bytes("l"))) {
                         _liquidize(address(this));
                     }

@@ -6,7 +6,6 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
-USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 
 @pytest.fixture
 def shardable():
@@ -41,13 +40,20 @@ def test_trade(shardable):
 	tx.wait(1)
 	assert shardable.isShardHolder(accounts[1])
 
-def test_receive(idea):
-	assert idea.liquid(NULL_ADDRESS)[0] == 0
-	tx = accounts[1].transfer(idea,"10 ether")
+def test_receiveANDtransfer(administrable):
+	# Receipt
+	assert administrable.liquid(NULL_ADDRESS)[0] == 0
+	tx = accounts[1].transfer(administrable,"10 ether")
 	tx.wait(1)
-	assert idea.liquid(NULL_ADDRESS)[0] != 0
+	assert administrable.liquid(NULL_ADDRESS)[0] != 0
+	# Transfer 
+	tx = administrable.transferTokenFromBank("main",NULL_ADDRESS,"10 ether",accounts[1], {"from":accounts[0]})
+	tx.wait(1)
+	assert administrable.liquid(NULL_ADDRESS)[0] == 0
 
-def test_receiveToken(administrable, token):
+
+def test_receiveANDtransferToken(administrable, token):
+	# Receipt
 	assert administrable.liquid(token.address)[0] == 0
 	tx = administrable.registerTokenAddress(token.address,{"from":accounts[0]})
 	tx.wait(1)
@@ -56,3 +62,7 @@ def test_receiveToken(administrable, token):
 	tx = administrable.receiveToken(token.address,1000, {"from":accounts[1]})
 	tx.wait(1)
 	assert administrable.liquid(token.address)[0] != 0
+	# Transfer
+	tx = administrable.transferTokenFromBank("main",token.address,1000,accounts[1], {"from":accounts[0]})
+	tx.wait(1)
+	assert administrable.liquid(token.address)[0] == 0

@@ -216,6 +216,7 @@ contract Shardable {
         } 
         else {
             ERC20 token = ERC20(infoByShard[shard].tokenAddress);
+            require(token.allowance(msg.sender,this(address)) >= infoByShard[shard].salePrice,"NETP");
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller

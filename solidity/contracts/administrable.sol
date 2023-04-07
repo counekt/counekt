@@ -250,13 +250,13 @@ contract Administrable is Idea {
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
     function registerTokenAddress(address tokenAddress) external onlyWithPermit("mAT") onlyIfActive {
-        _registerTokenAddress(tokenAddress);
+        _registerTokenAddress(tokenAddress, msg.sender);
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
     function unregisterTokenAddress(address tokenAddress) external onlyWithPermit("mAT") onlyIfActive {
-        _unregisterTokenAddress(tokenAddress);
+        _unregisterTokenAddress(tokenAddress, msg.sender);
     }
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
@@ -314,7 +314,7 @@ contract Administrable is Idea {
     /// @param toBankName The name of the Bank to which the token is to be moved.
     /// @param tokenAddress The address of the token to be moved.
     /// @param value The value/amount of the token to be moved.
-    function moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) onlyExistingBank(toBankName) {
+    function moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
         _moveToken(fromBankName,toBankName,tokenAddress,value,msg.sender);
     }
 
@@ -509,10 +509,8 @@ contract Administrable is Idea {
     function _transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to, address by) internal onlyIfActive {
         require(value <= balanceByBank[bankName][tokenAddress], "MTV");
         _transferToken(tokenAddress,value,to);
-        /// Process token transfer from bank:
-        _processTokenTransfer(tokenAddress, value, to);
         balanceByBank[bankName][tokenAddress] -= value;
-        if (balanceByBank[bankName][tokenAddress] == 0) {
+        if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             infoByBank[bankName].storedTokenAddresses -= 1;
         }
         emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
@@ -524,7 +522,7 @@ contract Administrable is Idea {
     /// @param tokenAddress The address of the token to be moved.
     /// @param value The value/amount of the token to be moved.
     /// @param by The initiator of the execution.
-    function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value, address by) internal onlyIfActive {
+    function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(toBankName) onlyIfActive {
         require(value <= balanceByBank[fromBankName][tokenAddress], "MTV");
         balanceByBank[fromBankName][tokenAddress] -= value;
         if (balanceByBank[fromBankName][tokenAddress] == 0) {
