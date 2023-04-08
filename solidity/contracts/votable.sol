@@ -26,9 +26,6 @@ contract Votable is Administrable {
         uint8 amountImplemented;
     }
 
-    /// @notice The latest and most recent Referendum to be issued.
-    uint256 latestReferendum;
-
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
     mapping(uint256 => ReferendumInfo) infoByReferendum;
 
@@ -116,8 +113,8 @@ contract Votable is Administrable {
     }
 
     constructor() {
-        _setPermit("lE",PermitState.administrator,msg.sender,address(this));
-        _setPermit("iP",PermitState.administrator,msg.sender,address(this));
+        _setPermit("lE",msg.sender,PermitState.administrator,address(this));
+        _setPermit("iP",msg.sender,PermitState.administrator,address(this));
     }
 
     /// @notice Votes on a existing referendum, with a fraction corresponding to the shard of the holder.
@@ -230,7 +227,6 @@ contract Votable is Administrable {
     function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision, address by) internal onlyIfActive incrementClock {
         uint256 transferTime = clock;
         require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
-        require(transferTime > latestReferendum, "RTY");
         pendingReferendums[transferTime] = true;
         infoByReferendum[transferTime] = ReferendumInfo({
             allowDivision:allowDivision,
@@ -261,7 +257,7 @@ contract Votable is Administrable {
                     }
                     if (functionNameHash == keccak256(bytes("sP"))) {
                         (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgumentData, (string, PermitState,address));
-                        _setPermit(permitName,newState,account,address(this));
+                        _setPermit(permitName,account,newState,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("sBP"))) {
                         (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));

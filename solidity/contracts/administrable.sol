@@ -68,9 +68,6 @@ contract Administrable is Idea {
     /// @notice Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend, given the bank name and the shard.
     mapping(uint256 => mapping(bytes32  => bool)) hasClaimedDividend;
 
-    /// @notice The Dividend latest and most recently issued.
-    uint256 latestDividend;
-
     /// @notice Event that triggers when a Dividend is issued.
     /// @param dividend The Dividend that was issued.
     /// @param by The initiator of the Dividend issuance.
@@ -163,8 +160,8 @@ contract Administrable is Idea {
     /// @param by The initiator of the Permit State setting.
     event PermitSet(
         string name,
-        PermitState newState,
         address account,
+        PermitState newState,
         address by
     );
 
@@ -224,12 +221,12 @@ contract Administrable is Idea {
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     constructor() {
         _createBank("main",msg.sender,address(this));
-        _setPermit("sNSHS",PermitState.administrator,msg.sender,address(this));
-        _setPermit("iD",PermitState.administrator,msg.sender,address(this));
-        _setPermit("dD",PermitState.administrator,msg.sender,address(this));
-        _setPermit("mB",PermitState.administrator,msg.sender,address(this));
-        _setPermit("lE",PermitState.administrator,msg.sender,address(this));
-        _setPermit("mAT",PermitState.administrator,msg.sender,address(this));
+        _setPermit("sNSHS", msg.sender, PermitState.administrator, address(this));
+        _setPermit("iD", msg.sender, PermitState.administrator, address(this));
+        _setPermit("dD", msg.sender, PermitState.administrator, address(this));
+        _setPermit("mB", msg.sender, PermitState.administrator, address(this));
+        _setPermit("lE", msg.sender, PermitState.administrator, address(this));
+        _setPermit("mAT", msg.sender, PermitState.administrator, address(this));
 
     }
 
@@ -284,6 +281,7 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to which the new administrator is to be added.
     /// @param bankAdmin The address of the new Bank administrator to be added.
     function addBankAdmin(string memory bankName, address bankAdmin) external onlyWithPermit("mB") onlyBankAdmin(bankName) {
+        require(isShardHolder(bankAdmin) || allowNonShardHolders, "NSHNA");
         _addBankAdmin(bankName,bankAdmin,msg.sender);
     }
 
@@ -300,7 +298,7 @@ contract Administrable is Idea {
         _deleteBank(bankName,msg.sender);
     }
 
-    /// @notice Transfers a token from a Bank to a recipient.
+    /// @notice Transfers a token bankAdmin a Bank to a recipient.
     /// @param bankName The name of the Bank from which the token is to be transferred.
     /// @param tokenAddress The address of the token to be transferred.
     /// @param value The value/amount of the token to be transferred.
@@ -322,9 +320,10 @@ contract Administrable is Idea {
     /// @param account The address, whose permit state is to be set.
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
-    function setPermit(string memory permitName, PermitState newState, address account) external onlyPermitAdmin(permitName) {
+    function setPermit(string memory permitName, address account, PermitState newState) external onlyPermitAdmin(permitName) {
+        require(isShardHolder(account) || allowNonShardHolders, "NSHNA");
         require(permits[permitName][account] != newState, "AHP");
-        _setPermit("sNSHS",PermitState.administrator,account,msg.sender);
+        _setPermit(permitName,account,newState,msg.sender);
 
     }
 
@@ -346,6 +345,13 @@ contract Administrable is Idea {
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
     function liquidize() external onlyWithPermit("lE") {
         _liquidize(msg.sender);
+    }
+
+    /// @notice Returns the balance of a bank.
+    /// @param bankName The name of the Bank.
+    /// @param tokenAddress The address of the token balance to check for.
+    function getBankBalance(string memory bankName, address tokenAddress) public view returns(uint256) {
+        return balanceByBank[bankName][tokenAddress];
     }
 
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
@@ -404,7 +410,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function hasPermit(string memory permitName, address account) public view returns(bool) {
-        if (account == address(this)) {return true;}
         if (!(isShardHolder(account) || allowNonShardHolders)) {return false;}
         return permits[permitName][account] >= PermitState.authorized || basePermits[permitName] >= PermitState.authorized;
     }
@@ -413,7 +418,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function isPermitAdmin(string memory permitName, address account) public view returns(bool) {
-        if (account == address(this)) {return true;}
         if (!(isShardHolder(account) || allowNonShardHolders)) {return false;}
         return permits[permitName][account] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
     }
@@ -424,21 +428,18 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be issued in the Dividend.
     function _issueDividend(string memory bankName, address tokenAddress, uint256 value, address by) internal onlyIfActive incrementClock {
         uint256 transferTime = clock;
-        require(transferTime > latestDividend, "WAS");
         require(value <= balanceByBank[bankName][tokenAddress], "MTV");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0) {
             infoByBank[bankName].storedTokenAddresses -= 1;
         }
-        DividendInfo memory dividendInfo = DividendInfo({
+        infoByDividend[transferTime] = DividendInfo({
             creationTime:transferTime,
             tokenAddress:tokenAddress,
             originalValue:value,
             value:value
         });
-        infoByDividend[transferTime] = dividendInfo; 
         validDividends[transferTime] = true;
-        latestDividend = transferTime;
         emit DividendIssued(transferTime, by); 
     }
 
@@ -474,7 +475,7 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the new Bank administrator to be added.
     /// @param by The initiator of the execution.
     function _addBankAdmin(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(hasPermit("mB",bankAdmin),"OH");
+        require(hasPermit("mB",bankAdmin),"OMBPH");
         adminOfBank[bankName][bankAdmin] = true;
         emit BankAdminAdded(bankName,bankAdmin,by);
     }
@@ -537,13 +538,13 @@ contract Administrable is Idea {
     }
 
     /// @notice Sets the state of a specified permit of a given address.
-    /// @param account The address, whose permit state is to be set.
     /// @param permitName The name of the permit, whose state is to be set.
+    /// @param account The address, whose permit state is to be set.
     /// @param newState The new Permit State to be applied.
     /// @param by The initiator of the execution.
-    function _setPermit(string memory permitName, PermitState newState, address account, address by) internal onlyIfActive {
+    function _setPermit(string memory permitName, address account, PermitState newState, address by) internal onlyIfActive {
         permits[permitName][account] = newState;
-        emit PermitSet(permitName,newState,account,by);
+        emit PermitSet(permitName,account,newState,by);
     }
 
     /// @notice Sets the state of a specified base permit.
