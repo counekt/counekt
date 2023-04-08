@@ -2,6 +2,11 @@ pragma solidity ^0.8.4;
 
 import "./shardable.sol";
 
+interface IIdea {
+
+    function receiveToken(address,uint256) external;
+}
+
 /// @title A proof of fractional ownership of an entity with valuables.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable business entity. 
@@ -85,7 +90,7 @@ contract Idea is Shardable {
     function receiveToken(address tokenAddress, uint256 value) external {
         require(acceptsToken(tokenAddress),"NAT");
         ERC20 token = ERC20(tokenAddress);
-        require(token.allowance(msg.sender,this(address)) >= value,"NETP");
+        require(token.allowance(msg.sender,address(this)) >= value,"NETP");
         require(token.transferFrom(msg.sender,address(this), value), "NAT");
         _processTokenReceipt(tokenAddress,value,msg.sender);
     }
@@ -101,11 +106,6 @@ contract Idea is Shardable {
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
     }
-
-    /// @notice Returns true. Used for differentiating between Idea and non-Idea contracts.
-    function isIdea() public pure virtual returns(bool) {
-        return this instanceOf Idea
-    }
     
     /// @notice Returns a boolean value, stating if the given token address is registered as acceptable or not.
     /// @param tokenAddress The address of the token to be checked for.
@@ -118,14 +118,21 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be transferred.
     /// @param value The value/amount of the token to be transferred.
     /// @param to The recipient of the token to be transferred.
-    function _transferToken(address tokenAddress, uint256 value, address to, bool recipientIsIdea) internal {
+    function _transferToken(address tokenAddress, uint256 value, address to) internal {
         require(liquid[tokenAddress].value >= value, "NET");
         if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
             ERC20 token = ERC20(tokenAddress);
             require(token.approve(to, value), "NA");
-            if (Idea(payable(to)).isIdea()) {
-                Idea(payable(to)).receiveToken(tokenAddress, value);
+            if (to.code.length > 0) {
+                try IIdea(to).receiveToken(tokenAddress, value) {
+                    // do nothing
+                }
+                catch {// do nothing but skip the exception}
+                }
+            }
+            else {
+              require(token.transfer(to,value), "NAT");
             }
         }
         _processTokenTransfer(tokenAddress,value,to);
