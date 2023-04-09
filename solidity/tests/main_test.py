@@ -29,16 +29,22 @@ def token():
 	token.mint(accounts[1],5000)
 	return token
 
-def test_shardTrade(shardable):
-	shard = shardable.shardByOwner(accounts[0])
-	assert shardable.isValidShard(shard) == True
+@pytest.fixture
+def administrableWithTwoHolders(administrable):
+	shard = administrable.shardByOwner(accounts[0])
+	assert administrable.isValidShard(shard) == True
 	LOGGER.info(shard);
-	tx = shardable.putForSale(shard,1,2,NULL_ADDRESS,500,{"from":accounts[0]})
+	tx = administrable.putForSale(shard,1,2,NULL_ADDRESS,500,{"from":accounts[0]})
 	tx.wait(1)
-	assert not shardable.isShardHolder(accounts[1])
-	tx = shardable.purchase(shard,{"from":accounts[1], "value":shardable.infoByShard(shard)[-1]})
+	assert not administrable.isShardHolder(accounts[1])
+	tx = administrable.purchase(shard,{"from":accounts[1], "value":administrable.infoByShard(shard)[-1]})
 	tx.wait(1)
-	assert shardable.isShardHolder(accounts[1])
+	assert administrable.isShardHolder(accounts[1])
+	return administrable
+
+
+def test_shardTrade(administrableWithTwoHolders):
+	return administrableWithTwoHolders
 
 def test_ethTrade(administrable):
 	# Receipt
@@ -93,4 +99,30 @@ def test_bankDynamics(administrable):
 	tx = administrable.transferTokenFromBank("marketingExpenses",NULL_ADDRESS,"5 ether",accounts[2],{"from":accounts[1]})
 	tx.wait(1)
 	assert administrable.getBankBalance("marketingExpenses",NULL_ADDRESS) == 0
+
+def test_dividend(administrableWithTwoHolders, token):
+	# Send administrable 10 ether
+	tx = accounts[0].transfer(administrableWithTwoHolders,"10 ether")
+	tx.wait(1)
+	# Send some mock tokens too
+	tx = administrableWithTwoHolders.registerTokenAddress(token.address,{"from":accounts[0]})
+	tx.wait(1)
+	tx = token.approve(administrableWithTwoHolders,1000, {"from":accounts[0]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.receiveToken(token.address,1000, {"from":accounts[0]})
+	tx.wait(1)
+	# Issue the dividends	
+	tx = administrableWithTwoHolders.issueDividend("main",NULL_ADDRESS,"10 ether", {"from":accounts[0]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.issueDividend("main",token.address,1000, {"from":accounts[0]})
+	tx.wait(1)
+	# Claim the dividends
+	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),1,{"from":accounts[1]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[0]),1,{"from":accounts[0]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),2,{"from":accounts[1]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[0]),2,{"from":accounts[0]})
+	tx.wait(1)
 

@@ -430,7 +430,7 @@ contract Administrable is Idea {
         uint256 transferTime = clock;
         require(value <= balanceByBank[bankName][tokenAddress], "MTV");
         balanceByBank[bankName][tokenAddress] -= value;
-        if (balanceByBank[bankName][tokenAddress] == 0) {
+        if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             infoByBank[bankName].storedTokenAddresses -= 1;
         }
         infoByDividend[transferTime] = DividendInfo({
@@ -526,12 +526,14 @@ contract Administrable is Idea {
     function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(toBankName) onlyIfActive {
         require(value <= balanceByBank[fromBankName][tokenAddress], "MTV");
         balanceByBank[fromBankName][tokenAddress] -= value;
-        if (balanceByBank[fromBankName][tokenAddress] == 0) {
-            infoByBank[fromBankName].storedTokenAddresses -= 1;
+        if (tokenAddress != address(0)) {
+            if (balanceByBank[fromBankName][tokenAddress] == 0) {
+                infoByBank[fromBankName].storedTokenAddresses -= 1;
 
-        }
-        if (balanceByBank[toBankName][tokenAddress] == 0) {
-            infoByBank[toBankName].storedTokenAddresses += 1;
+            }
+            if (balanceByBank[toBankName][tokenAddress] == 0) {
+                infoByBank[toBankName].storedTokenAddresses += 1;
+            }
         }
         balanceByBank[toBankName][tokenAddress] += value;
         emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
