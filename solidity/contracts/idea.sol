@@ -14,19 +14,14 @@ interface IIdea {
 /// @custom:beaware This is a commercial contract.
 contract Idea is Shardable {
 
-    /// @notice A struct representing a registration of an owned ERC20 token and its value/amount.
-    /// @param value The value/amount of the token.
-    /// @param residualValue The value/amount of the token after liquidization/inactivation of the Idea left to be claimed.
-    struct TokenRegister {
-        uint256 value;
-        uint256 residualValue;
-    }
-
     /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
     mapping(address => bool) validTokenAddresses;
 
-	/// @notice Mapping pointing to a Token Register given the address of the ERC20 token contract.
-    mapping(address => TokenRegister) public liquid;
+	/// @notice Mapping pointing to a value/amount given the address of an ERC20 token.
+    mapping(address => uint256) public liquid;
+
+    /// @notice Mapping pointing to the value/amount of a liquid token left to be claimed after liquidization/inactivation of the Idea.
+    mapping(address => uint256) liquidResidual;
 
     /// @notice Mapping pointing to another mapping (given a token address) pointing to a boolean stating if the owner of a given Shard has claimed their fair share following a liquidization.
     mapping(address => mapping(bytes32 => bool)) hasClaimedLiquid;
@@ -101,8 +96,8 @@ contract Idea is Shardable {
         require(acceptsToken(tokenAddress), "PANT");
         require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], "AC");
         hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]] = true;
-        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress].value;
-        liquid[tokenAddress].residualValue -= liquidValue;
+        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress];
+        liquidResidual[tokenAddress] -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
     }
@@ -119,7 +114,7 @@ contract Idea is Shardable {
     /// @param value The value/amount of the token to be transferred.
     /// @param to The recipient of the token to be transferred.
     function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        require(liquid[tokenAddress].value >= value, "NET");
+        require(liquid[tokenAddress] >= value, "NET");
         if (tokenAddress == address(0)) { _transferEther(value, to);}
         else {
             ERC20 token = ERC20(tokenAddress);
@@ -158,8 +153,8 @@ contract Idea is Shardable {
     /// @param value The value/amount of the received token.
     /// @param from The sender of the received token.
     function _processTokenReceipt(address tokenAddress, uint256 value, address from) virtual internal {
-        liquid[tokenAddress].value += value;
-        liquid[tokenAddress].residualValue += value;
+        liquid[tokenAddress] += value;
+        liquidResidual[tokenAddress] += value;
         emit TokenReceived(tokenAddress,value,from);
     }
 
@@ -168,9 +163,8 @@ contract Idea is Shardable {
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) virtual internal {
-        liquid[tokenAddress].value -= value;
-        liquid[tokenAddress].residualValue -= value;
-
+        liquid[tokenAddress] -= value;
+        liquidResidual[tokenAddress] -= value;
         emit TokenTransferred(tokenAddress,value,to);
     }
 
@@ -187,7 +181,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The token address to be unregistered.
     function _unregisterTokenAddress(address tokenAddress, address by) internal {
         require(acceptsToken(tokenAddress), "TNR");
-        require(liquid[tokenAddress].value == 0, "NZ");
+        require(liquid[tokenAddress] == 0, "NZ");
         validTokenAddresses[tokenAddress] = false;
         emit TokenUnregistered(tokenAddress,by);
     }

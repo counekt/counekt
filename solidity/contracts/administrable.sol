@@ -28,12 +28,10 @@ contract Administrable is Idea {
     /// @notice A struct representing the information of a Dividend given to all current Shard holders.
     /// @param creationTime The clock at which the Dividend was created.
     /// @param tokenAddress The address of the token, in which the value of the Dividend is issued.
-    /// @param originalValue The original value/amount of the Dividend before claimants.
-    /// @param value The value/amount of the Dividend.
+    /// @param value The original value/amount of the Dividend before claims.
     struct DividendInfo {
         uint256 creationTime;
         address tokenAddress;
-        uint256 originalValue;
         uint256 value;
     }
 
@@ -65,6 +63,9 @@ contract Administrable is Idea {
     /// @notice A mapping pointing to the info of a Dividend given the creation time of the Dividend.
     mapping(uint256 => DividendInfo) infoByDividend;
 
+    /// @notice A mapping pointing to the residual of a Dividend given the creation time of the Dividend.
+    mapping(uint256 => uint256) residualByDividend;
+
     /// @notice Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend, given the bank name and the shard.
     mapping(uint256 => mapping(bytes32  => bool)) hasClaimedDividend;
 
@@ -78,16 +79,17 @@ contract Administrable is Idea {
 
     /// @notice Event that triggers when a Dividend is dissolved.
     /// @param dividend The Dividend that was dissolved.
-    /// @param valueLeft The remaining value of the Dividend that was dissolved (goes to the 'main' Bank).
+    /// @param residual The remaining value of the Dividend that was dissolved (goes to the 'main' Bank).
     /// @param by The initiator of the Dividend dissolution.
     event DividendDissolved(
         uint256 dividend,
-        uint256 valueLeft,
+        uint256 residual,
         address by
     );
 
     /// @notice Event that triggers when a Dividend is claimed.
     /// @param dividend The Dividend that was claimed.
+    /// @param value The partial value of the Dividend that was claimed.
     /// @param by The claimant of the Dividend.
     event DividendClaimed(
         uint256 dividend,
@@ -238,8 +240,8 @@ contract Administrable is Idea {
         require(hasClaimedDividend[dividend][shard] == false, "AC");
         require(shardExisted(shard,dividend), "NAF");
         hasClaimedDividend[dividend][shard] = true;
-        uint256 dividendValue = infoByShard[shard].numerator / infoByShard[shard].denominator * infoByDividend[dividend].originalValue;
-        infoByDividend[dividend].value -= dividendValue;
+        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
@@ -353,6 +355,24 @@ contract Administrable is Idea {
     function getBankBalance(string memory bankName, address tokenAddress) public view returns(uint256) {
         return balanceByBank[bankName][tokenAddress];
     }
+    
+    /// @notice Returns the token of a dividend.
+    /// @param dividend The Dividend to be checked for.
+    function getDividendToken(uint256 dividend) public view returns(address) {
+        return infoByDividend[dividend].tokenAddress;
+    }
+    
+    /// @notice Returns the total value of a dividend.
+    /// @param dividend The Dividend to be checked for.
+    function getDividendValue(uint256 dividend) public view returns(uint256) {
+        return infoByDividend[dividend].value;
+    }
+
+    /// @notice Returns the residual value of a dividend.
+    /// @param dividend The Dividend to be checked for.
+    function getDividendResidual(uint256 dividend) public view returns(uint256) {
+        return residualByDividend[dividend];
+    }
 
     /// @notice Returns a boolean stating if a given permit is valid/exists or not.
     /// @param permitName The name of the permit to be checked for.
@@ -436,9 +456,9 @@ contract Administrable is Idea {
         infoByDividend[transferTime] = DividendInfo({
             creationTime:transferTime,
             tokenAddress:tokenAddress,
-            originalValue:value,
             value:value
         });
+        residualByDividend[transferTime] = value;
         validDividends[transferTime] = true;
         emit DividendIssued(transferTime, by); 
     }
@@ -449,10 +469,8 @@ contract Administrable is Idea {
 
     function _dissolveDividend(uint256 dividend, address by) internal onlyExistingDividend(dividend) onlyIfActive {
         validDividends[dividend] = false; // -1 to distinguish between empty values;
-        uint256 valueLeft = infoByDividend[dividend].value;
-        infoByDividend[dividend].value = 0;
-        balanceByBank["main"][infoByDividend[dividend].tokenAddress] += valueLeft;
-        emit DividendDissolved(dividend, valueLeft, by);
+        balanceByBank["main"][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];
+        emit DividendDissolved(dividend, residualByDividend[dividend], by);
     }
 
     /// @notice Creates a new Bank.
