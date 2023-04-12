@@ -121,8 +121,7 @@ contract Votable is Administrable {
     /// @param shard The Shard to vote with.
     /// @param referendum The referendum to be voted on.
     /// @param favor The boolean value signalling a FOR or AGAINST vote.
-    function vote(bytes32 shard, uint256 referendum, bool favor) external onlyHistoricShardHolder onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
-        require(isHistoricShard(shard), "SNH");
+    function vote(bytes32 shard, uint256 referendum, bool favor) external onlyHolder(shard) onlyPendingReferendum(referendum) hasNotVoted(referendum) onlyIfActive {
         require(shardExisted(shard,referendum), "SNV");
         hasVotedOnReferendum[referendum][shard] = true;
         if (favor) {

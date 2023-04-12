@@ -37,6 +37,7 @@ function getCommonDenominator(uint256 a, uint256 b) pure returns(uint256) {
 /// @param denominator Denominator of fraction to be simplified.
 function simplifyFraction(uint256 numerator, uint256 denominator) pure returns(uint256, uint256) {
     uint256 commonDenominator = getCommonDenominator(numerator,denominator);
+    require(numerator/denominator == ((numerator/commonDenominator)/(denominator/commonDenominator)),"VMT");
     return (numerator/commonDenominator,denominator/commonDenominator);
 }
 
@@ -108,6 +109,8 @@ contract Shardable {
     mapping(bytes32 => ShardInfo) public infoByShard;
     /// @notice Mapping pointing to a currently valid shard given the address of its owner.
     mapping(address => bytes32) public shardByOwner;
+    /// @notice Mapping pointing to a boolean stating if a given Shard is for sale or not.
+    mapping(bytes32 => bool) shardsForSale;
     /// @notice Mapping pointing to related sale info of a Shard given the bytes of a unique Shard instance.
     mapping(bytes32 => ShardSale) saleByShard;
     // @notice Mapping pointing to an expired time given a shard.
@@ -168,12 +171,6 @@ contract Shardable {
         _;
     }
 
-    /// @notice Modifier that requires the msg.sender to have been a historic Shard holder.
-    modifier onlyHistoricShardHolder {
-        require(isHistoricShardHolder(msg.sender), "NHVSH");
-        _;
-    }
-
     /// @notice Modifier that requires a given Shard to be currently valid.
     modifier onlyValidShard(bytes32 shard) {
         require(isValidShard(shard), "NVS");
@@ -203,7 +200,7 @@ contract Shardable {
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard) external payable onlyValidShard(shard) {
-        require(saleByShard[shard].numerator != 0, "NFS");
+        require(shardsForSale[shard], "NFS");
         require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "OFSTS");
         _cancelSale(shard);
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(saleByShard[shard].price,25,1000);
@@ -225,6 +222,7 @@ contract Shardable {
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
+        require(saleByShard[shard].numerator != 0 && saleByShard[shard].denominator != 0, "WRNPURCH");
         if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,saleByShard[shard].numerator,saleByShard[shard].denominator)) {_transferShard(shard,msg.sender);}
         else {_split(shard, saleByShard[shard].numerator,saleByShard[shard].denominator,msg.sender);}
         emit SaleSold(shard,saleByShard[shard].numerator,saleByShard[shard].denominator,saleByShard[shard].tokenAddress,saleByShard[shard].price,msg.sender);
@@ -244,6 +242,7 @@ contract Shardable {
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function cancelSale(bytes32 shard) public onlyHolder(shard) onlyValidShard(shard) {
+        require(shardsForSale[shard], "SNFS");
         _cancelSale(shard);
     }
 
@@ -284,19 +283,7 @@ contract Shardable {
     function isShardHolder(address account) public view returns(bool) {
         return isValidShard(shardByOwner[account]);
     }
-
-    /// @notice Returns a boolean stating if a given shard has ever been valid or not.
-    /// @param shard The shard, whose validity is to be checked for.
-    function isHistoricShard(bytes32 shard) public view returns(bool) {
-        return shardExpiredTime[shard] != 0;
-    }
-
-    /// @notice Checks if address is a historic Shard holder - at least a previous partial owner of the contract
-    /// @param account The address to be checked for.
-    function isHistoricShardHolder(address account) public view returns(bool) {
-        return isHistoricShard(shardByOwner[account]);
-    }
-
+    
     /// @notice Returns a boolean stating if the given shard was valid at a given timestamp.
     /// @param shard The shard, whose validity is to be checked for.
     /// @param time The timestamp to be checked for.
@@ -307,14 +294,7 @@ contract Shardable {
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function _cancelSale(bytes32 shard) internal onlyValidShard(shard) {
-        require(saleByShard[shard].numerator != 0, "SNFS");
-        saleByShard[shard] = ShardSale({
-            numerator:0,
-            denominator:1,
-            tokenAddress:address(0),
-            price:0,
-            to:address(0)
-            });
+        shardsForSale[shard] = false;
     }
 
     /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
@@ -395,6 +375,7 @@ contract Shardable {
             price: price,
             to: to
         });
+        shardsForSale[shard] = true;
         emit PutForSale(shard,numerator,denominator,tokenAddress,price,to);
     }
 

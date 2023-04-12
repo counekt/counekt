@@ -118,19 +118,18 @@ def test_dividend(administrableWithTwoHolders, token):
 	tx.wait(1)
 	tx = administrableWithTwoHolders.issueDividend("main",token.address,1000, {"from":accounts[0]})
 	tx.wait(1)
+	assert administrableWithTwoHolders.getDividendValue(0) == administrableWithTwoHolders.getDividendResidual(0)
 	assert administrableWithTwoHolders.getDividendValue(1) == administrableWithTwoHolders.getDividendResidual(1)
-	assert administrableWithTwoHolders.getDividendValue(2) == administrableWithTwoHolders.getDividendResidual(2)
+	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),0,{"from":accounts[1]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[0]),0,{"from":accounts[0]})
+	tx.wait(1)
 	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),1,{"from":accounts[1]})
 	tx.wait(1)
-	assert administrableWithTwoHolders.shardByOwner(accounts[0])[1] != 0
 	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[0]),1,{"from":accounts[0]})
 	tx.wait(1)
-	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),2,{"from":accounts[1]})
-	tx.wait(1)
-	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[0]),2,{"from":accounts[0]})
-	tx.wait(1)
+	assert administrableWithTwoHolders.getDividendResidual(0) != administrableWithTwoHolders.getDividendValue(0)
 	assert administrableWithTwoHolders.getDividendResidual(1) != administrableWithTwoHolders.getDividendValue(1)
-	assert administrableWithTwoHolders.getDividendResidual(2) != administrableWithTwoHolders.getDividendValue(2)
 
 
 

@@ -235,14 +235,11 @@ contract Administrable is Idea {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
-    function claimDividend(bytes32 shard, uint256 dividend) external onlyHolder(shard) onlyHistoricShardHolder onlyExistingDividend(dividend) onlyIfActive {
+    function claimDividend(bytes32 shard, uint256 dividend) external onlyHolder(shard) onlyExistingDividend(dividend) onlyIfActive {
         require(shardExisted(shard,dividend), "NAF");
         require(hasClaimedDividend[dividend][shard] == false, "AC");
-
         hasClaimedDividend[dividend][shard] = true;
-        require(infoByShard[shard].numerator != 0, "WTTTF!");
-        require(infoByShard[shard].denominator != 0, "WTF!");
-        uint256 dividendValue = infoByDividend[dividend].value * (infoByShard[shard].numerator / infoByShard[shard].denominator);
+        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].numerator / infoByShard[shard].denominator;
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
