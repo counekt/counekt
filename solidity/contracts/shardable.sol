@@ -85,17 +85,18 @@ contract Shardable {
     }
 
     /// @notice A struct representing the related sale info of a non-fungible Shard token.
-    /// @param forSaleTo Address pointing to a potentially specifically set buyer of the sale.
     /// @param numerator Numerator of the fraction that is for sale.
     /// @param denominator Denominator of the fraction that is for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
-    /// @param salePrice The amount which the Shard is for sale as. The token address being the valuta.
+    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
+    /// @param to Address pointing to a potentially specifically set buyer of the sale.
     struct ShardSale {
-        address forSaleTo;
         uint256 numerator;
         uint256 denominator;
         address tokenAddress;
-        uint256 salePrice;
+        uint256 price;
+        address to;
+
     }
 
     /// @notice Integer value to implement a concept of time
@@ -201,33 +202,32 @@ contract Shardable {
     /// @notice Purchases a listed Shard for sale.
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
-    function purchase(bytes32 shard) external payable onlyIfActive onlyValidShard(shard) {
-        require(ShardSale[shard].forSale, "NFS");
-        require((infoByShard[shard].forSaleTo == msg.sender) || (infoByShard[shard].forSaleTo == address(0x0)), "OFSTS");
+    function purchase(bytes32 shard) external payable onlyValidShard(shard) {
+        require(saleByShard[shard].numerator != 0, "NFS");
+        require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "OFSTS");
         _cancelSale(shard);
-        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(infoByShard[shard].salePrice,25,1000);
+        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(saleByShard[shard].price,25,1000);
         profitToSeller += remainder; // remainder goes to seller
         // if ether
-        if (infoByShard[shard].tokenAddress == address(0x0)) {
-            require(msg.value >= infoByShard[shard].salePrice, "NEEP");
+        if (saleByShard[shard].tokenAddress == address(0x0)) {
+            require(msg.value >= saleByShard[shard].price, "NEEP");
             // Pay Service Fee of 2.5% to Counekt
-            (bool successCounekt, ) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call{value:profitToCounekt}("");
-            require(successCounekt, "TF");
+            (bool successToCounekt,) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call{value:profitToCounekt}("");
             // Rest goes to the seller
-            (bool successSeller, ) = payable(infoByShard[shard].owner).call{value:profitToSeller}("");
-            require(successSeller, "TF");
+            (bool successToSeller,) = payable(infoByShard[shard].owner).call{value:profitToSeller}("");
+            require(successToSeller && successToCounekt, "TF");
         } 
         else {
-            ERC20 token = ERC20(infoByShard[shard].tokenAddress);
-            require(token.allowance(msg.sender,address(this)) >= infoByShard[shard].salePrice,"NETP");
+            ERC20 token = ERC20(saleByShard[shard].tokenAddress);
+            require(token.allowance(msg.sender,address(this)) >= saleByShard[shard].price,"NETP");
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
-        if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale)) {_transferShard(shard,msg.sender);}
-        else {_split(shard, infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,msg.sender);}
-        emit SaleSold(shard,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,infoByShard[shard].tokenAddress,infoByShard[shard].salePrice,msg.sender);
+        if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,saleByShard[shard].numerator,saleByShard[shard].denominator)) {_transferShard(shard,msg.sender);}
+        else {_split(shard, saleByShard[shard].numerator,saleByShard[shard].denominator,msg.sender);}
+        emit SaleSold(shard,saleByShard[shard].numerator,saleByShard[shard].denominator,saleByShard[shard].tokenAddress,saleByShard[shard].price,msg.sender);
     }
 
     /// @notice Puts a given shard for sale.
@@ -236,20 +236,9 @@ contract Shardable {
     /// @param denominator Denominator of the absolute fraction of the Shard to be put for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    function putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price) public onlyHolder(shard) onlyValidShard(shard) {
-        _putForSale(shard,numerator,denominator,tokenAddress,price);
-    }
-
-    /// @notice Puts a given shard for sale only to a specifically set buyer.
-    /// @param shard The shard to be put for sale.
-    /// @param numerator Numerator of the the absolute fraction of the shard to be put for sale.
-    /// @param denominator Denominator of the the absolute fraction of the shard to be put for sale.
-    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
-    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    /// @param to The specifically set buyer of the sale.
-    function putForSaleTo(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price, address to) public onlyHolder(shard) {
-        saleByShard[shard].forSaleTo = to;
-        _putForSale(shard,numerator,denominator,tokenAddress,price);
+    /// @param to The specifically set buyer of the sale. Open to anyone, if address(0).
+    function putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
+        _putForSale(shard,numerator,denominator,tokenAddress,price,to);
     }
 
     /// @notice Cancels a sell of a given Shard.
@@ -274,12 +263,14 @@ contract Shardable {
         _transferShard(senderShard,to);
     }
 
-    function getShardExpiredTime(bytes32 shard) returns(uint256) {
-        if (shardExpiredTime[shard] == 0) {
-            return type(uint256).max; // The maximum value: (2^256)-1;
-        }
+    /// @notice Returns the time, in which a shard will or has expired.
+    function getShardExpiredTime(bytes32 shard) public view returns(uint256) {
         return shardExpiredTime[shard];
+    }
 
+    /// @notice Returns the price, at which a shard is for sale.
+    function getShardSalePrice(bytes32 shard) public view returns(uint256) {
+        return saleByShard[shard].price;
     }
 
     /// @notice Returns a boolean stating if a given shard is currently valid or not.
@@ -317,7 +308,13 @@ contract Shardable {
     /// @param shard The shard to be put off sale.
     function _cancelSale(bytes32 shard) internal onlyValidShard(shard) {
         require(saleByShard[shard].numerator != 0, "SNFS");
-        saleByShard[shard] = ShardSale();
+        saleByShard[shard] = ShardSale({
+            numerator:0,
+            denominator:1,
+            tokenAddress:address(0),
+            price:0,
+            to:address(0)
+            });
     }
 
     /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
@@ -325,8 +322,8 @@ contract Shardable {
     /// @param numerator Numerator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param denominator Denominator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) {
-        require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "MTW");
+    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) onlyIfActive {
+        require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "MTF");
         uint256 transferTime = clock;
         if (isShardHolder(to)) { // if Receiver already owns a shard
             // The fractions are added and upgraded
@@ -358,7 +355,7 @@ contract Shardable {
     /// @notice Sends a whole shard to a receiver.
     /// @param senderShard The shard to be transferred.
     /// @param to The receiver of the new Shard.
-    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) {
+    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) onlyIfActive {
         uint256 transferTime = clock;
         if (isShardHolder(to)) {
 
@@ -387,12 +384,18 @@ contract Shardable {
     /// @param denominator Denominator of the absolute fraction of the Shard to be put for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    function _putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price) internal onlyValidShard(shard) {
+    /// @param to The specifically set buyer of the sale. For anyone to buy if address(0).
+    function _putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
         require(numerator/denominator <= infoByShard[shard].numerator/infoByShard[shard].denominator, "MTW");
-        (saleByShard[shard].numeratorForSale, infoByShard[shard].denominatorForSale) = simplifyFraction(numerator,denominator);
-        saleByShard[shard].tokenAddress = tokenAddress;
-        saleByShard[shard].salePrice = price;
-        emit PutForSale(shard,infoByShard[shard].numeratorForSale,infoByShard[shard].denominatorForSale,tokenAddress,price,infoByShard[shard].forSaleTo);
+        (numerator, denominator) = simplifyFraction(numerator,denominator);
+        saleByShard[shard] = ShardSale({
+            numerator: numerator,
+            denominator: denominator,
+            tokenAddress: tokenAddress,
+            price: price,
+            to: to
+        });
+        emit PutForSale(shard,numerator,denominator,tokenAddress,price,to);
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
@@ -404,7 +407,7 @@ contract Shardable {
         // The representation, bytes and hash
         bytes32 shard = keccak256(abi.encodePacked(owner,creationTime));
         shardByOwner[owner] = shard;
-        validShards[shard] = true;
+        shardExpiredTime[shard] = type(uint256).max; // The maximum value: (2^256)-1;
         // The info, attributes and details
         infoByShard[shard] = ShardInfo({
                                 numerator:numerator,
@@ -418,7 +421,7 @@ contract Shardable {
     /// @param shard The shard to be expired.
     /// @param expiredTime The clock at which the Shard will expire.
     function _expireShard(bytes32 shard, uint256 expiredTime) internal  {
-        infoByShard[shard].expiredTime = expiredTime;
+        shardExpiredTime[shard] = expiredTime;
     }
 
 }

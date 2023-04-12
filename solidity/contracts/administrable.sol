@@ -235,12 +235,14 @@ contract Administrable is Idea {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param shard The shard that was valid at the time of the Dividend creation
     /// @param dividend The dividend to be claimed.
-    function claimDividend(bytes32 shard, uint256 dividend) external onlyExistingDividend(dividend) onlyIfActive {
-        require(isHistoricShard(shard), "NHVS");
-        require(hasClaimedDividend[dividend][shard] == false, "AC");
+    function claimDividend(bytes32 shard, uint256 dividend) external onlyHolder(shard) onlyHistoricShardHolder onlyExistingDividend(dividend) onlyIfActive {
         require(shardExisted(shard,dividend), "NAF");
+        require(hasClaimedDividend[dividend][shard] == false, "AC");
+
         hasClaimedDividend[dividend][shard] = true;
-        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        require(infoByShard[shard].numerator != 0, "WTTTF!");
+        require(infoByShard[shard].denominator != 0, "WTF!");
+        uint256 dividendValue = infoByDividend[dividend].value * (infoByShard[shard].numerator / infoByShard[shard].denominator);
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
@@ -448,7 +450,7 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be issued in the Dividend.
     function _issueDividend(string memory bankName, address tokenAddress, uint256 value, address by) internal onlyIfActive incrementClock {
         uint256 transferTime = clock;
-        require(value <= balanceByBank[bankName][tokenAddress], "MTV");
+        require(value <= balanceByBank[bankName][tokenAddress], "DMTV");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             infoByBank[bankName].storedTokenAddresses -= 1;
@@ -526,7 +528,7 @@ contract Administrable is Idea {
     /// @param to The recipient of the token to be transferred.
     /// @param by The initiator of the execution.
     function _transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to, address by) internal onlyIfActive {
-        require(value <= balanceByBank[bankName][tokenAddress], "MTV");
+        require(value <= balanceByBank[bankName][tokenAddress], "TMTV");
         _transferToken(tokenAddress,value,to);
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
@@ -542,7 +544,7 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be moved.
     /// @param by The initiator of the execution.
     function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(toBankName) onlyIfActive {
-        require(value <= balanceByBank[fromBankName][tokenAddress], "MTV");
+        require(value <= balanceByBank[fromBankName][tokenAddress], "MMTV");
         balanceByBank[fromBankName][tokenAddress] -= value;
         if (tokenAddress != address(0)) {
             if (balanceByBank[fromBankName][tokenAddress] == 0) {

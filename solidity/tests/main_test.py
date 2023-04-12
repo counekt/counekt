@@ -34,10 +34,12 @@ def administrableWithTwoHolders(administrable):
 	shard = administrable.shardByOwner(accounts[0])
 	assert administrable.isValidShard(shard) == True
 	LOGGER.info(shard);
-	tx = administrable.putForSale(shard,1,2,NULL_ADDRESS,500,{"from":accounts[0]})
+	tx = administrable.putForSale(shard,1,2,NULL_ADDRESS,500,NULL_ADDRESS,{"from":accounts[0]})
 	tx.wait(1)
 	assert not administrable.isShardHolder(accounts[1])
-	tx = administrable.purchase(shard,{"from":accounts[1], "value":administrable.infoByShard(shard)[-1]})
+	value = administrable.getShardSalePrice(shard)
+	assert value > 0
+	tx = administrable.purchase(shard,{"from":accounts[1], "value":value})
 	tx.wait(1)
 	assert administrable.isShardHolder(accounts[1])
 	return administrable
@@ -120,6 +122,7 @@ def test_dividend(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getDividendValue(2) == administrableWithTwoHolders.getDividendResidual(2)
 	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),1,{"from":accounts[1]})
 	tx.wait(1)
+	assert administrableWithTwoHolders.shardByOwner(accounts[0])[1] != 0
 	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[0]),1,{"from":accounts[0]})
 	tx.wait(1)
 	tx = administrableWithTwoHolders.claimDividend(administrableWithTwoHolders.shardByOwner(accounts[1]),2,{"from":accounts[1]})
