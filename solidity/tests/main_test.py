@@ -132,4 +132,5 @@ def test_dividend(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getDividendResidual(1) != administrableWithTwoHolders.getDividendValue(1)
 
 
-
+def test_liquidization(administrable):
+	pass
