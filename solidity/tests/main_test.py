@@ -30,6 +30,21 @@ def token():
 	return token
 
 @pytest.fixture
+def ideaWithTwoHolders(idea):
+	shard = idea.shardByOwner(accounts[0])
+	assert idea.isValidShard(shard) == True
+	LOGGER.info(shard);
+	tx = idea.putForSale(shard,1,2,NULL_ADDRESS,500,NULL_ADDRESS,{"from":accounts[0]})
+	tx.wait(1)
+	assert not idea.isShardHolder(accounts[1])
+	value = idea.getShardSalePrice(shard)
+	assert value > 0
+	tx = idea.purchase(shard,{"from":accounts[1], "value":value})
+	tx.wait(1)
+	assert idea.isShardHolder(accounts[1])
+	return idea
+
+@pytest.fixture
 def administrableWithTwoHolders(administrable):
 	shard = administrable.shardByOwner(accounts[0])
 	assert administrable.isValidShard(shard) == True
@@ -132,5 +147,24 @@ def test_dividend(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getDividendResidual(1) != administrableWithTwoHolders.getDividendValue(1)
 
 
-def test_liquidization(administrable):
-	pass
+def test_liquidization(ideaWithTwoHolders, token):
+	# Send administrable 10 ether
+	tx = accounts[0].transfer(ideaWithTwoHolders,"10 ether")
+	tx.wait(1)
+	# Send some mock tokens too
+	tx = ideaWithTwoHolders.registerTokenAddress(token.address,{"from":accounts[0]})
+	tx.wait(1)
+	tx = token.approve(ideaWithTwoHolders,1000, {"from":accounts[0]})
+	tx.wait(1)
+	tx = ideaWithTwoHolders.receiveToken(token.address,1000, {"from":accounts[0]})
+	tx.wait(1)
+	# Liquidization
+	tx = ideaWithTwoHolders.liquidize({"from":accounts[0]})
+	tx.wait(1)
+	# Claim the liquids
+	ideaWithTwoHolders.claimLiquid(NULL_ADDRESS,{"from":accounts[0]})
+	ideaWithTwoHolders.claimLiquid(NULL_ADDRESS,{"from":accounts[1]})
+	ideaWithTwoHolders.claimLiquid(token.address,{"from":accounts[0]})
+	ideaWithTwoHolders.claimLiquid(token.address,{"from":accounts[1]})
+	assert ideaWithTwoHolders.li
+
