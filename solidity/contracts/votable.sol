@@ -113,7 +113,7 @@ contract Votable is Administrable {
     }
 
     constructor() {
-        _setPermit("lE",msg.sender,PermitState.administrator,address(this));
+        _setPermit("iV",msg.sender,PermitState.administrator,address(this));
         _setPermit("iP",msg.sender,PermitState.administrator,address(this));
     }
 

@@ -181,4 +181,5 @@ def test_liquidization(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getLiquidResidual(token.address) != administrableWithTwoHolders.liquid(token.address)
 	assert administrableWithTwoHolders.getLiquidResidual(NULL_ADDRESS) != administrableWithTwoHolders.liquid(NULL_ADDRESS)
 
-
+def test_referendum(votableWithTwoHolders):
+	pass
