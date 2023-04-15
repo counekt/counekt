@@ -416,7 +416,7 @@ contract Administrable is Idea {
     /// @notice Returns a boolean stating if a given Dividend exists.
     /// @param dividend The Dividend to be checked for.
     function dividendExists(uint256 dividend) public view returns(bool) {
-      return validDividends[dividend] == true;
+      return validDividends[dividend];
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given bank.
@@ -466,7 +466,6 @@ contract Administrable is Idea {
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
     /// @param dividend The Dividend to be dissolved.
     /// @param by The initiator of the execution.
-
     function _dissolveDividend(uint256 dividend, address by) internal onlyExistingDividend(dividend) onlyIfActive {
         validDividends[dividend] = false; // -1 to distinguish between empty values;
         balanceByBank["main"][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];

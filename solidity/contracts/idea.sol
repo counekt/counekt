@@ -36,16 +36,6 @@ contract Idea is Shardable {
         address from
     );
 
-    /// @notice Event that triggers when a token is transferred.
-    /// @param tokenAddress The address of the transferred token.
-    /// @param value The value/amount of the transferred token.
-    /// @param to The recipient of the transferred token.
-    event TokenTransferred(
-        address tokenAddress,
-        uint256 value,
-        address to
-    );
-
     /// @notice Event that triggers when the entity is liquidized. Can only be emitted once during the lifetime of an entity.
     /// @param by The initiator of the liquidization.
     event EntityLiquidized(address by);
@@ -174,7 +164,6 @@ contract Idea is Shardable {
     function _processTokenTransfer(address tokenAddress, uint256 value, address to) virtual internal {
         liquid[tokenAddress] -= value;
         liquidResidual[tokenAddress] -= value;
-        emit TokenTransferred(tokenAddress,value,to);
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.

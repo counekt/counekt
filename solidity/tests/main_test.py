@@ -145,6 +145,12 @@ def test_dividend(administrableWithTwoHolders, token):
 	tx.wait(1)
 	assert administrableWithTwoHolders.getDividendResidual(0) != administrableWithTwoHolders.getDividendValue(0)
 	assert administrableWithTwoHolders.getDividendResidual(1) != administrableWithTwoHolders.getDividendValue(1)
+	# Dissolve dividend
+	tx = administrableWithTwoHolders.dissolveDividend(0,{"from":accounts[0]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.dissolveDividend(1,{"from":accounts[0]})
+	tx.wait(1)
+	assert not administrableWithTwoHolders.dividendExists(0) and not administrableWithTwoHolders.dividendExists(1)
 
 
 def test_liquidization(administrableWithTwoHolders, token):
