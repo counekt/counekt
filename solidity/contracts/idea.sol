@@ -92,20 +92,28 @@ contract Idea is Shardable {
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
     /// @param tokenAddress The address of the token to be claimed.
-    function claimLiquid(address tokenAddress) external onlyShardHolder onlyIfActive {
+    function claimLiquid(address tokenAddress) external onlyShardHolder {
         require(acceptsToken(tokenAddress), "PANT");
-        require(!hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]], "AC");
-        hasClaimedLiquid[tokenAddress][shardByOwner[msg.sender]] = true;
-        uint256 liquidValue = infoByShard[shardByOwner[msg.sender]].numerator / infoByShard[shardByOwner[msg.sender]].denominator * liquid[tokenAddress];
+        bytes32 shard = shardByOwner[msg.sender];
+        require(!hasClaimedLiquid[tokenAddress][shard], "AC");
+        hasClaimedLiquid[tokenAddress][shard] = true;
+        uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        require(liquidValue != 0, "STS");
         liquidResidual[tokenAddress] -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
         emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
+    }
+
+    /// @notice Returns the residual of a liquid, after liquidization/inactivation.
+    /// @param tokenAddress The address of the token to be checked for.
+    function getLiquidResidual(address tokenAddress) public view returns(uint256) {
+        return liquidResidual[tokenAddress];
     }
     
     /// @notice Returns a boolean value, stating if the given token address is registered as acceptable or not.
     /// @param tokenAddress The address of the token to be checked for.
     function acceptsToken(address tokenAddress) public view returns(bool) {
-      return validTokenAddresses[tokenAddress] == true;
+      return validTokenAddresses[tokenAddress] == true || tokenAddress == address(0);
     }
 
     /// @notice Transfers a token from the Idea to a recipient. 
@@ -130,7 +138,8 @@ contract Idea is Shardable {
               require(token.transfer(to,value), "NAT");
             }
         }
-        _processTokenTransfer(tokenAddress,value,to);
+        if (active) {_processTokenTransfer(tokenAddress,value,to);}
+        
     }
 
     /// @notice Transfers ether from the Idea to a recipient

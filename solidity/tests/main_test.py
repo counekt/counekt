@@ -147,24 +147,32 @@ def test_dividend(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getDividendResidual(1) != administrableWithTwoHolders.getDividendValue(1)
 
 
-def test_liquidization(ideaWithTwoHolders, token):
+def test_liquidization(administrableWithTwoHolders, token):
 	# Send administrable 10 ether
-	tx = accounts[0].transfer(ideaWithTwoHolders,"10 ether")
+	tx = accounts[0].transfer(administrableWithTwoHolders,"10 ether")
 	tx.wait(1)
 	# Send some mock tokens too
-	tx = ideaWithTwoHolders.registerTokenAddress(token.address,{"from":accounts[0]})
+	tx = administrableWithTwoHolders.registerTokenAddress(token.address,{"from":accounts[0]})
 	tx.wait(1)
-	tx = token.approve(ideaWithTwoHolders,1000, {"from":accounts[0]})
+	tx = token.approve(administrableWithTwoHolders,1000, {"from":accounts[0]})
 	tx.wait(1)
-	tx = ideaWithTwoHolders.receiveToken(token.address,1000, {"from":accounts[0]})
+	tx = administrableWithTwoHolders.receiveToken(token.address,1000, {"from":accounts[0]})
 	tx.wait(1)
 	# Liquidization
-	tx = ideaWithTwoHolders.liquidize({"from":accounts[0]})
+	tx = administrableWithTwoHolders.liquidize({"from":accounts[0]})
 	tx.wait(1)
+	assert administrableWithTwoHolders.getLiquidResidual(NULL_ADDRESS) == administrableWithTwoHolders.liquid(NULL_ADDRESS)
+	assert administrableWithTwoHolders.getLiquidResidual(token.address) == administrableWithTwoHolders.liquid(token.address)
 	# Claim the liquids
-	ideaWithTwoHolders.claimLiquid(NULL_ADDRESS,{"from":accounts[0]})
-	ideaWithTwoHolders.claimLiquid(NULL_ADDRESS,{"from":accounts[1]})
-	ideaWithTwoHolders.claimLiquid(token.address,{"from":accounts[0]})
-	ideaWithTwoHolders.claimLiquid(token.address,{"from":accounts[1]})
-	assert ideaWithTwoHolders.li
+	tx = administrableWithTwoHolders.claimLiquid(NULL_ADDRESS,{"from":accounts[0]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimLiquid(NULL_ADDRESS,{"from":accounts[1]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimLiquid(token.address,{"from":accounts[0]})
+	tx.wait(1)
+	tx = administrableWithTwoHolders.claimLiquid(token.address,{"from":accounts[1]})
+	tx.wait(1)
+	assert administrableWithTwoHolders.getLiquidResidual(token.address) != administrableWithTwoHolders.liquid(token.address)
+	assert administrableWithTwoHolders.getLiquidResidual(NULL_ADDRESS) != administrableWithTwoHolders.liquid(NULL_ADDRESS)
+
 

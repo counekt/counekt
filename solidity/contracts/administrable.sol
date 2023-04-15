@@ -240,6 +240,7 @@ contract Administrable is Idea {
         require(hasClaimedDividend[dividend][shard] == false, "AC");
         hasClaimedDividend[dividend][shard] = true;
         uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
