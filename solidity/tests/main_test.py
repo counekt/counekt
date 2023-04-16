@@ -1,6 +1,6 @@
 import pytest
-from brownie import Shardable, Idea, Administrable, MockToken, accounts
-import web3
+from brownie import Shardable, Idea, Administrable, Votable, MockToken, accounts
+import eth_abi
 import logging
 
 LOGGER = logging.getLogger(__name__)
@@ -21,6 +21,11 @@ def idea():
 def administrable():
 	administrable = accounts[0].deploy(Administrable)
 	return administrable
+
+@pytest.fixture
+def votable():
+	votable = accounts[0].deploy(Votable)
+	return votable
 
 @pytest.fixture
 def token():
@@ -58,6 +63,21 @@ def administrableWithTwoHolders(administrable):
 	tx.wait(1)
 	assert administrable.isShardHolder(accounts[1])
 	return administrable
+
+@pytest.fixture
+def votableWithTwoHolders(votable):
+	shard = votable.shardByOwner(accounts[0])
+	assert votable.isValidShard(shard) == True
+	LOGGER.info(shard);
+	tx = votable.putForSale(shard,1,2,NULL_ADDRESS,500,NULL_ADDRESS,{"from":accounts[0]})
+	tx.wait(1)
+	assert not votable.isShardHolder(accounts[1])
+	value = votable.getShardSalePrice(shard)
+	assert value > 0
+	tx = votable.purchase(shard,{"from":accounts[1], "value":value})
+	tx.wait(1)
+	assert votable.isShardHolder(accounts[1])
+	return votable
 
 
 def test_shardTrade(administrableWithTwoHolders):
@@ -182,4 +202,7 @@ def test_liquidization(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getLiquidResidual(NULL_ADDRESS) != administrableWithTwoHolders.liquid(NULL_ADDRESS)
 
 def test_referendum(votableWithTwoHolders):
-	pass
+	votableWithTwoHolders.issueVote(["cB"],[eth_abi.encode_abi(["string", "address"],["newBank",accounts[0]])],{"from":accounts[0]})
+	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[0]),0,True,{"from":accounts[0]})
+	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[1]),0,True,{"from":accounts[0]})
+
