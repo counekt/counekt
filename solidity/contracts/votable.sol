@@ -12,22 +12,27 @@ contract Votable is Administrable {
     /// @param allowDivision Boolean stating if Referendum allows for gradual implementation.
     /// @param proposalFunctionNames Names of functions to be called during implementation.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
-    /// @param forFraction The fraction of Shard-holders who voting FOR the proposals.
-    /// @param againstFraction The fraction of Shard-holders who voted AGAINST the proposals.
-    /// @param amountImplemented Amount of proposals implemented.
     struct ReferendumInfo {
         bool allowDivision;
         string[] proposalFunctionNames;
         bytes[] proposalArgumentData;
-        uint256 favorNumerator;
-        uint256 favorDenominator;
-        uint256 againstNumerator;
-        uint256 againstDenominator;
-        uint8 amountImplemented;
     }
 
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
     mapping(uint256 => ReferendumInfo) infoByReferendum;
+
+    /// @notice Mapping pointing to favor numerator of a given Referendum.
+    mapping(uint256 => uint256) favorNumeratorByReferendum;
+    /// @notice Mapping pointing to favor denominator of a given Referendum.
+    mapping(uint256 => uint256) favorDenominatorByReferendum;
+
+    /// @notice Mapping pointing to against numerator of a given Referendum.
+    mapping(uint256 => uint256) againstNumeratorByReferendum;
+    /// @notice Mapping pointing to against denominator of a given Referendum.
+    mapping(uint256 => uint256) againstDenominatorByReferendum;
+
+    /// @notice Mapping pointing to amount proposals implemented of a given Referendum.
+    mapping(uint256 => uint8) amountImplementedByReferendum;
 
     /// @notice Mapping pointing to a boolean stating if the holder of a given Shard has voted on the given Referendum.
     mapping(uint256 => mapping(bytes32 => bool)) hasVotedOnReferendum;
@@ -125,12 +130,12 @@ contract Votable is Administrable {
         require(shardExisted(shard,referendum), "SNV");
         hasVotedOnReferendum[referendum][shard] = true;
         if (favor) {
-            (uint256 numerator, uint256 denominator) = addFractions(infoByReferendum[referendum].favorNumerator,infoByReferendum[referendum].favorDenominator,infoByShard[shard].numerator,infoByShard[shard].denominator);
-            (infoByReferendum[referendum].favorNumerator,infoByReferendum[referendum].favorDenominator) = simplifyFraction(numerator, denominator);
+            (uint256 numerator, uint256 denominator) = addFractions(favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
+            (favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum]) = simplifyFraction(numerator, denominator);
         }
         else {
-            (uint256 numerator, uint256 denominator) = addFractions(infoByReferendum[referendum].againstNumerator,infoByReferendum[referendum].againstDenominator,infoByShard[shard].numerator,infoByShard[shard].denominator);
-            (infoByReferendum[referendum].againstNumerator,infoByReferendum[referendum].againstDenominator) = simplifyFraction(numerator,denominator);
+            (uint256 numerator, uint256 denominator) = addFractions(againstNumeratorByReferendum[referendum],againstDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
+            (againstNumeratorByReferendum[referendum],againstDenominatorByReferendum[referendum]) = simplifyFraction(numerator,denominator);
         }
         emit VoteCast(referendum, favor, msg.sender);
     }
@@ -194,7 +199,7 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     function getReferendumResult(uint256 referendum) public view returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
-        if ((infoByReferendum[referendum].favorNumerator / infoByReferendum[referendum].favorDenominator) * 2 > 1) {
+        if ((favorNumeratorByReferendum[referendum] / favorDenominatorByReferendum[referendum]) * 2 > 1) {
             return true;
         }
         return false;
@@ -230,12 +235,7 @@ contract Votable is Administrable {
         infoByReferendum[transferTime] = ReferendumInfo({
             allowDivision:allowDivision,
             proposalFunctionNames: proposalFunctionNames,
-            proposalArgumentData: proposalArgumentData,
-            favorNumerator:0,
-            favorDenominator:1,
-            againstNumerator:0,
-            againstDenominator:1,
-            amountImplemented: 0
+            proposalArgumentData: proposalArgumentData
             });
         emit ReferendumIssued(transferTime, by);
     }
@@ -245,8 +245,8 @@ contract Votable is Administrable {
     /// @param proposalIndex The index of the proposal to be implemented.
     function _implementProposal(uint256 referendum, uint8 proposalIndex, address by) internal onlyIfActive {
         require(infoByReferendum[referendum].allowDivision, "GINA");
-        require(infoByReferendum[referendum].amountImplemented == proposalIndex, "WPO");
-        infoByReferendum[referendum].amountImplemented += 1;
+        require(amountImplementedByReferendum[referendum] == proposalIndex, "WPO");
+        amountImplementedByReferendum[referendum] += 1;
         string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
         bytes memory proposalArgumentData = infoByReferendum[referendum].proposalArgumentData[proposalIndex];
         bytes32 functionNameHash = keccak256(bytes(proposalFunctionName));
@@ -310,7 +310,7 @@ contract Votable is Administrable {
                         _liquidize(address(this));
                     }
         emit ProposalImplemented(proposalFunctionName, proposalArgumentData, referendum, by);
-        if (infoByReferendum[referendum].amountImplemented == infoByReferendum[referendum].proposalFunctionNames.length) {
+        if (amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFunctionNames.length) {
             emit ReferendumImplemented(referendum);
         }
     }
