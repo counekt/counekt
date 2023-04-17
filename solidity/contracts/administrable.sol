@@ -7,14 +7,6 @@ import "./idea.sol";
 /// @notice This contract adds administrability via permits and internally closed money supplies.
 contract Administrable is Idea {
 
-    /// @notice A struct representing the information of a Bank used to encapsel funds and tokens restricted to a few spenders.
-    /// @param name The name of the Bank. Used for identification.
-    /// @param storedTokenAddresses An unsigned integer representing the amount of stored kinds of tokens.
-    struct BankInfo {
-        string name;
-        uint256 storedTokenAddresses;
-    }
-
     /// @notice An enum representing a Permit State of one of the many permits.
     /// @param unauthorized The permit is NOT authorized.
     /// @param authorized The permit is authorized.
@@ -41,8 +33,8 @@ contract Administrable is Idea {
     /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
     mapping(string => bool) validBanks;
     
-    /// @notice A mapping pointing to the info of a Bank, given the name of it.
-    mapping(string => BankInfo) infoByBank;
+    /// @notice A mapping pointing to an unsigned integer representing the amount of stored kinds of tokens of a bank.
+    mapping(string => uint256) storedTokenAddressesByBank;
 
     /// @notice A mapping pointing to the a value/amount of a stored token of a Bank, given the name of it and the respective token address.
     mapping(string => mapping(address => uint256)) balanceByBank;
@@ -408,7 +400,7 @@ contract Administrable is Idea {
     /// @notice Returns a boolean stating if a given Bank is empty.
     /// @param bankName The name of the Bank to be checked for.
     function bankIsEmpty(string memory bankName) public view returns(bool) {
-        return infoByBank[bankName].storedTokenAddresses == 0 && balanceByBank[bankName][address(0)] == 0;
+        return storedTokenAddressesByBank[bankName] == 0 && balanceByBank[bankName][address(0)] == 0;
     }
     
     /// @notice Returns a boolean stating if a given Dividend exists.
@@ -449,7 +441,7 @@ contract Administrable is Idea {
         require(value <= balanceByBank[bankName][tokenAddress], "DMTV");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
-            infoByBank[bankName].storedTokenAddresses -= 1;
+            storedTokenAddressesByBank[bankName] -= 1;
         }
         infoByDividend[transferTime] = DividendInfo({
             creationTime:transferTime,
@@ -477,10 +469,6 @@ contract Administrable is Idea {
     function _createBank(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
         require(!bankExists(bankName), "AE");
         adminOfBank[bankName][bankAdmin] = true;
-        infoByBank[bankName] = BankInfo({
-            name:bankName,
-            storedTokenAddresses:0
-            });
         validBanks[bankName] = true;
         emit BankCreated(bankName,bankAdmin,by);
     }
@@ -527,7 +515,7 @@ contract Administrable is Idea {
         _transferToken(tokenAddress,value,to);
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
-            infoByBank[bankName].storedTokenAddresses -= 1;
+            storedTokenAddressesByBank[bankName] -= 1;
         }
         emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
     }
@@ -543,11 +531,11 @@ contract Administrable is Idea {
         balanceByBank[fromBankName][tokenAddress] -= value;
         if (tokenAddress != address(0)) {
             if (balanceByBank[fromBankName][tokenAddress] == 0) {
-                infoByBank[fromBankName].storedTokenAddresses -= 1;
+                storedTokenAddressesByBank[fromBankName] -= 1;
 
             }
             if (balanceByBank[toBankName][tokenAddress] == 0) {
-                infoByBank[toBankName].storedTokenAddresses += 1;
+                storedTokenAddressesByBank[toBankName] += 1;
             }
         }
         balanceByBank[toBankName][tokenAddress] += value;
@@ -588,7 +576,7 @@ contract Administrable is Idea {
         super._processTokenReceipt(tokenAddress, value, from);
         // Then: Bank logic
         if (balanceByBank["main"][tokenAddress] == 0 && tokenAddress != address(0)) {
-            infoByBank["main"].storedTokenAddresses += 1;
+            storedTokenAddressesByBank["main"] += 1;
         }
         balanceByBank["main"][tokenAddress] += value;
         emit TokenReceived(tokenAddress,value,from);
