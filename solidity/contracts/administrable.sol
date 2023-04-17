@@ -146,7 +146,6 @@ contract Administrable is Idea {
     /// @param by The initiator of the Bank admin removal.
     event BankAdminRemoved(string name,address admin, address by);
 
-
     /// @notice Event that triggers when a Bank is deleted.
     /// @param name The name of the Bank that was deleted.
     /// @param by The initiator of the Bank deletion.
@@ -229,7 +228,6 @@ contract Administrable is Idea {
         _setPermit("mB", msg.sender, PermitState.administrator, address(this));
         _setPermit("lE", msg.sender, PermitState.administrator, address(this));
         _setPermit("mAT", msg.sender, PermitState.administrator, address(this));
-
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.

@@ -237,6 +237,8 @@ contract Votable is Administrable {
             proposalFunctionNames: proposalFunctionNames,
             proposalArgumentData: proposalArgumentData
             });
+        favorDenominatorByReferendum[transferTime] = 1;
+        againstDenominatorByReferendum[transferTime] = 1;
         emit ReferendumIssued(transferTime, by);
     }
 

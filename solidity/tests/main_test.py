@@ -201,10 +201,10 @@ def test_liquidization(administrableWithTwoHolders, token):
 	assert administrableWithTwoHolders.getLiquidResidual(token.address) != administrableWithTwoHolders.liquid(token.address)
 	assert administrableWithTwoHolders.getLiquidResidual(NULL_ADDRESS) != administrableWithTwoHolders.liquid(NULL_ADDRESS)
 
-def test_referendum(votableWithTwoHolders):
+def test_vote(votableWithTwoHolders):
 	assert not votableWithTwoHolders.referendumIsPending(0)
 	votableWithTwoHolders.issueVote(["cB"],[eth_abi.encode_abi(["string", "address"],["newBank",accounts[0].address])],True,{"from":accounts[0]})
 	assert votableWithTwoHolders.referendumIsPending(0)
 	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[0]),0,True,{"from":accounts[0]})
-	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[1]),0,True,{"from":accounts[0]})
+	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[1]),0,True,{"from":accounts[1]})
 

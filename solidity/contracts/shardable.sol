@@ -186,7 +186,7 @@ contract Shardable {
     /// @notice Modifier that requires the msg.sender to be the owner of a given Shard
     /// @param shard The Shard, whose ownership is tested for.
     modifier onlyHolder(bytes32 shard) {
-        require(infoByShard[shard].owner == msg.sender);
+        require(infoByShard[shard].owner == msg.sender, "OH");
         _;
     }
 
