@@ -210,3 +210,4 @@ def test_vote(votableWithTwoHolders):
 
 	votableWithTwoHolders.implementProposal(0,0, {"from":accounts[0]})
 	assert votableWithTwoHolders.referendumIsImplemented(0)
+	assert votableWithTwoHolders.bankExists("newBank") and not votableWithTwoHolders.bankExists("wedwedwon")
