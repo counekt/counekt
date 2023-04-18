@@ -167,13 +167,6 @@ contract Administrable is Idea {
         PermitState newState,
         address by
     );
-    
-    /// @notice Modifier that makes sure a given permit exists.
-    /// @param permitName The name of the permit to be checked for.
-    modifier onlyValidPermit(string memory permitName) {
-        require(isValidPermit(permitName), "DNE");
-        _;
-    }
 
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permitName The name of the permit to be checked for.
@@ -362,33 +355,6 @@ contract Administrable is Idea {
     /// @param dividend The Dividend to be checked for.
     function getDividendResidual(uint256 dividend) public view returns(uint256) {
         return residualByDividend[dividend];
-    }
-
-    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
-    /// @param permitName The name of the permit to be checked for.
-    function isValidPermit(string memory permitName) virtual public pure returns(bool) {
-            bytes32 permitHash = keccak256(bytes(permitName));
-            if(permitHash == keccak256(bytes("sNSHS"))) {
-                return true;
-            }
-            if(permitHash == keccak256(bytes("iD"))) {
-                return true;
-            }
-            if(permitHash == keccak256(bytes("dD"))) {
-                return true;
-            }
-            if(permitHash == keccak256(bytes("mB"))) {
-                return true;
-            }
-            if(permitHash == keccak256(bytes("lE"))) {
-                return true;
-            }
-            if(permitHash == keccak256(bytes("mAT"))) {
-                return true;
-            }
-            else {
-                return false;
-            }
     }
 
     /// @notice Returns a boolean stating if a given Bank exists.

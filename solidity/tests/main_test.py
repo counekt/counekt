@@ -79,7 +79,6 @@ def votableWithTwoHolders(votable):
 	assert votable.isShardHolder(accounts[1])
 	return votable
 
-
 def test_shardTrade(administrableWithTwoHolders):
 	return administrableWithTwoHolders
 
@@ -208,3 +207,6 @@ def test_vote(votableWithTwoHolders):
 	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[0]),0,True,{"from":accounts[0]})
 	votableWithTwoHolders.vote(votableWithTwoHolders.shardByOwner(accounts[1]),0,True,{"from":accounts[1]})
 	assert votableWithTwoHolders.referendumIsPassed(0)
+
+	votableWithTwoHolders.implementProposal(0,0, {"from":accounts[0]})
+	assert votableWithTwoHolders.referendumIsImplemented(0)

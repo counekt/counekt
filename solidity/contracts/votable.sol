@@ -19,7 +19,7 @@ contract Votable is Administrable {
     }
 
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
-    mapping(uint256 => ReferendumInfo) infoByReferendum;
+    mapping(uint256 => ReferendumInfo) public infoByReferendum;
 
     /// @notice Mapping pointing to favor numerator of a given Referendum.
     mapping(uint256 => uint256) favorNumeratorByReferendum;
@@ -130,39 +130,6 @@ contract Votable is Administrable {
         _implementProposal(referendum,proposalIndex,msg.sender);
     }
 
-    /// @notice Returns a boolean stating if a given permit is valid/exists or not.
-    /// @param permitName The name of the permit to be checked for.
-    function isValidPermit(string memory permitName) override public pure returns(bool) {
-            bytes32 permitHash = keccak256(bytes(permitName));
-            if (permitHash == keccak256(bytes("sNSHS"))) {
-                return true;
-            }
-            if(permitHash == keccak256(bytes("mAT"))) {
-                return true;
-            }
-            if (permitHash ==  keccak256(bytes("iV"))) {
-                return true;
-            }
-            if (permitHash ==  keccak256(bytes("iD"))) {
-                return true;
-            }
-            if (permitHash ==  keccak256(bytes("dD"))) {
-                return true;
-            }
-            if (permitHash ==  keccak256(bytes("mB"))) {
-                return true;
-            }
-            if (permitHash ==  keccak256(bytes("iP"))) {
-                return true;
-            }
-            if (permitHash ==  keccak256(bytes("lE"))) {
-                return true;
-            }
-            else {
-                return false;
-            }
-    }
-
     /// @notice Returns a boolean stating if a given Shard Holder has voted on a given Referendum.
     /// @param referendum The Referendum to be checked for.
     /// @param account The address of the potential Shard Holder voter to be checked for.
@@ -190,6 +157,12 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     function referendumIsPassed(uint256 referendum) public view returns(bool) {
         return passedReferendums[referendum]; 
+    }
+
+    /// @notice Returns a boolean stating if a given Referendum is implemented or not.
+    /// @param referendum The Referendum to be checked for.
+    function referendumIsImplemented(uint256 referendum) public view returns(bool) {
+        return amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFunctionNames.length; 
     }
 
     /// @notice Returns a boolean stating if a given Proposal exists within a given Referendum.
