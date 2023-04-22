@@ -1,6 +1,6 @@
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-import app.models.profiles.group
+import app.models.idea.group
 from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
@@ -24,21 +24,17 @@ class Idea(db.Model, Base, locationBase):
     viewers = db.relationship(
         'User', secondary=viewers, lazy='dynamic')
 
-    profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
-    profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
-
-    parent_id = db.Column(db.Integer, db.ForeignKey('idea.id'))
-
-    children = db.relationship('Idea', backref=db.backref("superidea", remote_side=[id]))
+    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    photo = db.relationship("Photo", foreign_keys=[photo_id])
 
     def __init__(self, **kwargs):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         # do custom initialization here
         members = kwargs["members"]
-        self.group = app.models.profiles.group.Group(members=members)
+        self.group = app.models.idea.group.Group(members=members)
         for user in members:
             self.add_member(user)
-        self.profile_photo = Photo(filename="profile_photo", path=f"static/profiles/ideas/{self.handle}/", replacement="/static/images/idea.jpg")
+        self.photo = Photo(filename="photo", path=f"static/ideas/{self.handle}/photo/", replacement="/static/images/idea.jpg")
 
     def add_member(self, user):
         self.group.members.append(user)
@@ -55,11 +51,11 @@ class Idea(db.Model, Base, locationBase):
 
     @property
     def href(self):
-        return url_for("profiles.idea", handle=self.handle)
+        return url_for("idea", handle=self.handle)
 
     @hybrid_property
     def identifier(self):
         return self.handle
 
     def __repr__(self):
-        return "<Idea ${}>".format(self.handle)
+        return "<Idea €{}>".format(self.handle)

@@ -4,8 +4,6 @@ from app.models.base import Base
 from app.models.comms.wall import Wall
 from app.models.locationBase import locationBase
 from app.models.static.photo import Photo
-from app.models.profiles.group import Membership, Group
-from app.models.profiles.idea import Idea
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func, inspect
 from datetime import date, datetime, timedelta
@@ -24,7 +22,7 @@ convos = db.Table('convos',
                   db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
                   )
 
-allies = db.Table('allies',
+associates = db.Table('associates',
                   db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
                   db.Column('right_id', db.Integer, db.ForeignKey('user.id'))
                   )
@@ -49,11 +47,10 @@ class User(UserMixin, db.Model, Base, locationBase):
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unspecified")
 
-    profile_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
-    cover_photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
 
-    profile_photo = db.relationship("Photo", foreign_keys=[profile_photo_id])
-    cover_photo = db.relationship("Photo", foreign_keys=[cover_photo_id])
+    photo = db.relationship("Photo", foreign_keys=[photo_id])
+
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
         foreign_keys='Skill.owner_id')
@@ -63,10 +60,10 @@ class User(UserMixin, db.Model, Base, locationBase):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
-    allies = db.relationship(
-        'User', secondary=allies,
-        primaryjoin=(allies.c.left_id == id),
-        secondaryjoin=(allies.c.right_id == id), lazy='dynamic')
+    associates = db.relationship(
+        'User', secondary=associates,
+        primaryjoin=(associates.c.left_id == id),
+        secondaryjoin=(associates.c.right_id == id), lazy='dynamic')
 
     notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
@@ -89,8 +86,7 @@ class User(UserMixin, db.Model, Base, locationBase):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
-        self.profile_photo = Photo(path=f"static/profiles/users/{self.username}/profile_photo/", replacement=self.gravatar)
-        self.cover_photo = Photo(path=f"static/profiles/users/{self.username}/cover_photo/", replacement="/static/images/alps.jpg")
+        self.photo = Photo(path=f"static/profile/{self.username}/photo/", replacement=self.gravatar)
         self.wall = Wall()
 
     def set_password(self, password):
@@ -210,14 +206,14 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     @property
     def href(self):
-        return url_for("profiles.user", username=self.username)
+        return url_for("profile.user", username=self.username)
 
     @hybrid_property
     def identifier(self):
         return self.username
 
-    def get_allies_from_text(self, text, already_chosen=None):
-        query = self.allies.filter(func.lower(User.name).like(f'%{text.lower()}%'))
+    def get_associates_from_text(self, text, already_chosen=None):
+        query = self.associates.filter(func.lower(User.name).like(f'%{text.lower()}%'))
         if already_chosen:
             for username in already_chosen:
                 query = query.filter(User.username != username)
