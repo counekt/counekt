@@ -17,8 +17,8 @@ import base64
 from app import login
 import os
 
-convos = db.Table('convos',
-                  db.Column('convo_id', db.Integer, db.ForeignKey('convo.id')),
+conversations = db.Table('conversations',
+                  db.Column('conversation_id', db.Integer, db.ForeignKey('conversation.id')),
                   db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
                   )
 
@@ -54,6 +54,7 @@ class User(UserMixin, db.Model, Base, locationBase):
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
         foreign_keys='Skill.owner_id')
+    
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
@@ -73,10 +74,10 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     memberships = db.relationship(
         'Membership', lazy='dynamic',
-        foreign_keys='Membership.owner_id')
+        foreign_keys='Membership.owner_id', cascade='all,delete')
     
-    convos = db.relationship(
-        'Convo', secondary=convos, backref="members", lazy='dynamic')
+    conversations = db.relationship(
+        'Conversation', secondary=conversations, backref="members", lazy='dynamic', cascade='all,delete')
 
     @property
     def ideas(self):

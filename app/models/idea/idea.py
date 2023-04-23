@@ -6,11 +6,6 @@ from app.models.base import Base
 from app.models.locationBase import locationBase
 from flask import url_for
 
-viewers = db.Table('idea_viewers',
-                    db.Column('idea_id', db.Integer, db.ForeignKey('idea.id', ondelete="cascade")),
-                    db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete="cascade"))
-                    )
-
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
     symbol = "$"
@@ -20,9 +15,6 @@ class Idea(db.Model, Base, locationBase):
     name = db.Column(db.String)
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
-
-    viewers = db.relationship(
-        'User', secondary=viewers, lazy='dynamic')
 
     photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     photo = db.relationship("Photo", foreign_keys=[photo_id])

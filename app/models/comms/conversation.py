@@ -7,13 +7,14 @@ import json
 from datetime import datetime
 from flask_login import current_user
 
-class Convo(db.Model, Base):
+class Conversation(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
     activated = db.Column(db.Boolean, default=False)
 
     messages = db.relationship(
-        'Message', backref='convo', lazy='dynamic',
-        foreign_keys='Message.convo_id')
+        'Message', backref='conversation', lazy='dynamic',
+        foreign_keys='Message.convo_id', cascade='all,delete')
+    
     @classmethod
     def get_dialogue(cls, u1, u2):
         # Get the dialogue between current_user and user if it exists
@@ -26,7 +27,7 @@ class Convo(db.Model, Base):
         return self.messages
 
     def __repr__(self):
-        return "<Convo>"
+        return "<Conversation>"
 
 
 class Message(db.Model, Base):
@@ -35,7 +36,7 @@ class Message(db.Model, Base):
     seen = db.Column(db.Boolean, default=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     sender = db.relationship("User", foreign_keys=[sender_id])
-    convo_id = db.Column(db.Integer, db.ForeignKey('convo.id'))
+    convo_id = db.Column(db.Integer, db.ForeignKey('conversation.id'))
     text = db.Column(db.Text)
 
     def __init__(self, **kwargs):
