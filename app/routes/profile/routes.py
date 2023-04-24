@@ -2,28 +2,18 @@
 from flask import redirect, url_for, render_template, abort, current_app
 from flask import request as flask_request
 from app import db, models
-import app.routes.profiles.funcs as funcs
 import json
 import re
 import math
 from datetime import date
 from requests import HTTPError
-from app.routes.profiles import bp
+from app.routes.profile import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
-from app.routes.profiles.user.routes import *
-from app.routes.profiles.idea.routes import *
+from app.routes.profile.user.routes import *
+from app.routes.idea.routes import *
 
 
-@ bp.route("/get/coordinates/", methods=["POST"])
-def get_coordinates():
-    if flask_request.method == 'POST':
-        address = flask_request.form.get("address")
-        location = funcs.geocode(address)
-        location = funcs.reverse_geocode([location.latitude, location.longitude])
-        if not location:
-            return json.dumps({'status': 'Non-valid location'})
-        return json.dumps({'status': 'success', 'address':funcs.shorten_addr(location=location),'lat': location.latitude, 'lng': location.longitude})
 
 
 @ bp.route("/get/allies/", methods=["POST"])
@@ -34,18 +24,6 @@ def get_allies():
         allies = current_user.get_allies_from_text(text, already_chosen).limit(10).all()
         formatted_allies = [{"username": ally.username, "name": ally.name, "bio": ally.bio, "photo_src": ally.profile_photo.src, "symbol": ally.symbol} for ally in allies]
         return json.dumps({'status': 'success', 'allies': formatted_allies})
-
-
-@ bp.route("/get/address/", methods=["POST"])
-def get_address():
-    if flask_request.method == 'POST':
-        lat = flask_request.form.get("lat")
-        lng = flask_request.form.get("lng")
-        location = funcs.reverse_geocode([lat, lng])
-        if not location:
-            return json.dumps({'status': 'Non-valid location'})
-        return json.dumps({'status': 'success', 'address': location.address})
-
 
 @ bp.route("/connect/<username>/", methods=["POST"])
 def connect(username):

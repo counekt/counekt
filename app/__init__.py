@@ -39,7 +39,7 @@ def create_app(config_class=Config):
     from app.routes.auth import bp as auth_bp
     from app.routes.api import bp as api_bp
     from app.routes.errors import bp as errors_bp
-    from app.routes.profiles import bp as profiles_bp
+    from app.routes.profile import bp as profile_bp
     from app.routes.comms import bp as comms_bp
 
     app.register_blueprint(index_bp)
@@ -47,7 +47,7 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(errors_bp)
-    app.register_blueprint(profiles_bp)
+    app.register_blueprint(profile_bp)
     app.register_blueprint(comms_bp)
 
     # ... no changes to blueprint registration

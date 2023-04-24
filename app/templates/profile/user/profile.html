@@ -5,7 +5,7 @@
     <div id="profile-left">
       <div id="profile-image">
         <a href="/user/{{user.username}}/photo/">
-        <img alt draggable="false" class="{% if user == current_user %}current-user-photo{% endif %}" id="profile-image-content" src="{{ user.profile_photo.src }}">
+        <img alt draggable="false" class="{% if user == current_user %}current-user-photo{% endif %}" id="profile-image-content" src="{{ user.photo.src }}">
         </a>
       </div>
       <div id="profile-left-bottom">
@@ -46,13 +46,13 @@
               {% with request_sent = models.UserToUserRequest.query.filter_by(type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
               <button id="connect-button" class="button {% if is_allied %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_allied %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
                 {% if is_allied %}
-                  {% include 'profiles/user/connect-button/connected.html' %}
+                  {% include 'profile/user/connect-button/connected.html' %}
                 {% elif request_sent %}
-                  {% include 'profiles/user/connect-button/pending.html' %}
+                  {% include 'profile/user/connect-button/pending.html' %}
                 {% elif request_received %}
-                  {% include 'profiles/user/connect-button/accept.html' %}
+                  {% include 'profile/user/connect-button/accept.html' %}
                 {% else %}
-                  {% include 'profiles/user/connect-button/default.html' %}
+                  {% include 'profile/user/connect-button/default.html' %}
                 {% endif %}
               </button>
               {% endwith %}
@@ -82,28 +82,28 @@
   <div id="profile-skills-container"> 
   {% if user.skills.all() %}
     {% with skillrows = user.skillrows %}
-        {% include 'profiles/skill-bar.html' %}
+        {% include 'profile/skill-bar.html' %}
     {% endwith %}
   {% endif %}
   </div>
 
-{% include "profiles/user/tabs/tabs.html" %}
+{% include "profile/user/tabs/tabs.html" %}
 {% with vanish=True, create_bar = user == current_user, wall=user.wall, by="new" %}
 {% include 'comms/wall/wall-bit.html' %}
 {% endwith %}
 {% endblock %}
 
 {% block modal %}
-{% if request.url_rule.endpoint == 'profiles.edit_user' %}
-{% include "profiles/user/edit.html" %}
-{% elif request.url_rule.endpoint == 'profiles.user_photo' %}
-{% with photo_src = user.profile_photo.src %}
+{% if request.url_rule.endpoint == 'profile.edit_user' %}
+{% include "profile/user/edit.html" %}
+{% elif request.url_rule.endpoint == 'profile.user_photo' %}
+{% with photo_src = user.photo.src %}
 {% include "photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'profiles.create_idea' %}
-{% include "profiles/idea/create.html" %}
-{% elif request.url_rule.endpoint == 'profiles.create_medium' %}
-{% include "profiles/user/create-medium.html" %}
+{% elif request.url_rule.endpoint == 'profile.create_idea' %}
+{% include "idea/create.html" %}
+{% elif request.url_rule.endpoint == 'profile.create_medium' %}
+{% include "profile/user/create-medium.html" %}
 {% endif %}
 
 {% endblock %}
@@ -111,21 +111,21 @@
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/comms/medium.css">
 <script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
-<link rel="stylesheet" href="/static/css/profiles/profile.css">
-<link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
-<link rel="stylesheet" href="/static/css/profiles/edit.css">
-<link rel="stylesheet" href="/static/css/profiles/user/edit.css">
-<link rel="stylesheet" href="/static/css/profiles/photo.css">
+<link rel="stylesheet" href="/static/css/profile/profile.css">
+<link rel="stylesheet" href="/static/css/profile/mini-profile.css">
+<link rel="stylesheet" href="/static/css/profile/edit.css">
+<link rel="stylesheet" href="/static/css/profile/user/edit.css">
+<link rel="stylesheet" href="/static/css/profile/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <script src="/static/js/comms/search-filter-bar.js"></script>
-<script src="/static/js/profiles/profile.js"></script>
-<script src="/static/js/profiles/user/profile.js"></script>
-<script src="/static/js/profiles/user/edit.js"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/create-medium.js') }}"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/create-medium-with-quote.js') }}"></script>
-<script src="{{ url_for('static', filename='js/profiles/user/delete-medium.js') }}"></script>
-<script src="/static/js/profiles/idea/create.js"></script>
-<script src="/static/js/profiles/configure-skills.js"></script>
+<script src="/static/js/profile/profile.js"></script>
+<script src="/static/js/profile/user/profile.js"></script>
+<script src="/static/js/profile/user/edit.js"></script>
+<script src="{{ url_for('static', filename='js/profile/user/create-medium.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profile/user/create-medium-with-quote.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profile/user/delete-medium.js') }}"></script>
+<script src="/static/js/idea/create.js"></script>
+<script src="/static/js/profile/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
@@ -137,7 +137,7 @@
   function makeConnectButtonDefault() {
     $('#connect-button').addClass('is-info');
     $('#connect-button').removeClass('is-light').removeClass('is-link');
-    $('#connect-button').html(`{% include 'profiles/user/connect-button/default.html' %}`);
+    $('#connect-button').html(`{% include 'profile/user/connect-button/default.html' %}`);
     $('#connect-button').data('type', 'default');
     $('#connect-button').removeClass('is-danger');
     
@@ -145,14 +145,14 @@
 
   function makeConnectButtonPending() {
     $('#connect-button').toggleClass('is-info is-light');
-    $('#connect-button').html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+    $('#connect-button').html(`{% include 'profile/user/connect-button/pending.html' %}`);
     $('#connect-button').data('type', 'pending');
     $('#connect-button').addClass('calm');
   }
 
   function makeConnectButtonConnected() {
     $('#connect-button').toggleClass('is-success is-info');
-    $('#connect-button').html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+    $('#connect-button').html(`{% include 'profile/user/connect-button/connected.html' %}`);
     $('#connect-button').data('type', 'connected');
     $('#connect-button').addClass('calm');
   }
@@ -161,24 +161,24 @@ $("#connect-button").hover(
   function() {
         if ($(this).data('type') == 'connected' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/user/connect-button/disconnect.html' %}`);
+          $(this).html(`{% include 'profile/user/connect-button/disconnect.html' %}`);
         }
         else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/user/connect-button/undo.html' %}`);
+          $(this).html(`{% include 'profile/user/connect-button/undo.html' %}`);
 
     }
   }, function() {
         if ($(this).data('type') == 'connected') {
           $(this).removeClass('is-danger');
-          $(this).html(`{% include 'profiles/user/connect-button/connected.html' %}`);
+          $(this).html(`{% include 'profile/user/connect-button/connected.html' %}`);
           $(this).removeClass('calm');
 
         }
         else if ($(this).data('type') == 'pending') {
           $(this).removeClass('is-danger');
           $(this).removeClass('calm');
-          $(this).html(`{% include 'profiles/user/connect-button/pending.html' %}`);
+          $(this).html(`{% include 'profile/user/connect-button/pending.html' %}`);
 
         }
   }
@@ -340,7 +340,7 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_user','profiles.create_idea']  %}
+{% if request.url_rule.endpoint in ['profile.edit_user','profile.create_idea']  %}
 load_map_js();
 {% endif %}
 </script>
@@ -399,7 +399,7 @@ $(window).on("popstate", function() {
 });
 
 var edit_modal = `
-    {% include "profiles/user/edit.html" %}`;
+    {% include "profile/user/edit.html" %}`;
 
 function changeToEdit() {
   $("#modal-box").append(edit_modal);
@@ -414,7 +414,7 @@ function changeToProfile() {
 
 function changeToPhoto() {
   $("#modal-box").append(`
-    {% with photo_src=user.profile_photo.src %}
+    {% with photo_src=user.photo.src %}
     {% include "photo.html" %}
     {% endwith %}
     `);
@@ -424,19 +424,19 @@ function changeToPhoto() {
 
 function changeToCreateIdea() {
     $("#modal-box").append(`
-    {% include "profiles/idea/create.html" %}`);
+    {% include "idea/create.html" %}`);
   load_map_js();
   freezeScroller();
 }
 
 
-{% if request.url_rule.endpoint == 'profiles.edit_user' %}
+{% if request.url_rule.endpoint == 'profile.edit_user' %}
 window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
-{% elif request.url_rule.endpoint == 'profiles.user_photo' %}
+{% elif request.url_rule.endpoint == 'profile.user_photo' %}
 window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
-{% elif request.url_rule.endpoint == 'profiles.create_idea' %}
+{% elif request.url_rule.endpoint == 'profile.create_idea' %}
 window.history.replaceState({id:"create-idea"},"Create idea", "/create/idea/");
-{% elif request.url_rule.endpoint == 'profiles.create_medium' %}
+{% elif request.url_rule.endpoint == 'profile.create_medium' %}
 window.history.replaceState({id:"create-medium"},"Create Medium", "/create/medium/");
 {% else %}
 window.history.replaceState({id:"user-profile"},"Profile", "./");

@@ -2,13 +2,13 @@
 from flask import redirect, url_for, render_template, abort, current_app
 from flask import request as flask_request
 from app import db, models
-import app.routes.profiles.funcs as funcs
+import app.routes.profile.funcs as funcs
 import json
 import re
 import math
 from datetime import date
 from requests import HTTPError
-from app.routes.profiles import bp
+from app.routes.profile import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
 
@@ -90,7 +90,7 @@ def create_idea():
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/idea/<handle>/", methods=["GET", "POST"])
@@ -100,7 +100,7 @@ def idea(handle):
     #if not idea or (not idea.public and not current_user in idea.group.members) and not current_user in idea.viewers:
         #abort(404)
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
+    return render_template("profile/idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/idea/<handle>/edit/", methods=["GET", "POST"])
@@ -181,7 +181,7 @@ def edit_idea(handle):
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/idea/profile.html", idea=idea, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("profile/idea/profile.html", idea=idea, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/idea/<handle>/members/", methods=["GET"])
@@ -195,4 +195,4 @@ def idea_add_members(handle):
         abort(404)
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/idea/profile.html", idea=idea, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("profile/idea/profile.html", idea=idea, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)

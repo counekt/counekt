@@ -2,13 +2,13 @@
 from flask import redirect, url_for, render_template, abort, current_app
 from flask import request as flask_request
 from app import db, models
-import app.routes.profiles.funcs as funcs
+import app.routes.profile.funcs as funcs
 import json
 import re
 import math
 from datetime import date
 from requests import HTTPError
-from app.routes.profiles import bp
+from app.routes.profile import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from sqlalchemy import exc
 
@@ -19,7 +19,7 @@ def user(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
         abort(404)
-    return render_template("profiles/user/profile.html", user=user, navbar=True, background=True, size="medium", models=models)
+    return render_template("profile/user/profile.html", user=user, navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
@@ -106,8 +106,8 @@ def edit_user():
                 db.session.delete(skill)
 
         db.session.commit()
-        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.address, 'skill-bar':render_template("profiles/skill-bar.html", skillrows=current_user.skillrows)})
-    return render_template("profiles/user/profile.html", user=current_user, background=True, navbar=True, size="medium", noscroll=True)
+        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.address, 'skill-bar':render_template("profile/skill-bar.html", skillrows=current_user.skillrows)})
+    return render_template("profile/user/profile.html", user=current_user, background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/create/medium/", methods=["GET", "POST"])
@@ -151,7 +151,7 @@ def create_medium():
             return json.dumps({'status': 'Medium not submitted'})
 
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
+    return render_template("profile/user/profile.html", user=current_user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
 
 @bp.route("/delete/medium/", methods=["POST"])
 @login_required
@@ -178,4 +178,4 @@ def user_photo(username):
     if not user:
         abort(404)
     skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profiles/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)
+    return render_template("profile/user/profile.html", user=user, noscroll=True, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", models=models)

@@ -5,7 +5,7 @@
     <div id="profile-left">
       <div id="profile-image">
         <a href="/idea/{{idea.handle}}/photo/">
-        <img alt draggable="false" id="profile-image-content" src="{{ idea.profile_photo.src }}">
+        <img alt draggable="false" id="profile-image-content" src="{{ idea.photo.src }}">
         </a>
       </div>
       <div id="profile-left-bottom">
@@ -23,13 +23,13 @@
               {% with request_sent = models.UserToIdeaRequest.query.filter_by(type='join', sender=current_user, receiver=idea).first(), request_received = models.ideaToUserRequest.query.filter_by(type='invite', sender=idea, receiver=current_user).first(), is_joined = idea in current_user.ideas %}
               <button id="join-button" class="button {% if is_joined %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_joined %}joined{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
                 {% if is_joined %}
-                  {% include 'profiles/join-button/joined.html' %}
+                  {% include 'profile/join-button/joined.html' %}
                 {% elif request_sent %}
-                  {% include 'profiles/join-button/pending.html' %}
+                  {% include 'profile/join-button/pending.html' %}
                 {% elif request_received %}
-                  {% include 'profiles/join-button/accept.html' %}
+                  {% include 'profile/join-button/accept.html' %}
                 {% else %}
-                  {% include 'profiles/join-button/default.html' %}
+                  {% include 'profile/join-button/default.html' %}
                 {% endif %}
               </button>
               {% endwith %}
@@ -70,22 +70,22 @@
   {% endif %}
   {% endraw  %}
   -->
-{% include 'profiles/idea/key-info.html' %}
-{% include "profiles/idea/tabs/tabs.html" %}
+{% include 'idea/key-info.html' %}
+{% include "idea/tabs/tabs.html" %}
 
 {% endblock %}
 
 {% block modal %}
-{% if request.url_rule.endpoint == 'profiles.edit_idea' %}
-{% include "profiles/idea/edit.html" %}
-{% elif request.url_rule.endpoint == 'profiles.idea_photo' %}
-{% with photo_src=idea.profile_photo.src %}
-{% include "profiles/user/photo.html" %}
+{% if request.url_rule.endpoint == 'profile.edit_idea' %}
+{% include "idea/edit.html" %}
+{% elif request.url_rule.endpoint == 'profile.idea_photo' %}
+{% with photo_src=idea.photo.src %}
+{% include "profile/user/photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'profiles.idea_add_members' %}
-{% include "profiles/add-members.html" %}
-{% elif request.url_rule.endpoint == 'profiles.idea_add_roles' %}
-{% include "profiles/add-roles.html" %}
+{% elif request.url_rule.endpoint == 'profile.idea_add_members' %}
+{% include "profile/add-members.html" %}
+{% elif request.url_rule.endpoint == 'profile.idea_add_roles' %}
+{% include "profile/add-roles.html" %}
 {% endif %}
 
 {% endblock %}
@@ -93,25 +93,25 @@
 {% block scripts %}
 <!-- Probably good for now to have this below-->
 
-<link rel="stylesheet" href="/static/css/profiles/profile.css">
-<link rel="stylesheet" href="/static/css/profiles/idea/idea.css">
+<link rel="stylesheet" href="/static/css/profile/profile.css">
+<link rel="stylesheet" href="/static/css/idea/idea.css">
 
-<link rel="stylesheet" href="/static/css/profiles/mini-profile.css">
-<link rel="stylesheet" href="/static/css/profiles/edit.css">
-<link rel="stylesheet" href="/static/css/profiles/photo.css">
-<link rel="stylesheet" href="/static/css/profiles/add-members.css">
-<link rel="stylesheet" href="/static/css/profiles/add-roles.css">
+<link rel="stylesheet" href="/static/css/profile/mini-profile.css">
+<link rel="stylesheet" href="/static/css/profile/edit.css">
+<link rel="stylesheet" href="/static/css/profile/photo.css">
+<link rel="stylesheet" href="/static/css/profile/add-members.css">
+<link rel="stylesheet" href="/static/css/profile/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <!-- Probably good for now to have this below-->
-<script src="/static/js/profiles/profile.js"></script>
-<script src="/static/js/profiles/user/profile.js"></script>
-<script src="/static/js/profiles/idea/profile.js"></script>
-<script src="/static/js/profiles/idea/edit.js"></script>
-<script src="/static/js/profiles/configure-skills.js"></script>
+<script src="/static/js/profile/profile.js"></script>
+<script src="/static/js/profile/user/profile.js"></script>
+<script src="/static/js/idea/profile.js"></script>
+<script src="/static/js/idea/edit.js"></script>
+<script src="/static/js/profile/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
 <script src="/static/js/datepicker.js"></script>
-<script src="/static/js/profiles/add-members.js"></script>
+<script src="/static/js/profile/add-members.js"></script>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script type="text/javascript">
@@ -121,7 +121,7 @@
   function makeConnectButtonDefault() {
     $('#join-button').addClass('is-info');
     $('#join-button').removeClass('is-light').removeClass('is-link');
-    $('#join-button').html(`{% include 'profiles/join-button/default.html' %}`);
+    $('#join-button').html(`{% include 'profile/join-button/default.html' %}`);
     $('#join-button').data('type', 'default');
     $('#join-button').removeClass('is-danger');
     
@@ -129,14 +129,14 @@
 
   function makeConnectButtonPending() {
     $('#join-button').toggleClass('is-info is-light');
-    $('#join-button').html(`{% include 'profiles/join-button/pending.html' %}`);
+    $('#join-button').html(`{% include 'profile/join-button/pending.html' %}`);
     $('#join-button').data('type', 'pending');
     $('#join-button').addClass('calm');
   }
 
   function makeConnectButtonConnected() {
     $('#join-button').toggleClass('is-success is-info');
-    $('#join-button').html(`{% include 'profiles/join-button/joined.html' %}`);
+    $('#join-button').html(`{% include 'profile/join-button/joined.html' %}`);
     $('#join-button').data('type', 'joined');
     $('#join-button').addClass('calm');
   }
@@ -145,24 +145,24 @@ $("#join-button").hover(
   function() {
         if ($(this).data('type') == 'joined' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/join-button/leave.html' %}`);
+          $(this).html(`{% include 'profile/join-button/leave.html' %}`);
         }
         else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
           $(this).addClass('is-danger');
-          $(this).html(`{% include 'profiles/join-button/undo.html' %}`);
+          $(this).html(`{% include 'profile/join-button/undo.html' %}`);
 
     }
   }, function() {
         if ($(this).data('type') == 'joined') {
           $(this).removeClass('is-danger');
-          $(this).html(`{% include 'profiles/join-button/joined.html' %}`);
+          $(this).html(`{% include 'profile/join-button/joined.html' %}`);
           $(this).removeClass('calm');
 
         }
         else if ($(this).data('type') == 'pending') {
           $(this).removeClass('is-danger');
           $(this).removeClass('calm');
-          $(this).html(`{% include 'profiles/join-button/pending.html' %}`);
+          $(this).html(`{% include 'profile/join-button/pending.html' %}`);
 
         }
   }
@@ -321,7 +321,7 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profiles.edit_idea','profiles.create_idea','profiles.create_idea']  %}
+{% if request.url_rule.endpoint in ['profile.edit_idea','profile.create_idea','profile.create_idea']  %}
 load_map_js();
 {% endif %}
 </script>
@@ -352,7 +352,7 @@ function sendideaInvites() {
       }});
 }
 
-{% if request.url_rule.endpoint in ['profiles.idea_add_members']  %}
+{% if request.url_rule.endpoint in ['profile.idea_add_members']  %}
 load_add_members_js();
 {% endif %}
 </script>
@@ -412,7 +412,7 @@ $(window).on("popstate", function() {
 
 function changeToEdit() {
   $("#modal-box").append(`
-    {% include "profiles/idea/edit.html" %}`);
+    {% include "idea/edit.html" %}`);
   load_map_js();
   $(document.body).addClass('noscroll');
 }
@@ -424,7 +424,7 @@ function changeToProfile() {
 
 function changeToPhoto() {
   $("#modal-box").append(`
-    {% with photo_src=idea.profile_photo.src %}
+    {% with photo_src=idea.photo.src %}
     {% include "photo.html" %}
     {% endwith %}
     `);
@@ -433,26 +433,26 @@ function changeToPhoto() {
 
 function changeToMembers() {
   $("#modal-box").append(`
-    {% include "profiles/add-members.html" %}`);
+    {% include "profile/add-members.html" %}`);
     load_add_members_js();
   $(document.body).addClass('noscroll');
 }
 
 function changeRoles() {
   $("#modal-box").append(`
-    {% include "profiles/add-roles.html" %}`);
+    {% include "profile/add-roles.html" %}`);
   load_add_members_js()
   $(document.body).addClass('noscroll');
 }
 
 
-{% if request.url_rule.endpoint == 'profiles.edit_idea' %}
+{% if request.url_rule.endpoint == 'profile.edit_idea' %}
 window.history.replaceState({id:"edit-idea"},"Edit idea", "/${{idea.handle}}/edit/");
-{% elif request.url_rule.endpoint == 'profiles.idea_photo' %}
+{% elif request.url_rule.endpoint == 'profile.idea_photo' %}
 window.history.replaceState({id:"idea-photo"},"Profile photo", "/${{idea.handle}}/");
-{% elif request.url_rule.endpoint == 'profiles.idea_add_members' %}
+{% elif request.url_rule.endpoint == 'profile.idea_add_members' %}
 window.history.replaceState({id:"idea-add-members"},"idea add members", "/${{idea.handle}}/add-members/");
-{% elif request.url_rule.endpoint == 'profiles.idea_roles' %}
+{% elif request.url_rule.endpoint == 'profile.idea_roles' %}
 window.history.replaceState({id:"idea-add-roles"},"Idea add roles", "/${{idea.handle}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"idea-profile"},"Profile", "./");

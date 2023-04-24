@@ -51,7 +51,7 @@
     <div id="modal-box">{% block modal %}{% endblock %}</div>
     <script type="text/javascript">
         function miniprofile(name="",identifier="", bio="", href="",photo_src="",symbol="") {
-            return `{% include 'profiles/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
+            return `{% include 'profile/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
         }
 
         function media(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false) {
@@ -175,7 +175,7 @@
             function changeToQuoteMedium(quote_identity, quote_profile_pic, quote_content, quote_id) {
           $("#modal-box").append(`
             {% with is_filler = True %}
-            {% include "profiles/user/create-quote.html" %}
+            {% include "profile/user/create-quote.html" %}
             {% endwith %}
             `.replaceAll('\\identity//', quote_identity).replaceAll('\\profile_photo//', quote_profile_pic).replaceAll('\\text-content//', quote_content).replaceAll('\\id//',quote_id));
           freezeScroller();
@@ -184,7 +184,7 @@
         function changeToCreateMedium() {
           $("#modal-box").append(`
             {% with what='Medium' %}
-            {% include "profiles/user/create-medium.html" %}
+            {% include "profile/user/create-medium.html" %}
             {% endwith %}
             `);
           $('#title-create').focus();
