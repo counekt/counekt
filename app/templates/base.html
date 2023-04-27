@@ -204,6 +204,7 @@
     {% endif %}
     {% if navbar or exonavbar %}
     <script src="{{ url_for('static', filename='js/navbar/more.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navbar/wallet-details.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar/navbar-contents.css') }}">
     {% endif %}
     {% block scripts %}{% endblock %}

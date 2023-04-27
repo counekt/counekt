@@ -1,3 +1,16 @@
+#wallet-details {
+    position: absolute;
+    right: 12px;
+    top: 55px;
+    z-index: 3;
+    padding: 5px;
+    background-color: whitesmoke;
+    border-radius: 10px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+
+}
+
 #more {
     position: absolute;
     right: 7px;

@@ -1,16 +1,5 @@
-{% if current_user.is_authenticated %}
-{% if request.url_rule.endpoint != 'profiles.user' or current_user != user %}
-<p class="control">
-    <a href="/user/{{current_user.username}}/" class="button transition {% if class %}{{class}}{% endif %}">
-      <span class="icon">
-        <i class="fas fa-user"></i>
-      </span>
-    </a>
-  </p>
-{% endif %}
 {% if request.url_rule.endpoint != 'profiles.notifications' %}
 {% include "navbar/notif-bell/clean.html" %}
-{% endif %}
 {% endif %}
 <!-- 
 {% if request.url_rule.endpoint != 'main.main' %}
@@ -23,11 +12,23 @@
 </p>
 {% endif %}
 -->
-{% if request.url_rule.endpoint != 'main.settings' %}
+{% if current_user.is_authenticated %}
+{% if request.url_rule.endpoint != 'profiles.user' or current_user != user %}
 <p class="control">
-  <a href="/settings" class="button transition {% if class %}{{class}}{% endif %}">
-    <span id="cog" class="icon">
-      <i class="fas fa-cog"></i>
+    <a href="/user/{{current_user.username}}/" class="button transition {% if class %}{{class}}{% endif %}">
+      <span class="icon">
+        <i class="fas fa-user"></i>
+      </span>
+    </a>
+  </p>
+{% endif %}
+{% endif %}
+{% if request.url_rule.endpoint != 'main.settings' %}
+
+<p class="control">
+  <a class="button transition {% if class %}{{class}}{% endif %}" id="wallet-button" data-status="closed">
+    <span class="icon">
+      <i class="fas fa-wallet"></i>
     </span>
   </a>
 </p>

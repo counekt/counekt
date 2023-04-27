@@ -10,7 +10,10 @@ from geopy import Nominatim
 from flask_mail import Mail
 import boto3
 from app.query import CustomQuery
+import eth_abi
+from web3 import Web3
 
+w3 = Web3(Web3.HTTPProvider(Config.WEB3_NETWORK+Config.INFURA_KEY))
 geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
 db = SQLAlchemy(query_class=CustomQuery)
 migrate = Migrate()
