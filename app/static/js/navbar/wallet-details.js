@@ -25,7 +25,38 @@ function openWalletDetails () {
 
 $('#wallet-details').hide();
 
-$(window).click(function() {
+$(window).click(function(event) {
 //Hide the menus if visible
+var $target = $(event.target);
+ if(!$target.closest('#wallet-details').length) {
 closeWalletDetails();
+}});
+
+
+$(document).on('click','#connect-wallet-button', function() {
+	checkIfInstalled();
+	connectMetaMaskWallet();
 });
+
+function checkIfInstalled() {
+	if (typeof window.ethereum == 'undefined') {
+		flash("Wallet Provider isn't installed!");
+	}
+	else {
+		flash("Good to go!");
+	}
+
+}
+
+async function connectMetaMaskWallet() {
+	try {
+		const accounts = await window.ethereum.request({ method:'eth_requestAccounts'});
+	}
+	catch(e) {
+		flash(e.message);
+		return;
+	};
+	if (!accounts) {return;}
+	window.walletAddress = accounts[0];
+	flash(window.walletAddress);
+}
