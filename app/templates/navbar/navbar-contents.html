@@ -22,9 +22,7 @@
     </a>
   </p>
 {% endif %}
-{% endif %}
 {% if request.url_rule.endpoint != 'main.settings' %}
-
 <p class="control">
   <a class="button transition {% if class %}{{class}}{% endif %}" id="wallet-button" data-status="closed">
     <span class="icon">
@@ -32,4 +30,5 @@
     </span>
   </a>
 </p>
+{% endif %}
 {% endif %}
