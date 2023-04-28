@@ -38,5 +38,5 @@ class Config(object):
     AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_KEY = getenv("AWS_SECRET_KEY")
     SQLALCHEMY_POOL_SIZE=25
-    INFURA_KEY = getenv("INFURA_KEY")
+    INFURA_KEY = getenv("INFURA_KEY") is not None
     WEB3_NETWORK = "https://sepolia.infura.io/v3/"

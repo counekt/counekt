@@ -25,6 +25,7 @@ requests = "==2.29.0"
 sqlalchemy = "==1.4.45"
 web3 = "==5.31.3"
 werkzeug = "==2.2.2"
+psycopg2 = "==2.9.5"
 
 [dev-packages]
 

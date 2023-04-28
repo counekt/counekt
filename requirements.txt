@@ -20,3 +20,4 @@ Requests==2.29.0
 SQLAlchemy==1.4.45
 web3==5.31.3
 Werkzeug==2.2.2
+psycopg2==2.9.5
