@@ -17,6 +17,7 @@ function closeWalletDetails() {
 }
 
 function openWalletDetails () {
+	checkIfConnected(false);
 	$('#wallet-button').data('status','open');
 	$('#wallet-button').removeClass($('#wallet-details').data('closed')).addClass($('#wallet-button').data('open'));
 	$('#wallet-details').show();
@@ -35,12 +36,13 @@ closeWalletDetails();
 
 $(document).on('click','#connect-wallet-button', function() {
 	checkIfInstalled();
-	connectMetaMaskWallet();
+	checkIfConnected();
 });
 
 function checkIfInstalled() {
-	if (typeof window.ethereum == 'undefined') {
+	if (!walletIsInstalled()) {
 		flash("Wallet Provider isn't installed!");
+       	window.open("https://metamask.io/download/", "_blank");
 	}
 	else {
 		flash("Good to go!");
@@ -48,15 +50,45 @@ function checkIfInstalled() {
 
 }
 
-async function connectMetaMaskWallet() {
-	try {
-		const accounts = await window.ethereum.request({ method:'eth_requestAccounts'});
+async function checkIfConnected(quickfix=true) {
+	const isConnected = await walletIsConnected();
+	if (!isConnected) {
+		if (quickfix) {connectMetaMaskWallet();}
 	}
-	catch(e) {
+	else {
+		$("#connect-wallet-button").addClass("is-info").addClass("is-light");
+		$("#connect-wallet-button span.text").text("Connected");
+		if (quickfix) {flash("Your wallet is already connected!");}
+	}
+
+}
+
+async function connectMetaMaskWallet() {
+	
+	const accounts = await window.ethereum.request({ method:'eth_requestAccounts'})
+	.catch((e) => {
 		flash(e.message);
 		return;
-	};
+	});
 	if (!accounts) {return;}
 	window.walletAddress = accounts[0];
+	checkIfConnected(false);
 	flash(window.walletAddress);
 }
+
+function walletIsInstalled() {
+	if (typeof window.ethereum == 'undefined') {
+		return false;
+	}
+	return true;
+}
+
+async function walletIsConnected() {
+	const web3 = new Web3(window.ethereum);
+	const accounts = await web3.eth.getAccounts().catch((e) => flash(e.message));
+	if (accounts.length === 0) {
+		return false;
+	}
+	return true;
+}
+
