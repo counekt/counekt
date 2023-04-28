@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 alembic = "==1.8.1"
+gunicorn = "==20.1.0"
 boto3 = "==1.26.27"
 botocore = "==1.29.27"
 brownie = "==0.5.1"
