@@ -13,7 +13,7 @@ class Conversation(db.Model, Base):
 
     messages = db.relationship(
         'Message', backref='conversation', lazy='dynamic',
-        foreign_keys='Message.convo_id', cascade='all,delete')
+        foreign_keys='Message.conversation_id', cascade='all,delete')
     
     @classmethod
     def get_dialogue(cls, u1, u2):
@@ -36,7 +36,7 @@ class Message(db.Model, Base):
     seen = db.Column(db.Boolean, default=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     sender = db.relationship("User", foreign_keys=[sender_id])
-    convo_id = db.Column(db.Integer, db.ForeignKey('conversation.id'))
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'))
     text = db.Column(db.Text)
 
     def __init__(self, **kwargs):
