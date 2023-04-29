@@ -74,7 +74,7 @@ class User(UserMixin, db.Model, Base, locationBase):
 
     memberships = db.relationship(
         'Membership', lazy='dynamic',
-        foreign_keys='Membership.owner_id', cascade='all,delete')
+        foreign_keys='Membership.owner_id', backref="owner", cascade='all,delete')
     
     conversations = db.relationship(
         'Conversation', secondary=conversations, backref="members", lazy='dynamic', cascade='all,delete')

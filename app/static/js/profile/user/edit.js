@@ -25,9 +25,9 @@ $(document).on("click", '#save-button', function(e) {
 
    
    formData.append("show-location", show_location);
-   if ($("#show-location").is(':checked')) {
+   if (show_location) {
    formData.append("visible", visible);
-   if (window.markerIsPlaced()) {
+   if (marker) {
    formData.append("lat", window.getLatLng().lat);
    formData.append("lng", window.getLatLng().lng);
    }

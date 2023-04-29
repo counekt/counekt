@@ -212,7 +212,7 @@ map.on('click', function(e){
 
 
 window.getLatLng = function() {
-  return(marker.getLatLng());
+  if (marker) {return(marker.getLatLng());}
 }
 
 window.markerIsPlaced = function() {

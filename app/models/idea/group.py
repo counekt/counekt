@@ -39,7 +39,6 @@ class Group(db.Model, Base):
 class Membership(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    owner = db.relationship("User", foreign_keys=[owner_id])
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'))
 
     @property

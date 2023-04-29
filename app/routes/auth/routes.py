@@ -103,7 +103,6 @@ def login():
     if request.method == 'POST':
         username = request.form.get("username")
         password = request.form.get("password")
-        print(password)
 
         if not username:
             return json.dumps({'status': 'Username must be filled in', 'box_ids': ['username']})

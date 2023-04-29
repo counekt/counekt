@@ -198,7 +198,7 @@ var marker;
 {% endif %}
 
 window.getLatLng = function() {
-  return(marker.getLatLng());
+  if (marker) {return(marker.getLatLng());}
 }
 
 window.markerIsPlaced = function() {
