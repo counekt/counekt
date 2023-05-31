@@ -89,7 +89,7 @@ def edit_user():
         current_user.bio = bio.strip()
 
         if file:
-            current_user.profile_photo.save(file=file)
+            current_user.photo.save(file=file)
         current_user.name = name.strip()
         current_user.set_birthdate(birthdate)
         current_user.gender = gender
@@ -169,7 +169,7 @@ def user_medium(username, id):
     user = models.User.query.filter_by(username=username).first()
     medium = user.wall.media.filter_by(id=id).first()
     if flask_request.method == 'POST':
-        return json.dumps({'status': 'success', "medium":{"author":{"dname":medium.author.dname, "username":medium.author.username, "symbol":"@", "profile_photo_src":medium.author.profile_photo.src,"href":medium.author.href}, "id":medium.id, "creation_datetime":medium.creation_datetime.strftime("%m/%d/%Y, %H:%M:%S"), "title":str(medium.title), "content":str(medium.content),"reply_count":medium.reply_count,"quote_count":medium.quote_count, "is_hearted":medium.is_hearted(current_user) if current_user.is_authenticated else False}})
+        return json.dumps({'status': 'success', "medium":{"author":{"dname":medium.author.dname, "username":medium.author.username, "symbol":"@", "photo_src":medium.author.photo.src,"href":medium.author.href}, "id":medium.id, "creation_datetime":medium.creation_datetime.strftime("%m/%d/%Y, %H:%M:%S"), "title":str(medium.title), "content":str(medium.content),"reply_count":medium.reply_count,"quote_count":medium.quote_count, "is_hearted":medium.is_hearted(current_user) if current_user.is_authenticated else False}})
     return render_template("comms/medium/by-user-wrapped.html", medium=medium, navbar=True, background=True, size="medium", models=models, url=flask_request.url, max=max,min=min)
 
 @ bp.route("/user/<username>/photo/", methods=["GET", "POST"])
