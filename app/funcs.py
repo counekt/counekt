@@ -85,7 +85,7 @@ def upload_file(file_path, object_name, sync=False):
 
     if sync:
         try:
-            s3_client = current_app.boto_session.client('s3')
+            s3_client = get_s3_client()
             response = s3_client.upload_file(file_path, current_app.config["BUCKET"], object_name)
             return response
         except EndpointConnectionError as e:
@@ -105,7 +105,7 @@ def delete_file(file_path, sync=False):
     """
     if sync:
         try:
-            s3 = current_app.boto_session.client('s3')
+            s3 = get_s3_client()
             s3.delete_object(Bucket=current_app.config["BUCKET"], Key=file_path)
             return True
         except EndpointConnectionError as e:
@@ -125,7 +125,7 @@ def download_file(file_path, output_path, sync=False):
     """
     if sync:
         try:
-            s3 = current_app.boto_session.resource('s3')
+            s3 = current_app.boto_session.resource('s3', endpoint_url='https://s3.nl-1.wasabisys.com')
             s3.Bucket(current_app.config["BUCKET"]).download_file(file_path, output_path)
             return True
         except EndpointConnectionError as e:
@@ -139,7 +139,7 @@ def download_file(file_path, output_path, sync=False):
             current_app.logger.error(e.message)
 
 def generate_presigned_url(file_path):
-    s3 = current_app.boto_session.client('s3', config=Config(signature_version=UNSIGNED))
+    s3 = current_app.boto_session.client('s3', config=Config(signature_version=UNSIGNED),endpoint_url='https://s3.nl-1.wasabisys.com')
     url = s3.generate_presigned_url('get_object',Params={'Bucket': current_app.config["BUCKET"],'Key': file_path},ExpiresIn=0)
     return url
 
@@ -149,7 +149,7 @@ def list_files(folder_path, sync=False):
     """
     if sync:
         try:
-            s3 = current_app.boto_session.client('s3')
+            s3 = get_s3_client()
             folder = s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)
             if folder.get("Contents"):
                 file_list = [Path(file["Key"]).parts[-1] for file in folder["Contents"]]
@@ -179,26 +179,26 @@ def list_files(folder_path, sync=False):
 
 def upload_async_file(app, file_path, object_name):
     with app.app_context():
-        s3_client = current_app.boto_session.client('s3')
+        s3_client = get_s3_client()
         response = s3_client.upload_file(file_path, current_app.config["BUCKET"], object_name)
         return response
 
 
 def delete_async_file(app, file_path):
     with app.app_context():
-        s3 = current_app.boto_session.client('s3')
+        s3 = get_s3_client()
         s3.delete_object(Bucket=current_app.config["BUCKET"], Key=file_path)
 
 
 def download_async_file(app, file_path, output_path):
     with app.app_context():
-        s3 = current_app.boto_session.resource('s3')
+        s3 = current_app.boto_session.resource('s3',endpoint_url="https://s3.nl-1.wasabisys.com")
         s3.Bucket(current_app.config["BUCKET"]).download_file(file_path, output_path)
 
 
 def list_async_files(app, folder_path):
     with app.app_context():
-        s3 = current_app.boto_session.client('s3')
+        s3 = get_s3_client()
         folder = s3.list_objects_v2(Bucket=current_app.config["BUCKET"], Prefix=folder_path)
         if folder.get("Contents"):
             file_list = [Path(file["Key"]).parts[-1] for file in folder["Contents"]]
@@ -223,3 +223,6 @@ def silent_local_remove(file_path):
     except FileNotFoundError: # If not because it does not exist
         pass
     # exception if a different error occurred
+
+def get_s3_client():
+    return current_app.boto_session.client('s3',endpoint_url='https://s3.nl-1.wasabisys.com')
