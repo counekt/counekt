@@ -8,6 +8,8 @@ else if ($(this).data('status') === 'open') {
 }
 });
 
+var web3Provider = undefined;
+
 function closeWalletDetails() {
 	$('#wallet-button').data('status','closed');
 	$('#wallet-button').removeClass($('#wallet-button').data('open')).addClass($('#wallet-button').data('closed'));
@@ -85,8 +87,15 @@ function walletIsInstalled() {
 	return true;
 }
 
+function getWeb3Provider() {
+	if (!web3Provider) {
+		web3Provider = new Web3(window.ethereum);
+	}
+	return web3Provider;
+}
+
 async function getWalletBalance() {
-	const web3 = new Web3(window.ethereum);
+	const web3 = getWeb3Provider();
 	const accounts = await web3.eth.getAccounts().catch((e) => flash(e.message));
 	const address = accounts[0];
 	// Get the balance of the connected wallet
@@ -95,13 +104,15 @@ async function getWalletBalance() {
   	return balanceWei;
 }	
 
-function checkWalletBalance() {
-	const balanceEther = web3.utils.fromWei(getWalletBalance(), 'ether');
+async function checkWalletBalance() {
+	const web3 = getWeb3Provider();
+	const balanceWei = await getWalletBalance();
+	const balanceEther = web3.utils.fromWei(balanceWei.toString(), 'ether');
 	$('#eth-balance').text(balanceEther);
 }
 
 async function walletIsConnected() {
-	const web3 = new Web3(window.ethereum);
+	const web3 = getWeb3Provider();
 	const accounts = await web3.eth.getAccounts().catch((e) => flash(e.message));
 	if (accounts.length === 0) {
 		return false;
