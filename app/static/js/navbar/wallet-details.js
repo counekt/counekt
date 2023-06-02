@@ -18,6 +18,7 @@ function closeWalletDetails() {
 
 function openWalletDetails () {
 	checkIfConnected(false);
+	checkWalletBalance();
 	$('#wallet-button').data('status','open');
 	$('#wallet-button').removeClass($('#wallet-details').data('closed')).addClass($('#wallet-button').data('open'));
 	$('#wallet-details').show();
@@ -37,6 +38,7 @@ closeWalletDetails();
 $(document).on('click','#connect-wallet-button', function() {
 	checkIfInstalled();
 	checkIfConnected();
+	checkWalletBalance();
 });
 
 function checkIfInstalled() {
@@ -81,6 +83,21 @@ function walletIsInstalled() {
 		return false;
 	}
 	return true;
+}
+
+async function getWalletBalance() {
+	const web3 = new Web3(window.ethereum);
+	const accounts = await web3.eth.getAccounts().catch((e) => flash(e.message));
+	const address = accounts[0];
+	// Get the balance of the connected wallet
+  	const balanceWei = await web3.eth.getBalance(address);
+  	console.log(balanceWei);
+  	return balanceWei;
+}	
+
+function checkWalletBalance() {
+	const balanceEther = web3.utils.fromWei(getWalletBalance(), 'ether');
+	$('#eth-balance').text(balanceEther);
 }
 
 async function walletIsConnected() {

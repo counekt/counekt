@@ -13,7 +13,7 @@ from app.query import CustomQuery
 import eth_abi
 from web3 import Web3
 
-w3 = Web3(Web3.HTTPProvider(Config.WEB3_NETWORK+Config.INFURA_KEY))
+w3 = Web3(Web3.HTTPProvider(Config.WEB3_NETWORK+Config.ALCHEMY_KEY))
 geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
 db = SQLAlchemy(query_class=CustomQuery)
 migrate = Migrate()
