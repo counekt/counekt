@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 pragma solidity ^0.8.4;
 
 import "./shardable.sol";
@@ -161,7 +163,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the transferred token.
     /// @param value The value/amount of the transferred token.
     /// @param to The recipient of the transferred token.
-    function _processTokenTransfer(address tokenAddress, uint256 value, address to) virtual internal {
+    function _processTokenTransfer(address tokenAddress, uint256 value) virtual internal {
         liquid[tokenAddress] -= value;
         liquidResidual[tokenAddress] -= value;
     }
