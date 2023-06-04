@@ -11,11 +11,11 @@ import "./administrable.sol";
 contract Votable is Administrable {
 
     /// @notice Struct representing info of a Referendum.
-    /// @param allowDivision Boolean stating if Referendum allows for gradual implementation.
+    /// @param issuer The issuer of the Referendum.
     /// @param proposalFunctionNames Names of functions to be called during implementation.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     struct ReferendumInfo {
-        bool allowDivision;
+        address issuer;
         string[] proposalFunctionNames;
         bytes[] proposalArgumentData;
     }
@@ -48,18 +48,14 @@ contract Votable is Administrable {
 
     /// @notice Event that triggers when a Referendum is issued.
     /// @param referendum The now pending Referendum that was issued.
-    /// @param by The issuer of the Referendum.
     event ReferendumIssued(
-        uint256 referendum,
-        address by
+        uint256 referendum
         );
 
     /// @notice Event that triggers when a Referendum is closed.
     /// @param referendum The passed Referendum that was closed.
-    /// @param result The result of the now closed Referendum.
     event ReferendumClosed(
-        uint256 referendum,
-        bool result
+        uint256 referendum
         );
 
     /// @notice Event that triggers when a whole Referendum has been implemented.
@@ -99,11 +95,11 @@ contract Votable is Administrable {
         require(shardExisted(shard,referendum), "SNV");
         hasVotedOnReferendum[referendum][shard] = true;
         if (favor) {
-            (uint256 numerator, uint256 denominator) = addFractions(favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
-            (favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum]) = simplifyFraction(numerator, denominator);
+            (uint256 favorNumerator, uint256 favorDenominator) = addFractions(favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
+            (favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum]) = simplifyFraction(favorNumerator, favorDenominator);
         }
-        (uint256 numerator, uint256 denominator) = addFractions(totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
-        (totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum]) = simplifyFraction(numerator,denominator);
+        (uint256 totalNumerator, uint256 totalDenominator) = addFractions(totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
+        (totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum]) = simplifyFraction(totalNumerator,totalDenominator);
         
         emit VoteCast(referendum, favor, msg.sender);
         bool passed = getReferendumResult(referendum);
@@ -113,16 +109,15 @@ contract Votable is Administrable {
             if (passed) { // if it got voted through
                 passedReferendums[referendum] = true;
             }
-            emit ReferendumClosed(referendum, passed);
+            emit ReferendumClosed(referendum);
         }
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
     /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
-    /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
-    function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision) external onlyWithPermit("iV") {
-        _issueVote(proposalFunctionNames,proposalArgumentData,allowDivision,msg.sender);
+    function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData) external onlyWithPermit("iV") {
+        _issueVote(proposalFunctionNames,proposalArgumentData,msg.sender);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
@@ -177,35 +172,34 @@ contract Votable is Administrable {
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
     /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
-    /// @param allowDivision A boolean stating if the proposals of the Referendum are allowed to be incrementally executed.
-    function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, bool allowDivision, address by) internal onlyIfActive incrementClock {
+    function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData, address by) internal onlyIfActive incrementClock {
         uint256 transferTime = clock;
         require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
         pendingReferendums[transferTime] = true;
         infoByReferendum[transferTime] = ReferendumInfo({
-            allowDivision:allowDivision,
+            issuer: by,
             proposalFunctionNames: proposalFunctionNames,
             proposalArgumentData: proposalArgumentData
             });
         favorDenominatorByReferendum[transferTime] = 1;
         totalDenominatorByReferendum[transferTime] = 1;
-        emit ReferendumIssued(transferTime, by);
+        emit ReferendumIssued(transferTime);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
     /// @param referendum The passed Referendum containing the Proposal.
     /// @param proposalIndex The index of the proposal to be implemented.
+    /// @param by The issuer of the proposal implementation.
     function _implementProposal(uint256 referendum, uint256 proposalIndex, address by) internal onlyIfActive {
         require(proposalExists(referendum,proposalIndex),"PDE");
-        require(infoByReferendum[referendum].allowDivision, "GINA");
         require(amountImplementedByReferendum[referendum] == proposalIndex, "WPO");
         amountImplementedByReferendum[referendum] += 1;
         string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
         bytes memory proposalArgumentData = infoByReferendum[referendum].proposalArgumentData[proposalIndex];
         bytes32 functionNameHash = keccak256(bytes(proposalFunctionName));
                     if (functionNameHash == keccak256(bytes("iV"))) {
-                        (string[] memory proposalFunctionNames, bytes[] memory _proposalArgumentData, bool allowDivision) = abi.decode(proposalArgumentData, (string[], bytes[], bool));
-                        _issueVote(proposalFunctionNames, _proposalArgumentData, allowDivision,address(this));
+                        (string[] memory proposalFunctionNames, bytes[] memory _proposalArgumentData) = abi.decode(proposalArgumentData, (string[], bytes[]));
+                        _issueVote(proposalFunctionNames, _proposalArgumentData,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("sP"))) {
                         (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgumentData, (string, PermitState,address));
@@ -215,7 +209,7 @@ contract Votable is Administrable {
                         (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
                         _setBasePermit(permitName,newState,address(this));
                     }
-                    if (functionNameHash == keccak256(bytes("sNSHS"))) {
+                    if (functionNameHash == keccak256(bytes("sNS"))) {
                         (bool newState) = abi.decode(proposalArgumentData, (bool));
                         _setNonShardHolderState(newState,address(this));
                     }
@@ -255,13 +249,18 @@ contract Votable is Administrable {
                         (address tokenAddress) = abi.decode(proposalArgumentData, (address));
                         _registerTokenAddress(tokenAddress,address(this));
                     }
-                    if (functionNameHash == keccak256(bytes("urTA"))) {
+                    if (functionNameHash == keccak256(bytes("uTA"))) {
                         (address tokenAddress) = abi.decode(proposalArgumentData, (address));
                         _unregisterTokenAddress(tokenAddress,address(this));
                     }
                     if (functionNameHash == keccak256(bytes("l"))) {
                         _liquidize(address(this));
                     }
+                    else {
+                        revert("WF");
+                    }
+                    emit ActionTaken("iP",abi.encode(referendum,proposalIndex),by);
+
         if (amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFunctionNames.length) {
             emit ReferendumImplemented(referendum);
         }

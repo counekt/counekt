@@ -9,7 +9,7 @@ import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @param denominator1 Denominator of first fraction.
 /// @param numerator2 Numerator of second fraction.
 /// @param denominator2 Denominator of second fraction.
-function fractionsAreIdentical(uint256 numerator1, uint256  denominator1, uint256 numerator2, uint256 denominator2) returns(bool) {
+function fractionsAreIdentical(uint256 numerator1, uint256  denominator1, uint256 numerator2, uint256 denominator2) pure returns(bool) {
     return numerator1 == numerator2 && denominator1 == denominator2;
 }
 
@@ -17,7 +17,7 @@ function fractionsAreIdentical(uint256 numerator1, uint256  denominator1, uint25
 /// @param dividend The dividend, which will be divided by the fraction.
 /// @param numerator Numerator of fraction, which the dividend will be divided into.
 /// @param denominator Denominator of fraction, which the dividend will be divided into.
-function divideUnequallyIntoTwoWithRemainder(uint256 dividend, uint256 numerator, uint256 denominator) returns(uint256, uint256, uint256) {
+function divideUnequallyIntoTwoWithRemainder(uint256 dividend, uint256 numerator, uint256 denominator) pure returns(uint256, uint256, uint256) {
     require(denominator > numerator);
     uint256 quotient1 = dividend*numerator/denominator;
     uint256 quotient2 = dividend*(denominator-numerator)/denominator;
@@ -169,13 +169,13 @@ contract Shardable {
     
     /// @notice Modifier that requires the msg.sender to be a current valid Shard holder.
     modifier onlyShardHolder {
-        require(isShardHolder(msg.sender), "NVSH");
+        require(isShardHolder(msg.sender), "UH");
         _;
     }
 
     /// @notice Modifier that requires a given Shard to be currently valid.
     modifier onlyValidShard(bytes32 shard) {
-        require(isValidShard(shard), "NVS");
+        require(isValidShard(shard), "US");
         _;
     }
 
@@ -202,14 +202,14 @@ contract Shardable {
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard) external payable onlyValidShard(shard) {
-        require(shardsForSale[shard], "NFS");
-        require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "OFSTS");
+        require(shardsForSale[shard], "NS");
+        require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "SR");
         _cancelSale(shard);
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(saleByShard[shard].price,25,1000);
         profitToSeller += remainder; // remainder goes to seller
         // if ether
         if (saleByShard[shard].tokenAddress == address(0x0)) {
-            require(msg.value >= saleByShard[shard].price, "NEEP");
+            require(msg.value >= saleByShard[shard].price, "IE");
             // Pay Service Fee of 2.5% to Counekt
             (bool successToCounekt,) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call{value:profitToCounekt}("");
             // Rest goes to the seller
@@ -218,13 +218,13 @@ contract Shardable {
         } 
         else {
             ERC20 token = ERC20(saleByShard[shard].tokenAddress);
-            require(token.allowance(msg.sender,address(this)) >= saleByShard[shard].price,"NETP");
+            require(token.allowance(msg.sender,address(this)) >= saleByShard[shard].price,"IT");
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
-        require(saleByShard[shard].numerator != 0 && saleByShard[shard].denominator != 0, "WRNPURCH");
+        require(saleByShard[shard].numerator != 0 && saleByShard[shard].denominator != 0, "ES");
         if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,saleByShard[shard].numerator,saleByShard[shard].denominator)) {_transferShard(shard,msg.sender);}
         else {_split(shard, saleByShard[shard].numerator,saleByShard[shard].denominator,msg.sender);}
         emit SaleSold(shard,saleByShard[shard].numerator,saleByShard[shard].denominator,saleByShard[shard].tokenAddress,saleByShard[shard].price,msg.sender);
@@ -244,7 +244,7 @@ contract Shardable {
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function cancelSale(bytes32 shard) public onlyHolder(shard) onlyValidShard(shard) {
-        require(shardsForSale[shard], "SNFS");
+        require(shardsForSale[shard], "NS");
         _cancelSale(shard);
     }
 
@@ -305,7 +305,7 @@ contract Shardable {
     /// @param denominator Denominator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
     function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) onlyIfActive {
-        require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "MTF");
+        require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "IF");
         uint256 transferTime = clock;
         if (isShardHolder(to)) { // if Receiver already owns a shard
             // The fractions are added and upgraded
@@ -368,7 +368,7 @@ contract Shardable {
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale. For anyone to buy if address(0).
     function _putForSale(bytes32 shard, uint256 numerator, uint256 denominator, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
-        require(numerator/denominator <= infoByShard[shard].numerator/infoByShard[shard].denominator, "MTW");
+        require(numerator/denominator <= infoByShard[shard].numerator/infoByShard[shard].denominator, "IF");
         (numerator, denominator) = simplifyFraction(numerator,denominator);
         saleByShard[shard] = ShardSale({
             numerator: numerator,
