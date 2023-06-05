@@ -8,6 +8,7 @@ from flask import url_for
 
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
+    address = db.Column(db.String(42)) # ETH address
     symbol = "$"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
