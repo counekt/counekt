@@ -106,7 +106,7 @@ contract Shardable {
     uint256 clock = 0;
 
     /// @notice Boolean stating if the Shardable is active and tradeable or not.
-    bool public active = true;
+    bool public active;
     /// @notice Mapping pointing to related info of a Shard given the bytes of a unique Shard instance.
     mapping(bytes32 => ShardInfo) public infoByShard;
     /// @notice Mapping pointing to a currently valid shard given the address of its owner.
@@ -196,6 +196,7 @@ contract Shardable {
     constructor() {
         // passes full ownership to creator of contract
         _pushShard(1, 1, msg.sender, 0);
+        active = true;
     }
 
     /// @notice Purchases a listed Shard for sale.

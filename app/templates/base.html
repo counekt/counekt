@@ -52,6 +52,7 @@
     </div>
     <div id="modal-box">{% block modal %}{% endblock %}</div>
     <script type="text/javascript">
+
         function miniprofile(name="",identifier="", bio="", href="",photo_src="",symbol="") {
             return `{% include 'profile/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
         }

@@ -96,17 +96,30 @@ async function deployNewIdea() {
     const contractCode = await await web3.eth.getCode(ideaAddress);
 
     const accounts = await web3.eth.getAccounts();
-
+    console.log("get accounts");
     const Contract = new web3.eth.Contract(JSON.parse('[]'));
-    const deploy = Contract.deploy({
+    const payload = {
       data: contractCode
-    });
+    }
+    console.log("parse contract");
+
+    const deploy = Contract.deploy(payload);
+    console.log("basic deploy");
 
     const gasEstimate = await deploy.estimateGas();
-    const deployedContract = await deploy.send({
+    console.log("gas estimate");
+    const parameters = {
       from: accounts[0],
       gas: gasEstimate
-    });
+    };
+
+    var deployedAddress;
+    const deployedContract = await deploy.send(parameters, (err, transactionHash) => {
+    console.log('Transaction Hash :', transactionHash);
+}).on('confirmation', () => {}).then((newContractInstance) => {
+    console.log('Deployed Contract Address : ', newContractInstance.options.address);
+});
+
 
     console.log('Contract deployed:', deployedContract.options.address);
     return deployedContract.options.address;
