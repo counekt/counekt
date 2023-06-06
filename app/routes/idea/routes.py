@@ -17,7 +17,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 def create_idea():
     if flask_request.method == 'POST':
 
-        step = request.form.get("step")
+        step = flask_request.form.get("step")
 
         if step == "step-1":
 

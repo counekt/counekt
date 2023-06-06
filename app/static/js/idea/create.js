@@ -40,7 +40,7 @@ function executeStep1() {
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { executeStep2(formData) }
+        if (status === "success") { console.log("passed step1");executeStep2(formData) }
         else{message(status, response["box_id"], true);}
         
       }});
@@ -89,38 +89,17 @@ $(document).on("click", "#edit-associate-image-upload", function() {
 
 async function deployNewIdea() {
   const ideaAddress = '0xeaF64BC8bf09BD13829e4d9d7a2173824d71AbdC'; // Address of the original Idea contract
-
-  const retrieveContractData = async () => {
-    try {
-      const web3 = getWeb3Provider();
-      const contractCode = await web3.eth.getCode(ideaAddress);
-      const contractAbi = await web3.eth.getContractAbi(ideaAddress);
-
-      // Ensure the existing contract code is not empty
-      if (contractCode === '0x') {
-        throw new Error('Invalid contract address or contract does not exist');
-      }
-
-      // Ensure the existing contract ABI is available
-      if (!contractAbi) {
-        throw new Error('Contract ABI not found');
-      }
-
-      return { contractCode, contractAbi };
-    } catch (error) {
-      console.error('Error retrieving contract data:', error);
-    }
-  };
+  const web3 = getWeb3Provider();
 
     try {
 
-    const { contractCode, contractAbi } = await retrieveContractData();
+    const contractCode = await await web3.eth.getCode(ideaAddress);
 
     const accounts = await web3.eth.getAccounts();
 
-    const Contract = new web3.eth.Contract(JSON.parse(contractAbi));
+    const Contract = new web3.eth.Contract(JSON.parse('[]'));
     const deploy = Contract.deploy({
-      data: contractBytecode
+      data: contractCode
     });
 
     const gasEstimate = await deploy.estimateGas();

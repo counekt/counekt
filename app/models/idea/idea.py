@@ -1,6 +1,6 @@
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-import app.models.idea.group
+import app.models.idea.group as group
 from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
@@ -24,7 +24,7 @@ class Idea(db.Model, Base, locationBase):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         # do custom initialization here
         members = kwargs["members"]
-        self.group = app.models.idea.group.Group(members=members)
+        self.group = group.Group(members=members)
         for user in members:
             self.add_member(user)
         self.photo = Photo(filename="photo", path=f"static/ideas/{self.handle}/photo/", replacement="/static/images/idea.jpg")
