@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import redirect, url_for, render_template, abort, current_app
 from flask import request as flask_request
-from app import db, models
-import app.routes.profile.funcs as funcs
+from app import db, models, w3
+import app.routes.idea.funcs as funcs
 import json
 import re
 import math
@@ -16,76 +16,77 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 @login_required
 def create_idea():
     if flask_request.method == 'POST':
-        handle = flask_request.form.get("handle")
-        name = flask_request.form.get("name")
-        description = flask_request.form.get("description")
 
-        public = bool(flask_request.form.get("public"))
+        step = flask_request.form.get("step")
 
-        show_location = int(flask_request.form.get("show-location"))
-        is_visible = int(bool(flask_request.form.get("visible")))
-        lat = flask_request.form.get("lat")
-        lng = flask_request.form.get("lng")
+        if step == "step-1":
 
-        #skills = eval(flask_request.form.get("skills"))
+            handle = flask_request.form.get("handle")
+            name = flask_request.form.get("name")
+            description = flask_request.form.get("description")
 
-        file = flask_request.files.get("photo")
 
-        if not handle:
-            return json.dumps({'status': 'Handle must be filled in', 'box_id': 'handle'})
+            show_location = int(flask_request.form.get("show-location"))
+            lat = flask_request.form.get("lat")
+            lng = flask_request.form.get("lng")
 
-        if not name:
-            return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
+            result = funcs.verify_credentials(handle=handle,name=name,description=description,show_location=show_location,lat=lat,lng=lng)
+            if result:
+                return result
+            return json.dumps({'status': 'success'})
 
-        if not description:
-            return json.dumps({'status': 'Description must be filled in', 'box_id': 'description'})
+        elif step == "step-2":
 
-        if not models.Idea.query.filter_by(handle=handle).first() is None:
-            return json.dumps({'status': 'Handle already taken', 'box_id': 'handle'})
+            handle = flask_request.form.get("handle")
+            name = flask_request.form.get("name")
+            description = flask_request.form.get("description")
 
-        if len(description.strip()) > 160:
-            return json.dumps({'status': 'Your Idea\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
 
-        idea = models.Idea(handle=handle.strip(), name=name.strip(), description=description.strip(), public=public, members=[current_user])
+            show_location = int(flask_request.form.get("show-location"))
+            lat = flask_request.form.get("lat")
+            lng = flask_request.form.get("lng")
 
-        if show_location:
+            public = bool(flask_request.form.get("public"))
+            is_visible = int(bool(flask_request.form.get("visible")))
 
-            if not lat or not lng:
-                return json.dumps({'status': 'Coordinates must be filled in, if you want to show your Idea\'s location and or be visible on the map', 'box_id': 'location'})
+            result = funcs.verify_credentials(handle=handle,name=name,description=description,show_location=show_location,lat=lat,lng=lng)
+            if result:
+                return result
 
-            location = funcs.reverse_geocode([lat, lng])
-            if not location:
-                return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
-            idea.set_location(location=location)
+            file = flask_request.files.get("photo")
 
-            idea.show_location = True
-            if is_visible:
-                idea.is_visible = True
-        else:
-            idea.latitude = None
-            idea.longitude = None
-            idea.sin_rad_lat = None
-            idea.cos_rad_lat = None
-            idea.rad_lng = None
-            idea.address = None
-            idea.is_visible = False
-            idea.show_location = False
+            ideaAddress = flask_request.form.get("ideaAddress");
 
-        if file:
-            idea.profile_photo.save(file=file)
+            idea = models.Idea(handle=handle.strip(), name=name.strip(), description=description.strip(), public=public, members=[current_user])
 
-        """
-        # Add skills that are not already there
-        for skill in skills:
-            if not current_user.skills.filter_by(title=skill).first():
-                skill = models.Skill(owner=current_user, title=skill)
-                db.session.add(skill)
+            if show_location:
 
-        # Delete skills that are meant to be deleted
-        for skill in current_user.skills:
-            if not skill.title in skills:
-                db.session.delete(skill)
-        """
+                location = funcs.reverse_geocode([lat, lng])
+                if not location:
+                    return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
+                idea.set_location(location=location)
+
+                idea.show_location = True
+                if is_visible:
+                    idea.is_visible = True
+            else:
+                idea.latitude = None
+                idea.longitude = None
+                idea.sin_rad_lat = None
+                idea.cos_rad_lat = None
+                idea.rad_lng = None
+                idea.address = None
+                idea.is_visible = False
+                idea.show_location = False
+
+            if file:
+                idea.profile_photo.save(file=file)
+
+            if not ideaAddress or w3.eth.getCode(ideaAddress) != w3.eth.getCode("0xeaF64BC8bf09BD13829e4d9d7a2173824d71AbdC"):
+                return json.dumps({'status': 'Deployment did not go through!', 'box_id': ''})
+
+            idea.address = ideaAddress
+            
         db.session.add(idea)
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})

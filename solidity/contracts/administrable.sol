@@ -63,112 +63,15 @@ contract Administrable is Idea {
     /// @notice Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend, given the bank name and the shard.
     mapping(uint256 => mapping(bytes32  => bool)) hasClaimedDividend;
 
-    /// @notice Event that triggers when a Dividend is issued.
-    /// @param dividend The Dividend that was issued.
-    /// @param by The initiator of the Dividend issuance.
-    event DividendIssued(
-        uint256 dividend,
+    /// @notice Event that triggers when an action is taken by somebody.
+    /// @param fName The name of the function that was called.
+    /// @param args The arguments passed to the function call.
+    /// @param by The initiator of the action.
+    event ActionTaken(
+        string fName,
+        bytes args,
         address by
-    );
-
-    /// @notice Event that triggers when a Dividend is dissolved.
-    /// @param dividend The Dividend that was dissolved.
-    /// @param residual The remaining value of the Dividend that was dissolved (goes to the 'main' Bank).
-    /// @param by The initiator of the Dividend dissolution.
-    event DividendDissolved(
-        uint256 dividend,
-        uint256 residual,
-        address by
-    );
-
-    /// @notice Event that triggers when a Dividend is claimed.
-    /// @param dividend The Dividend that was claimed.
-    /// @param value The partial value of the Dividend that was claimed.
-    /// @param by The claimant of the Dividend.
-    event DividendClaimed(
-        uint256 dividend,
-        uint256 value,
-        address by
-    );
-
-    /// @notice Event that triggers when a token is transferred.
-    /// @param bankName The name of the Bank where the token was transferred from.
-    /// @param tokenAddress The address of the transferred token.
-    /// @param value The value/amount of the transferred token.
-    /// @param to The recipient of the transferred token.
-    /// @param by The initiator of the Token transfer.
-    event TokenTransferredFromBank(
-        string bankName,
-        address tokenAddress,
-        uint256 value,
-        address to,
-        address by
-    );
-
-    /// @notice Event that triggers when a token is moved internally from one Bank to another.
-    /// @param fromBankName The name of the Bank where the token was moved away from.
-    /// @param toBankName The name of the Bank where the token was moved to.
-    /// @param tokenAddress The address of the token that was moved (address(0) if ether).
-    /// @param value The value/amount that was moved.
-    /// @param by The initiator of the Token movement.
-    event TokenMoved(
-        string fromBankName,
-        string toBankName,
-        address tokenAddress,
-        uint256 value,
-        address by
-    );
-
-    /// @notice Event that triggers when a new Bank is created.
-    /// @param name The name of the newly created Bank.
-    /// @param by The initiator of the Bank creation.
-    event BankCreated(
-        string name,
-        address bankAdmin,
-        address by
-    );
-
-    /// @notice Event that triggers when a new admin has been added to a given Bank.
-    /// @param name The name of the Bank to from an admin was added.
-    /// @param admin The address of the admin that was added.
-    /// @param by The initiator of the Bank admin addition.
-    event BankAdminAdded(string name, address admin, address by);
-
-    /// @notice Event that triggers when a former admin has been removed from a given Bank.
-    /// @param name The name of the Bank where from an admin was removed.
-    /// @param admin The address of the admin that was removed.
-    /// @param by The initiator of the Bank admin removal.
-    event BankAdminRemoved(string name,address admin, address by);
-
-    /// @notice Event that triggers when a Bank is deleted.
-    /// @param name The name of the Bank that was deleted.
-    /// @param by The initiator of the Bank deletion.
-    event BankDeleted(
-        string name,
-        address by
-    );
-
-    /// @notice Event that triggers when a permit is set.
-    /// @param name The name of the permit that was set.
-    /// @param newState The new state of the permit.
-    /// @param account The address of the holder of the permit that was set.
-    /// @param by The initiator of the Permit State setting.
-    event PermitSet(
-        string name,
-        address account,
-        PermitState newState,
-        address by
-    );
-
-    /// @notice Event that triggers when a base permit is set.
-    /// @param name The name of the permit that was set.
-    /// @param newState The new state of the permit.
-    /// @param by The initiator of the base Permit State setting.
-    event BasePermitSet(
-        string name,
-        PermitState newState,
-        address by
-    );
+        );
 
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permitName The name of the permit to be checked for.
@@ -209,7 +112,7 @@ contract Administrable is Idea {
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     constructor() {
         _createBank("main",msg.sender,address(this));
-        _setPermit("sNSHS", msg.sender, PermitState.administrator, address(this));
+        _setPermit("sNS", msg.sender, PermitState.administrator, address(this));
         _setPermit("iD", msg.sender, PermitState.administrator, address(this));
         _setPermit("dD", msg.sender, PermitState.administrator, address(this));
         _setPermit("mB", msg.sender, PermitState.administrator, address(this));
@@ -228,7 +131,7 @@ contract Administrable is Idea {
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
-        emit DividendClaimed(dividend,dividendValue,msg.sender);
+        emit ActionTaken("cD",abi.encode(dividend,dividendValue),msg.sender);
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
@@ -318,13 +221,13 @@ contract Administrable is Idea {
     /// @param permitName The name of the base permit, whose state is to be set.
     /// @param newState The new base Permit State to be applied.
     function setBasePermit(string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(basePermits[permitName] != newState, "BPAE");
+        require(basePermits[permitName] != newState, "AS");
         _setBasePermit(permitName,newState,msg.sender);
     }
 
     /// @notice Sets the state of the Non Shard Holders.
     /// @param newState The Boolean state to be applied.
-    function setNonShardHolderState(bool newState) external onlyWithPermit("sNSHS") {
+    function setNonShardHolderState(bool newState) external onlyWithPermit("sNS") {
         require(allowNonShardHolders != newState, "AS");
         _setNonShardHolderState(newState,msg.sender);
     }
@@ -406,7 +309,7 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be issued in the Dividend.
     function _issueDividend(string memory bankName, address tokenAddress, uint256 value, address by) internal onlyIfActive incrementClock {
         uint256 transferTime = clock;
-        require(value <= balanceByBank[bankName][tokenAddress], "DMTV");
+        require(value <= balanceByBank[bankName][tokenAddress], "IF");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             storedTokenAddressesByBank[bankName] -= 1;
@@ -418,7 +321,7 @@ contract Administrable is Idea {
         });
         residualByDividend[transferTime] = value;
         validDividends[transferTime] = true;
-        emit DividendIssued(transferTime, by); 
+        emit ActionTaken("iD",abi.encode(bankName,tokenAddress,value),by);
     }
 
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
@@ -427,7 +330,8 @@ contract Administrable is Idea {
     function _dissolveDividend(uint256 dividend, address by) internal onlyExistingDividend(dividend) onlyIfActive {
         validDividends[dividend] = false; // -1 to distinguish between empty values;
         balanceByBank["main"][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];
-        emit DividendDissolved(dividend, residualByDividend[dividend], by);
+        emit ActionTaken("dD",abi.encode(dividend),by);
+
     }
 
     /// @notice Creates a new Bank.
@@ -438,7 +342,8 @@ contract Administrable is Idea {
         require(!bankExists(bankName), "AE");
         adminOfBank[bankName][bankAdmin] = true;
         validBanks[bankName] = true;
-        emit BankCreated(bankName,bankAdmin,by);
+        emit ActionTaken("cB",abi.encode(bankName,bankAdmin),by);
+
     }
 
     /// @notice Adds a new given administrator to a given Bank.
@@ -446,9 +351,10 @@ contract Administrable is Idea {
     /// @param bankAdmin The address of the new Bank administrator to be added.
     /// @param by The initiator of the execution.
     function _addBankAdmin(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
-        require(hasPermit("mB",bankAdmin),"OMBPH");
+        require(hasPermit("mB",bankAdmin),"NP");
         adminOfBank[bankName][bankAdmin] = true;
-        emit BankAdminAdded(bankName,bankAdmin,by);
+        emit ActionTaken("aA",abi.encode(bankName,bankAdmin),by);
+
     }
 
     /// @notice Removes a given administrator of a given Bank.
@@ -458,18 +364,20 @@ contract Administrable is Idea {
     function _removeBankAdmin(string memory bankName, address bankAdmin, address by) internal onlyIfActive {
         require(isBankAdmin(bankName,bankAdmin));
         adminOfBank[bankName][bankAdmin] = false;
-        emit BankAdminRemoved(bankName,bankAdmin,by);
+        emit ActionTaken("rA",abi.encode(bankName,bankAdmin),by);
+
     }
 
     /// @notice Deletes a given Bank.
     /// @param bankName The name of the Bank to be deleted.
     /// @param by The initiator of the execution.
     function _deleteBank(string memory bankName, address by) internal onlyIfActive {
-        require(bankExists(bankName), "BNE!");
-        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "NDMB");
-        require(bankIsEmpty(bankName), "MBE");
+        require(bankExists(bankName), "UB!");
+        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "MB");
+        require(bankIsEmpty(bankName), "BE");
         validBanks[bankName] = false;
-        emit BankDeleted(bankName,by);
+        emit ActionTaken("dB",abi.encode(bankName),by);
+
     }
 
     /// @notice Transfers a token from a Bank to a recipient.
@@ -479,13 +387,13 @@ contract Administrable is Idea {
     /// @param to The recipient of the token to be transferred.
     /// @param by The initiator of the execution.
     function _transferTokenFromBank(string memory bankName, address tokenAddress, uint256 value, address to, address by) internal onlyIfActive {
-        require(value <= balanceByBank[bankName][tokenAddress], "TMTV");
+        require(value <= balanceByBank[bankName][tokenAddress], "IF");
         _transferToken(tokenAddress,value,to);
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             storedTokenAddressesByBank[bankName] -= 1;
         }
-        emit TokenTransferredFromBank(bankName,tokenAddress,value,to,by);
+        emit ActionTaken("tT",abi.encode(bankName,tokenAddress,value,to),by);
     }
 
     /// @notice Internally moves a token from one Bank to another.
@@ -495,7 +403,7 @@ contract Administrable is Idea {
     /// @param value The value/amount of the token to be moved.
     /// @param by The initiator of the execution.
     function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value, address by) internal onlyExistingBank(toBankName) onlyIfActive {
-        require(value <= balanceByBank[fromBankName][tokenAddress], "MMTV");
+        require(value <= balanceByBank[fromBankName][tokenAddress], "IF");
         balanceByBank[fromBankName][tokenAddress] -= value;
         if (tokenAddress != address(0)) {
             if (balanceByBank[fromBankName][tokenAddress] == 0) {
@@ -507,7 +415,8 @@ contract Administrable is Idea {
             }
         }
         balanceByBank[toBankName][tokenAddress] += value;
-        emit TokenMoved(fromBankName,toBankName,tokenAddress,value,by);
+        emit ActionTaken("mT",abi.encode(fromBankName,toBankName,tokenAddress,value),by);
+
     }
 
     /// @notice Sets the state of a specified permit of a given address.
@@ -517,7 +426,8 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setPermit(string memory permitName, address account, PermitState newState, address by) internal onlyIfActive {
         permits[permitName][account] = newState;
-        emit PermitSet(permitName,account,newState,by);
+        emit ActionTaken("sP",abi.encode(permitName,account,newState),by);
+
     }
 
     /// @notice Sets the state of a specified base permit.
@@ -526,7 +436,7 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setBasePermit(string memory permitName, PermitState newState, address by) internal onlyIfActive {
         basePermits[permitName] = newState;
-        emit BasePermitSet(permitName,newState,by);
+        emit ActionTaken("sP",abi.encode(permitName,newState),by);
     }
 
     /// @notice Sets the state of the Non Shard Holders.
@@ -534,6 +444,7 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setNonShardHolderState(bool newState, address by) internal onlyIfActive {
         allowNonShardHolders = newState;
+        emit ActionTaken("sNS",abi.encode(newState),by);
     }
 
     /// @notice Keeps track of a token receipt by adding it to the registry

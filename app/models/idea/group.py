@@ -1,6 +1,6 @@
 from app import db
 from app.models.base import Base
-import app.models.idea.idea
+import app.models.idea.idea as idea
 from sqlalchemy.ext.hybrid import hybrid_property
 
 class Group(db.Model, Base):
@@ -30,7 +30,7 @@ class Group(db.Model, Base):
 
     @property
     def organization(self):
-        return app.models.idea.Idea.query.filter_by(group=self).first_or_404()
+        return idea.Idea.query.filter_by(group=self).first_or_404()
 
     def __repr__(self):
         return "<Group {}>".format(self.organization.handle)
@@ -43,7 +43,7 @@ class Membership(db.Model, Base):
 
     @property
     def organization(self):
-        return app.models.idea.Idea.query.filter_by(group=self.group).first_or_404()
+        return idea.Idea.query.filter_by(group=self.group).first_or_404()
 
     def __repr__(self):
         return "<Membership {}>".format(self.organization.handle)
