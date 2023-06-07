@@ -1,9 +1,9 @@
-$(document).on("click", "#create-idea", function() {
-    executeStep1();
+$(document).on("click", "#create-idea", async function() {
+    $(this).prop('disabled', true);$(this).addClass('is-loading');
+    await executeStep1();
 });
 
-function executeStep1() {
-   $(this).prop('disabled', true);$(this).addClass('is-loading');
+async function executeStep1() {
 
    //var skills = $(".skill-title").map(function() { return $(this).text();}).get();
    var formData = new FormData();
@@ -35,12 +35,12 @@ function executeStep1() {
       data: formData,
       processData: false,
       contentType: false,
-      success(response) {
+      async success(response) {
         stopButtonLoading();
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { console.log("passed step1");executeStep2(formData) }
+        if (status === "success") { console.log("passed step1"); await executeStep2(formData); }
         else{message(status, response["box_id"], true);}
         
       }});
@@ -52,12 +52,12 @@ function executeStep1() {
      }
 }
 
-function executeStep2(formData) {
+async function executeStep2(formData) {
     var isConnected = walletIsConnected();
     if (!isConnected) {
       checkIfWalletConnected();
     }
-    const ideaAddress = deployNewIdea();
+    const ideaAddress = await deployNewIdea();
 
     formData.set('step', "step-2");
     formData.append('ideaAddress', ideaAddress);
@@ -88,29 +88,31 @@ $(document).on("click", "#edit-associate-image-upload", function() {
 });
 
 async function deployNewIdea() {
-  const ideaAddress = '0xeaF64BC8bf09BD13829e4d9d7a2173824d71AbdC'; // Address of the original Idea contract
+  const ideaAddress = '0x873294923ea787CBe2d34Dd476e09B171F2772Bb'; // Address of the original Idea contract
   const web3 = getWeb3Provider();
 
     try {
 
     const contractCode = await await web3.eth.getCode(ideaAddress);
 
-    const accounts = await web3.eth.getAccounts();
+    const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
+    console.log(accounts);
     console.log("get accounts");
     const Contract = new web3.eth.Contract(JSON.parse('[]'));
-    const payload = {
-      data: contractCode
-    }
     console.log("parse contract");
-
-    const deploy = Contract.deploy(payload);
+    console.log(accounts[0]);
+    const deploy = Contract.deploy({
+      data: contractCode,
+      from: accounts[0]
+    });
     console.log("basic deploy");
 
     const gasEstimate = await deploy.estimateGas();
     console.log("gas estimate");
     const parameters = {
-      from: accounts[0],
-      gas: gasEstimate
+      gas: gasEstimate,
+      data: contractCode,
+      from: accounts[0]
     };
 
     var deployedAddress;

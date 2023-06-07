@@ -82,7 +82,7 @@ def create_idea():
             if file:
                 idea.profile_photo.save(file=file)
 
-            if not ideaAddress or w3.eth.getCode(ideaAddress) != w3.eth.getCode("0xeaF64BC8bf09BD13829e4d9d7a2173824d71AbdC"):
+            if not ideaAddress or w3.eth.getCode(ideaAddress) != w3.eth.getCode("0x873294923ea787CBe2d34Dd476e09B171F2772Bb"):
                 return json.dumps({'status': 'Deployment did not go through!', 'box_id': ''})
 
             idea.address = ideaAddress
