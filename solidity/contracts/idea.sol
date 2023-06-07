@@ -67,7 +67,7 @@ contract Idea is Shardable {
     );
 
     /// @notice Receive function that receives ether when there's no supplying data
-    receive() external payable onlyIfActive {
+    receive() external payable {
         _processTokenReceipt(address(0),msg.value,msg.sender);
     }
 
