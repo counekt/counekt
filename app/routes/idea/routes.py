@@ -16,10 +16,13 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 @login_required
 def create_idea():
     if flask_request.method == 'POST':
-
+        current_app.logger.info("HEAR ME OUT")
+        print("Hear me out")
+        print("HEAR m3 OUT", flush=True)
         step = flask_request.form.get("step")
 
         if step == "step-1":
+            current_app.logger.info("STEP 1...")
 
             handle = flask_request.form.get("handle")
             name = flask_request.form.get("name")
@@ -33,10 +36,17 @@ def create_idea():
             result = funcs.verify_credentials(handle=handle,name=name,description=description,show_location=show_location,lat=lat,lng=lng)
             if result:
                 return result
-            return json.dumps({'status': 'success'})
+            abi = None
+            bytecode = None
+            with open("solidity/build/contracts/Votable.json","r") as json_file:
+                json_data = json.load(json_file)
+                abi = json_data["abi"]
+                bytecode = json_data["bytecode"]
+
+            return json.dumps({'status': 'success', "abi":abi, "bytecode":bytecode})
 
         elif step == "step-2":
-
+            current_app.logger.info("STEP 2 BABY")
             handle = flask_request.form.get("handle")
             name = flask_request.form.get("name")
             description = flask_request.form.get("description")
@@ -82,13 +92,18 @@ def create_idea():
             if file:
                 idea.profile_photo.save(file=file)
 
-            if not ideaAddress or w3.eth.getCode(ideaAddress) != w3.eth.getCode("0x873294923ea787CBe2d34Dd476e09B171F2772Bb"):
-                return json.dumps({'status': 'Deployment did not go through!', 'box_id': ''})
-
+            current_app.logger.info("testing code")
+            deploy_code = w3.eth.getCode(ideaAddress)
+            original_code = w3.eth.getCode("0x873294923ea787CBe2d34Dd476e09B171F2772Bb")
+            current_app.logger.info(f"DEPLOY CODE: {deploy_code}")
+            current_app.logger.info(f"ORIGINAL CODE: {original_code}")
+            if not ideaAddress or  deploy_code != original_code:
+                return json.dumps({'status': 'Deployment did not go through!'})
             idea.address = ideaAddress
-            
+        current_app.logger.info("UNPUSHED IDEA CREATED")
         db.session.add(idea)
         db.session.commit()
+        current_app.logger.info("IDEA MOTHERFUCKING PUSHED")
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
