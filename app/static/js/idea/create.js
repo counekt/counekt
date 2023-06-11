@@ -102,7 +102,7 @@ async function deployNewIdea(abi, bytecode) {
     const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
     console.log(accounts);
     console.log("get accounts");
-    const Contract = new web3.eth.Contract(abi, "0x873294923ea787CBe2d34Dd476e09B171F2772Bb");
+    const Contract = new web3.eth.Contract(abi);
     console.log("parse contract");
     console.log(accounts[0]);
     const deploy = Contract.deploy({
@@ -121,6 +121,7 @@ async function deployNewIdea(abi, bytecode) {
 
     var deployedAddress;
     const deployedContract = await deploy.send(parameters, (err, transactionHash) => {
+    console.log(err);
     console.log('Transaction Hash :', transactionHash);
 }).on('confirmation', () => {}).then((newContractInstance) => {
     return newContractInstance;
