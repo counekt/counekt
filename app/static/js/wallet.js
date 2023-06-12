@@ -1,3 +1,5 @@
+// thinking 'bout you
+
 var web3Provider = undefined;
 
 function closeWalletDetails() {
