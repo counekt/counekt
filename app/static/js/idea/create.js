@@ -36,12 +36,11 @@ async function executeStep1() {
       processData: false,
       contentType: false,
       async success(response) {
-        stopButtonLoading();
         var response = JSON.parse(response);
         var status = response["status"];
         var handle = response["handle"];
-        if (status === "success") { console.log("passed step1"); await executeStep2(formData); }
-        else{message(status, response["box_id"], true);}
+        if (status === "success") { console.log("passed step1"); await executeStep2(formData,response["abi"], response["bytecode"]); }
+        else{stopButtonLoading();message(status, response["box_id"], true);}
         
       }});
      }
@@ -52,19 +51,24 @@ async function executeStep1() {
      }
 }
 
-async function executeStep2(formData) {
-    var isConnected = walletIsConnected();
+async function executeStep2(formData, abi, bytecode) {
+    var isInstalled = await walletIsInstalled();
     if (!isConnected) {
-      checkIfWalletConnected();
+      flash("MetaMask not installed!");
     }
-    const ideaAddress = await deployNewIdea();
-
+    var isConnected = await walletIsConnected();
+    if (!isConnected) {
+      flash("Connecting wallet...");
+      await checkIfWalletConnected();
+    }
+    const tx = await deployNewIdea(abi, bytecode);
+    console.log("continuing...");
     formData.set('step', "step-2");
-    formData.append('ideaAddress', ideaAddress);
+    formData.append('tx', tx);
     formData.append('photo', $("#upload").prop('files')[0]);
     formData.append("visible", $("#visible").is(':checked') ? 1 : 0);
     formData.append("public", $("#public").is(':checked') ? 1 : 0);
-
+    console.log("sending next request...");
     $.post({
       type: "POST",
       url: "/create/idea/",
@@ -77,7 +81,7 @@ async function executeStep2(formData) {
         var status = response["status"];
         var handle = response["handle"];
         if (status === "success") { location.replace("/€"+handle+"/");}
-        else{flash(status);}
+        else{flash(status);console.log(status);}
         
       }});
 
@@ -87,44 +91,49 @@ $(document).on("click", "#edit-associate-image-upload", function() {
   $("#upload").click();
 });
 
-async function deployNewIdea() {
-  const ideaAddress = '0x873294923ea787CBe2d34Dd476e09B171F2772Bb'; // Address of the original Idea contract
+async function deployNewIdea(abi, bytecode) {
+  // Address of the original Idea contract
   const web3 = getWeb3Provider();
 
     try {
 
-    const contractCode = await await web3.eth.getCode(ideaAddress);
-
+    console.log("contract code");
+    console.log(bytecode);
     const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
+    if (!accounts) {
+      await checkIfWalletConnected();
+    }
     console.log(accounts);
     console.log("get accounts");
-    const Contract = new web3.eth.Contract(JSON.parse('[]'));
+    const Contract = new web3.eth.Contract(abi);
     console.log("parse contract");
     console.log(accounts[0]);
     const deploy = Contract.deploy({
-      data: contractCode,
+      data: bytecode,
       from: accounts[0]
     });
     console.log("basic deploy");
 
-    const gasEstimate = await deploy.estimateGas();
+    const gasEstimate = await deploy.estimateGas() + 450199;
     console.log("gas estimate");
+    console.log(gasEstimate);
     const parameters = {
       gas: gasEstimate,
-      data: contractCode,
       from: accounts[0]
     };
 
-    var deployedAddress;
+    var tx;
     const deployedContract = await deploy.send(parameters, (err, transactionHash) => {
+      tx = transactionHash;
+    console.log(err);
     console.log('Transaction Hash :', transactionHash);
 }).on('confirmation', () => {}).then((newContractInstance) => {
-    console.log('Deployed Contract Address : ', newContractInstance.options.address);
+    return newContractInstance;
 });
 
 
     console.log('Contract deployed:', deployedContract.options.address);
-    return deployedContract.options.address;
+    return tx;
   } catch (error) {
     console.error('Error deploying contract:', error);
   }

@@ -16,10 +16,13 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 @login_required
 def create_idea():
     if flask_request.method == 'POST':
-
+        current_app.logger.info("HEAR ME OUT")
+        print("Hear me out")
+        print("HEAR m3 OUT", flush=True)
         step = flask_request.form.get("step")
 
         if step == "step-1":
+            current_app.logger.info("STEP 1...")
 
             handle = flask_request.form.get("handle")
             name = flask_request.form.get("name")
@@ -33,10 +36,13 @@ def create_idea():
             result = funcs.verify_credentials(handle=handle,name=name,description=description,show_location=show_location,lat=lat,lng=lng)
             if result:
                 return result
-            return json.dumps({'status': 'success'})
+            abi = funcs.get_abi()
+            bytecode = funcs.get_bytecode()
+
+            return json.dumps({'status': 'success', "abi":abi, "bytecode":bytecode})
 
         elif step == "step-2":
-
+            current_app.logger.info("STEP 2 BABY")
             handle = flask_request.form.get("handle")
             name = flask_request.form.get("name")
             description = flask_request.form.get("description")
@@ -55,7 +61,7 @@ def create_idea():
 
             file = flask_request.files.get("photo")
 
-            ideaAddress = flask_request.form.get("ideaAddress");
+            tx_hash = flask_request.form.get("tx");
 
             idea = models.Idea(handle=handle.strip(), name=name.strip(), description=description.strip(), public=public, members=[current_user])
 
@@ -82,26 +88,36 @@ def create_idea():
             if file:
                 idea.profile_photo.save(file=file)
 
-            if not ideaAddress or w3.eth.getCode(ideaAddress) != w3.eth.getCode("0x873294923ea787CBe2d34Dd476e09B171F2772Bb"):
-                return json.dumps({'status': 'Deployment did not go through!', 'box_id': ''})
+            current_app.logger.info("testing code")
+            # Wait for transaction to be mined...
+            receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            deploy_data = w3.eth.getTransaction(tx_hash).input[2:]
 
-            idea.address = ideaAddress
-            
+            print(f"Receipt Address {receipt.contractAddress}")
+            current_app.logger.info(f"IDEA ADDRESS: {receipt.contractAddress}")
+
+            original_code = funcs.get_bytecode()
+
+            if not receipt.contractAddress or deploy_data != original_code:
+                return json.dumps({'status': 'Deployment did not go through!'})
+            idea.address = receipt.contractAddress
+        current_app.logger.info("UNPUSHED IDEA CREATED")
         db.session.add(idea)
         db.session.commit()
+        current_app.logger.info("IDEA MOTHERFUCKING PUSHED")
         return json.dumps({'status': 'success', 'handle': handle})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/idea/<handle>/", methods=["GET", "POST"])
-@ bp.route("/$<handle>/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/", methods=["GET", "POST"])
 def idea(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     #if not idea or (not idea.public and not current_user in idea.group.members) and not current_user in idea.viewers:
         #abort(404)
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profile/idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
+    return render_template("idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/idea/<handle>/edit/", methods=["GET", "POST"])

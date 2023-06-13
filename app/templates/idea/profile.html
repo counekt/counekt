@@ -35,7 +35,7 @@
               {% endwith %}
               {% endif %}
 
-              {% if idea.group.member_has_permission(current_user,"permissionToEditPage") %}
+              {% if True and 'idea.group.member_has_permission(current_user,"permissionToEditPage")' %}
                 <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit Idea</button>
               {% endif %}
           </div>
