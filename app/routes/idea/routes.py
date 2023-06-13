@@ -36,12 +36,8 @@ def create_idea():
             result = funcs.verify_credentials(handle=handle,name=name,description=description,show_location=show_location,lat=lat,lng=lng)
             if result:
                 return result
-            abi = None
-            bytecode = None
-            with open("solidity/build/contracts/Votable.json","r") as json_file:
-                json_data = json.load(json_file)
-                abi = json_data["abi"]
-                bytecode = json_data["bytecode"]
+            abi = funcs.get_abi()
+            bytecode = funcs.get_bytecode()
 
             return json.dumps({'status': 'success', "abi":abi, "bytecode":bytecode})
 
@@ -65,7 +61,7 @@ def create_idea():
 
             file = flask_request.files.get("photo")
 
-            ideaAddress = flask_request.form.get("ideaAddress");
+            tx_hash = flask_request.form.get("tx");
 
             idea = models.Idea(handle=handle.strip(), name=name.strip(), description=description.strip(), public=public, members=[current_user])
 
@@ -93,13 +89,19 @@ def create_idea():
                 idea.profile_photo.save(file=file)
 
             current_app.logger.info("testing code")
-            deploy_code = w3.eth.getCode(ideaAddress)
-            original_code = w3.eth.getCode("0x873294923ea787CBe2d34Dd476e09B171F2772Bb")
-            current_app.logger.info(f"DEPLOY CODE: {deploy_code}")
-            current_app.logger.info(f"ORIGINAL CODE: {original_code}")
-            if not ideaAddress or  deploy_code != original_code:
+            # Wait for transaction to be mined...
+            receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            print(f"Receipt Address {receipt.contractAddress}")
+            current_app.logger.info(f"IDEA ADDRESS: {receipt.contractAddress}")
+
+            deploy_code = w3.eth.getCode(receipt.contractAddress).hex()
+            original_code = "0x"+funcs.get_deployed_bytecode()
+            print(f"deploy code: {len(deploy_code)} VS original code: {len(original_code)}")
+            print(f"first 10: deploy code: {deploy_code[:20]} VS original code: {original_code[:20]}")
+            print(f"last 10: deploy code: {deploy_code[-20:]} VS original code: {original_code[-20:]}")
+            if not receipt.contractAddress or  deploy_code != original_code:
                 return json.dumps({'status': 'Deployment did not go through!'})
-            idea.address = ideaAddress
+            idea.address = receipt.contractAddress
         current_app.logger.info("UNPUSHED IDEA CREATED")
         db.session.add(idea)
         db.session.commit()

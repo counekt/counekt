@@ -61,10 +61,10 @@ async function executeStep2(formData, abi, bytecode) {
       flash("Connecting wallet...");
       await checkIfWalletConnected();
     }
-    const ideaAddress = await deployNewIdea(abi, bytecode);
+    const tx = await deployNewIdea(abi, bytecode);
     console.log("continuing...");
     formData.set('step', "step-2");
-    formData.append('ideaAddress', ideaAddress);
+    formData.append('tx', tx);
     formData.append('photo', $("#upload").prop('files')[0]);
     formData.append("visible", $("#visible").is(':checked') ? 1 : 0);
     formData.append("public", $("#public").is(':checked') ? 1 : 0);
@@ -100,6 +100,9 @@ async function deployNewIdea(abi, bytecode) {
     console.log("contract code");
     console.log(bytecode);
     const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
+    if (!accounts) {
+      await checkIfWalletConnected();
+    }
     console.log(accounts);
     console.log("get accounts");
     const Contract = new web3.eth.Contract(abi);
@@ -111,16 +114,17 @@ async function deployNewIdea(abi, bytecode) {
     });
     console.log("basic deploy");
 
-    const gasEstimate = await deploy.estimateGas();
+    const gasEstimate = await deploy.estimateGas() + 450199;
     console.log("gas estimate");
+    console.log(gasEstimate);
     const parameters = {
       gas: gasEstimate,
-      data: bytecode,
       from: accounts[0]
     };
 
-    var deployedAddress;
+    var tx;
     const deployedContract = await deploy.send(parameters, (err, transactionHash) => {
+      tx = transactionHash;
     console.log(err);
     console.log('Transaction Hash :', transactionHash);
 }).on('confirmation', () => {}).then((newContractInstance) => {
@@ -129,7 +133,7 @@ async function deployNewIdea(abi, bytecode) {
 
 
     console.log('Contract deployed:', deployedContract.options.address);
-    return deployedContract.options.address;
+    return tx;
   } catch (error) {
     console.error('Error deploying contract:', error);
   }
