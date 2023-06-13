@@ -91,15 +91,14 @@ def create_idea():
             current_app.logger.info("testing code")
             # Wait for transaction to be mined...
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            deploy_data = w3.eth.getTransaction(tx_hash).input[2:]
+
             print(f"Receipt Address {receipt.contractAddress}")
             current_app.logger.info(f"IDEA ADDRESS: {receipt.contractAddress}")
 
-            deploy_code = w3.eth.getCode(receipt.contractAddress).hex()
-            original_code = "0x"+funcs.get_deployed_bytecode()
-            print(f"deploy code: {len(deploy_code)} VS original code: {len(original_code)}")
-            print(f"first 10: deploy code: {deploy_code[:20]} VS original code: {original_code[:20]}")
-            print(f"last 10: deploy code: {deploy_code[-20:]} VS original code: {original_code[-20:]}")
-            if not receipt.contractAddress or  deploy_code != original_code:
+            original_code = funcs.get_bytecode()
+
+            if not receipt.contractAddress or deploy_data != original_code:
                 return json.dumps({'status': 'Deployment did not go through!'})
             idea.address = receipt.contractAddress
         current_app.logger.info("UNPUSHED IDEA CREATED")
@@ -112,13 +111,13 @@ def create_idea():
 
 
 @ bp.route("/idea/<handle>/", methods=["GET", "POST"])
-@ bp.route("/$<handle>/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/", methods=["GET", "POST"])
 def idea(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     #if not idea or (not idea.public and not current_user in idea.group.members) and not current_user in idea.viewers:
         #abort(404)
     #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("profile/idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
+    return render_template("idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/idea/<handle>/edit/", methods=["GET", "POST"])

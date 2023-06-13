@@ -3,7 +3,7 @@
 <div class="subprofile box" data-name="{% if profile %}{% if profile.name %}{{profile.name}}{% else %}{{profile.username}}{% endif %}{% else %}\\name//{% endif %}" data-identifier="{% if profile %}{{profile.identifier}}{% else %}\\identifier//{% endif %}">
         <div class="subprofile-image-wrap">
         <a class="subprofile-image" {% if not without_link %}href="{% if profile %}{{profile.href}}{% else %}\\href//{% endif %}"{% endif %}>
-            <img alt draggable="false" class="subprofile-image-content" src="{% if profile %}{{profile.profile_photo.src}}{% else %}\\photo_src//{% endif %}">
+            <img alt draggable="false" class="subprofile-image-content" src="{% if profile %}{{profile.photo.src}}{% else %}\\photo_src//{% endif %}">
         </a>
       </div>
         <div class="subprofile-content">
