@@ -172,7 +172,7 @@ class User(UserMixin, db.Model, Base, locationBase):
         return True
 
     def __repr__(self):
-        return '<User @{}>'.format(self.username)
+        return '<User {}{}>'.format(self.symbol,self.username)
 
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):

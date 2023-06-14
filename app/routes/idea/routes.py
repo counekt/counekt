@@ -8,11 +8,11 @@ import re
 import math
 from datetime import date
 from requests import HTTPError
-from app.routes.profile import bp
+from app.routes.idea import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
 
-@ bp.route("/create/idea/", methods=["GET", "POST"])
+@bp.route("/create/idea/", methods=["GET", "POST"])
 @login_required
 def create_idea():
     if flask_request.method == 'POST':

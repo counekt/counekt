@@ -12,9 +12,8 @@ from app.routes.profile import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from sqlalchemy import exc
 
-
-@ bp.route("/user/<username>/", methods=["GET", "POST"])
 @ bp.route("/@<username>/", methods=["GET", "POST"])
+@ bp.route("/user/<username>/", methods=["GET", "POST"])
 def user(username):
     user = models.User.query.filter_by(username=username).first()
     if not user:
