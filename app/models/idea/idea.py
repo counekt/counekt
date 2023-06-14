@@ -9,7 +9,7 @@ from flask import url_for
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String(42)) # ETH address
-    symbol = "$"
+    symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
     handle = db.Column(db.String, index=True, unique=True)
@@ -44,11 +44,11 @@ class Idea(db.Model, Base, locationBase):
 
     @property
     def href(self):
-        return url_for("idea", handle=self.handle)
+        return url_for("idea.idea", handle=self.handle)
 
     @hybrid_property
     def identifier(self):
         return self.handle
 
     def __repr__(self):
-        return "<Idea €{}>".format(self.handle)
+        return "<Idea {}{}>".format(self.symbol,self.handle)

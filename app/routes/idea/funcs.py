@@ -53,9 +53,3 @@ def contract_has_method(bytecode, signature):
     # remove "0x" prefixed in 0x<4bytes-selector>
     return bytecode.index(functionSignature[2:]) > 0;
 
-def contract_is_valid(bytecode):
-	with open("solidity/build/contracts/Votable.json","r") as json_file:
-		for signature in json_file["natspec"]["methods"]:
-			if not contract_has_method(signature):
-				return False
-	return True

@@ -1,6 +1,6 @@
-{% for ally in user.allies %}
-        {% with profile=ally %}
-        {% include 'profiles/mini-profile.html' %}
+{% for associate in user.associates %}
+        {% with profile=associate %}
+        {% include 'profile/mini-profile.html' %}
         {% endwith %}
 {% endfor %}
       {% if user==current_user %}
