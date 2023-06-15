@@ -14,7 +14,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 
 @bp.route("/create/idea/", methods=["GET", "POST"])
 @login_required
-def create_idea():
+def create():
     if flask_request.method == 'POST':
         current_app.logger.info("HEAR ME OUT")
         print("Hear me out")
@@ -116,14 +116,13 @@ def idea(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     #if not idea or (not idea.public and not current_user in idea.group.members) and not current_user in idea.viewers:
         #abort(404)
-    #skillrows = [user.skills.all()[i:i + 3] for i in range(0, len(user.skills.all()), 3)]
-    return render_template("idea/profile.html", idea=idea, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], navbar=True, background=True, size="medium", models=models)
+    return render_template("idea/profile.html", idea=idea, navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/idea/<handle>/edit/", methods=["GET", "POST"])
 @ bp.route("/$<handle>/edit/", methods=["GET", "POST"])
 @login_required
-def edit_idea(handle):
+def edit(handle):
     if not handle:
         abort(404)
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
@@ -139,8 +138,6 @@ def edit_idea(handle):
         is_visible = int(bool(flask_request.form.get("visible")))
         lat = flask_request.form.get("lat")
         lng = flask_request.form.get("lng")
-
-        #skills = eval(flask_request.form.get("skills"))
 
         file = flask_request.files.get("photo")
 
@@ -183,33 +180,35 @@ def edit_idea(handle):
         if file:
             idea.profile_photo.save(file=file)
 
-        """
-        # Add skills that are not already there
-        for skill in skills:
-            if not current_user.skills.filter_by(title=skill).first():
-                skill = models.Skill(owner=current_user, title=skill)
-                db.session.add(skill)
-
-        # Delete skills that are meant to be deleted
-        for skill in current_user.skills:
-            if not skill.title in skills:
-                db.session.delete(skill)
-        """
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
-    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profile/idea/profile.html", idea=idea, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("idea/profile.html", idea=idea, background=True, navbar=True, size="medium", noscroll=True)
 
 
 @ bp.route("/idea/<handle>/members/", methods=["GET"])
-@ bp.route("/$<handle>/members/", methods=["GET"])
+@ bp.route("/€<handle>/members/", methods=["GET"])
 @login_required
-def idea_add_members(handle):
+def add_members(handle):
     if not handle:
         abort(404)
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     if not idea:
         abort(404)
 
-    skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
-    return render_template("profile/idea/profile.html", idea=idea, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("idea/profile.html", idea=idea, background=True, navbar=True, size="medium", noscroll=True)
+
+@ bp.route("/idea/<handle>/photo/", methods=["GET"])
+@ bp.route("/€<handle>/photo/", methods=["GET"])
+def photo(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
+
+@ bp.route("/idea/<handle>/timeline/", methods=["GET"])
+@ bp.route("/€<handle>/timeline/", methods=["GET"])
+def timeline(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
