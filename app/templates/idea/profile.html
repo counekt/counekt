@@ -10,7 +10,7 @@
       </div>
       <div id="profile-left-bottom">
         <p class="title is-4 selectable" style="color:black"><b>{{ idea.name }}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">${{ idea.handle }}</p>
+        <p class="subtitle is-5 selectable" style="color:gray">€{{ idea.handle }}</p>
       </div>
     </div>
 
@@ -76,15 +76,17 @@
 {% endblock %}
 
 {% block modal %}
-{% if request.url_rule.endpoint == 'profile.edit_idea' %}
+{% if request.url_rule.endpoint == 'idea.edit' %}
 {% include "idea/edit.html" %}
-{% elif request.url_rule.endpoint == 'profile.idea_photo' %}
+{% elif request.url_rule.endpoint == 'idea.photo' %}
 {% with photo_src=idea.photo.src %}
-{% include "profile/user/photo.html" %}
+{% include "photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'profile.idea_add_members' %}
+{% elif request.url_rule.endpoint == 'idea.timeline' %}
+{% include "idea/timeline.html" %}
+{% elif request.url_rule.endpoint == 'idea.add_members' %}
 {% include "profile/add-members.html" %}
-{% elif request.url_rule.endpoint == 'profile.idea_add_roles' %}
+{% elif request.url_rule.endpoint == 'profile.add_roles' %}
 {% include "profile/add-roles.html" %}
 {% endif %}
 
@@ -339,14 +341,14 @@ function sendideaInvites() {
 
     $.post({
       type: "POST",
-      url: "/$"+handle+"/invite/",
+      url: "/€"+handle+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
         var status = response["status"];
-        if (status === "success") { location.replace("/$"+response["handle"]+"/"); }
+        if (status === "success") { location.replace("/€"+response["handle"]+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});
@@ -359,32 +361,36 @@ load_add_members_js();
 <script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
-    redirect({id:"idea-photo"},"Profile photo", "/${{idea.handle}}/photo/", changeToPhoto);
+    redirect({id:"idea-photo"},"Profile photo", "/€{{idea.handle}}/photo/", changeToPhoto);
       e.preventDefault();
   });
 
+  $(document).on('click', '#timeline-button', function(e) {
+      redirect({id:"idea-timeline"},"Edit idea", "/€"+handle+"/timeline/", changeToTimeline);
+      e.preventDefault();
+    });
 
   $(document).on('click', '#edit-button', function(e) {
-    redirect({id:"edit-idea"},"Edit idea", "/$"+handle+"/edit/", changeToEdit);
+    redirect({id:"edit-idea"},"Edit idea", "/€"+handle+"/edit/", changeToEdit);
     e.preventDefault();
   });
 
   $(document).on('click', '#members-button', function(e) {
-    redirect({id:"idea-members"},"idea members", "/$"+handle+"/members/", changeToMembers);
+    redirect({id:"idea-members"},"idea members", "/€"+handle+"/members/", changeToMembers);
     e.preventDefault();
   });
 
   $(document).on('click', '#roles-button', function(e) {
-    redirect({id:"idea-roles"},"Idea Roles Permission", "/$"+handle+"/roles/", changeRoles);
+    redirect({id:"idea-roles"},"Idea Roles Permission", "/€"+handle+"/roles/", changeRoles);
     e.preventDefault();
   });
 
 $(document).on('click', '.close', function() {
-  redirect({id:"idea-profile"}, "Profile", "/${{idea.handle}}/", changeToProfile);
+  redirect({id:"idea-profile"}, "Profile", "/€{{idea.handle}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {
-    redirect({id:"idea-profile"}, "Profile", "/${{idea.handle}}/", changeToProfile);
+    redirect({id:"idea-profile"}, "Profile", "/€{{idea.handle}}/", changeToProfile);
 });
 
 $(window).on("popstate", function() {
@@ -407,8 +413,19 @@ $(window).on("popstate", function() {
     changeRoles();
   }
 
+  else if (window.history.state.id == "idea-timeline") {
+    changeToTimeline();
+  }
+
 
 });
+
+function changeToTimeline() {
+  $("#modal-box").append(`
+    {% include "idea/timeline.html" %}`);
+  $(document.body).addClass('noscroll');
+}
+
 
 function changeToEdit() {
   $("#modal-box").append(`
@@ -447,13 +464,13 @@ function changeRoles() {
 
 
 {% if request.url_rule.endpoint == 'profile.edit_idea' %}
-window.history.replaceState({id:"edit-idea"},"Edit idea", "/${{idea.handle}}/edit/");
+window.history.replaceState({id:"edit-idea"},"Edit idea", "/€{{idea.handle}}/edit/");
 {% elif request.url_rule.endpoint == 'profile.idea_photo' %}
-window.history.replaceState({id:"idea-photo"},"Profile photo", "/${{idea.handle}}/");
+window.history.replaceState({id:"idea-photo"},"Profile photo", "/€{{idea.handle}}/");
 {% elif request.url_rule.endpoint == 'profile.idea_add_members' %}
-window.history.replaceState({id:"idea-add-members"},"idea add members", "/${{idea.handle}}/add-members/");
+window.history.replaceState({id:"idea-add-members"},"idea add members", "/€{{idea.handle}}/add-members/");
 {% elif request.url_rule.endpoint == 'profile.idea_roles' %}
-window.history.replaceState({id:"idea-add-roles"},"Idea add roles", "/${{idea.handle}}/add-roles/");
+window.history.replaceState({id:"idea-add-roles"},"Idea add roles", "/€{{idea.handle}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"idea-profile"},"Profile", "./");
 {% endif %}

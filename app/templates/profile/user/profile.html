@@ -100,7 +100,7 @@
 {% with photo_src = user.photo.src %}
 {% include "photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'profile.create_idea' %}
+{% elif request.url_rule.endpoint == 'idea.create' %}
 {% include "idea/create.html" %}
 {% elif request.url_rule.endpoint == 'profile.create_medium' %}
 {% include "profile/user/create-medium.html" %}
