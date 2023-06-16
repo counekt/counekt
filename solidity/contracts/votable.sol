@@ -205,7 +205,7 @@ contract Votable is Administrable {
                         (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgumentData, (string, PermitState,address));
                         _setPermit(permitName,account,newState,address(this));
                     }
-                    if (functionNameHash == keccak256(bytes("sBP"))) {
+                    if (functionNameHash == keccak256(bytes("sB"))) {
                         (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
                         _setBasePermit(permitName,newState,address(this));
                     }

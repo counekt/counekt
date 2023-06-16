@@ -1,5 +1,5 @@
 from flask import current_app, abort
-from app import geolocator
+from app import geolocator, w3
 from geopy.exc import GeocoderTimedOut
 from geopy.extra.rate_limiter import RateLimiter
 from datetime import datetime, date
@@ -12,6 +12,22 @@ from botocore.client import Config
 from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
 import os
+import json
+
+def get_bytecode():
+    with open("solidity/build/contracts/Votable.json","r") as json_file:
+        json_data = json.load(json_file)
+        return json_data["bytecode"]
+
+def get_abi():
+    with open("solidity/build/contracts/Votable.json","r") as json_file:
+        json_data = json.load(json_file)
+        return json_data["abi"]
+
+def contract_has_method(bytecode, signature):
+    function_signature = w3.eth.abi.encodeFunctionSignature(signature);
+    # remove "0x" prefixed in 0x<4bytes-selector>
+    return bytecode.index(functionSignature[2:]) > 0;
 
 def returnifelse(primary,bottleneck,secondary):
     return primary if bottleneck else secondary
