@@ -1,4 +1,5 @@
-from app import db
+from app import db, w3
+import app.funcs as funcs
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 import app.models.idea.group as group
 from app.models.static.photo import Photo
@@ -9,6 +10,7 @@ from flask import url_for
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String(42)) # ETH address
+    block = db.Column(db.Integer) # ETH block number
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
@@ -41,6 +43,11 @@ class Idea(db.Model, Base, locationBase):
         if self.exists_in_db:
             db.session.delete(self.group)
             db.session.delete(self)
+
+    def get_events(self):
+        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
+        events = contract.events.ActionTaken.getLogs(fromBlock=self.block)
+        return events
 
     @property
     def href(self):

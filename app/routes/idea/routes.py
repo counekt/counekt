@@ -101,6 +101,7 @@ def create():
             if not receipt.contractAddress or deploy_data != original_code:
                 return json.dumps({'status': 'Deployment did not go through!'})
             idea.address = receipt.contractAddress
+            idea.block = receipt.blockNumber
         current_app.logger.info("UNPUSHED IDEA CREATED")
         db.session.add(idea)
         db.session.commit()
