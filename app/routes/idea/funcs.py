@@ -4,16 +4,25 @@ from flask import request as flask_request
 import json
 from eth_abi import abi
 
-def decode_event(e):
+def decode_action_event(e):
 	if e["args"]["fName"] == "sP":
+		permitName, account, newState = abi.decode_abi(["string","address","uint8"])
+		return {"fName":fName, "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "sB":
 		permitName, newState = abi.decode_abi(["string","uint8"])
 		return {"fName":fName, "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "sNS":
+		newState = abi.decode_abi(["uint8"])
+		return {"fName":fName, "newState":newState, "by":e["args"]["by"]}
 	if e["args"]["fName"] == "iD":
 		bankName, tokenAddress, value = abi.decode_abi(["string","address","uint256"])
 		return {"fName":fName, "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
 	if e["args"]["fName"] == "dD":
 		dividend = abi.decode_abi(["uint256"])
 		return {"fName":fName, "dividend":dividend, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "cD":
+		dividend, dividendValue = abi.decode_abi(["uint256", "uint256"])
+		return {"fName":fName, "dividend":dividend, "dividendValue":dividendValue, "by":e["args"]["by"]}
 	if e["args"]["fName"] in ["cb","aA","rA"]:
 		bankName, bankAdmin = abi.decode_abi(["string","address"])
 		return {"fName":fName, "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
@@ -26,8 +35,6 @@ def decode_event(e):
 	if e["args"]["fName"] == "mT":
 		fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"])
 		return {"fName":fName, "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
-		
-	"""NOTE: FINISH REST"""
 
 def verify_credentials(handle,name,description,show_location,lat,lng):
 	handle = flask_request.form.get("handle")

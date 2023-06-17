@@ -426,7 +426,7 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setPermit(string memory permitName, address account, PermitState newState, address by) internal onlyIfActive {
         permits[permitName][account] = newState;
-        emit ActionTaken("sB",abi.encode(permitName,account,newState),by);
+        emit ActionTaken("sP",abi.encode(permitName,account,newState),by);
 
     }
 
@@ -436,7 +436,7 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setBasePermit(string memory permitName, PermitState newState, address by) internal onlyIfActive {
         basePermits[permitName] = newState;
-        emit ActionTaken("sP",abi.encode(permitName,newState),by);
+        emit ActionTaken("sB",abi.encode(permitName,newState),by);
     }
 
     /// @notice Sets the state of the Non Shard Holders.
