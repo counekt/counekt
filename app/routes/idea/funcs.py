@@ -5,12 +5,28 @@ import json
 from eth_abi import abi
 
 def decode_event(e):
-	if e["args"]["fName"] == "cB":
-		bankName, bankAdmin = abi.decode_abi(["string","address"])
-		return {"fName":fName, "bankName":bankName,"bankAdmin":bankAdmin, "by":e["args"]["by"]}
 	if e["args"]["fName"] == "sP":
 		permitName, newState = abi.decode_abi(["string","uint8"])
 		return {"fName":fName, "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "iD":
+		bankName, tokenAddress, value = abi.decode_abi(["string","address","uint256"])
+		return {"fName":fName, "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "dD":
+		dividend = abi.decode_abi(["uint256"])
+		return {"fName":fName, "dividend":dividend, "by":e["args"]["by"]}
+	if e["args"]["fName"] in ["cb","aA","rA"]:
+		bankName, bankAdmin = abi.decode_abi(["string","address"])
+		return {"fName":fName, "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "dB":
+		bankName = abi.decode_abi(["string"])
+		return {"fName":fName, "bankName":bankName, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "tT":
+		bankName, tokenAddress, value, to = abi.decode_abi(["string","address","uint256","address"])
+		return {"fName":fName, "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "to":to, "by":e["args"]["by"]}
+	if e["args"]["fName"] == "mT":
+		fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"])
+		return {"fName":fName, "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
+		
 	"""NOTE: FINISH REST"""
 
 def verify_credentials(handle,name,description,show_location,lat,lng):
