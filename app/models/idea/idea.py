@@ -44,10 +44,10 @@ class Idea(db.Model, Base, locationBase):
             db.session.delete(self.group)
             db.session.delete(self)
 
-    def get_events(self):
+    def get_timeline(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         events = contract.events.ActionTaken.getLogs(fromBlock=self.block)
-        return events
+        return [funcs.decode_action_event(e) for e in events]
 
     @property
     def href(self):

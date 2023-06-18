@@ -15,9 +15,7 @@ from sqlalchemy import exc
 @ bp.route("/@<username>/", methods=["GET", "POST"])
 @ bp.route("/user/<username>/", methods=["GET", "POST"])
 def user(username):
-    user = models.User.query.filter_by(username=username).first()
-    if not user:
-        abort(404)
+    user = models.User.query.filter_by(username=username).first_or_404()
     return render_template("profile/user/profile.html", user=user, navbar=True, background=True, size="medium", models=models)
 
 
