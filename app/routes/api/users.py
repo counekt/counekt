@@ -84,9 +84,3 @@ def update_user(id):
 @bp.route("/get/abi/", methods=["GET"])
 def get_abi():
     return jsonify(funcs.get_abi())
-
-@bp.route("/idea/<handle>/get/timeline/", methods=["GET"])
-@bp.route("/€<handle>/get/timeline/", methods=["GET"])
-def get_timeline(handle):
-    idea = models.Idea.query.filter_by(handle=handle).first_or_404()
-    return jsonify(idea.get_timeline())
