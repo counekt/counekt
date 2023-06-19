@@ -16,8 +16,76 @@
         </button>
     </p>
   </header>
-  <section class="modal-card-body has-text-centered">
-  
+  <section id="timeline-content" class="modal-card-body has-text-centered">
+  {% for e in idea.get_timeline()[::-1] %}
+  <div>
+    {% if e["func"] == "sP" %}
+      <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
+      <span class='text'>Permit Set</span>
+      <p>permit: {{e["permitName"]}}</p>
+      <p>affected: {{e["account"]}}</p>
+      <p>new state: {{e["newState"]}}</p>
+    {% elif e["func"] == "sB" %}
+      <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
+      <span class='text'>Base Permit Set</span>
+      <p>permit: {{e["permitName"]}}</p>
+      <p>new state: {{e["newState"]}}</p>
+    {% elif e["func"] == "sNS" %}
+      <span class='icon'><i class='fa-solid fa-users'></i></span>
+      <span class='text'>Non Shard Holder State Set</span>
+      <p>new state: {{e["newState"]}}</p>
+    {% elif e["func"] == "iD" %}
+      <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
+      <span class='text'>Dividend Issued</span>
+      <p>from: {{e["bankName"]}}</p>
+      <p>token address: {{e["tokenAddress"]}}</p>
+      <p>value: {{e["value"]}}</p>
+    {% elif e["func"] == "dD" %}
+      <span class='icon'><i class='fa-solid fa-coins'></i></span>
+      <span class='text'>Dividend Dissolved</span>
+      <p>dividend id: {{e["dividend"]}}</p>
+      <p>value dissolved: {{e["dividendValue"]}}</p>
+    {% elif e["func"] == "cD" %}
+      <span class='icon'><i class='fa-solid fa-cake-slice'></i></span>
+      <span class='text'>Dividend Claimed</span>
+      <p>dividend id: {{e["dividend"]}}</p>
+      <p>claimed value: {{e["dividendValue"]}}</p>
+    {% elif e["func"] in ["cB","aA","rA"] %}
+      {% if e["func"] == "cB" %}
+        <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
+        <span class='text'>Bank Created</span>
+      {% elif e["func"] == "aA" %}
+        <span class='icon'><i class='fa-solid fa-chess-king'></i></span>
+        <span class='text'>Bank Admin Added</span>
+      {% elif e["func"] == "rA" %}
+        <span class='icon'><i class='fa-solid fa-person-circle-xmark'></i></span>
+        <span class='text'>Bank Admin Removed</span>
+      {% endif %}
+      <p>bank: {{e["bankName"]}}</p>
+      <p>affected: {{e["bankAdmin"]}}</p>
+    {% elif e["func"] == "dB" %}
+      <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
+      <span class='text'>Bank Deleted</span>
+      <p>name: {{e["bankName"]}}</p>
+    {% elif e["func"] == "tT" %}
+      <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
+      <span class='text'>Token Transferred</span>
+      <p>bank: {{e["bankName"]}}</p>
+      <p>token address: {{e["tokenAddress"]}}</p>
+      <p>value: {{e["value"]}}</p>
+      <p>to: {{e["to"]}}</p>
+    {% elif e["func"] == "mT" %}
+      <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
+      <span class='text'>Token Moved</span>
+      <p>from: {{e["fromBankName"]}}</p>
+      <p>to: {{e["toBankName"]}}</p>
+      <p>token address: {{e["tokenAddress"]}}</p>
+      <p>value: {{e["value"]}}</p>
+    {% endif %}
+    <p>by: {{e["by"]}}</p>
+  </div>
+  <br>
+  {% endfor %}
   </section>
 </div>
 </div>

@@ -2,16 +2,6 @@ from app.funcs import *
 from app import db, models, w3
 from flask import request as flask_request
 import json
-from eth_abi import abi
-
-def decode_event(e):
-	if e["args"]["fName"] == "cB":
-		bankName, bankAdmin = abi.decode_abi(["string","address"])
-		return {"fName":fName, "bankName":bankName,"bankAdmin":bankAdmin, "by":e["args"]["by"]}
-	if e["args"]["fName"] == "sP":
-		permitName, newState = abi.decode_abi(["string","uint8"])
-		return {"fName":fName, "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
-	"""NOTE: FINISH REST"""
 
 def verify_credentials(handle,name,description,show_location,lat,lng):
 	handle = flask_request.form.get("handle")

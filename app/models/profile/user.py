@@ -33,11 +33,10 @@ followers = db.Table('followers',
 
 
 class User(UserMixin, db.Model, Base, locationBase):
-    id = db.Column(db.Integer, primary_key=True, unique=True)
     creation_datetime = db.Column(db.DateTime, index=True)
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
-    username = db.Column(db.String(120), index=True, unique=True)
+    username = db.Column(db.String(120), index=True, unique=True, primary_key=True)
     email = db.Column(db.String(120), index=True, unique=True)
     is_activated = db.Column(db.Boolean, default=False)
     phone_number = db.Column(db.String(15))

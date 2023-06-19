@@ -64,11 +64,11 @@ contract Administrable is Idea {
     mapping(uint256 => mapping(bytes32  => bool)) hasClaimedDividend;
 
     /// @notice Event that triggers when an action is taken by somebody.
-    /// @param fName The name of the function that was called.
+    /// @param func The name of the function that was called.
     /// @param args The arguments passed to the function call.
     /// @param by The initiator of the action.
     event ActionTaken(
-        string fName,
+        string func,
         bytes args,
         address by
         );
@@ -426,7 +426,7 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setPermit(string memory permitName, address account, PermitState newState, address by) internal onlyIfActive {
         permits[permitName][account] = newState;
-        emit ActionTaken("sB",abi.encode(permitName,account,newState),by);
+        emit ActionTaken("sP",abi.encode(permitName,account,newState),by);
 
     }
 
@@ -436,7 +436,7 @@ contract Administrable is Idea {
     /// @param by The initiator of the execution.
     function _setBasePermit(string memory permitName, PermitState newState, address by) internal onlyIfActive {
         basePermits[permitName] = newState;
-        emit ActionTaken("sP",abi.encode(permitName,newState),by);
+        emit ActionTaken("sB",abi.encode(permitName,newState),by);
     }
 
     /// @notice Sets the state of the Non Shard Holders.

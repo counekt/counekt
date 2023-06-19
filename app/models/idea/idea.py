@@ -8,19 +8,22 @@ from app.models.locationBase import locationBase
 from flask import url_for
 
 class Idea(db.Model, Base, locationBase):
-    id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String(42)) # ETH address
     block = db.Column(db.Integer) # ETH block number
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
-    handle = db.Column(db.String, index=True, unique=True)
+    handle = db.Column(db.String, index=True, unique=True, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
 
     photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     photo = db.relationship("Photo", foreign_keys=[photo_id])
+
+    events = db.relationship(
+        'Event', backref='entity', lazy='dynamic',
+        foreign_keys='Event.entity_id')
 
     def __init__(self, **kwargs):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
@@ -44,10 +47,22 @@ class Idea(db.Model, Base, locationBase):
             db.session.delete(self.group)
             db.session.delete(self)
 
-    def get_events(self):
+    def get_timeline(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         events = contract.events.ActionTaken.getLogs(fromBlock=self.block)
-        return events
+        return [funcs.decode_action_event(e) for e in events]
+
+    def update_timeline(self):
+        # for e in self.get_timeline()
+        #   if not e in self.events
+        #       event = Event(payload_json,timestamp)
+        #       self.events.append(e)
+        pass
+
+
+    @property
+    def timeline(self):
+        return url_for("idea.idea", handle=self.handle)
 
     @property
     def href(self):

@@ -94,7 +94,7 @@
 
 {% block scripts %}
 <!-- Probably good for now to have this below-->
-
+<script src="/static/js/idea/timeline.js"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/idea/idea.css">
 
@@ -463,13 +463,15 @@ function changeRoles() {
 }
 
 
-{% if request.url_rule.endpoint == 'profile.edit_idea' %}
+{% if request.url_rule.endpoint == 'idea.edit' %}
 window.history.replaceState({id:"edit-idea"},"Edit idea", "/€{{idea.handle}}/edit/");
-{% elif request.url_rule.endpoint == 'profile.idea_photo' %}
+{% elif request.url_rule.endpoint == 'idea.timeline' %}
+window.history.replaceState({id:"idea-timeline"},"Idea Timeline", "/€{{idea.handle}}/timeline/");
+{% elif request.url_rule.endpoint == 'idea.photo' %}
 window.history.replaceState({id:"idea-photo"},"Profile photo", "/€{{idea.handle}}/");
-{% elif request.url_rule.endpoint == 'profile.idea_add_members' %}
+{% elif request.url_rule.endpoint == 'idea.add_members' %}
 window.history.replaceState({id:"idea-add-members"},"idea add members", "/€{{idea.handle}}/add-members/");
-{% elif request.url_rule.endpoint == 'profile.idea_roles' %}
+{% elif request.url_rule.endpoint == 'idea.roles' %}
 window.history.replaceState({id:"idea-add-roles"},"Idea add roles", "/€{{idea.handle}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"idea-profile"},"Profile", "./");

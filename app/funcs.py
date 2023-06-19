@@ -13,6 +13,42 @@ from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
 import os
 import json
+from eth_abi import abi
+
+def decode_action_event(e):
+    if e["args"]["fName"] == "sP":
+        permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "sB":
+        permitName, newState = abi.decode_abi(["string","uint8"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "sNS":
+        newState = abi.decode_abi(["bool"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "newState":newState, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "iD":
+        bankName, tokenAddress, value = abi.decode_abi(["string","address","uint256"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "dD":
+        dividend = abi.decode_abi(["uint256"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "dividend":dividend, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "cD":
+        dividend, dividendValue = abi.decode_abi(["uint256", "uint256"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "dividend":dividend, "dividendValue":dividendValue, "by":e["args"]["by"]}
+    if e["args"]["fName"] in ["cB","aA","rA"]:
+        bankName, bankAdmin = abi.decode_abi(["string","address"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "dB":
+        bankName = abi.decode_abi(["string"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "bankName":bankName, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "tT":
+        bankName, tokenAddress, value, to = abi.decode_abi(["string","address","uint256","address"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "to":to, "by":e["args"]["by"]}
+    if e["args"]["fName"] == "mT":
+        fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
+        return {"func":e["args"]["fName"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
+
+def decode_action_events(events):
+    return [decode_action_event(e) for e in events]
 
 def get_bytecode():
     with open("solidity/build/contracts/Votable.json","r") as json_file:

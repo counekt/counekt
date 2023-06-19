@@ -4,7 +4,9 @@ from app.models import User
 from app.routes.api import bp
 from app.routes.api.auth import token_auth
 from app.routes.api.errors import bad_request
-
+import app.funcs as funcs
+import app.models as models
+import json
 
 @bp.route('/users/<int:id>/', methods=['GET'])
 @token_auth.login_required
@@ -78,3 +80,7 @@ def update_user(id):
     user.from_dict(data, new_user=False)
     db.session.commit()
     return jsonify(user.to_dict())
+
+@bp.route("/get/abi/", methods=["GET"])
+def get_abi():
+    return jsonify(funcs.get_abi())

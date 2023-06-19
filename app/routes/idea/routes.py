@@ -213,3 +213,10 @@ def timeline(handle):
     if not idea:
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
+
+
+@bp.route("/idea/<handle>/get/timeline/", methods=["GET"])
+@bp.route("/€<handle>/get/timeline/", methods=["GET"])
+def get_timeline(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first_or_404()
+    return render_template("idea/profile.html", idea=idea)
