@@ -22,34 +22,34 @@
     {% if e["func"] == "sP" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
-      <p>{{e["permitName"]}}</p>
-      <p>{{e["account"]}}</p>
-      <p>{{e["newState"]}}</p>
+      <p>permit: {{e["permitName"]}}</p>
+      <p>affected: {{e["account"]}}</p>
+      <p>new state: {{e["newState"]}}</p>
     {% elif e["func"] == "sB" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Base Permit Set</span>
-      <p>{{e["permitName"]}}</p>
-      <p>{{e["newState"]}}</p>
+      <p>permit: {{e["permitName"]}}</p>
+      <p>new state: {{e["newState"]}}</p>
     {% elif e["func"] == "sNS" %}
       <span class='icon'><i class='fa-solid fa-users'></i></span>
       <span class='text'>Non Shard Holder State Set</span>
-      <p>{{e["newState"]}}</p>
+      <p>new state: {{e["newState"]}}</p>
     {% elif e["func"] == "iD" %}
       <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
       <span class='text'>Dividend Issued</span>
-      <p>{{e["bankName"]}}</p>
-      <p>{{e["tokenAddress"]}}</p>
-      <p>{{e["value"]}}</p>
+      <p>from: {{e["bankName"]}}</p>
+      <p>token address: {{e["tokenAddress"]}}</p>
+      <p>value: {{e["value"]}}</p>
     {% elif e["func"] == "dD" %}
       <span class='icon'><i class='fa-solid fa-coins'></i></span>
       <span class='text'>Dividend Dissolved</span>
-      <p>{{e["dividend"]}}</p>
-      <p>{{e["dividendValue"]}}</p>
+      <p>dividend id: {{e["dividend"]}}</p>
+      <p>value dissolved: {{e["dividendValue"]}}</p>
     {% elif e["func"] == "cD" %}
       <span class='icon'><i class='fa-solid fa-cake-slice'></i></span>
       <span class='text'>Dividend Claimed</span>
-      <p>{{e["dividend"]}}</p>
-      <p>{{e["dividendValue"]}}</p>
+      <p>dividend id: {{e["dividend"]}}</p>
+      <p>claimed value: {{e["dividendValue"]}}</p>
     {% elif e["func"] in ["cB","aA","rA"] %}
       {% if e["func"] == "cB" %}
         <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
@@ -61,27 +61,28 @@
         <span class='icon'><i class='fa-solid fa-person-circle-xmark'></i></span>
         <span class='text'>Bank Admin Removed</span>
       {% endif %}
-      <p>{{e["bankName"]}}</p>
-      <p>{{e["bankAdmin"]}}</p>
+      <p>bank: {{e["bankName"]}}</p>
+      <p>affected: {{e["bankAdmin"]}}</p>
     {% elif e["func"] == "dB" %}
       <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
       <span class='text'>Bank Deleted</span>
-      <p>{{e["bankName"]}}</p>
+      <p>name: {{e["bankName"]}}</p>
     {% elif e["func"] == "tT" %}
       <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
       <span class='text'>Token Transferred</span>
-      <p>{{e["bankName"]}}</p>
-      <p>{{e["tokenAddress"]}}</p>
-      <p>{{e["value"]}}</p>
-      <p>{{e["to"]}}</p>
+      <p>bank: {{e["bankName"]}}</p>
+      <p>token address: {{e["tokenAddress"]}}</p>
+      <p>value: {{e["value"]}}</p>
+      <p>to: {{e["to"]}}</p>
     {% elif e["func"] == "mT" %}
       <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
       <span class='text'>Token Moved</span>
-      <p>{{e["fromBankName"]}}</p>
-      <p>{{e["toBankName"]}}</p>
-      <p>{{e["tokenAddress"]}}</p>
-      <p>{{e["value"]}}</p>
+      <p>from: {{e["fromBankName"]}}</p>
+      <p>to: {{e["toBankName"]}}</p>
+      <p>token address: {{e["tokenAddress"]}}</p>
+      <p>value: {{e["value"]}}</p>
     {% endif %}
+    <p>by: {{e["by"]}}</p>
   </div>
   <br>
   {% endfor %}
