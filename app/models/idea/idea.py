@@ -6,14 +6,17 @@ from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
 from flask import url_for
+from app.models.idea import Event
 
 class Idea(db.Model, Base, locationBase):
+    id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     address = db.Column(db.String(42)) # ETH address
     block = db.Column(db.Integer) # ETH block number
+    timeline_last_updated_at = db.Column(db.Integer) # ETH block number
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
-    handle = db.Column(db.String, index=True, unique=True, primary_key=True)
+    handle = db.Column(db.String, index=True, unique=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
@@ -50,14 +53,19 @@ class Idea(db.Model, Base, locationBase):
     def get_timeline(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         events = contract.events.ActionTaken.getLogs(fromBlock=self.block)
-        return [funcs.decode_action_event(e) for e in events]
+        return [funcs.decode_event_payload(e) for e in events]
 
     def update_timeline(self):
-        # for e in self.get_timeline()
-        #   if not e in self.events
-        #       event = Event(payload_json,timestamp)
-        #       self.events.append(e)
-        pass
+        # not tested yet...
+        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
+        events = contract.events.ActionTaken.getLogs(fromBlock=self.timeline_last_updated_at)
+        for e in events:
+            if not self.events.filter_by(block_hash=e.blockHash, transaction_hash=e.transactionHash,log_index=e.logIndex).first():
+                event = Event(block_hash=e.blockHash, transaction_hash=e.transactionHash,log_index=e.logIndex,timestamp=e.timestamp,payload_json=funcs.decode_event_payload(e))
+                self.events.append(event)
+                if e.blockNumber > self.timeline_last_updated_at:
+                    self.timeline_last_updated_at = e.blockNumber
+        db.session.commit()
 
 
     @property

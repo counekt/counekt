@@ -15,7 +15,7 @@ import os
 import json
 from eth_abi import abi
 
-def decode_action_event(e):
+def decode_event_payload(e):
     if e["args"]["fName"] == "sP":
         permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
         return {"func":e["args"]["fName"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
