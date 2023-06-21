@@ -47,9 +47,6 @@ def decode_event_payload(e):
         fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
         return {"func":e["args"]["fName"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
 
-def decode_action_events(events):
-    return [decode_action_event(e) for e in events]
-
 def get_bytecode():
     with open("solidity/build/contracts/Votable.json","r") as json_file:
         json_data = json.load(json_file)

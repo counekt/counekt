@@ -1,12 +1,13 @@
 from app import db, w3
 import app.funcs as funcs
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-import app.models.idea.group as group
+import app.models.idea.group as _group
 from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
 from flask import url_for
-from app.models.idea import Event
+import app.models.idea.event as _event
+import json
 
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
@@ -30,9 +31,10 @@ class Idea(db.Model, Base, locationBase):
 
     def __init__(self, **kwargs):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
+        self.timeline_last_updated_at = 0
         # do custom initialization here
         members = kwargs["members"]
-        self.group = group.Group(members=members)
+        self.group = _group.Group(members=members)
         for user in members:
             self.add_member(user)
         self.photo = Photo(filename="photo", path=f"static/ideas/{self.handle}/photo/", replacement="/static/images/idea.jpg")
@@ -56,17 +58,16 @@ class Idea(db.Model, Base, locationBase):
         return [funcs.decode_event_payload(e) for e in events]
 
     def update_timeline(self):
-        # not tested yet...
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
-        events = contract.events.ActionTaken.getLogs(fromBlock=self.timeline_last_updated_at)
+        events = contract.events.ActionTaken.getLogs(fromBlock=self.timeline_last_updated_at or self.block)
         for e in events:
-            if not self.events.filter_by(block_hash=e.blockHash, transaction_hash=e.transactionHash,log_index=e.logIndex).first():
-                event = Event(block_hash=e.blockHash, transaction_hash=e.transactionHash,log_index=e.logIndex,timestamp=e.timestamp,payload_json=funcs.decode_event_payload(e))
+            if not self.events.filter_by(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex).first():
+                timestamp = w3.eth.getBlock(e.blockNumber).timestamp
+                payload_json = json.dumps(funcs.decode_event_payload(e))
+                event = _event.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
-                if e.blockNumber > self.timeline_last_updated_at:
+                if e.blockNumber > int(self.timeline_last_updated_at):
                     self.timeline_last_updated_at = e.blockNumber
-        db.session.commit()
-
 
     @property
     def timeline(self):

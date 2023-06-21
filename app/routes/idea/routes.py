@@ -219,4 +219,4 @@ def timeline(handle):
 @bp.route("/€<handle>/get/timeline/", methods=["GET"])
 def get_timeline(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
-    return render_template("idea/profile.html", idea=idea)
+    return render_template("idea/timeline.html", idea=idea)
