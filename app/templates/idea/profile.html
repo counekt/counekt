@@ -393,6 +393,8 @@ $(document).on('click', '.modal-background', function() {
     redirect({id:"idea-profile"}, "Profile", "/€{{idea.handle}}/", changeToProfile);
 });
 
+$(document).on("click", '#reload-timeline', function() {update_timeline("{{idea.handle}}")});
+
 $(window).on("popstate", function() {
   if (window.history.state.id == "edit-idea") {
     changeToEdit()
