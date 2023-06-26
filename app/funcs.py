@@ -15,7 +15,7 @@ import os
 import json
 from eth_abi import abi
 
-def decode_action_event(e):
+def decode_event_payload(e):
     if e["args"]["fName"] == "sP":
         permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
         return {"func":e["args"]["fName"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
@@ -46,9 +46,6 @@ def decode_action_event(e):
     if e["args"]["fName"] == "mT":
         fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
         return {"func":e["args"]["fName"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
-
-def decode_action_events(events):
-    return [decode_action_event(e) for e in events]
 
 def get_bytecode():
     with open("solidity/build/contracts/Votable.json","r") as json_file:

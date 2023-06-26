@@ -206,9 +206,20 @@ def photo(handle):
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
 
-@ bp.route("/idea/<handle>/timeline/", methods=["GET"])
-@ bp.route("/€<handle>/timeline/", methods=["GET"])
+@ bp.route("/idea/<handle>/timeline/", methods=["GET", "POST"])
+@ bp.route("/€<handle>/timeline/", methods=["GET", "POST"])
 def timeline(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    if flask_request.method == 'POST':
+        idea.update_timeline()
+        return json.dumps({'status': 'success'})
+    return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
+
+@ bp.route("/idea/<handle>/ownership/", methods=["GET"])
+@ bp.route("/€<handle>/ownership/", methods=["GET"])
+def ownership(handle):
     idea = models.Idea.query.filter_by(handle=handle).first()
     if not idea:
         abort(404)
@@ -219,4 +230,4 @@ def timeline(handle):
 @bp.route("/€<handle>/get/timeline/", methods=["GET"])
 def get_timeline(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
-    return render_template("idea/profile.html", idea=idea)
+    return render_template("idea/timeline.html", idea=idea)

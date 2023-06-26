@@ -305,7 +305,7 @@ contract Shardable {
     /// @param numerator Numerator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param denominator Denominator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) onlyIfActive {
+    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock {
         require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "IF");
         uint256 transferTime = clock;
         if (isShardHolder(to)) { // if Receiver already owns a shard
@@ -338,7 +338,7 @@ contract Shardable {
     /// @notice Sends a whole shard to a receiver.
     /// @param senderShard The shard to be transferred.
     /// @param to The receiver of the new Shard.
-    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) onlyIfActive {
+    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock {
         uint256 transferTime = clock;
         if (isShardHolder(to)) {
 

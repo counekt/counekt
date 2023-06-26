@@ -1,5 +1,9 @@
 function update_timeline(handle) {
-        $.get("/€"+handle+"/get/timeline/", function(timeline, status) {
+        $.post("/€"+handle+"/timeline/",function(response) {
+                $.get("/€"+handle+"/get/timeline/", function(timeline, status) {
                         $("#timeline-content").html(timeline);
         });
+        });
+        
 }
+
