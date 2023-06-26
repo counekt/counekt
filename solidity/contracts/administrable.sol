@@ -307,7 +307,7 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to issue the Dividend from.
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
-    function _issueDividend(string memory bankName, address tokenAddress, uint256 value, address by) internal onlyIfActive incrementClock {
+    function _issueDividend(string memory bankName, address tokenAddress, uint256 value, address by) internal onlyIfActive {
         uint256 transferTime = clock;
         require(value <= balanceByBank[bankName][tokenAddress], "IF");
         balanceByBank[bankName][tokenAddress] -= value;

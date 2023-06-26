@@ -29,6 +29,10 @@ class Idea(db.Model, Base, locationBase):
         'Event', backref='entity', lazy='dynamic',
         foreign_keys='Event.entity_id')
 
+    shards = db.relationship(
+        'Shard', backref='entity', lazy='dynamic',
+        foreign_keys='Shard.entity_id')
+
     def __init__(self, **kwargs):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         self.timeline_last_updated_at = 0
@@ -58,7 +62,7 @@ class Idea(db.Model, Base, locationBase):
         return [funcs.decode_event_payload(e) for e in events]
 
     def update_timeline(self):
-        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
+        contract = self.get_w3_contract()
         events = contract.events.ActionTaken.getLogs(fromBlock=self.timeline_last_updated_at or self.block)
         for e in events:
             if not self.events.filter_by(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex).first():
@@ -68,6 +72,14 @@ class Idea(db.Model, Base, locationBase):
                 self.events.append(event)
                 if e.blockNumber > int(self.timeline_last_updated_at):
                     self.timeline_last_updated_at = e.blockNumber
+
+    def update_ownership(self):
+        pass
+        
+    def get_w3_contract(self):
+        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
+        return contract
+
 
     @property
     def timeline(self):

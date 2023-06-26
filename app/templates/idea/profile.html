@@ -84,6 +84,8 @@
 {% endwith %}
 {% elif request.url_rule.endpoint == 'idea.timeline' %}
 {% include "idea/timeline.html" %}
+{% elif request.url_rule.endpoint == 'idea.ownership' %}
+{% include "idea/ownership.html" %}
 {% elif request.url_rule.endpoint == 'idea.add_members' %}
 {% include "profile/add-members.html" %}
 {% elif request.url_rule.endpoint == 'profile.add_roles' %}
@@ -104,6 +106,9 @@
 <link rel="stylesheet" href="/static/css/profile/add-members.css">
 <link rel="stylesheet" href="/static/css/profile/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profile/profile.js"></script>
 <script src="/static/js/profile/user/profile.js"></script>
@@ -371,7 +376,7 @@ load_add_members_js();
     });
 
   $(document).on('click', '#ownership-button', function(e) {
-      redirect({id:"idea-ownership"},"Idea Ownership", "/€"+handle+"/timeline/", changeToOwnership);
+      redirect({id:"idea-ownership"},"Idea Ownership", "/€"+handle+"/ownership/", changeToOwnership);
       e.preventDefault();
     });
 
@@ -441,6 +446,31 @@ function changeToOwnership() {
   $("#modal-box").append(`
     {% include "idea/ownership.html" %}`);
   $(document.body).addClass('noscroll');
+  loadOwnershipChart();
+}
+
+function loadOwnershipChart() {
+  const ctx = document.getElementById('myChart');
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+  labels: [
+    'Counekt (0x49a71890aea5A751E30e740C504f2E9683f347bC)',
+    '0x49a71890aea5A751E30e740C504f2E9683f347bC',
+    '0x49a71890aea5A751E30e740C504f2E9683f347bC'
+  ],
+  datasets: [{
+    label: 'My First Dataset',
+    data: [99, 0.2, 1.5],
+    backgroundColor: [
+      'rgb(255, 99, 132)',
+      'rgb(54, 162, 235)',
+      'rgb(255, 205, 86)'
+    ],
+    hoverOffset: 4
+  }]
+}});
 }
 
 
@@ -486,6 +516,7 @@ window.history.replaceState({id:"edit-idea"},"Edit Idea", "/€{{idea.handle}}/e
 window.history.replaceState({id:"idea-timeline"},"Idea Timeline", "/€{{idea.handle}}/timeline/");
 {% elif request.url_rule.endpoint == 'idea.ownership' %}
 window.history.replaceState({id:"idea-timeline"},"Idea Ownership", "/€{{idea.handle}}/ownership/");
+  loadOwnershipChart();
 {% elif request.url_rule.endpoint == 'idea.photo' %}
 window.history.replaceState({id:"idea-photo"},"Profile Photo", "/€{{idea.handle}}/");
 {% elif request.url_rule.endpoint == 'idea.add_members' %}
