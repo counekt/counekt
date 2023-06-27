@@ -117,33 +117,31 @@ contract Shardable {
     mapping(bytes32 => ShardSale) saleByShard;
     // @notice Mapping pointing to an expired time given a shard.
     mapping(bytes32 => uint256) shardExpiredTime;
-    
-    /// @notice Event emitted when a Shard is split into two and fractionally transferred.
-    /// @param shard The Shard, which was split.
-    /// @param numerator Numerator of the absolute fraction of the offspring Shard.
-    /// @param denominator Denominator of the absolute fraction of the offspring Shard.
-    /// @param to The receiver of the splitted Shard.
-    event SplitMade(
-        bytes32 shard,
-        uint256 numerator,
-        uint256 denominator,
-        address to
+
+    /// @notice Event emitted when a Shard is created.
+    /// @param shard The Shard byte identifier, which was created.
+    /// @param creationTime The clock at which the shard was created.
+    /// @param owner The owner of the created Shard.
+    event NewShard(
+        address owner,
+        uint256 creationTime,
+        bytes32 shard
         );
 
     /// @notice Event emitted when a sale of a Shard is sold.
     /// @param shard The shard that was sold from.
     /// @param numerator Numerator of the absolute fraction of the Shard that was sold.
     /// @param denominator Denominator of the absolute fraction of the Shard that was sold.
+    /// @param to The buyer of the sale.
     /// @param tokenAddress The address of the token that was accepted in the purchase. A value of 0x0 represents ether.
     /// @param price The amount which the Shard was for sale for. The token address being the valuta.
-    /// @param to The buyer of the sale.
     event SaleSold(
         bytes32 shard,
         uint256 numerator,
         uint256 denominator,
+        address to,
         address tokenAddress,
         uint256 price,
-        address to
         );
 
     /// @notice Event emitted when a Shard is put up for sale.
@@ -228,7 +226,7 @@ contract Shardable {
         require(saleByShard[shard].numerator != 0 && saleByShard[shard].denominator != 0, "ES");
         if (fractionsAreIdentical(infoByShard[shard].numerator,infoByShard[shard].denominator,saleByShard[shard].numerator,saleByShard[shard].denominator)) {_transferShard(shard,msg.sender);}
         else {_split(shard, saleByShard[shard].numerator,saleByShard[shard].denominator,msg.sender);}
-        emit SaleSold(shard,saleByShard[shard].numerator,saleByShard[shard].denominator,saleByShard[shard].tokenAddress,saleByShard[shard].price,msg.sender);
+        emit SaleSold(shard,saleByShard[shard].numerator,saleByShard[shard].denominator,msg.sender,saleByShard[shard].tokenAddress,saleByShard[shard].price);
     }
 
     /// @notice Puts a given shard for sale.
@@ -305,7 +303,7 @@ contract Shardable {
     /// @param numerator Numerator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param denominator Denominator of the absolute fraction, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock {
+    function _split(bytes32 senderShard, uint256 numerator, uint256 denominator, address to) internal onlyValidShard(senderShard) onlyIfActive {
         require(numerator/denominator < infoByShard[senderShard].numerator/infoByShard[senderShard].denominator, "IF");
         uint256 transferTime = clock;
         if (isShardHolder(to)) { // if Receiver already owns a shard
@@ -330,7 +328,7 @@ contract Shardable {
         (uint256 diffNumerator, uint256 diffDenominator) = subtractFractions(infoByShard[senderShard].numerator,infoByShard[senderShard].denominator,numerator,denominator);
         _pushShard(diffNumerator,diffDenominator,infoByShard[senderShard].owner,transferTime);
         if (msg.sender != address(this)) {
-            emit SplitMade(senderShard,numerator,denominator,to);
+            emit SaleSold(senderShard,numerator,denominator,to,address(0),0);
         }
         
     }
@@ -338,7 +336,7 @@ contract Shardable {
     /// @notice Sends a whole shard to a receiver.
     /// @param senderShard The shard to be transferred.
     /// @param to The receiver of the new Shard.
-    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock {
+    function _transferShard(bytes32 senderShard, address to) internal onlyValidShard(senderShard) onlyIfActive {
         uint256 transferTime = clock;
         if (isShardHolder(to)) {
 
@@ -357,7 +355,7 @@ contract Shardable {
         _expireShard(senderShard, transferTime);
         
         if (msg.sender != address(this)) {
-            emit SplitMade(senderShard,infoByShard[senderShard].numerator,infoByShard[senderShard].numerator,to);
+            emit SplitMade(senderShard,infoByShard[senderShard].numerator,infoByShard[senderShard].denominator,to);
         }
     }
 
@@ -399,6 +397,8 @@ contract Shardable {
                                 owner: owner,
                                 creationTime: creationTime
                                 });
+        emit NewShard(msg.sender,creationTime,shard);
+
     }
 
     /// @notice Removes a shard from the registry of currently valid shards.
