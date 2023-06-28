@@ -20,7 +20,6 @@ contract Administrable is Idea {
     }
 
     /// @notice A struct representing the information of a Dividend given to all current Shard holders.
-    /// @param creationTime The clock at which the Dividend was created.
     /// @param tokenAddress The address of the token, in which the value of the Dividend is issued.
     /// @param value The original value/amount of the Dividend before claims.
     struct DividendInfo {
@@ -53,10 +52,10 @@ contract Administrable is Idea {
     /// @notice A mapping pointing to a boolean stating if a given Dividend is valid or not.
     mapping(uint256 => bool) validDividends;
 
-    /// @notice A mapping pointing to the info of a Dividend given the creation time of the Dividend.
+    /// @notice A mapping pointing to the info of a Dividend given the creation clock of the Dividend.
     mapping(uint256 => DividendInfo) infoByDividend;
 
-    /// @notice A mapping pointing to the residual of a Dividend given the creation time of the Dividend.
+    /// @notice A mapping pointing to the residual of a Dividend given the creation clock of the Dividend.
     mapping(uint256 => uint256) residualByDividend;
 
     /// @notice Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend, given the bank name and the shard.
@@ -120,7 +119,7 @@ contract Administrable is Idea {
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
-    /// @param shard The shard that was valid at the time of the Dividend creation
+    /// @param shard The shard that was valid at the clock of the Dividend creation
     /// @param dividend The dividend to be claimed.
     function claimDividend(bytes32 shard, uint256 dividend) external onlyHolder(shard) onlyExistingDividend(dividend) onlyIfActive {
         require(shardExisted(shard,dividend), "NAF");
@@ -308,18 +307,18 @@ contract Administrable is Idea {
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
     function _issueDividend(string memory bankName, address tokenAddress, uint256 value) internal onlyIfActive {
-        uint256 transferTime = clock;
+        uint256 transferClock = clock;
         require(value <= balanceByBank[bankName][tokenAddress], "IF");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             storedTokenAddressesByBank[bankName] -= 1;
         }
-        infoByDividend[transferTime] = DividendInfo({
+        infoByDividend[transferClock] = DividendInfo({
             tokenAddress:tokenAddress,
             value:value
         });
-        residualByDividend[transferTime] = value;
-        validDividends[transferTime] = true;
+        residualByDividend[transferClock] = value;
+        validDividends[transferClock] = true;
         emit ActionTaken("iD",abi.encode(bankName,tokenAddress,value),msg.sender);
     }
 

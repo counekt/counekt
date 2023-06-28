@@ -173,17 +173,17 @@ contract Votable is Administrable {
     /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
     /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
     function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData) internal onlyIfActive incrementClock {
-        uint256 transferTime = clock;
+        uint256 transferClock = clock;
         require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
-        pendingReferendums[transferTime] = true;
-        infoByReferendum[transferTime] = ReferendumInfo({
+        pendingReferendums[transferClock] = true;
+        infoByReferendum[transferClock] = ReferendumInfo({
             issuer: msg.sender,
             proposalFunctionNames: proposalFunctionNames,
             proposalArgumentData: proposalArgumentData
             });
-        favorDenominatorByReferendum[transferTime] = 1;
-        totalDenominatorByReferendum[transferTime] = 1;
-        emit ReferendumIssued(transferTime);
+        favorDenominatorByReferendum[transferClock] = 1;
+        totalDenominatorByReferendum[transferClock] = 1;
+        emit ReferendumIssued(transferClock);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
