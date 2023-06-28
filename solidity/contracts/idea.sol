@@ -38,31 +38,12 @@ contract Idea is Shardable {
         address from
     );
 
-    /// @notice Event that triggers when the entity is liquidized. Can only be emitted once during the lifetime of an entity.
-    /// @param by The initiator of the liquidization.
-    event EntityLiquidized(address by);
-
     /// @notice Event that triggers when part of the liquid is claimed following a liquidization.
     /// @param tokenAddress The address of the claimed token.
     /// @param value The value/amount of the claimed token.
     event LiquidClaimed(
         address tokenAddress,
         uint256 value,
-        address by
-    );
-
-    /// @notice Event that triggers when a token is registered.
-    /// @param tokenAddress The address of the registered token.
-    event TokenRegistered(
-        address tokenAddress,
-        address by
-
-    );
-
-    /// @notice Event that triggers when a token is registered
-    /// @param tokenAddress The address of the unregistered token.
-    event TokenUnregistered(
-        address tokenAddress,
         address by
     );
 
@@ -143,10 +124,8 @@ contract Idea is Shardable {
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
-    /// @param by The initiator of the liquidization.
-    function _liquidize(address by) internal onlyIfActive {
+    function _liquidize() virtual internal onlyIfActive {
         active = false; // stops trading of Shards
-        emit EntityLiquidized(by);
     }
 
     /// @notice Processes a token receipt and adds it to the token registry.
@@ -169,20 +148,17 @@ contract Idea is Shardable {
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
     /// @param tokenAddress The token address to be registered.
-    function _registerTokenAddress(address tokenAddress, address by) internal {
+    function _registerTokenAddress(address tokenAddress) virtual internal {
         require(!acceptsToken(tokenAddress), "AR");
         validTokenAddresses[tokenAddress] = true;
-        emit TokenRegistered(tokenAddress,by);
-
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
     /// @param tokenAddress The token address to be unregistered.
-    function _unregisterTokenAddress(address tokenAddress, address by) internal {
+    function _unregisterTokenAddress(address tokenAddress) virtual internal {
         require(acceptsToken(tokenAddress), "UT");
         require(liquid[tokenAddress] == 0, "NZ");
         validTokenAddresses[tokenAddress] = false;
-        emit TokenUnregistered(tokenAddress,by);
     }
 
 }

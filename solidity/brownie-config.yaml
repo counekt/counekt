@@ -4,7 +4,7 @@ compiler:
         version: null
         optimizer:
             enabled: true
-            runs: 150
+            runs: 200
         remappings: null
     vyper:
         version: null

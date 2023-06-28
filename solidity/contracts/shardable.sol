@@ -120,12 +120,12 @@ contract Shardable {
 
     /// @notice Event emitted when a Shard is created.
     /// @param shard The Shard byte identifier, which was created.
-    /// @param creationTime The clock at which the shard was created.
     /// @param owner The owner of the created Shard.
+    /// @param creationTime The clock at which the shard was created.
     event NewShard(
+        bytes32 shard,
         address owner,
-        uint256 creationTime,
-        bytes32 shard
+        uint256 creationTime
         );
 
     /// @notice Event emitted when a sale of a Shard is sold.
@@ -141,7 +141,7 @@ contract Shardable {
         uint256 denominator,
         address to,
         address tokenAddress,
-        uint256 price,
+        uint256 price
         );
 
     /// @notice Event emitted when a Shard is put up for sale.
@@ -327,10 +327,7 @@ contract Shardable {
         // The new Fraction of the Sender Shard has been subtracted by the Split Fraction.
         (uint256 diffNumerator, uint256 diffDenominator) = subtractFractions(infoByShard[senderShard].numerator,infoByShard[senderShard].denominator,numerator,denominator);
         _pushShard(diffNumerator,diffDenominator,infoByShard[senderShard].owner,transferTime);
-        if (msg.sender != address(this)) {
-            emit SaleSold(senderShard,numerator,denominator,to,address(0),0);
-        }
-        
+        emit SaleSold(senderShard,numerator,denominator,to,address(0),0);
     }
 
     /// @notice Sends a whole shard to a receiver.
@@ -354,9 +351,7 @@ contract Shardable {
         // Destroying the Old sender
         _expireShard(senderShard, transferTime);
         
-        if (msg.sender != address(this)) {
-            emit SplitMade(senderShard,infoByShard[senderShard].numerator,infoByShard[senderShard].denominator,to);
-        }
+        emit SaleSold(senderShard,infoByShard[senderShard].numerator,infoByShard[senderShard].denominator,to,address(0),0);
     }
 
     /// @notice Puts a given shard for sale.
@@ -397,7 +392,7 @@ contract Shardable {
                                 owner: owner,
                                 creationTime: creationTime
                                 });
-        emit NewShard(msg.sender,creationTime,shard);
+        emit NewShard(shard,owner,creationTime);
 
     }
 
