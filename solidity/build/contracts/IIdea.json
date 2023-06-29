@@ -26,16 +26,16 @@
     "absolutePath": "contracts/idea.sol",
     "exportedSymbols": {
       "Context": [
-        4934
+        4789
       ],
       "ERC20": [
-        4809
+        4664
       ],
       "IERC20": [
-        4887
+        4742
       ],
       "IERC20Metadata": [
-        4912
+        4767
       ],
       "IIdea": [
         1523
@@ -44,25 +44,22 @@
         1985
       ],
       "Shardable": [
-        3212
+        3067
       ],
       "addFractions": [
-        2174
+        2151
       ],
       "divideUnequallyIntoTwoWithRemainder": [
-        2063
-      ],
-      "fractionsAreIdentical": [
-        2011
+        2040
       ],
       "getCommonDenominator": [
-        2091
+        2068
       ],
       "simplifyFraction": [
-        2137
+        2114
       ],
       "subtractFractions": [
-        2211
+        2188
       ]
     },
     "id": 1986,
@@ -87,7 +84,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1986,
-        "sourceUnit": 3213,
+        "sourceUnit": 3068,
         "src": "71:25:1",
         "symbolAliases": [],
         "unitAlias": ""
@@ -206,7 +203,7 @@
                 "488:9:1"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 3212,
+              "referencedDeclaration": 3067,
               "src": "488:9:1"
             },
             "id": 1526,
@@ -227,7 +224,7 @@
         "id": 1985,
         "linearizedBaseContracts": [
           1985,
-          3212
+          3067
         ],
         "name": "Idea",
         "nameLocation": "480:4:1",
@@ -1038,7 +1035,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ERC20_$4809",
+                        "typeIdentifier": "t_contract$_ERC20_$4664",
                         "typeString": "contract ERC20"
                       },
                       "typeName": {
@@ -1051,13 +1048,13 @@
                             "2488:5:1"
                           ],
                           "nodeType": "IdentifierPath",
-                          "referencedDeclaration": 4809,
+                          "referencedDeclaration": 4664,
                           "src": "2488:5:1"
                         },
-                        "referencedDeclaration": 4809,
+                        "referencedDeclaration": 4664,
                         "src": "2488:5:1",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ERC20_$4809",
+                          "typeIdentifier": "t_contract$_ERC20_$4664",
                           "typeString": "contract ERC20"
                         }
                       },
@@ -1091,10 +1088,10 @@
                       "name": "ERC20",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4809,
+                      "referencedDeclaration": 4664,
                       "src": "2502:5:1",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ERC20_$4809_$",
+                        "typeIdentifier": "t_type$_t_contract$_ERC20_$4664_$",
                         "typeString": "type(contract ERC20)"
                       }
                     },
@@ -1110,7 +1107,7 @@
                     "src": "2502:19:1",
                     "tryCall": false,
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$4809",
+                      "typeIdentifier": "t_contract$_ERC20_$4664",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -1236,7 +1233,7 @@
                               "referencedDeclaration": 1599,
                               "src": "2539:5:1",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$4809",
+                                "typeIdentifier": "t_contract$_ERC20_$4664",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -1248,7 +1245,7 @@
                             "memberLocation": "2545:9:1",
                             "memberName": "allowance",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 4365,
+                            "referencedDeclaration": 4220,
                             "src": "2539:15:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_uint256_$",
@@ -1478,7 +1475,7 @@
                             "referencedDeclaration": 1599,
                             "src": "2613:5:1",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$4809",
+                              "typeIdentifier": "t_contract$_ERC20_$4664",
                               "typeString": "contract ERC20"
                             }
                           },
@@ -1490,7 +1487,7 @@
                           "memberLocation": "2619:12:1",
                           "memberName": "transferFrom",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 4423,
+                          "referencedDeclaration": 4278,
                           "src": "2613:18:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -1926,7 +1923,7 @@
                       "name": "shardByOwner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2250,
+                      "referencedDeclaration": 2227,
                       "src": "3113:12:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_mapping$_t_address_$_t_bytes32_$",
@@ -2314,10 +2311,10 @@
                             "name": "infoByShard",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2245,
+                            "referencedDeclaration": 2222,
                             "src": "3309:11:1",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_ShardInfo_$2221_storage_$",
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_ShardInfo_$2198_storage_$",
                               "typeString": "mapping(bytes32 => struct Shardable.ShardInfo storage ref)"
                             }
                           },
@@ -2341,7 +2338,7 @@
                           "nodeType": "IndexAccess",
                           "src": "3309:18:1",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_ShardInfo_$2221_storage",
+                            "typeIdentifier": "t_struct$_ShardInfo_$2198_storage",
                             "typeString": "struct Shardable.ShardInfo storage ref"
                           }
                         },
@@ -2353,7 +2350,7 @@
                         "memberLocation": "3328:9:1",
                         "memberName": "numerator",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 2214,
+                        "referencedDeclaration": 2191,
                         "src": "3309:28:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2375,10 +2372,10 @@
                           "name": "infoByShard",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2245,
+                          "referencedDeclaration": 2222,
                           "src": "3340:11:1",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_ShardInfo_$2221_storage_$",
+                            "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_ShardInfo_$2198_storage_$",
                             "typeString": "mapping(bytes32 => struct Shardable.ShardInfo storage ref)"
                           }
                         },
@@ -2402,7 +2399,7 @@
                         "nodeType": "IndexAccess",
                         "src": "3340:18:1",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_ShardInfo_$2221_storage",
+                          "typeIdentifier": "t_struct$_ShardInfo_$2198_storage",
                           "typeString": "struct Shardable.ShardInfo storage ref"
                         }
                       },
@@ -2414,7 +2411,7 @@
                       "memberLocation": "3359:11:1",
                       "memberName": "denominator",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 2216,
+                      "referencedDeclaration": 2193,
                       "src": "3340:30:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2834,7 +2831,7 @@
                     "3020:15:1"
                   ],
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2324,
+                  "referencedDeclaration": 2308,
                   "src": "3020:15:1"
                 },
                 "nodeType": "ModifierInvocation",
@@ -3566,7 +3563,7 @@
                             "stateVariable": false,
                             "storageLocation": "default",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$4809",
+                              "typeIdentifier": "t_contract$_ERC20_$4664",
                               "typeString": "contract ERC20"
                             },
                             "typeName": {
@@ -3579,13 +3576,13 @@
                                   "4847:5:1"
                                 ],
                                 "nodeType": "IdentifierPath",
-                                "referencedDeclaration": 4809,
+                                "referencedDeclaration": 4664,
                                 "src": "4847:5:1"
                               },
-                              "referencedDeclaration": 4809,
+                              "referencedDeclaration": 4664,
                               "src": "4847:5:1",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$4809",
+                                "typeIdentifier": "t_contract$_ERC20_$4664",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -3619,10 +3616,10 @@
                             "name": "ERC20",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4809,
+                            "referencedDeclaration": 4664,
                             "src": "4861:5:1",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_type$_t_contract$_ERC20_$4809_$",
+                              "typeIdentifier": "t_type$_t_contract$_ERC20_$4664_$",
                               "typeString": "type(contract ERC20)"
                             }
                           },
@@ -3638,7 +3635,7 @@
                           "src": "4861:19:1",
                           "tryCall": false,
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$4809",
+                            "typeIdentifier": "t_contract$_ERC20_$4664",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -3694,7 +3691,7 @@
                                   "referencedDeclaration": 1793,
                                   "src": "4902:5:1",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_ERC20_$4809",
+                                    "typeIdentifier": "t_contract$_ERC20_$4664",
                                     "typeString": "contract ERC20"
                                   }
                                 },
@@ -3706,7 +3703,7 @@
                                 "memberLocation": "4908:7:1",
                                 "memberName": "approve",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 4390,
+                                "referencedDeclaration": 4245,
                                 "src": "4902:13:1",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -3922,7 +3919,7 @@
                                         "referencedDeclaration": 1793,
                                         "src": "5225:5:1",
                                         "typeDescriptions": {
-                                          "typeIdentifier": "t_contract$_ERC20_$4809",
+                                          "typeIdentifier": "t_contract$_ERC20_$4664",
                                           "typeString": "contract ERC20"
                                         }
                                       },
@@ -3934,7 +3931,7 @@
                                       "memberLocation": "5231:8:1",
                                       "memberName": "transfer",
                                       "nodeType": "MemberAccess",
-                                      "referencedDeclaration": 4347,
+                                      "referencedDeclaration": 4202,
                                       "src": "5225:14:1",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -4270,7 +4267,7 @@
                     "name": "active",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2239,
+                    "referencedDeclaration": 2216,
                     "src": "5294:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
@@ -4853,7 +4850,7 @@
                       "name": "active",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2239,
+                      "referencedDeclaration": 2216,
                       "src": "5863:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -4910,7 +4907,7 @@
                     "5840:12:1"
                   ],
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2350,
+                  "referencedDeclaration": 2334,
                   "src": "5840:12:1"
                 },
                 "nodeType": "ModifierInvocation",
