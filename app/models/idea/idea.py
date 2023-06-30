@@ -1,19 +1,22 @@
 from app import db, w3
 import app.funcs as funcs
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-import app.models.idea.group as _group
 from app.models.static.photo import Photo
 from app.models.base import Base
 from app.models.locationBase import locationBase
 from flask import url_for
+import app.models.idea.group as _group
 import app.models.idea.event as _event
+import app.models.idea.shard as _shard
 import json
 
 class Idea(db.Model, Base, locationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     address = db.Column(db.String(42)) # ETH address
     block = db.Column(db.Integer) # ETH block number
+    current_clock = db.Column(db.Integer) # Shardable clock
     timeline_last_updated_at = db.Column(db.Integer) # ETH block number
+    ownership_last_updated_at = db.Column(db.Integer) # ETH block number
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
@@ -70,20 +73,46 @@ class Idea(db.Model, Base, locationBase):
                 payload_json = json.dumps(funcs.decode_event_payload(e))
                 event = _event.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
-                if e.blockNumber > int(self.timeline_last_updated_at):
+                if e.blockNumber > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = e.blockNumber
 
+        # TO BE CONTINUED...
+
     def update_ownership(self):
-        pass
-        
+        contract = self.get_w3_contract()
+        start_at = self.ownership_last_updated_at
+        # Register new shards
+        new_shards = contract.events.NewShard.getLogs(fromBlock=start_at or self.block)
+        for ns in new_shards:
+            if not self.shards.filter_by(identity=ns.args.shard).first():
+                shard = _shard.Shard(identity=ns.args.shard,owner_address=ns.args.owner,creation_clock=ns.args.creationClock)
+                shard_info = contract.functions.infoByShard(ns.args.shard).call()
+                shard.numerator, shard.denominator = shard_info[0], shard_info[1]
+                shard.creation_timestamp = w3.eth.getBlock(ns.blockNumber).timestamp
+                self.shards.append(shard)
+                if ns.blockNumber > int(self.ownership_last_updated_at or self.block):
+                    self.ownership_last_updated_at = ns.blockNumber
+        # Register expired shards
+        expired_shards = contract.events.ExpiredShard.getLogs(fromBlock=start_at or self.block)
+        for es in expired_shards:
+            shard = self.shards.filter_by(identity=es.args.shard).first()
+            shard.expiration_clock = es.args.expiration_clock
+            shard.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
+            if es.blockNumber > int(self.ownership_last_updated_at or self.block):
+                self.ownership_last_updated_at = es.blockNumber
+        # For reference to decide which shards are currently valid and which ones aren't
+        self.current_clock = contract.functions.getCurrentClock().call()
+
     def get_w3_contract(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         return contract
 
+    def get_shard_by_clock(self,owner_address,clock):
+        return self.shards.filter_by(owner_address=owner_address).filter(_shard.Shard.creation_clock <= self.current_clock < _shard.expiration_clock).first()
 
-    @property
-    def timeline(self):
-        return url_for("idea.idea", handle=self.handle)
+    @hybrid_property
+    def valid_shards(self):
+        return self.shards.filter(self.current_clock < _shard.Shard.expiration_clock).order_by(_shard.Shard.percentage.desc())
 
     @property
     def href(self):

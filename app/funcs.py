@@ -16,36 +16,36 @@ import json
 from eth_abi import abi
 
 def decode_event_payload(e):
-    if e["args"]["fName"] == "sP":
+    if e["args"]["func"] == "sP":
         permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "sB":
+        return {"func":e["args"]["func"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
+    if e["args"]["func"] == "sB":
         permitName, newState = abi.decode_abi(["string","uint8"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "sNS":
+        return {"func":e["args"]["func"], "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
+    if e["args"]["func"] == "sNS":
         newState = abi.decode_abi(["bool"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "newState":newState, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "iD":
+        return {"func":e["args"]["func"], "newState":newState, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iD":
         bankName, tokenAddress, value = abi.decode_abi(["string","address","uint256"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "dD":
+        return {"func":e["args"]["func"], "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
+    if e["args"]["func"] == "dD":
         dividend = abi.decode_abi(["uint256"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "dividend":dividend, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "cD":
+        return {"func":e["args"]["func"], "dividend":dividend, "by":e["args"]["by"]}
+    if e["args"]["func"] == "cD":
         dividend, dividendValue = abi.decode_abi(["uint256", "uint256"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "dividend":dividend, "dividendValue":dividendValue, "by":e["args"]["by"]}
-    if e["args"]["fName"] in ["cB","aA","rA"]:
+        return {"func":e["args"]["func"], "dividend":dividend, "dividendValue":dividendValue, "by":e["args"]["by"]}
+    if e["args"]["func"] in ["cB","aA","rA"]:
         bankName, bankAdmin = abi.decode_abi(["string","address"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "dB":
+        return {"func":e["args"]["func"], "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
+    if e["args"]["func"] == "dB":
         bankName = abi.decode_abi(["string"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "bankName":bankName, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "tT":
+        return {"func":e["args"]["func"], "bankName":bankName, "by":e["args"]["by"]}
+    if e["args"]["func"] == "tT":
         bankName, tokenAddress, value, to = abi.decode_abi(["string","address","uint256","address"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "to":to, "by":e["args"]["by"]}
-    if e["args"]["fName"] == "mT":
+        return {"func":e["args"]["func"], "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "to":to, "by":e["args"]["by"]}
+    if e["args"]["func"] == "mT":
         fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
-        return {"func":e["args"]["fName"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
+        return {"func":e["args"]["func"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
 
 def get_bytecode():
     with open("solidity/build/contracts/Votable.json","r") as json_file:
