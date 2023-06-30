@@ -28,7 +28,6 @@ def verify_credentials(handle,name,description,show_location,lat,lng):
 		return json.dumps({'status': 'Your Idea\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
 
 	if show_location:
-		idea = models.Idea(handle=handle.strip(), name=name.strip(), description=description.strip(), members=[current_user])
 
 		if not lat or not lng:
 			return json.dumps({'status': 'Coordinates must be filled in, if you want to show your Idea\'s location and or be visible on the map', 'box_id': 'location'})

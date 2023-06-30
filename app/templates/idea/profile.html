@@ -403,7 +403,9 @@ $(document).on('click', '.modal-background', function() {
     redirect({id:"idea-profile"}, "Profile", "/€{{idea.handle}}/", changeToProfile);
 });
 
-$(document).on("click", '#reload-timeline', function() {update_timeline("{{idea.handle}}")});
+$(document).on("click", '#reload-timeline', function() {
+  update_timeline("{{idea.handle}}");
+});
 
 $(window).on("popstate", function() {
   if (window.history.state.id == "edit-idea") {
@@ -451,28 +453,23 @@ function changeToOwnership() {
 
 function loadOwnershipChart() {
   const ctx = document.getElementById('myChart');
-
+  {% set valid_shards = idea.valid_shards %}
   new Chart(ctx, {
-    type: 'doughnut',
+    type: 'pie',
     data: {
   labels: [
-    'Counekt (0x49a71890aea5A751E30e740C504f2E9683f347bC)',
-    '0x49a71890aea5A751E30e740C504f2E9683f347bC',
-    '0x49a71890aea5A751E30e740C504f2E9683f347bC'
+    {% for s in valid_shards %}'{{s.owner_address}}',{% endfor %}
   ],
   datasets: [{
-    label: 'My First Dataset',
-    data: [99, 0.2, 1.5],
+    label: 'Percentage',
+    data: [{% for s in valid_shards %}{{s.percentage*100}},{% endfor %}],
     backgroundColor: [
-      'rgb(255, 99, 132)',
-      'rgb(54, 162, 235)',
-      'rgb(255, 205, 86)'
+      {% for s in valid_shards %}'rgb(255, 205, 86)',{% endfor %}
     ],
     hoverOffset: 4
   }]
 }});
 }
-
 
 function changeToEdit() {
   $("#modal-box").append(`

@@ -42,7 +42,7 @@ def create():
             return json.dumps({'status': 'success', "abi":abi, "bytecode":bytecode})
 
         elif step == "step-2":
-            current_app.logger.info("STEP 2 BABY")
+            current_app.logger.info("STEP 2")
             handle = flask_request.form.get("handle")
             name = flask_request.form.get("name")
             description = flask_request.form.get("description")
@@ -206,16 +206,23 @@ def photo(handle):
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
 
-@ bp.route("/idea/<handle>/timeline/", methods=["GET", "POST"])
-@ bp.route("/€<handle>/timeline/", methods=["GET", "POST"])
+@ bp.route("/idea/<handle>/timeline/", methods=["GET"])
+@ bp.route("/€<handle>/timeline/", methods=["GET"])
 def timeline(handle):
     idea = models.Idea.query.filter_by(handle=handle).first()
     if not idea:
         abort(404)
-    if flask_request.method == 'POST':
-        idea.update_timeline()
-        return json.dumps({'status': 'success'})
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
+
+@ bp.route("/idea/<handle>/update/timeline/", methods=["POST"])
+@ bp.route("/€<handle>/update/timeline/", methods=["POST"])
+def update_timeline(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    idea.update_timeline()
+    db.session.commit()
+    return json.dumps({'status': 'success'})
 
 @ bp.route("/idea/<handle>/ownership/", methods=["GET"])
 @ bp.route("/€<handle>/ownership/", methods=["GET"])
@@ -224,7 +231,6 @@ def ownership(handle):
     if not idea:
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
-
 
 @bp.route("/idea/<handle>/get/timeline/", methods=["GET"])
 @bp.route("/€<handle>/get/timeline/", methods=["GET"])
