@@ -1,0 +1,65 @@
+<script type="text/javascript" id="loadStructureChart">
+function loadStructureChart() {
+	simple_chart_config = {
+
+		hideRootNode: true,
+
+
+		chart: {
+			container: "#tree-simple",
+			connectors: {
+				type:"step"
+			}
+		},
+
+		nodeStructure: {
+			pseudo: true,
+			children: [
+			{
+				text: { name: "Banks" },
+
+				children: [
+					{
+					stackChildren: true,
+					text: { name: "main" },
+					children: [
+						{
+							text: { name: "04x" }
+						},
+						{
+							text: { name: "045x" }
+						}
+					]
+					},
+					{
+					stackChildren: true,
+					text: { name: "second" },
+					children: [{
+						text: { name: "05x" }
+							}
+						]
+					}
+					]
+
+			},
+			{	stackChildren: true,
+				text: { name: "Dividends" },
+
+				children: [
+					{
+					text: { name: "0" }
+					},
+					{
+					text: { name: "1" }
+					}
+				]
+			}
+			]
+		}
+
+	};
+	var chart = new Treant(simple_chart_config, function() { }, $ );
+}
+</script>
+
+

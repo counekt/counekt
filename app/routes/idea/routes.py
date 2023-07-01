@@ -259,4 +259,11 @@ def get_ownership(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
     return render_template("idea/load-ownership-chart.html", idea=idea)
 
+@ bp.route("/idea/<handle>/structure/", methods=["GET"])
+@ bp.route("/€<handle>/structure/", methods=["GET"])
+def structure(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
 
