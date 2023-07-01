@@ -1,3 +1,4 @@
+{% if current_user.is_authenticated %}
 {% if request.url_rule.endpoint != 'profiles.notifications' %}
 {% include "navbar/notif-bell/clean.html" %}
 {% endif %}
@@ -12,7 +13,7 @@
 </p>
 {% endif %}
 -->
-{% if current_user.is_authenticated %}
+
 {% if request.url_rule.endpoint != 'profiles.user' or current_user != user %}
 <p class="control">
     <a href="/user/{{current_user.username}}/" class="button transition {% if class %}{{class}}{% endif %}">
@@ -22,6 +23,7 @@
     </a>
   </p>
 {% endif %}
+{% endif %}
 {% if request.url_rule.endpoint != 'main.settings' %}
 <p class="control">
   <a class="button transition {% if class %}{{class}}{% endif %}" id="wallet-button" data-status="closed">
@@ -30,5 +32,4 @@
     </span>
   </a>
 </p>
-{% endif %}
 {% endif %}
