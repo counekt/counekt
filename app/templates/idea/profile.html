@@ -97,6 +97,7 @@
 {% block scripts %}
 <!-- Probably good for now to have this below-->
 <script src="/static/js/idea/timeline.js"></script>
+<script src="/static/js/idea/ownership.js"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/idea/idea.css">
 
@@ -121,6 +122,7 @@
 <script src="/static/js/profile/add-members.js"></script>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% include "idea/load-ownership-chart.html" %}
 <script type="text/javascript">
 
   var handle = "{{idea.handle}}";
@@ -407,6 +409,10 @@ $(document).on("click", '#reload-timeline', function() {
   update_timeline("{{idea.handle}}");
 });
 
+$(document).on("click", '#reload-ownership', function() {
+  update_ownership("{{idea.handle}}");
+});
+
 $(window).on("popstate", function() {
   if (window.history.state.id == "edit-idea") {
     changeToEdit()
@@ -451,26 +457,6 @@ function changeToOwnership() {
   loadOwnershipChart();
 }
 
-function loadOwnershipChart() {
-  const ctx = document.getElementById('myChart');
-  {% set valid_shards = idea.valid_shards %}
-  new Chart(ctx, {
-    type: 'pie',
-    data: {
-  labels: [
-    {% for s in valid_shards %}'{{s.owner_address}}',{% endfor %}
-  ],
-  datasets: [{
-    label: 'Percentage',
-    data: [{% for s in valid_shards %}{{s.percentage*100}},{% endfor %}],
-    backgroundColor: [
-      {% for s in valid_shards %}'rgb(255, 205, 86)',{% endfor %}
-    ],
-    hoverOffset: 4
-  }]
-}});
-}
-
 function changeToEdit() {
   $("#modal-box").append(`
     {% include "idea/edit.html" %}`);
@@ -512,7 +498,7 @@ window.history.replaceState({id:"edit-idea"},"Edit Idea", "/€{{idea.handle}}/e
 {% elif request.url_rule.endpoint == 'idea.timeline' %}
 window.history.replaceState({id:"idea-timeline"},"Idea Timeline", "/€{{idea.handle}}/timeline/");
 {% elif request.url_rule.endpoint == 'idea.ownership' %}
-window.history.replaceState({id:"idea-timeline"},"Idea Ownership", "/€{{idea.handle}}/ownership/");
+window.history.replaceState({id:"idea-ownership"},"Idea Ownership", "/€{{idea.handle}}/ownership/");
   loadOwnershipChart();
 {% elif request.url_rule.endpoint == 'idea.photo' %}
 window.history.replaceState({id:"idea-photo"},"Profile Photo", "/€{{idea.handle}}/");
