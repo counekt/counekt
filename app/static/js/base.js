@@ -16,7 +16,6 @@ else {
     $(this).parent('.dropdown').addClass('is-active');
     console.log($(this).parent('.dropdown'));
         $(this).parent('.dropdown').addClass('is-active');
-
  });
 
  $(document).click(function(event) { 

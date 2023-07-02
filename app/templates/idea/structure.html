@@ -1,0 +1,40 @@
+<div class="modal is-active">
+<div class="modal-background"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Structure of {{idea.name}}</p>
+      <p class="control">
+        <button class="button is-info is-normal is-rounded" id="reload-structure">
+          <span class="icon is-small">
+            <i class="fa fa-refresh"></i>
+          </span>
+        </button>
+    </p>
+  </header>
+  <section id="structure-content" class="modal-card-body has-text-centered">
+    <div id="structure-tabs" class="tabs is-centered is-fullwidth" style="width:100%;">
+      <ul>
+        <li data-content="#banks-tab" class="is-active"><a>Banks</a></li>
+        <li data-content="#permits-tab"><a>Permits</a></li>
+        <li data-content="#dividends-tab"><a>Dividends</a></li>
+      </ul>
+    </div>
+    <div id="structure-tabs-content">
+    <div id="banks-tab" class="structure-tab-content">
+      Banks
+    </div>
+    <div id="permits-tab" class="structure-tab-content vanish">
+      Permits
+    </div>
+    <div id="dividends-tab" class="structure-tab-content vanish">
+      Dividends
+    </div>
+</div>
+  </section>
+</div>
+</div>

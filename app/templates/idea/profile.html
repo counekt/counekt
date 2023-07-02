@@ -86,6 +86,8 @@
 {% include "idea/timeline.html" %}
 {% elif request.url_rule.endpoint == 'idea.ownership' %}
 {% include "idea/ownership.html" %}
+{% elif request.url_rule.endpoint == 'idea.structure' %}
+{% include "idea/structure.html" %}
 {% elif request.url_rule.endpoint == 'idea.add_members' %}
 {% include "profile/add-members.html" %}
 {% elif request.url_rule.endpoint == 'profile.add_roles' %}
@@ -97,6 +99,8 @@
 {% block scripts %}
 <!-- Probably good for now to have this below-->
 <script src="/static/js/idea/timeline.js"></script>
+<script src="/static/js/idea/ownership.js"></script>
+<script src="/static/js/idea/structure.js"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/idea/idea.css">
 
@@ -107,7 +111,14 @@
 <link rel="stylesheet" href="/static/css/profile/add-roles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 
+<!-- For charts: -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- For tree charts: 
+<script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/Treant.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/vendor/raphael.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/Treant.css"></script>
+-->
 
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profile/profile.js"></script>
@@ -121,6 +132,7 @@
 <script src="/static/js/profile/add-members.js"></script>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% include "idea/load-ownership-chart.html" %}
 <script type="text/javascript">
 
   var handle = "{{idea.handle}}";
@@ -380,6 +392,11 @@ load_add_members_js();
       e.preventDefault();
     });
 
+  $(document).on('click', '#structure-button', function(e) {
+      redirect({id:"idea-structure"},"Idea Structure", "/€"+handle+"/structure/", changeToStructure);
+      e.preventDefault();
+    });
+
   $(document).on('click', '#edit-button', function(e) {
     redirect({id:"edit-idea"},"Edit Idea", "/€"+handle+"/edit/", changeToEdit);
     e.preventDefault();
@@ -405,6 +422,10 @@ $(document).on('click', '.modal-background', function() {
 
 $(document).on("click", '#reload-timeline', function() {
   update_timeline("{{idea.handle}}");
+});
+
+$(document).on("click", '#reload-ownership', function() {
+  update_ownership("{{idea.handle}}");
 });
 
 $(window).on("popstate", function() {
@@ -435,6 +456,10 @@ $(window).on("popstate", function() {
     changeToOwnership();
   }
 
+  else if (window.history.state.id == "idea-structure") {
+    changeToStructure();
+  }
+
 
 });
 
@@ -451,24 +476,10 @@ function changeToOwnership() {
   loadOwnershipChart();
 }
 
-function loadOwnershipChart() {
-  const ctx = document.getElementById('myChart');
-  {% set valid_shards = idea.valid_shards %}
-  new Chart(ctx, {
-    type: 'pie',
-    data: {
-  labels: [
-    {% for s in valid_shards %}'{{s.owner_address}}',{% endfor %}
-  ],
-  datasets: [{
-    label: 'Percentage',
-    data: [{% for s in valid_shards %}{{s.percentage*100}},{% endfor %}],
-    backgroundColor: [
-      {% for s in valid_shards %}'rgb(255, 205, 86)',{% endfor %}
-    ],
-    hoverOffset: 4
-  }]
-}});
+function changeToStructure() {
+  $("#modal-box").append(`
+    {% include "idea/structure.html" %}`);
+  $(document.body).addClass('noscroll');
 }
 
 function changeToEdit() {
@@ -512,8 +523,10 @@ window.history.replaceState({id:"edit-idea"},"Edit Idea", "/€{{idea.handle}}/e
 {% elif request.url_rule.endpoint == 'idea.timeline' %}
 window.history.replaceState({id:"idea-timeline"},"Idea Timeline", "/€{{idea.handle}}/timeline/");
 {% elif request.url_rule.endpoint == 'idea.ownership' %}
-window.history.replaceState({id:"idea-timeline"},"Idea Ownership", "/€{{idea.handle}}/ownership/");
+window.history.replaceState({id:"idea-ownership"},"Idea Ownership", "/€{{idea.handle}}/ownership/");
   loadOwnershipChart();
+{% elif request.url_rule.endpoint == 'idea.structure' %}
+window.history.replaceState({id:"idea-structure"},"Idea Structure", "/€{{idea.handle}}/structure/");
 {% elif request.url_rule.endpoint == 'idea.photo' %}
 window.history.replaceState({id:"idea-photo"},"Profile Photo", "/€{{idea.handle}}/");
 {% elif request.url_rule.endpoint == 'idea.add_members' %}

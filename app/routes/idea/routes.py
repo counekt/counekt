@@ -198,6 +198,7 @@ def add_members(handle):
 
     return render_template("idea/profile.html", idea=idea, background=True, navbar=True, size="medium", noscroll=True)
 
+
 @ bp.route("/idea/<handle>/photo/", methods=["GET"])
 @ bp.route("/€<handle>/photo/", methods=["GET"])
 def photo(handle):
@@ -206,6 +207,7 @@ def photo(handle):
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
 
+
 @ bp.route("/idea/<handle>/timeline/", methods=["GET"])
 @ bp.route("/€<handle>/timeline/", methods=["GET"])
 def timeline(handle):
@@ -213,6 +215,7 @@ def timeline(handle):
     if not idea:
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
+
 
 @ bp.route("/idea/<handle>/update/timeline/", methods=["POST"])
 @ bp.route("/€<handle>/update/timeline/", methods=["POST"])
@@ -224,6 +227,14 @@ def update_timeline(handle):
     db.session.commit()
     return json.dumps({'status': 'success'})
 
+
+@bp.route("/idea/<handle>/get/timeline/", methods=["GET"])
+@bp.route("/€<handle>/get/timeline/", methods=["GET"])
+def get_timeline(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first_or_404()
+    return render_template("idea/timeline.html", idea=idea)
+
+
 @ bp.route("/idea/<handle>/ownership/", methods=["GET"])
 @ bp.route("/€<handle>/ownership/", methods=["GET"])
 def ownership(handle):
@@ -232,8 +243,27 @@ def ownership(handle):
         abort(404)
     return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
 
-@bp.route("/idea/<handle>/get/timeline/", methods=["GET"])
-@bp.route("/€<handle>/get/timeline/", methods=["GET"])
-def get_timeline(handle):
+@ bp.route("/idea/<handle>/update/ownership/", methods=["POST"])
+@ bp.route("/€<handle>/update/ownership/", methods=["POST"])
+def update_ownership(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    idea.update_ownership()
+    db.session.commit()
+    return json.dumps({'status': 'success'})
+
+@bp.route("/idea/<handle>/get/ownership/", methods=["GET"])
+@bp.route("/€<handle>/get/ownership/", methods=["GET"])
+def get_ownership(handle):
     idea = models.Idea.query.filter_by(handle=handle).first_or_404()
-    return render_template("idea/timeline.html", idea=idea)
+    return render_template("idea/load-ownership-chart.html", idea=idea)
+
+@ bp.route("/idea/<handle>/structure/", methods=["GET"])
+@ bp.route("/€<handle>/structure/", methods=["GET"])
+def structure(handle):
+    idea = models.Idea.query.filter_by(handle=handle).first()
+    if not idea:
+        abort(404)
+    return render_template("idea/profile.html", idea=idea, noscroll=True, background=True, navbar=True, size="medium")
+
