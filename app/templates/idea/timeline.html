@@ -17,9 +17,10 @@
     </p>
   </header>
   <section id="timeline-content" class="modal-card-body has-text-centered">
+  <table class="table is-striped is-bordered is-fullwidth">
   {% for e in idea.events[::-1] %}
+  <tr><td>
   {% set payload = e.payload %}
-  <div>
     {% if payload["func"] == "sP" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
@@ -69,24 +70,24 @@
       <span class='text'>Bank Deleted</span>
       <p>name: {{payload["bankName"]}}</p>
     {% elif payload["func"] == "tT" %}
-      <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
-      <span class='text'>Token Transferred</span>
-      <p>bank: {{payload["bankName"]}}</p>
-      <p>token address: {{payload["tokenAddress"]}}</p>
-      <p>value: {{payload["value"]}}</p>
-      <p>to: {{payload["to"]}}</p>
-    {% elif payload["func"] == "mT" %}
-      <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
-      <span class='text'>Token Moved</span>
-      <p>from: {{payload["fromBankName"]}}</p>
-      <p>to: {{payload["toBankName"]}}</p>
-      <p>token address: {{payload["tokenAddress"]}}</p>
-      <p>value: {{payload["value"]}}</p>
-    {% endif %}
-    <p>by: {{payload["by"]}}</p>
-  </div>
-  <br>
-  {% endfor %}
-  </section>
+    <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
+    <span class='text'>Token Transferred</span>
+    <p>bank: {{payload["bankName"]}}</p>
+    <p>token address: {{payload["tokenAddress"]}}</p>
+    <p>value: {{payload["value"]}}</p>
+    <p>to: {{payload["to"]}}</p>
+  {% elif payload["func"] == "mT" %}
+    <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
+    <span class='text'>Token Moved</span>
+    <p>from: {{payload["fromBankName"]}}</p>
+    <p>to: {{payload["toBankName"]}}</p>
+    <p>token address: {{payload["tokenAddress"]}}</p>
+    <p>value: {{payload["value"]}}</p>
+  {% endif %}
+  <p>by: {{payload["by"]}}</p>
+</td></tr>
+{% endfor %}
+</table>
+</section>
 </div>
 </div>
