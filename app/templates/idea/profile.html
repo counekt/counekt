@@ -100,6 +100,7 @@
 <!-- Probably good for now to have this below-->
 <script src="/static/js/idea/timeline.js"></script>
 <script src="/static/js/idea/ownership.js"></script>
+<script src="/static/js/idea/structure.js"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/idea/idea.css">
 
@@ -113,10 +114,11 @@
 <!-- For charts: -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- For tree charts: -->
+<!-- For tree charts: 
 <script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/Treant.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/vendor/raphael.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/Treant.css"></script>
+-->
 
 <!-- Probably good for now to have this below-->
 <script src="/static/js/profile/profile.js"></script>
@@ -131,7 +133,6 @@
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 {% include "idea/load-ownership-chart.html" %}
-{% include "idea/load-structure-chart.html" %}
 <script type="text/javascript">
 
   var handle = "{{idea.handle}}";
@@ -479,7 +480,6 @@ function changeToStructure() {
   $("#modal-box").append(`
     {% include "idea/structure.html" %}`);
   $(document.body).addClass('noscroll');
-  loadStructureChart();
 }
 
 function changeToEdit() {
@@ -527,7 +527,6 @@ window.history.replaceState({id:"idea-ownership"},"Idea Ownership", "/€{{idea.
   loadOwnershipChart();
 {% elif request.url_rule.endpoint == 'idea.structure' %}
 window.history.replaceState({id:"idea-structure"},"Idea Structure", "/€{{idea.handle}}/structure/");
-  loadStructureChart();
 {% elif request.url_rule.endpoint == 'idea.photo' %}
 window.history.replaceState({id:"idea-photo"},"Profile Photo", "/€{{idea.handle}}/");
 {% elif request.url_rule.endpoint == 'idea.add_members' %}
