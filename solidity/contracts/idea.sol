@@ -70,7 +70,7 @@ contract Idea is Shardable {
         bytes32 shard = shardByOwner[msg.sender];
         require(!hasClaimedLiquid[tokenAddress][shard], "AC");
         hasClaimedLiquid[tokenAddress][shard] = true;
-        uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].amount / totalShardAmount;
         require(liquidValue != 0, "");
         liquidResidual[tokenAddress] -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);

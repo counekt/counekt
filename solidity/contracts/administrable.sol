@@ -125,7 +125,7 @@ contract Administrable is Idea {
         require(shardExisted(shard,dividend), "NAF");
         require(hasClaimedDividend[dividend][shard] == false, "AC");
         hasClaimedDividend[dividend][shard] = true;
-        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].amount / totalShardAmount;
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
@@ -143,7 +143,6 @@ contract Administrable is Idea {
     function unregisterTokenAddress(address tokenAddress) external onlyWithPermit("mAT") onlyIfActive {
         _unregisterTokenAddress(tokenAddress);
     }
-
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
     /// @param bankName The name of the Bank to issue the Dividend from.

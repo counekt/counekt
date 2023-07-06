@@ -24,23 +24,23 @@ contract Shardable {
 
     /// @notice A struct representing the related info of a non-fungible Shard token.
     /// @dev Is represented via a bytes32 value created from the hash: keccak256(owner, creationClock).
-    /// @param numerator Numerator of the fraction that the Shard represents.
+    /// @param amount Amount that the Shard represents.
     /// @param owner The owner of the Shard.
     /// @param creationClock The clock at which the Shard was created.
     /// @param expiredClock The clock at which the Shard expired. Default is set to the maximum value.
     struct ShardInfo {
-        uint256 numerator;
+        uint256 amount;
         address owner; 
         uint256 creationClock;        
     }
 
     /// @notice A struct representing the related sale info of a non-fungible Shard token.
-    /// @param numerator Numerator of the fraction that is for sale.
+    /// @param amount Amount that is for sale.
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to Address pointing to a potentially specifically set buyer of the sale.
     struct ShardSale {
-        uint256 numerator;
+        uint256 amount;
         address tokenAddress;
         uint256 price;
         address to;
@@ -51,6 +51,10 @@ contract Shardable {
 
     /// @notice Boolean stating if the Shardable is active and tradeable or not.
     bool public active;
+
+    /// @notice Integer value representing the total number of shards issued. Used as the denominator to represent a relative shard fraction.
+    uint256 public totalShardAmount;
+
     /// @notice Mapping pointing to related info of a Shard given the bytes of a unique Shard instance.
     mapping(bytes32 => ShardInfo) public infoByShard;
     /// @notice Mapping pointing to a currently valid shard given the address of its owner.
@@ -264,7 +268,7 @@ contract Shardable {
         // Expire the Old Sender Shard
         _expireShard(senderShard, transferClock);
         // The new amount of the Sender Shard has been subtracted by the Split amount.
-        diff = infoByShard[senderShard].numerator - amount;
+        diff = infoByShard[senderShard].amount - amount;
         if (diff != 0) {
         _pushShard(diff,infoByShard[senderShard].owner,transferClock);
         }

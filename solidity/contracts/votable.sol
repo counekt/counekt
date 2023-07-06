@@ -23,15 +23,11 @@ contract Votable is Administrable {
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
     mapping(uint256 => ReferendumInfo) public infoByReferendum;
 
-    /// @notice Mapping pointing to favor numerator of a given Referendum.
-    mapping(uint256 => uint256) favorNumeratorByReferendum;
-    /// @notice Mapping pointing to favor denominator of a given Referendum.
-    mapping(uint256 => uint256) favorDenominatorByReferendum;
+    /// @notice Mapping pointing to amount of favor votes on given Referendum.
+    mapping(uint256 => uint256) favorAmountByReferendum;
 
-    /// @notice Mapping pointing to numerator of total votes on a given Referendum.
-    mapping(uint256 => uint256) totalNumeratorByReferendum;
-    /// @notice Mapping pointing to denominator of total votes on given Referendum.
-    mapping(uint256 => uint256) totalDenominatorByReferendum;
+    /// @notice Mapping pointing to amount of total votes on given Referendum.
+    mapping(uint256 => uint256) totalAmountByReferendum;
 
     /// @notice Mapping pointing to amount proposals implemented of a given Referendum.
     mapping(uint256 => uint256) amountImplementedByReferendum;
@@ -95,15 +91,13 @@ contract Votable is Administrable {
         require(shardExisted(shard,referendum), "SNV");
         hasVotedOnReferendum[referendum][shard] = true;
         if (favor) {
-            (uint256 favorNumerator, uint256 favorDenominator) = addFractions(favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
-            (favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum]) = simplifyFraction(favorNumerator, favorDenominator);
+            favorAmountByReferendum[referendum] += infoByShard[shard].amount;
         }
-        (uint256 totalNumerator, uint256 totalDenominator) = addFractions(totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
-        (totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum]) = simplifyFraction(totalNumerator,totalDenominator);
+        totalAmountByReferendum[referendum] += infoByShard[shard].amount;
         
         emit VoteCast(referendum, favor, msg.sender);
         bool passed = getReferendumResult(referendum);
-        if (passed || totalNumeratorByReferendum[referendum] / totalDenominatorByReferendum[referendum] == 1 ) {
+        if (passed || totalAmountByReferendum[referendum] == totalShardAmount ) {
 
             pendingReferendums[referendum] = false;
             if (passed) { // if it got voted through
@@ -138,7 +132,7 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     function getReferendumResult(uint256 referendum) public view returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
-        if ((favorNumeratorByReferendum[referendum] / favorDenominatorByReferendum[referendum]) * 2 > 1) {
+        if ((favorAmountByReferendum[referendum] / totalShardAmount) * 2 > 1) {
             return true;
         }
         return false;
@@ -181,8 +175,6 @@ contract Votable is Administrable {
             proposalFunctionNames: proposalFunctionNames,
             proposalArgumentData: proposalArgumentData
             });
-        favorDenominatorByReferendum[transferClock] = 1;
-        totalDenominatorByReferendum[transferClock] = 1;
         emit ReferendumIssued(transferClock);
     }
 
