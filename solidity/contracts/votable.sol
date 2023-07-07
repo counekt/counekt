@@ -97,7 +97,7 @@ contract Votable is Administrable {
         
         emit VoteCast(referendum, favor, msg.sender);
         bool passed = getReferendumResult(referendum);
-        if (passed || totalAmountByReferendum[referendum] == totalShardAmount ) {
+        if (passed || totalAmountByReferendum[referendum] == totalShardAmountByClock[referendum] ) {
 
             pendingReferendums[referendum] = false;
             if (passed) { // if it got voted through
@@ -132,7 +132,7 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     function getReferendumResult(uint256 referendum) public view returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
-        if ((favorAmountByReferendum[referendum] / totalShardAmount) * 2 > 1) {
+        if ((favorAmountByReferendum[referendum] / totalShardAmountByClock[referendum]) * 2 > 1) {
             return true;
         }
         return false;

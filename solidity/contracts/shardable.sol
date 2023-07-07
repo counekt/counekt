@@ -52,8 +52,8 @@ contract Shardable {
     /// @notice Boolean stating if the Shardable is active and tradeable or not.
     bool public active;
 
-    /// @notice Integer value representing the total number of shards issued. Used as the denominator to represent a relative shard fraction.
-    uint256 public totalShardAmount;
+    /// @notice Mapping pointing to integer value representing the total number of shards issued, provided the clock. Used as the denominator to represent a relative shard fraction.
+    mapping(uint256 => uint256) public totalShardAmountByClock;
 
     /// @notice Mapping pointing to related info of a Shard given the bytes of a unique Shard instance.
     mapping(bytes32 => ShardInfo) public infoByShard;
@@ -154,6 +154,7 @@ contract Shardable {
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard) external payable onlyValidShard(shard) {
         require(shardsForSale[shard], "NS");
+        require(saleByShard[shard].amount != 0, "ES");
         require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "SR");
         _cancelSale(shard);
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(saleByShard[shard].price,25,1000);
@@ -175,7 +176,6 @@ contract Shardable {
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         } 
-        require(saleByShard[shard].amount != 0, "ES");
         _split(shard, saleByShard[shard].amount,msg.sender);
         emit SaleSold(shard,saleByShard[shard].amount,msg.sender,saleByShard[shard].tokenAddress,saleByShard[shard].price);
     }
@@ -237,6 +237,13 @@ contract Shardable {
     /// @param atClock The clock to be checked for.
     function shardExisted(bytes32 shard, uint256 atClock) public view returns(bool) {
         return infoByShard[shard].creationClock <= atClock && atClock < getShardExpirationClock(shard);
+    }
+
+    function _issueShard(uint256 amount) {
+        uint256 transferClock = clock;
+        _expireShard(shardByOwner[this(address)],transferClock);
+        _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),transferClock);
+        _putForSale(shard,amount,address(0x0));
     }
 
     /// @notice Cancels a sell of a given Shard.
