@@ -114,6 +114,7 @@ contract Shardable {
 
     modifier incrementClock {
         _;
+        totalShardAmountByClock[clock+1] = totalShardAmountByClock[clock]; // remember the total shard amount at previous clock
         clock++;
     }
     
@@ -175,8 +176,12 @@ contract Shardable {
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
-        } 
+        }
         _split(shard, saleByShard[shard].amount,msg.sender);
+        if (infoByShard[shard].owner == this(address)) { // if purchasing newly issued shards
+            // add those to the outstanding shard amount
+            totalShardAmountByClock[clock] += saleByShard[shard].amount;
+        }
         emit SaleSold(shard,saleByShard[shard].amount,msg.sender,saleByShard[shard].tokenAddress,saleByShard[shard].price);
     }
 
@@ -239,11 +244,10 @@ contract Shardable {
         return infoByShard[shard].creationClock <= atClock && atClock < getShardExpirationClock(shard);
     }
 
-    function _issueShard(uint256 amount) {
-        uint256 transferClock = clock;
-        _expireShard(shardByOwner[this(address)],transferClock);
-        _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),transferClock);
-        _putForSale(shard,amount,address(0x0));
+    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) {
+        _expireShard(shardByOwner[this(address)],clock);
+        _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),clock);
+        _putForSale(shardByOwner[this(address)],amount,tokenAddress,price,to);
     }
 
     /// @notice Cancels a sell of a given Shard.
@@ -256,28 +260,27 @@ contract Shardable {
     /// @param senderShard The shard to be split.
     /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(bytes32 senderShard, uint256 amount, address to) internal onlyValidShard(senderShard) onlyIfActive {
+    function _split(bytes32 senderShard, uint256 amount, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock{
         require(amount < infoByShard[senderShard].amount, "IA");
-        uint256 transferClock = clock;
         if (isShardHolder(to)) { // if Receiver already owns a shard
             // The amounts are added and the shard thereby upgraded
             uint256 sumAmount = amount + infoByShard[shardByOwner[to]].amount;
-            _pushShard(sumAmount,to,transferClock);
+            _pushShard(sumAmount,to,clock);
             // Expire the Old Receiver Shard
-            _expireShard(shardByOwner[to], transferClock);
+            _expireShard(shardByOwner[to], clock);
         }
 
         else {
             // The amount of the Receiver Shard is equal to the one split off of the Sender Shard
-            _pushShard(amount,to,transferClock);
+            _pushShard(amount,to,clock);
         }
 
         // Expire the Old Sender Shard
-        _expireShard(senderShard, transferClock);
+        _expireShard(senderShard, clock);
         // The new amount of the Sender Shard has been subtracted by the Split amount.
         diff = infoByShard[senderShard].amount - amount;
         if (diff != 0) {
-        _pushShard(diff,infoByShard[senderShard].owner,transferClock);
+        _pushShard(diff,infoByShard[senderShard].owner,clock);
         }
         emit SaleSold(senderShard,amount,to,address(0),0);
     }
@@ -322,7 +325,8 @@ contract Shardable {
     /// @notice Removes a shard from the registry of currently valid shards.
     /// @param shard The shard to be expired.
     /// @param expirationClock The clock at which the Shard will expire.
-    function _expireShard(bytes32 shard, uint256 expirationClock) internal  {
+    function _expireShard(bytes32 shard, uint256 expirationClock) internal {
+        shardByOwner[infoByShard[shard].owner] = bytes32(0);
         shardExpirationClock[shard] = expirationClock;
         emit ExpiredShard(shard,expirationClock);
     }
