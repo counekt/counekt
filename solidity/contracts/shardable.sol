@@ -153,16 +153,18 @@ contract Shardable {
     /// @notice Purchases a listed Shard for sale.
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
-    function purchase(bytes32 shard) external payable onlyValidShard(shard) {
+    function purchase(bytes32 shard, uint256 amount) external payable onlyValidShard(shard) {
         require(shardsForSale[shard], "NS");
         require(saleByShard[shard].amount != 0, "ES");
+        require(saleByShard[shard].amount >= amount, "ES");
         require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "SR");
         _cancelSale(shard);
-        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(saleByShard[shard].price,25,1000);
+        uint256 totalPrice = amount * saleByShard[shard].price;
+        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(totalPrice,25,1000);
         profitToSeller += remainder; // remainder goes to seller
         // if ether
         if (saleByShard[shard].tokenAddress == address(0x0)) {
-            require(msg.value >= saleByShard[shard].price, "IE");
+            require(msg.value >= totalPrice, "IE");
             // Pay Service Fee of 2.5% to Counekt
             (bool successToCounekt,) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call{value:profitToCounekt}("");
             // Rest goes to the seller
@@ -171,18 +173,23 @@ contract Shardable {
         } 
         else {
             ERC20 token = ERC20(saleByShard[shard].tokenAddress);
-            require(token.allowance(msg.sender,address(this)) >= saleByShard[shard].price,"IT");
+            require(token.allowance(msg.sender,address(this)) >= totalPrice,"IT");
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
             token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
         }
-        _split(shard, saleByShard[shard].amount,msg.sender);
-        if (infoByShard[shard].owner == this(address)) { // if purchasing newly issued shards
+        _split(shard, amount,msg.sender);
+        if (infoByShard[shard].owner == this(address)) { // if newly issued shards
             // add those to the outstanding shard amount
-            totalShardAmountByClock[clock] += saleByShard[shard].amount;
+            totalShardAmountByClock[clock] += amount;
         }
-        emit SaleSold(shard,saleByShard[shard].amount,msg.sender,saleByShard[shard].tokenAddress,saleByShard[shard].price);
+        emit SaleSold(shard,amount,msg.sender,saleByShard[shard].tokenAddress,saleByShard[shard].price);
+        // if not whole shard is bought
+        if (saleByShard[shard].amount != amount) { 
+            // put the rest to sale again
+            _putForSale(shardByOwner[infoByShard[shard].owner],saleByShard[shard].amount-amount,tokenAddress,price,to);
+        }
     }
 
     /// @notice Puts a given shard for sale.
@@ -260,7 +267,7 @@ contract Shardable {
     /// @param senderShard The shard to be split.
     /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
-    function _split(bytes32 senderShard, uint256 amount, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock{
+    function _split(bytes32 senderShard, uint256 amount, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock {
         require(amount < infoByShard[senderShard].amount, "IA");
         if (isShardHolder(to)) { // if Receiver already owns a shard
             // The amounts are added and the shard thereby upgraded
@@ -292,6 +299,7 @@ contract Shardable {
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale. For anyone to buy if address(0).
     function _putForSale(bytes32 shard, uint256 amount, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
+        require(shardsForSale[shard] == false);
         require(amount <= infoByShard[shard].amount, "IA");
         saleByShard[shard] = ShardSale({
             amount: amount,
