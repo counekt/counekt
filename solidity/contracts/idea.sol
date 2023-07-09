@@ -4,11 +4,6 @@ pragma solidity ^0.8.4;
 
 import "./shardable.sol";
 
-interface IIdea {
-
-    function receiveToken(address,uint256) external;
-}
-
 /// @title A proof of fractional ownership of an entity with valuables.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable business entity. 
@@ -89,6 +84,22 @@ contract Idea is Shardable {
       return validTokenAddresses[tokenAddress] == true || tokenAddress == address(0);
     }
 
+    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) {
+        require(acceptsToken(tokenAddress));
+        _expireShard(shardByOwner[this(address)],clock);
+        _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),clock);
+        _putForSale(shardByOwner[this(address)],amount,tokenAddress,price,to);
+    }
+
+    function _transferTokenPurchasePayment(bytes32 shard, uint256 profitToSeller, uint256 profitToCounekt) override internal {
+        ERC20 token = ERC20(saleByShard[shard].tokenAddress);
+        require(token.allowance(msg.sender,address(this)) >= totalPrice,"IT");
+        // Pay Service Fee of 2.5% to Counekt
+        token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
+        // Rest goes to the seller
+        token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
+    }
+
     /// @notice Transfers a token from the Idea to a recipient. 
     /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
     /// @param tokenAddress The address of the token to be transferred.
@@ -104,7 +115,8 @@ contract Idea is Shardable {
                 try IIdea(to).receiveToken(tokenAddress, value) {
                     // do nothing
                 }
-                catch {// do nothing but skip the exception}
+                catch {// do regular and skip the exception}
+                    require(token.transfer(to,value), "NT");
                 }
             }
             else {

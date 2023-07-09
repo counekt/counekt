@@ -4,6 +4,11 @@ pragma solidity ^0.8.4;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+interface IIdea {
+
+    function receiveToken(address,uint256) external;
+}
+
 /// @notice Returns the two quotients and the remainder of an uneven division with a fraction. Useful for dividing ether and tokens.
 /// @param dividend The dividend, which will be divided by the fraction.
 /// @param numerator Numerator of fraction, which the dividend will be divided into.
@@ -144,9 +149,10 @@ contract Shardable {
     }
 
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
-    constructor() {
+    constructor(uint256 amount) {
         // passes full ownership to creator of contract
-        _pushShard(1, 1, msg.sender, 0);
+        _pushShard(amount, msg.sender, 0);
+        totalShardAmountByClock[clock] = amount;
         active = true;
     }
 
@@ -177,7 +183,15 @@ contract Shardable {
             // Pay Service Fee of 2.5% to Counekt
             token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
             // Rest goes to the seller
-            token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
+            if (infoByShard[shard].owner.code.length > 0) {
+                try IIdea(infoByShard[shard].owner).receiveToken(tokenAddress, profitToSeller) {
+                    // do nothing
+                }
+                catch {token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
+
+                }
+            }
+            else {token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);}
         }
         _split(shard, amount,msg.sender);
         if (infoByShard[shard].owner == this(address)) { // if newly issued shards
@@ -251,12 +265,6 @@ contract Shardable {
         return infoByShard[shard].creationClock <= atClock && atClock < getShardExpirationClock(shard);
     }
 
-    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) {
-        _expireShard(shardByOwner[this(address)],clock);
-        _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),clock);
-        _putForSale(shardByOwner[this(address)],amount,tokenAddress,price,to);
-    }
-
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function _cancelSale(bytes32 shard) internal onlyValidShard(shard) {
@@ -316,6 +324,7 @@ contract Shardable {
     /// @param owner The owner of the Shard.
     /// @param creationClock The clock at which the Shard will be created.
     function _pushShard(uint256 amount, address owner, uint256 creationClock) internal {
+        require(amount > 0, "SZ");
         // The representation, bytes and hash
         bytes32 shard = keccak256(abi.encodePacked(owner,creationClock));
         shardByOwner[owner] = shard;

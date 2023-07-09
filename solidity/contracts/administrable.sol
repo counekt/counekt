@@ -111,6 +111,7 @@ contract Administrable is Idea {
     constructor() {
         _createBank("main",msg.sender);
         _setPermit("sNS", msg.sender, PermitState.administrator);
+        _setPermit("iS", msg.sender, PermitState.administrator);
         _setPermit("iD", msg.sender, PermitState.administrator);
         _setPermit("dD", msg.sender, PermitState.administrator);
         _setPermit("mB", msg.sender, PermitState.administrator);
@@ -142,6 +143,10 @@ contract Administrable is Idea {
     /// @param tokenAddress The token address to be unregistered.
     function unregisterTokenAddress(address tokenAddress) external onlyWithPermit("mAT") onlyIfActive {
         _unregisterTokenAddress(tokenAddress);
+    }
+
+    function issueShards(uint256 amount, address tokenAddress, uint256 price, address to) onlyWithPermit("iS") {
+        _issueShards(amount,tokenAddress,price,to);
     }
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.

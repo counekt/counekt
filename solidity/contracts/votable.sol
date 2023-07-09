@@ -216,6 +216,10 @@ contract Votable is Administrable {
                         (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string,address,uint256));
                         _issueDividend(bankName,tokenAddress,value);
                     }
+                    if (functionNameHash == keccak256(bytes("iS"))) {
+                        (uint256 amount, address tokenAddress, uint256 price, address to) = abi.decode(proposalArgumentData, (uint256,address,uint256,address));
+                        _issueShards(amount,tokenAddress,price,to);
+                    }
                     if (functionNameHash == keccak256(bytes("dD"))) {
                         (uint256 dividend) = abi.decode(proposalArgumentData, (uint256));
                         _dissolveDividend(dividend);
