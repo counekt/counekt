@@ -202,7 +202,7 @@ contract Shardable {
         _putForSale(shard,amount,tokenAddress,price,to);
     }
 
-    /// @notice Cancels a sell of a given Shard.
+    /// @notice Cancels a sell of a given shard.
     /// @param shard The shard to be put off sale.
     function cancelSale(bytes32 shard) public onlyHolder(shard) onlyValidShard(shard) {
         require(shardsForSale[shard], "NS");
