@@ -51,11 +51,7 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be received.
     /// @param value The value/amount of the token to be received.
     function receiveToken(address tokenAddress, uint256 value) external {
-        require(acceptsToken(tokenAddress),"UT");
-        ERC20 token = ERC20(tokenAddress);
-        require(token.allowance(msg.sender,address(this)) >= value,"IT");
-        require(token.transferFrom(msg.sender,address(this), value), "NT");
-        _processTokenReceipt(tokenAddress,value,msg.sender);
+        _receiveToken(tokenAddress,value);
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
@@ -84,20 +80,15 @@ contract Idea is Shardable {
       return validTokenAddresses[tokenAddress] == true || tokenAddress == address(0);
     }
 
+    /// @notice Issues new shards and puts them for sale.
+    /// @param tokenAddress The token address the shards are put for sale for.
+    /// @param price The price per token.
+    /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
     function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) {
         require(acceptsToken(tokenAddress));
         _expireShard(shardByOwner[this(address)],clock);
         _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),clock);
         _putForSale(shardByOwner[this(address)],amount,tokenAddress,price,to);
-    }
-
-    function _transferTokenPurchasePayment(bytes32 shard, uint256 profitToSeller, uint256 profitToCounekt) override internal {
-        ERC20 token = ERC20(saleByShard[shard].tokenAddress);
-        require(token.allowance(msg.sender,address(this)) >= totalPrice,"IT");
-        // Pay Service Fee of 2.5% to Counekt
-        token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
-        // Rest goes to the seller
-        token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
     }
 
     /// @notice Transfers a token from the Idea to a recipient. 
@@ -135,9 +126,15 @@ contract Idea is Shardable {
         require(success, "TF");
     }
 
-    /// @notice Liquidizes and dissolves the entity. This cannot be undone.
-    function _liquidize() virtual internal onlyIfActive {
-        active = false; // stops trading of Shards
+    /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
+    /// @param tokenAddress The address of the token to be received.
+    /// @param value The value/amount of the token to be received.
+    function _receiveToken(address tokenAddress, uint256 value) internal {
+        require(acceptsToken(tokenAddress),"UT");
+        ERC20 token = ERC20(tokenAddress);
+        require(token.allowance(msg.sender,address(this)) >= value,"IT");
+        require(token.transferFrom(msg.sender,address(this), value), "NT");
+        _processTokenReceipt(tokenAddress,value,msg.sender);
     }
 
     /// @notice Processes a token receipt and adds it to the token registry.
@@ -171,6 +168,27 @@ contract Idea is Shardable {
         require(acceptsToken(tokenAddress), "UT");
         require(liquid[tokenAddress] == 0, "NZ");
         validTokenAddresses[tokenAddress] = false;
+    }
+
+    /// @notice Liquidizes and dissolves the entity. This cannot be undone.
+    function _liquidize() virtual internal onlyIfActive {
+        active = false; // stops trading of Shards
+    }
+
+    /// @notice Pays profit to the seller during a shard purchase. 
+    /// @dev Is modified. Takes into account buying of issued shards.
+    /// @param account The address of the seller.
+    /// @param account The address of the token address.
+    /// @param value The value to be sent to the seller as payment. 
+    function _payProfitToSeller(address account, address tokenAddress, uint256 value) override internal {
+        if (account == address(this)) { // if seller is this contract (msg.sender buys newly issued shards)
+            _receiveToken(tokenAddress,value); // then the payment gets received and processed
+        }
+        else {
+            ERC20 token = ERC20(tokenAddress);
+            require(token.transferFrom(msg.sender,address(this), value), "NT");
+        }
+        
     }
 
 }

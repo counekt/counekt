@@ -145,6 +145,10 @@ contract Administrable is Idea {
         _unregisterTokenAddress(tokenAddress);
     }
 
+    /// @notice Issues new shards and puts them for sale.
+    /// @param tokenAddress The token address the shards are put for sale for.
+    /// @param price The price per token.
+    /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
     function issueShards(uint256 amount, address tokenAddress, uint256 price, address to) onlyWithPermit("iS") {
         _issueShards(amount,tokenAddress,price,to);
     }

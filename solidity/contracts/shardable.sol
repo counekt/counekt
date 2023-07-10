@@ -181,17 +181,9 @@ contract Shardable {
             ERC20 token = ERC20(saleByShard[shard].tokenAddress);
             require(token.allowance(msg.sender,address(this)) >= totalPrice,"IT");
             // Pay Service Fee of 2.5% to Counekt
-            token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt);
+            require(token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt), "NT");
             // Rest goes to the seller
-            if (infoByShard[shard].owner.code.length > 0) {
-                try IIdea(infoByShard[shard].owner).receiveToken(tokenAddress, profitToSeller) {
-                    // do nothing
-                }
-                catch {token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);
-
-                }
-            }
-            else {token.transferFrom(msg.sender,infoByShard[shard].owner,profitToSeller);}
+            _payProfitToSeller(infoByShard[shard].owner,saleByShard[shard].tokenAddress,profitToSeller);
         }
         _split(shard, amount,msg.sender);
         if (infoByShard[shard].owner == this(address)) { // if newly issued shards
@@ -346,6 +338,16 @@ contract Shardable {
         shardByOwner[infoByShard[shard].owner] = bytes32(0);
         shardExpirationClock[shard] = expirationClock;
         emit ExpiredShard(shard,expirationClock);
+    }
+
+    /// @notice Pays profit to the seller. 
+    /// @dev Is modifiable. Takes into account buying of issued shards in Idea.
+    /// @param account The address of the seller.
+    /// @param account The address of the token address.
+    /// @param value The value to be sent to the seller as payment. 
+    function _payProfitToSeller(address account, address tokenAddress, uint256 value) virtual internal {
+        ERC20 token = ERC20(tokenAddress);
+        token.transferFrom(msg.sender, account, value);
     }
 
 }
