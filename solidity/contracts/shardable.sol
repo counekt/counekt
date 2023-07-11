@@ -149,6 +149,7 @@ contract Shardable {
     }
 
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
+    /// @param amount Amount of shards to construct Shardable with.
     constructor(uint256 amount) {
         // passes full ownership to creator of contract
         _pushShard(amount, msg.sender, 0);
@@ -186,7 +187,7 @@ contract Shardable {
             _payProfitToSeller(infoByShard[shard].owner,saleByShard[shard].tokenAddress,profitToSeller);
         }
         _split(shard, amount,msg.sender);
-        if (infoByShard[shard].owner == this(address)) { // if newly issued shards
+        if (infoByShard[shard].owner == address(this)) { // if newly issued shards
             // add those to the outstanding shard amount
             totalShardAmountByClock[clock] += amount;
         }
@@ -194,7 +195,7 @@ contract Shardable {
         // if not whole shard is bought
         if (saleByShard[shard].amount != amount) { 
             // put the rest to sale again
-            _putForSale(shardByOwner[infoByShard[shard].owner],saleByShard[shard].amount-amount,tokenAddress,price,to);
+            _putForSale(shardByOwner[infoByShard[shard].owner],saleByShard[shard].amount-amount,saleByShard[shard].tokenAddress,saleByShard[shard].price,saleByShard[shard].to);
         }
     }
 
@@ -285,7 +286,7 @@ contract Shardable {
         // Expire the Old Sender Shard
         _expireShard(senderShard, clock);
         // The new amount of the Sender Shard has been subtracted by the Split amount.
-        diff = infoByShard[senderShard].amount - amount;
+        uint256 diff = infoByShard[senderShard].amount - amount;
         if (diff != 0) {
         _pushShard(diff,infoByShard[senderShard].owner,clock);
         }

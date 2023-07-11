@@ -42,6 +42,12 @@ contract Idea is Shardable {
         address by
     );
 
+    /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
+    /// @param amount Amount of shards to construct Shardable with.
+    constructor(uint256 amount) Shardable(amount) {
+
+    }
+
     /// @notice Receive function that receives ether when there's no supplying data
     receive() external payable {
         _processTokenReceipt(address(0),msg.value,msg.sender);
@@ -84,11 +90,11 @@ contract Idea is Shardable {
     /// @param tokenAddress The token address the shards are put for sale for.
     /// @param price The price per token.
     /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
-    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) {
+    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) internal {
         require(acceptsToken(tokenAddress));
-        _expireShard(shardByOwner[this(address)],clock);
-        _pushShard(amount+infoByShard[shardByOwner[this(address)]].amount,this(address),clock);
-        _putForSale(shardByOwner[this(address)],amount,tokenAddress,price,to);
+        _expireShard(shardByOwner[address(this)],clock);
+        _pushShard(amount+infoByShard[shardByOwner[address(this)]].amount,address(this),clock);
+        _putForSale(shardByOwner[address(this)],amount,tokenAddress,price,to);
     }
 
     /// @notice Transfers a token from the Idea to a recipient. 

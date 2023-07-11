@@ -108,7 +108,7 @@ contract Administrable is Idea {
     }
 
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
-    constructor() {
+    constructor(uint256 amount) Idea(amount) {
         _createBank("main",msg.sender);
         _setPermit("sNS", msg.sender, PermitState.administrator);
         _setPermit("iS", msg.sender, PermitState.administrator);
@@ -149,7 +149,7 @@ contract Administrable is Idea {
     /// @param tokenAddress The token address the shards are put for sale for.
     /// @param price The price per token.
     /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
-    function issueShards(uint256 amount, address tokenAddress, uint256 price, address to) onlyWithPermit("iS") {
+    function issueShards(uint256 amount, address tokenAddress, uint256 price, address to) external onlyWithPermit("iS") {
         _issueShards(amount,tokenAddress,price,to);
     }
 

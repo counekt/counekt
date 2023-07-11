@@ -77,7 +77,7 @@ contract Votable is Administrable {
         _;
     }
 
-    constructor() {
+    constructor(uint256 amount) Administrable(amount) {
         _setPermit("iV",msg.sender,PermitState.administrator);
         _setPermit("iP",msg.sender,PermitState.administrator);
     }
