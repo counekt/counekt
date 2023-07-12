@@ -107,10 +107,8 @@ contract Administrable is Idea {
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
     constructor(uint256 amount) Idea(amount) {
         _createBank("main",msg.sender);
-        _setPermit("sNS", msg.sender, PermitState.administrator);
         _setPermit("iS", msg.sender, PermitState.administrator);
-        _setPermit("iD", msg.sender, PermitState.administrator);
-        _setPermit("dD", msg.sender, PermitState.administrator);
+        _setPermit("mD", msg.sender, PermitState.administrator);
         _setPermit("mB", msg.sender, PermitState.administrator);
         _setPermit("lE", msg.sender, PermitState.administrator);
         _setPermit("mAT", msg.sender, PermitState.administrator);
@@ -154,13 +152,13 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to issue the Dividend from.
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
-    function issueDividend(string memory bankName, address tokenAddress, uint256 value) external onlyWithPermit("iD") onlyBankAdmin(bankName) {
+    function issueDividend(string memory bankName, address tokenAddress, uint256 value) external onlyWithPermit("mD") onlyBankAdmin(bankName) {
         _issueDividend(bankName,tokenAddress,value);  
     }
 
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
     /// @param dividend The Dividend to be dissolved.
-    function dissolveDividend(uint256 dividend) external onlyWithPermit("dD") {
+    function dissolveDividend(uint256 dividend) external onlyWithPermit("mD") {
         _dissolveDividend(dividend);
     }
 

@@ -32,10 +32,6 @@
       <span class='text'>Base Permit Set</span>
       <p>permit: {{payload["permitName"]}}</p>
       <p>new state: {{payload["newState"]}}</p>
-    {% elif payload["func"] == "sNS" %}
-      <span class='icon'><i class='fa-solid fa-users'></i></span>
-      <span class='text'>Non Shard Holder State Set</span>
-      <p>new state: {{payload["newState"]}}</p>
     {% elif payload["func"] == "iD" %}
       <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
       <span class='text'>Dividend Issued</span>

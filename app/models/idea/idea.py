@@ -17,6 +17,7 @@ class Idea(db.Model, Base, locationBase):
     current_clock = db.Column(db.Integer) # Shardable clock
     timeline_last_updated_at = db.Column(db.Integer) # ETH block number
     ownership_last_updated_at = db.Column(db.Integer) # ETH block number
+
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
@@ -30,11 +31,11 @@ class Idea(db.Model, Base, locationBase):
 
     events = db.relationship(
         'Event', backref='entity', lazy='dynamic',
-        foreign_keys='Event.entity_id')
+        foreign_keys='Event.entity_id', passive_deletes=True)
 
     shards = db.relationship(
         'Shard', backref='entity', lazy='dynamic',
-        foreign_keys='Shard.entity_id')
+        foreign_keys='Shard.entity_id', passive_deletes=True)
 
     def __init__(self, **kwargs):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
@@ -87,7 +88,7 @@ class Idea(db.Model, Base, locationBase):
             if not self.shards.filter_by(identity=ns.args.shard).first():
                 shard = _shard.Shard(identity=ns.args.shard,owner_address=ns.args.owner,creation_clock=ns.args.creationClock)
                 shard_info = contract.functions.infoByShard(ns.args.shard).call()
-                shard.numerator, shard.denominator = shard_info[0], shard_info[1]
+                shard.amount = shard_info[0]
                 shard.creation_timestamp = w3.eth.getBlock(ns.blockNumber).timestamp
                 self.shards.append(shard)
                 if ns.blockNumber > int(self.ownership_last_updated_at or self.block):
@@ -112,7 +113,7 @@ class Idea(db.Model, Base, locationBase):
 
     @hybrid_property
     def valid_shards(self):
-        return self.shards.filter(self.current_clock < _shard.Shard.expiration_clock).order_by(_shard.Shard.percentage.desc())
+        return self.shards.filter(self.current_clock < _shard.Shard.expiration_clock).order_by(_shard.Shard.amount.desc())
 
     @property
     def href(self):
