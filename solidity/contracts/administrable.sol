@@ -27,9 +27,6 @@ contract Administrable is Idea {
         uint256 value;
     }
 
-    /// @notice A boolean stating if Non Shard Holders are allowed to administer the administrable or not.
-    bool allowNonShardHolders;
-
     /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
     mapping(string => bool) validBanks;
     
@@ -178,7 +175,6 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to which the new administrator is to be added.
     /// @param bankAdmin The address of the new Bank administrator to be added.
     function addBankAdmin(string memory bankName, address bankAdmin) external onlyWithPermit("mB") onlyBankAdmin(bankName) {
-        require(isShardHolder(bankAdmin) || allowNonShardHolders, "NSHNA");
         _addBankAdmin(bankName,bankAdmin);
     }
 
@@ -218,7 +214,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
     function setPermit(string memory permitName, address account, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(isShardHolder(account) || allowNonShardHolders, "NSHNA");
         require(permits[permitName][account] != newState, "AHP");
         _setPermit(permitName,account,newState);
 
@@ -230,13 +225,6 @@ contract Administrable is Idea {
     function setBasePermit(string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
         require(basePermits[permitName] != newState, "AS");
         _setBasePermit(permitName,newState);
-    }
-
-    /// @notice Sets the state of the Non Shard Holders.
-    /// @param newState The Boolean state to be applied.
-    function setNonShardHolderState(bool newState) external onlyWithPermit("sNS") {
-        require(allowNonShardHolders != newState, "AS");
-        _setNonShardHolderState(newState);
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
@@ -298,7 +286,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function hasPermit(string memory permitName, address account) public view returns(bool) {
-        if (!(isShardHolder(account) || allowNonShardHolders)) {return false;}
         return permits[permitName][account] >= PermitState.authorized || basePermits[permitName] >= PermitState.authorized;
     }
 
@@ -306,7 +293,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function isPermitAdmin(string memory permitName, address account) public view returns(bool) {
-        if (!(isShardHolder(account) || allowNonShardHolders)) {return false;}
         return permits[permitName][account] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
     }
 
@@ -434,13 +420,6 @@ contract Administrable is Idea {
     function _setBasePermit(string memory permitName, PermitState newState) internal onlyIfActive {
         basePermits[permitName] = newState;
         emit ActionTaken("sB",abi.encode(permitName,newState),msg.sender);
-    }
-
-    /// @notice Sets the state of the Non Shard Holders.
-    /// @param newState The Boolean state to be applied.
-    function _setNonShardHolderState(bool newState) internal onlyIfActive {
-        allowNonShardHolders = newState;
-        emit ActionTaken("sNS",abi.encode(newState),msg.sender);
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.

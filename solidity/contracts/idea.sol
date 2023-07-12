@@ -9,13 +9,16 @@ import "./shardable.sol";
 /// @notice This contract is used as an administrable business entity. 
 /// @custom:illustration Idea => Idea.Administration => Idea
 /// @custom:beaware This is a commercial contract.
-contract Idea is Shardable {
+abstract contract Idea is Shardable {
 
     /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
     mapping(address => bool) validTokenAddresses;
 
 	/// @notice Mapping pointing to a value/amount given the address of an ERC20 token.
     mapping(address => uint256) public liquid;
+
+    /// @notice Integer block.timestamp of liquidization.
+    uint256 liquidized_at;
 
     /// @notice Mapping pointing to the value/amount of a liquid token left to be claimed after liquidization/inactivation of the Idea.
     mapping(address => uint256) liquidResidual;
@@ -33,20 +36,9 @@ contract Idea is Shardable {
         address from
     );
 
-    /// @notice Event that triggers when part of the liquid is claimed following a liquidization.
-    /// @param tokenAddress The address of the claimed token.
-    /// @param value The value/amount of the claimed token.
-    event LiquidClaimed(
-        address tokenAddress,
-        uint256 value,
-        address by
-    );
-
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
     /// @param amount Amount of shards to construct Shardable with.
-    constructor(uint256 amount) Shardable(amount) {
-
-    }
+    constructor(uint256 amount) Shardable(amount) {}
 
     /// @notice Receive function that receives ether when there's no supplying data
     receive() external payable {
@@ -63,15 +55,23 @@ contract Idea is Shardable {
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
     /// @param tokenAddress The address of the token to be claimed.
     function claimLiquid(address tokenAddress) external onlyShardHolder {
-        require(acceptsToken(tokenAddress), "UT");
+        require(active == false, "SA");
         bytes32 shard = shardByOwner[msg.sender];
         require(!hasClaimedLiquid[tokenAddress][shard], "AC");
         hasClaimedLiquid[tokenAddress][shard] = true;
         uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].amount / totalShardAmountByClock[clock];
-        require(liquidValue != 0, "");
+        require(liquidValue != 0, "E");
         liquidResidual[tokenAddress] -= liquidValue;
         _transferToken(tokenAddress,liquidValue,msg.sender);
-        emit LiquidClaimed(tokenAddress,liquidValue,msg.sender);
+    }
+
+    /// @notice Claims the remaining unclaimed liquid value after termination (100 days passed since liquidization) as the property of Counekt.
+    /// @param tokenAddress The address of the token to be claimed.
+    function claimTerminatedLiquid(address tokenAddress) external {
+        require(isTerminated(),"WH"); // Guarantees shard holders 100 days to claim their respective parts of the liquid.
+        require(liquidResidual[tokenAddress] > 0, "E");
+        _transferToken(tokenAddress,liquidResidual[tokenAddress],0x49a71890aea5A751E30e740C504f2E9683f347bC);
+        liquidResidual[tokenAddress] = 0;
     }
 
     /// @notice Returns the residual of a liquid, after liquidization/inactivation.
@@ -84,6 +84,11 @@ contract Idea is Shardable {
     /// @param tokenAddress The address of the token to be checked for.
     function acceptsToken(address tokenAddress) public view returns(bool) {
       return validTokenAddresses[tokenAddress] == true || tokenAddress == address(0);
+    }
+
+    /// @notice Returns a boolean value, stating if the liquidization is terminated (100 days have passed since).
+    function isTerminated() public view returns(bool) {
+        return active == false && (block.timestamp-liquidized_at >= 300); //8640000
     }
 
     /// @notice Issues new shards and puts them for sale.
@@ -179,6 +184,7 @@ contract Idea is Shardable {
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
     function _liquidize() virtual internal onlyIfActive {
         active = false; // stops trading of Shards
+        liquidized_at = block.timestamp;
     }
 
     /// @notice Pays profit to the seller during a shard purchase. 

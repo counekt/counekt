@@ -200,10 +200,6 @@ contract Votable is Administrable {
                         (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
                         _setBasePermit(permitName,newState);
                     }
-                    if (functionNameHash == keccak256(bytes("sNS"))) {
-                        (bool newState) = abi.decode(proposalArgumentData, (bool));
-                        _setNonShardHolderState(newState);
-                    }
                     if (functionNameHash == keccak256(bytes("tT"))) {
                         (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgumentData, (string, address, uint256,address));
                         _transferTokenFromBank(fromBankName,tokenAddress,value,to);

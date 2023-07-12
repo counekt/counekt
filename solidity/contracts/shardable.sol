@@ -162,7 +162,7 @@ contract Shardable {
     /// @param shard The shard of which a fraction will be purchased.
     function purchase(bytes32 shard, uint256 amount) external payable onlyValidShard(shard) {
         require(shardsForSale[shard], "NS");
-        require(saleByShard[shard].amount != 0, "ES");
+        require(amount != 0, "ES");
         require(saleByShard[shard].amount >= amount, "ES");
         require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "SR");
         _cancelSale(shard);
@@ -269,7 +269,7 @@ contract Shardable {
     /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
     function _split(bytes32 senderShard, uint256 amount, address to) internal onlyValidShard(senderShard) onlyIfActive incrementClock {
-        require(amount < infoByShard[senderShard].amount, "IA");
+        require(amount <= infoByShard[senderShard].amount, "IA");
         if (isShardHolder(to)) { // if Receiver already owns a shard
             // The amounts are added and the shard thereby upgraded
             uint256 sumAmount = amount + infoByShard[shardByOwner[to]].amount;
