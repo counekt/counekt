@@ -27,9 +27,6 @@ contract Administrable is Idea {
         uint256 value;
     }
 
-    /// @notice A boolean stating if Non Shard Holders are allowed to administer the administrable or not.
-    bool allowNonShardHolders;
-
     /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
     mapping(string => bool) validBanks;
     
@@ -108,11 +105,10 @@ contract Administrable is Idea {
     }
 
     /// @notice Constructor function connecting the Idea entity and creating a Bank with an administrator.
-    constructor() {
+    constructor(uint256 amount) Idea(amount) {
         _createBank("main",msg.sender);
-        _setPermit("sNS", msg.sender, PermitState.administrator);
-        _setPermit("iD", msg.sender, PermitState.administrator);
-        _setPermit("dD", msg.sender, PermitState.administrator);
+        _setPermit("iS", msg.sender, PermitState.administrator);
+        _setPermit("mD", msg.sender, PermitState.administrator);
         _setPermit("mB", msg.sender, PermitState.administrator);
         _setPermit("lE", msg.sender, PermitState.administrator);
         _setPermit("mAT", msg.sender, PermitState.administrator);
@@ -125,7 +121,7 @@ contract Administrable is Idea {
         require(shardExisted(shard,dividend), "NAF");
         require(hasClaimedDividend[dividend][shard] == false, "AC");
         hasClaimedDividend[dividend][shard] = true;
-        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].numerator / infoByShard[shard].denominator;
+        uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].amount / totalShardAmountByClock[clock];
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
@@ -144,18 +140,25 @@ contract Administrable is Idea {
         _unregisterTokenAddress(tokenAddress);
     }
 
+    /// @notice Issues new shards and puts them for sale.
+    /// @param tokenAddress The token address the shards are put for sale for.
+    /// @param price The price per token.
+    /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
+    function issueShards(uint256 amount, address tokenAddress, uint256 price, address to) external onlyWithPermit("iS") {
+        _issueShards(amount,tokenAddress,price,to);
+    }
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
     /// @param bankName The name of the Bank to issue the Dividend from.
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
-    function issueDividend(string memory bankName, address tokenAddress, uint256 value) external onlyWithPermit("iD") onlyBankAdmin(bankName) {
+    function issueDividend(string memory bankName, address tokenAddress, uint256 value) external onlyWithPermit("mD") onlyBankAdmin(bankName) {
         _issueDividend(bankName,tokenAddress,value);  
     }
 
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
     /// @param dividend The Dividend to be dissolved.
-    function dissolveDividend(uint256 dividend) external onlyWithPermit("dD") {
+    function dissolveDividend(uint256 dividend) external onlyWithPermit("mD") {
         _dissolveDividend(dividend);
     }
 
@@ -170,7 +173,6 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to which the new administrator is to be added.
     /// @param bankAdmin The address of the new Bank administrator to be added.
     function addBankAdmin(string memory bankName, address bankAdmin) external onlyWithPermit("mB") onlyBankAdmin(bankName) {
-        require(isShardHolder(bankAdmin) || allowNonShardHolders, "NSHNA");
         _addBankAdmin(bankName,bankAdmin);
     }
 
@@ -210,7 +212,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
     function setPermit(string memory permitName, address account, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(isShardHolder(account) || allowNonShardHolders, "NSHNA");
         require(permits[permitName][account] != newState, "AHP");
         _setPermit(permitName,account,newState);
 
@@ -222,13 +223,6 @@ contract Administrable is Idea {
     function setBasePermit(string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
         require(basePermits[permitName] != newState, "AS");
         _setBasePermit(permitName,newState);
-    }
-
-    /// @notice Sets the state of the Non Shard Holders.
-    /// @param newState The Boolean state to be applied.
-    function setNonShardHolderState(bool newState) external onlyWithPermit("sNS") {
-        require(allowNonShardHolders != newState, "AS");
-        _setNonShardHolderState(newState);
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
@@ -290,7 +284,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function hasPermit(string memory permitName, address account) public view returns(bool) {
-        if (!(isShardHolder(account) || allowNonShardHolders)) {return false;}
         return permits[permitName][account] >= PermitState.authorized || basePermits[permitName] >= PermitState.authorized;
     }
 
@@ -298,7 +291,6 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function isPermitAdmin(string memory permitName, address account) public view returns(bool) {
-        if (!(isShardHolder(account) || allowNonShardHolders)) {return false;}
         return permits[permitName][account] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
     }
 
@@ -426,13 +418,6 @@ contract Administrable is Idea {
     function _setBasePermit(string memory permitName, PermitState newState) internal onlyIfActive {
         basePermits[permitName] = newState;
         emit ActionTaken("sB",abi.encode(permitName,newState),msg.sender);
-    }
-
-    /// @notice Sets the state of the Non Shard Holders.
-    /// @param newState The Boolean state to be applied.
-    function _setNonShardHolderState(bool newState) internal onlyIfActive {
-        allowNonShardHolders = newState;
-        emit ActionTaken("sNS",abi.encode(newState),msg.sender);
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.

@@ -23,15 +23,11 @@ contract Votable is Administrable {
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
     mapping(uint256 => ReferendumInfo) public infoByReferendum;
 
-    /// @notice Mapping pointing to favor numerator of a given Referendum.
-    mapping(uint256 => uint256) favorNumeratorByReferendum;
-    /// @notice Mapping pointing to favor denominator of a given Referendum.
-    mapping(uint256 => uint256) favorDenominatorByReferendum;
+    /// @notice Mapping pointing to amount of favor votes on given Referendum.
+    mapping(uint256 => uint256) favorAmountByReferendum;
 
-    /// @notice Mapping pointing to numerator of total votes on a given Referendum.
-    mapping(uint256 => uint256) totalNumeratorByReferendum;
-    /// @notice Mapping pointing to denominator of total votes on given Referendum.
-    mapping(uint256 => uint256) totalDenominatorByReferendum;
+    /// @notice Mapping pointing to amount of total votes on given Referendum.
+    mapping(uint256 => uint256) totalAmountByReferendum;
 
     /// @notice Mapping pointing to amount proposals implemented of a given Referendum.
     mapping(uint256 => uint256) amountImplementedByReferendum;
@@ -81,7 +77,7 @@ contract Votable is Administrable {
         _;
     }
 
-    constructor() {
+    constructor(uint256 amount) Administrable(amount) {
         _setPermit("iV",msg.sender,PermitState.administrator);
         _setPermit("iP",msg.sender,PermitState.administrator);
     }
@@ -95,15 +91,13 @@ contract Votable is Administrable {
         require(shardExisted(shard,referendum), "SNV");
         hasVotedOnReferendum[referendum][shard] = true;
         if (favor) {
-            (uint256 favorNumerator, uint256 favorDenominator) = addFractions(favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
-            (favorNumeratorByReferendum[referendum],favorDenominatorByReferendum[referendum]) = simplifyFraction(favorNumerator, favorDenominator);
+            favorAmountByReferendum[referendum] += infoByShard[shard].amount;
         }
-        (uint256 totalNumerator, uint256 totalDenominator) = addFractions(totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum],infoByShard[shard].numerator,infoByShard[shard].denominator);
-        (totalNumeratorByReferendum[referendum],totalDenominatorByReferendum[referendum]) = simplifyFraction(totalNumerator,totalDenominator);
+        totalAmountByReferendum[referendum] += infoByShard[shard].amount;
         
         emit VoteCast(referendum, favor, msg.sender);
         bool passed = getReferendumResult(referendum);
-        if (passed || totalNumeratorByReferendum[referendum] / totalDenominatorByReferendum[referendum] == 1 ) {
+        if (passed || totalAmountByReferendum[referendum] == totalShardAmountByClock[referendum] ) {
 
             pendingReferendums[referendum] = false;
             if (passed) { // if it got voted through
@@ -138,7 +132,7 @@ contract Votable is Administrable {
     /// @param referendum The Referendum to be checked for.
     function getReferendumResult(uint256 referendum) public view returns(bool) {
         // if forFraction is bigger than 50%, then the vote is FOR
-        if ((favorNumeratorByReferendum[referendum] / favorDenominatorByReferendum[referendum]) * 2 > 1) {
+        if ((favorAmountByReferendum[referendum] / totalShardAmountByClock[referendum]) * 2 > 1) {
             return true;
         }
         return false;
@@ -181,8 +175,6 @@ contract Votable is Administrable {
             proposalFunctionNames: proposalFunctionNames,
             proposalArgumentData: proposalArgumentData
             });
-        favorDenominatorByReferendum[transferClock] = 1;
-        totalDenominatorByReferendum[transferClock] = 1;
         emit ReferendumIssued(transferClock);
     }
 
@@ -208,10 +200,6 @@ contract Votable is Administrable {
                         (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
                         _setBasePermit(permitName,newState);
                     }
-                    if (functionNameHash == keccak256(bytes("sNS"))) {
-                        (bool newState) = abi.decode(proposalArgumentData, (bool));
-                        _setNonShardHolderState(newState);
-                    }
                     if (functionNameHash == keccak256(bytes("tT"))) {
                         (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgumentData, (string, address, uint256,address));
                         _transferTokenFromBank(fromBankName,tokenAddress,value,to);
@@ -223,6 +211,10 @@ contract Votable is Administrable {
                     if (functionNameHash == keccak256(bytes("iD"))) {
                         (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string,address,uint256));
                         _issueDividend(bankName,tokenAddress,value);
+                    }
+                    if (functionNameHash == keccak256(bytes("iS"))) {
+                        (uint256 amount, address tokenAddress, uint256 price, address to) = abi.decode(proposalArgumentData, (uint256,address,uint256,address));
+                        _issueShards(amount,tokenAddress,price,to);
                     }
                     if (functionNameHash == keccak256(bytes("dD"))) {
                         (uint256 dividend) = abi.decode(proposalArgumentData, (uint256));
