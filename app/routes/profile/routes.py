@@ -10,7 +10,7 @@ from requests import HTTPError
 from app.routes.profile import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
-from app.routes.profile.user.routes import *
+from app.routes.profile.user import *
 from app.routes.idea.routes import *
 
 

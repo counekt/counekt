@@ -12,10 +12,12 @@ from app.routes.profile import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from sqlalchemy import exc
 
-@ bp.route("/@<username>/", methods=["GET", "POST"])
-@ bp.route("/user/<username>/", methods=["GET", "POST"])
+@ bp.route("/@<username>/", methods=["GET"])
+@ bp.route("/user/<username>/", methods=["GET"])
 def user(username):
+    print(username)
     user = models.User.query.filter_by(username=username).first_or_404()
+    print(user)
     return render_template("profile/user/profile.html", user=user, navbar=True, background=True, size="medium", models=models)
 
 

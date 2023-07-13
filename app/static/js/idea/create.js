@@ -109,6 +109,7 @@ async function deployNewIdea(abi, bytecode) {
     console.log("parse contract");
     console.log(accounts[0]);
     const deploy = Contract.deploy({
+      arguments: [1000],
       data: bytecode,
       from: accounts[0]
     });
