@@ -91,7 +91,7 @@ def create():
             current_app.logger.info("testing code")
             # Wait for transaction to be mined...
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-            deploy_data = w3.eth.getTransaction(tx_hash).input[2:]
+            deploy_data = w3.eth.getTransaction(tx_hash).input[2:-64] # remove 0x and argument data
 
             print(f"Receipt Address {receipt.contractAddress}")
             current_app.logger.info(f"IDEA ADDRESS: {receipt.contractAddress}")

@@ -113,7 +113,7 @@ class Idea(db.Model, Base, locationBase):
 
     @hybrid_property
     def valid_shards(self):
-        return self.shards.filter(self.current_clock < _shard.Shard.expiration_clock).order_by(_shard.Shard.amount.desc())
+        return self.shards.filter(self.current_clock < _shard.Shard.expiration_clock).order_by(_shard.Shard.amount.desc()) if self.shards.first() else []
 
     @property
     def href(self):

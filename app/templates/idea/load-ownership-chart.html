@@ -10,8 +10,8 @@
     {% for s in valid_shards %}'{{s.owner_address}}',{% endfor %}
   ],
   datasets: [{
-    label: 'Percentage',
-    data: [{% for s in valid_shards %}{{s.percentage*100}},{% endfor %}],
+    label: 'Amount',
+    data: [{% for s in valid_shards %}{{s.amount}},{% endfor %}],
     backgroundColor: [
       {% for s in valid_shards %}'rgb(255, 205, 86)',{% endfor %}
     ],
