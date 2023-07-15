@@ -35,4 +35,3 @@ def verify_credentials(handle,name,description,show_location,lat,lng):
 		location = funcs.reverse_geocode([lat, lng])
 		if not location:
 			return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
-

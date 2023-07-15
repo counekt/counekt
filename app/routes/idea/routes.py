@@ -104,6 +104,16 @@ def create():
             idea.block = receipt.blockNumber
         current_app.logger.info("UNPUSHED IDEA CREATED")
         db.session.add(idea)
+        """
+        if models.Wallet.query.filter_by(address=).first():
+            if models.Wallet.query.filter_by(address=).join(models.Wallet.first()
+            wallet.spenders.append(current_user)
+
+        else:
+            wallet = models.Wallet(address=)
+            wallet.spenders.append(current_user)
+        """
+        # FINISH
         db.session.commit()
         current_app.logger.info("IDEA MOTHERFUCKING PUSHED")
         return json.dumps({'status': 'success', 'handle': handle})
