@@ -2,8 +2,7 @@ from app import db
 import app.funcs as funcs
 import math
 
-
-class locationBase:
+class LocationBase:
     address = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)

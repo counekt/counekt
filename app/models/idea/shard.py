@@ -1,4 +1,5 @@
 from app import db
+import app.models as models
 from app.models.base import Base
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
@@ -18,4 +19,11 @@ class Shard(db.Model, Base):
 	# Used for representation in accordance to the contract machinery
 	creation_clock = db.Column(db.BigInteger) # Shardable Clock push time
 	expiration_clock = db.Column(db.BigInteger, default=9223372036854775807) # Shardable Clock expiration time
+
+	@property
+	def owner(self):
+		return models.Wallet.query.filter_by(address=self.owner_address).first().main_spender
+
+	def __repr__(self):
+		return '<Shard {}>'.format(self.amount)
 

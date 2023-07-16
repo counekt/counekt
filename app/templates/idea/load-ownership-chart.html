@@ -7,7 +7,7 @@
     type: 'pie',
     data: {
   labels: [
-    {% for s in valid_shards %}'{{s.owner_address}}',{% endfor %}
+    {% for s in valid_shards %}'{{s.owner.username}} ({{s.owner_address}})',{% endfor %}
   ],
   datasets: [{
     label: 'Amount',

@@ -1,9 +1,5 @@
 from flask import current_app
 from app import db
-from app.models.base import Base
-from app.models.comms.wall import Wall
-from app.models.locationBase import locationBase
-from app.models.static.photo import Photo
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy import func, inspect
 from datetime import date, datetime, timedelta
@@ -16,6 +12,9 @@ from hashlib import md5
 import base64
 from app import login
 import os
+import app.models as models
+from app.models.base import Base
+from app.models.location_base import LocationBase
 
 conversations = db.Table('conversations',
                   db.Column('conversation_id', db.Integer, db.ForeignKey('conversation.id')),
@@ -32,7 +31,7 @@ followers = db.Table('followers',
                      db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
 
 
-class User(UserMixin, db.Model, Base, locationBase):
+class User(UserMixin, db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     creation_datetime = db.Column(db.DateTime, index=True)
     token = db.Column(db.String(32), index=True, unique=True)
@@ -87,8 +86,8 @@ class User(UserMixin, db.Model, Base, locationBase):
         super(User, self).__init__(**kwargs)
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
-        self.photo = Photo(path=f"static/profile/{self.username}/photo/", replacement=self.gravatar)
-        self.wall = Wall()
+        self.photo = models.Photo(path=f"static/profile/{self.username}/photo/", replacement=self.gravatar)
+        self.wall = models.Wall()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -99,6 +98,15 @@ class User(UserMixin, db.Model, Base, locationBase):
     def set_birthdate(self, birthdate):
         self.birthdate = birthdate
         return birthdate
+
+    def register_wallet(self,address):
+        wallet = models.Wallet.query.filter_by(address=address).first()
+        if wallet:
+            if not self in wallet.spenders:
+                wallet.spenders.append(self)
+        else:
+            wallet = models.Wallet(address=address)
+            wallet.spenders.append(self)
 
     def add_skill(self, title):
         if not self.skills.filter_by(title=title).first():
@@ -172,7 +180,7 @@ class User(UserMixin, db.Model, Base, locationBase):
         return True
 
     def __repr__(self):
-        return '<User {}{}>'.format(self.symbol,self.username)
+        return '<User {}>'.format(self.username)
 
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):

@@ -10,7 +10,7 @@ from datetime import date
 from requests import HTTPError
 from app.routes.idea import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
-
+import app.models as models
 
 @bp.route("/create/idea/", methods=["GET", "POST"])
 @login_required
@@ -90,6 +90,7 @@ def create():
 
             current_app.logger.info("testing code")
             # Wait for transaction to be mined...
+            print(tx_hash)
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             deploy_data = w3.eth.getTransaction(tx_hash).input[2:-64] # remove 0x and argument data
 
@@ -97,22 +98,13 @@ def create():
             current_app.logger.info(f"IDEA ADDRESS: {receipt.contractAddress}")
 
             original_code = funcs.get_bytecode()
-
             if not receipt.contractAddress or deploy_data != original_code:
                 return json.dumps({'status': 'Deployment did not go through!'})
             idea.address = receipt.contractAddress
             idea.block = receipt.blockNumber
         current_app.logger.info("UNPUSHED IDEA CREATED")
         db.session.add(idea)
-        """
-        if models.Wallet.query.filter_by(address=).first():
-            if models.Wallet.query.filter_by(address=).join(models.Wallet.first()
-            wallet.spenders.append(current_user)
-
-        else:
-            wallet = models.Wallet(address=)
-            wallet.spenders.append(current_user)
-        """
+        current_user.register_wallet(receipt["from"])
         # FINISH
         db.session.commit()
         current_app.logger.info("IDEA MOTHERFUCKING PUSHED")

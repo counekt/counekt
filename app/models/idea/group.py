@@ -43,7 +43,7 @@ class Membership(db.Model, Base):
 
     @property
     def organization(self):
-        return _idea.Idea.query.filter_by(group=self.group).first_or_404()
+        return _idea.Idea.query.filter_by(group=self.group).first()
 
     def __repr__(self):
         return "<Membership {}>".format(self.organization.handle)

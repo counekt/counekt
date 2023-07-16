@@ -3,20 +3,19 @@ import app.funcs as funcs
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from app.models.static.photo import Photo
 from app.models.base import Base
-from app.models.locationBase import locationBase
+from app.models.location_base import LocationBase
 from flask import url_for
-import app.models.idea.group as _group
-import app.models.idea.event as _event
-import app.models.idea.shard as _shard
+import app.models as models
 import json
 
-class Idea(db.Model, Base, locationBase):
+class Idea(db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     address = db.Column(db.String(42)) # ETH address
     block = db.Column(db.Integer) # ETH block number
     current_clock = db.Column(db.Integer) # Shardable clock
     timeline_last_updated_at = db.Column(db.Integer) # ETH block number
     ownership_last_updated_at = db.Column(db.Integer) # ETH block number
+    structure_last_updated_at = db.Column(db.Integer) # ETH block number
 
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
@@ -42,7 +41,7 @@ class Idea(db.Model, Base, locationBase):
         self.timeline_last_updated_at = 0
         # do custom initialization here
         members = kwargs["members"]
-        self.group = _group.Group(members=members)
+        self.group = models.Group(members=members)
         for user in members:
             self.add_member(user)
         self.photo = Photo(filename="photo", path=f"static/ideas/{self.handle}/photo/", replacement="/static/images/idea.jpg")
@@ -72,7 +71,7 @@ class Idea(db.Model, Base, locationBase):
             if not self.events.filter_by(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex).first():
                 timestamp = w3.eth.getBlock(e.blockNumber).timestamp
                 payload_json = json.dumps(funcs.decode_event_payload(e))
-                event = _event.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
+                event = models.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
                 if e.blockNumber > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = e.blockNumber
@@ -86,7 +85,7 @@ class Idea(db.Model, Base, locationBase):
         new_shards = contract.events.NewShard.getLogs(fromBlock=start_at or self.block)
         for ns in new_shards:
             if not self.shards.filter_by(identity=ns.args.shard).first():
-                shard = _shard.Shard(identity=ns.args.shard,owner_address=ns.args.owner,creation_clock=ns.args.creationClock)
+                shard = models.Shard(identity=ns.args.shard,owner_address=ns.args.owner,creation_clock=ns.args.creationClock)
                 shard_info = contract.functions.infoByShard(ns.args.shard).call()
                 shard.amount = shard_info[0]
                 shard.creation_timestamp = w3.eth.getBlock(ns.blockNumber).timestamp
@@ -104,16 +103,21 @@ class Idea(db.Model, Base, locationBase):
         # For reference to decide which shards are currently valid and which ones aren't
         self.current_clock = contract.functions.getCurrentClock().call()
 
+    def update_structure(self):
+        contract = self.get_w3_contract()
+        start_at = self.structure_last_updated_at
+
+
     def get_w3_contract(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         return contract
 
     def get_shard_by_clock(self,owner_address,clock):
-        return self.shards.filter_by(owner_address=owner_address).filter(_shard.Shard.creation_clock <= self.current_clock < _shard.expiration_clock).first()
+        return self.shards.filter_by(owner_address=owner_address).filter(models.Shard.creation_clock <= self.current_clock < models.expiration_clock).first()
 
     @hybrid_property
     def valid_shards(self):
-        return self.shards.filter(self.current_clock < _shard.Shard.expiration_clock).order_by(_shard.Shard.amount.desc()) if self.shards.first() else []
+        return self.shards.filter(self.current_clock < models.Shard.expiration_clock).order_by(models.Shard.amount.desc()) if self.shards.first() else []
 
     @property
     def href(self):
@@ -124,4 +128,4 @@ class Idea(db.Model, Base, locationBase):
         return self.handle
 
     def __repr__(self):
-        return "<Idea {}{}>".format(self.symbol,self.handle)
+        return "<Idea {}>".format(self.handle)
