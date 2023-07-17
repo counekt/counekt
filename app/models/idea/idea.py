@@ -36,6 +36,22 @@ class Idea(db.Model, Base, LocationBase):
         'Shard', backref='entity', lazy='dynamic',
         foreign_keys='Shard.entity_id', passive_deletes=True)
 
+    dividends = db.relationship(
+        'Dividend', backref='entity', lazy='dynamic',
+        foreign_keys='Dividend.entity_id', passive_deletes=True)
+
+    referendums = db.relationship(
+        'Referendum', backref='entity', lazy='dynamic',
+        foreign_keys='Referendum.entity_id', passive_deletes=True)
+
+    banks = db.relationship(
+        'Bank', backref='entity', lazy='dynamic',
+        foreign_keys='Bank.entity_id', passive_deletes=True)
+
+    permits = db.relationship(
+        'Permit', backref='entity', lazy='dynamic',
+        foreign_keys='Permit.entity_id', passive_deletes=True)
+
     def __init__(self, **kwargs):
         super(Idea, self).__init__(**{k: kwargs[k] for k in kwargs if k != "members"})
         self.timeline_last_updated_at = 0
@@ -106,6 +122,11 @@ class Idea(db.Model, Base, LocationBase):
     def update_structure(self):
         contract = self.get_w3_contract()
         start_at = self.structure_last_updated_at
+        new_dividends = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'iD'})
+        new_referendums = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'iR'})
+        new_banks = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'mB'})
+        new_permits = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'sP'})
+
 
 
     def get_w3_contract(self):
