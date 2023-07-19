@@ -58,7 +58,7 @@ def get_abi():
         return json_data["abi"]
 
 def contract_has_method(bytecode, signature):
-    function_signature = w3.eth.abi.encodeFunctionSignature(signature);
+    function_signature = w3.eth.abi.encodeFunctionSignature(signature)
     # remove "0x" prefixed in 0x<4bytes-selector>
     return bytecode.index(functionSignature[2:]) > 0;
 

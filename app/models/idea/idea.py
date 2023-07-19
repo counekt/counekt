@@ -28,6 +28,9 @@ class Idea(db.Model, Base, LocationBase):
     photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
+    liquid_id = db.Column(db.Integer, db.ForeignKey('bank.id'))
+    liquid = db.relationship("Bank", foreign_keys=[liquid_id])
+
     events = db.relationship(
         'Event', backref='entity', lazy='dynamic',
         foreign_keys='Event.entity_id', passive_deletes=True)
@@ -122,11 +125,39 @@ class Idea(db.Model, Base, LocationBase):
     def update_structure(self):
         contract = self.get_w3_contract()
         start_at = self.structure_last_updated_at
-        new_dividends = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'iD'})
-        new_referendums = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'iR'})
-        new_banks = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'mB'})
-        new_permits = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'sP'})
+        events = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block)
+        for e in events:
+            if e["args"]["func"] == "iD":
+                if not self.dividends.filter_by(clock=e.args.clock).first():
+                    dividend = models.Dividend(clock=e.args.clock,value=e.args.value)
+            if e["args"]["func"] == "iR":
+                if not self.referendums.filter_by(clock=e.args.clock).first():
+                    referendum = models.Referendum(clock=e.args.clock,value=e.args.value)
 
+
+
+            if e.blockNumber > int(self.structure_last_updated_at or self.block):
+                self.structure_last_updated_at = e.blockNumber
+
+
+        dissolved_dividends = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'dD'})
+        for d in dissolved_dividends:
+            pass
+        issued_referendums = contract.events.ReferendumIssued.getLogs(fromBlock=start_at or self.block)
+        for r in issued_referendums:
+            pass
+        closed_referendums = contract.events.ReferendumClosed.getLogs(fromBlock=start_at or self.block)
+        for r in closed_referendums:
+            pass
+        created_banks = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'mB'})
+        for b in created_banks:
+            pass
+        deleted_banks = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'dB'})
+        for b in deleted_banks:
+            pass
+        new_permits = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'sP'})
+        for p in new_permits:
+            pass
 
 
     def get_w3_contract(self):

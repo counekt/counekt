@@ -58,13 +58,13 @@ contract Administrable is Idea {
     /// @notice Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend, given the bank name and the shard.
     mapping(uint256 => mapping(bytes32  => bool)) hasClaimedDividend;
 
-    /// @notice Event that triggers when an action is taken by somebody.
-    /// @param func The name of the function that was called.
-    /// @param args The arguments passed to the function call.
-    /// @param by The initiator of the action.
-    event ActionTaken(
-        string func,
-        bytes args,
+    /// @notice Event that triggers when part of a dividend is claimed.
+    /// @param clock The clock tied to the dividend.
+    /// @param value The value claimed.
+    /// @param by The claimant of the dividend.
+    event DividendClaimed(
+        uint256 clock,
+        uint256 value,
         address by
         );
 
@@ -125,7 +125,7 @@ contract Administrable is Idea {
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
         _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
-        emit ActionTaken("cD",abi.encode(dividend,dividendValue),msg.sender);
+        emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.

@@ -12,12 +12,12 @@ contract Votable is Administrable {
 
     /// @notice Struct representing info of a Referendum.
     /// @param issuer The issuer of the Referendum.
-    /// @param proposalFunctionNames Names of functions to be called during implementation.
-    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
+    /// @param proposalFuncs Names of functions to be called during implementation.
+    /// @param proposalArgs The encoded parameters passed to the function calls as part of the implementation of the proposals.
     struct ReferendumInfo {
         address issuer;
-        string[] proposalFunctionNames;
-        bytes[] proposalArgumentData;
+        string[] proposalFuncs;
+        bytes[] proposalArgs;
     }
 
     /// @notice Mapping pointing to dynamic info of a Referendum given a unique Referendum instance.
@@ -108,10 +108,10 @@ contract Votable is Administrable {
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
-    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
-    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
-    function issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData) external onlyWithPermit("iV") {
-        _issueVote(proposalFunctionNames,proposalArgumentData);
+    /// @param proposalFuncs The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgs The encoded parameters passed to the function calls as part of the implementation of the proposals.
+    function issueVote(string[] memory proposalFuncs, bytes[] memory proposalArgs) external onlyWithPermit("iV") {
+        _issueVote(proposalFuncs,proposalArgs);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
@@ -153,29 +153,28 @@ contract Votable is Administrable {
     /// @notice Returns a boolean stating if a given Referendum is implemented or not.
     /// @param referendum The Referendum to be checked for.
     function referendumIsImplemented(uint256 referendum) public view returns(bool) {
-        return amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFunctionNames.length; 
+        return amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFuncs.length; 
     }
 
     /// @notice Returns a boolean stating if a given Proposal exists within a given Referendum.
     /// @param referendum The Referendum to be checked for.
     /// @param proposalIndex The index of the proposal to be checked for.
     function proposalExists(uint256 referendum, uint256 proposalIndex) public view returns(bool) {
-        return infoByReferendum[referendum].proposalFunctionNames.length > proposalIndex;
+        return infoByReferendum[referendum].proposalFuncs.length > proposalIndex;
     }
 
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
-    /// @param proposalFunctionNames The names of the functions to be called as a result of the implementation of the proposals.
-    /// @param proposalArgumentData The parameters passed to the function calls as part of the implementation of the proposals.
-    function _issueVote(string[] memory proposalFunctionNames, bytes[] memory proposalArgumentData) internal onlyIfActive incrementClock {
-        uint256 transferClock = clock;
-        require(proposalFunctionNames.length == proposalArgumentData.length, "PCW");
-        pendingReferendums[transferClock] = true;
-        infoByReferendum[transferClock] = ReferendumInfo({
+    /// @param proposalFuncs The names of the functions to be called as a result of the implementation of the proposals.
+    /// @param proposalArgs The encoded parameters passed to the function calls as part of the implementation of the proposals.
+    function _issueVote(string[] memory proposalFuncs, bytes[] memory proposalArgs) internal onlyIfActive incrementClock {
+        require(proposalFuncs.length == proposalArgs.length, "PCW");
+        pendingReferendums[clock] = true;
+        infoByReferendum[clock] = ReferendumInfo({
             issuer: msg.sender,
-            proposalFunctionNames: proposalFunctionNames,
-            proposalArgumentData: proposalArgumentData
+            proposalFuncs: proposalFuncs,
+            proposalArgs: proposalArgs
             });
-        emit ReferendumIssued(transferClock);
+        emit ReferendumIssued(clock);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
@@ -185,66 +184,66 @@ contract Votable is Administrable {
         require(proposalExists(referendum,proposalIndex),"PDE");
         require(amountImplementedByReferendum[referendum] == proposalIndex, "WPO");
         amountImplementedByReferendum[referendum] += 1;
-        string memory proposalFunctionName = infoByReferendum[referendum].proposalFunctionNames[proposalIndex];
-        bytes memory proposalArgumentData = infoByReferendum[referendum].proposalArgumentData[proposalIndex];
-        bytes32 functionNameHash = keccak256(bytes(proposalFunctionName));
-                    if (functionNameHash == keccak256(bytes("iV"))) {
-                        (string[] memory proposalFunctionNames, bytes[] memory _proposalArgumentData) = abi.decode(proposalArgumentData, (string[], bytes[]));
-                        _issueVote(proposalFunctionNames, _proposalArgumentData);
+        string memory proposalFunc = infoByReferendum[referendum].proposalFuncs[proposalIndex];
+        bytes memory proposalArgs = infoByReferendum[referendum].proposalArgs[proposalIndex];
+        bytes32 funcHash = keccak256(bytes(proposalFunc));
+                    if (funcHash == keccak256(bytes("iV"))) {
+                        (string[] memory proposalFuncs, bytes[] memory _proposalArgs) = abi.decode(proposalArgs, (string[], bytes[]));
+                        _issueVote(proposalFuncs, _proposalArgs);
                     }
-                    if (functionNameHash == keccak256(bytes("sP"))) {
-                        (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgumentData, (string, PermitState,address));
+                    if (funcHash == keccak256(bytes("sP"))) {
+                        (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgs, (string, PermitState,address));
                         _setPermit(permitName,account,newState);
                     }
-                    if (functionNameHash == keccak256(bytes("sB"))) {
-                        (string memory permitName, PermitState newState) = abi.decode(proposalArgumentData, (string, PermitState));
+                    if (funcHash == keccak256(bytes("sB"))) {
+                        (string memory permitName, PermitState newState) = abi.decode(proposalArgs, (string, PermitState));
                         _setBasePermit(permitName,newState);
                     }
-                    if (functionNameHash == keccak256(bytes("tT"))) {
-                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgumentData, (string, address, uint256,address));
+                    if (funcHash == keccak256(bytes("tT"))) {
+                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgs, (string, address, uint256,address));
                         _transferTokenFromBank(fromBankName,tokenAddress,value,to);
                     }
-                    if (functionNameHash == keccak256(bytes("mT"))) {
-                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string, string, address, uint256));
+                    if (funcHash == keccak256(bytes("mT"))) {
+                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs, (string, string, address, uint256));
                         _moveToken(fromBankName,toBankName,tokenAddress,value);
                     }
-                    if (functionNameHash == keccak256(bytes("iD"))) {
-                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgumentData, (string,address,uint256));
+                    if (funcHash == keccak256(bytes("iD"))) {
+                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs, (string,address,uint256));
                         _issueDividend(bankName,tokenAddress,value);
                     }
-                    if (functionNameHash == keccak256(bytes("iS"))) {
-                        (uint256 amount, address tokenAddress, uint256 price, address to) = abi.decode(proposalArgumentData, (uint256,address,uint256,address));
+                    if (funcHash == keccak256(bytes("iS"))) {
+                        (uint256 amount, address tokenAddress, uint256 price, address to) = abi.decode(proposalArgs, (uint256,address,uint256,address));
                         _issueShards(amount,tokenAddress,price,to);
                     }
-                    if (functionNameHash == keccak256(bytes("dD"))) {
-                        (uint256 dividend) = abi.decode(proposalArgumentData, (uint256));
+                    if (funcHash == keccak256(bytes("dD"))) {
+                        (uint256 dividend) = abi.decode(proposalArgs, (uint256));
                         _dissolveDividend(dividend);
                     }
-                    if (functionNameHash == keccak256(bytes("cB"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
+                    if (funcHash == keccak256(bytes("cB"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
                         _createBank(bankName,bankAdmin);
                     }
-                    if (functionNameHash == keccak256(bytes("dB"))) {
-                        (string memory bankName) = abi.decode(proposalArgumentData, (string));
+                    if (funcHash == keccak256(bytes("dB"))) {
+                        (string memory bankName) = abi.decode(proposalArgs, (string));
                         _deleteBank(bankName);
                     }
-                    if (functionNameHash == keccak256(bytes("aBA"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
+                    if (funcHash == keccak256(bytes("aBA"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
                         _addBankAdmin(bankName,bankAdmin);
                     }
-                    if (functionNameHash == keccak256(bytes("rBA"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgumentData, (string, address));
+                    if (funcHash == keccak256(bytes("rBA"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
                         _removeBankAdmin(bankName,bankAdmin);
                     }
-                    if (functionNameHash == keccak256(bytes("rTA"))) {
-                        (address tokenAddress) = abi.decode(proposalArgumentData, (address));
+                    if (funcHash == keccak256(bytes("rTA"))) {
+                        (address tokenAddress) = abi.decode(proposalArgs, (address));
                         _registerTokenAddress(tokenAddress);
                     }
-                    if (functionNameHash == keccak256(bytes("uTA"))) {
-                        (address tokenAddress) = abi.decode(proposalArgumentData, (address));
+                    if (funcHash == keccak256(bytes("uTA"))) {
+                        (address tokenAddress) = abi.decode(proposalArgs, (address));
                         _unregisterTokenAddress(tokenAddress);
                     }
-                    if (functionNameHash == keccak256(bytes("l"))) {
+                    if (funcHash == keccak256(bytes("l"))) {
                         _liquidize();
                     }
                     else {
@@ -252,7 +251,7 @@ contract Votable is Administrable {
                     }
                     emit ActionTaken("iP",abi.encode(referendum,proposalIndex),msg.sender);
 
-        if (amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFunctionNames.length) {
+        if (amountImplementedByReferendum[referendum] == infoByReferendum[referendum].proposalFuncs.length) {
             emit ReferendumImplemented(referendum);
         }
     }
