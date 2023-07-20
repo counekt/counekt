@@ -25,10 +25,10 @@ class Idea(db.Model, Base, LocationBase):
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
 
-    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id', ondelete="cascade"))
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
-    liquid_id = db.Column(db.Integer, db.ForeignKey('bank.id'))
+    liquid_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete="cascade"))
     liquid = db.relationship("Bank", foreign_keys=[liquid_id])
 
     events = db.relationship(
