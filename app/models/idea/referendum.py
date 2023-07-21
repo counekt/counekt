@@ -22,6 +22,7 @@ class Referendum(db.Model, Base):
 		return '<Referendum {}>'.format(self.clock)
 
 class Proposal(db.Model, Base):
+	id = db.Column(db.Integer, primary_key=True)
 	referendum_id = db.Column(db.Integer, db.ForeignKey('referendum.id', ondelete='CASCADE'))
 	func = db.Column(db.String) # Name of func to be called during implementation.
 	args = db.Column(db.LargeBinary) #The encoded args passed to func call during implementation.
@@ -30,6 +31,7 @@ class Proposal(db.Model, Base):
 		return '<Proposal {}>'.format(self.func)
 
 class Vote(db.Model, Base):
+	id = db.Column(db.Integer, primary_key=True)
 	referendum_id = db.Column(db.Integer, db.ForeignKey('referendum.id', ondelete='CASCADE'))
 	shard_id = db.Column(db.Integer) 
 	shard = db.relationship("Shard", foreign_keys=[shard_id]) # the shard used to claim dividend

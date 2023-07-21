@@ -9,13 +9,13 @@ class Dividend(db.Model, Base):
 	token_address = db.Column(db.String(42)) # ETH token address
 	value = db.Column(db.Integer) # value of dividend
 	claims = db.relationship(
-        'Claim', lazy='dynamic',
-        foreign_keys='Claim.dívidend_id', passive_deletes=True)
+        'DividendClaim', lazy='dynamic',
+        foreign_keys='DividendClaim.dívidend_id', passive_deletes=True)
 
 	def __repr__(self):
 		return '<Dividend {}>'.format(self.clock)
 
-class Claim(db.Model, Base):
+class DividendClaim(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	dividend_id = db.Column(db.Integer, db.ForeignKey('dividend.id', ondelete='CASCADE'))
 	value = db.Column(db.Integer) # value of claim
@@ -23,5 +23,5 @@ class Claim(db.Model, Base):
 	shard = db.relationship("Shard", foreign_keys=[shard_id]) # shard used to claim dividend
 
 	def __repr__(self):
-		return '<Claim {}>'.format(self.value)
+		return '<DividendClaim {}>'.format(self.value)
 
