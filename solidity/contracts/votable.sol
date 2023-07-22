@@ -78,7 +78,7 @@ contract Votable is Administrable {
     }
 
     constructor(uint256 amount) Administrable(amount) {
-        _setPermit("iV",msg.sender,PermitState.administrator);
+        _setPermit("iR",msg.sender,PermitState.administrator);
         _setPermit("iP",msg.sender,PermitState.administrator);
     }
 
@@ -110,8 +110,8 @@ contract Votable is Administrable {
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
     /// @param proposalFuncs The names of the functions to be called as a result of the implementation of the proposals.
     /// @param proposalArgs The encoded parameters passed to the function calls as part of the implementation of the proposals.
-    function issueVote(string[] memory proposalFuncs, bytes[] memory proposalArgs) external onlyWithPermit("iV") {
-        _issueVote(proposalFuncs,proposalArgs);
+    function issueReferendum(string[] memory proposalFuncs, bytes[] memory proposalArgs) external onlyWithPermit("iR") {
+        _issueReferendum(proposalFuncs,proposalArgs);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
@@ -166,7 +166,7 @@ contract Votable is Administrable {
     /// @notice The potential errors of the Proposals aren't checked for before implementation!!!
     /// @param proposalFuncs The names of the functions to be called as a result of the implementation of the proposals.
     /// @param proposalArgs The encoded parameters passed to the function calls as part of the implementation of the proposals.
-    function _issueVote(string[] memory proposalFuncs, bytes[] memory proposalArgs) internal onlyIfActive incrementClock {
+    function _issueReferendum(string[] memory proposalFuncs, bytes[] memory proposalArgs) internal onlyIfActive incrementClock {
         require(proposalFuncs.length == proposalArgs.length, "PCW");
         pendingReferendums[clock] = true;
         infoByReferendum[clock] = ReferendumInfo({
@@ -189,7 +189,7 @@ contract Votable is Administrable {
         bytes32 funcHash = keccak256(bytes(proposalFunc));
                     if (funcHash == keccak256(bytes("iV"))) {
                         (string[] memory proposalFuncs, bytes[] memory _proposalArgs) = abi.decode(proposalArgs, (string[], bytes[]));
-                        _issueVote(proposalFuncs, _proposalArgs);
+                        _issueReferendum(proposalFuncs, _proposalArgs);
                     }
                     if (funcHash == keccak256(bytes("sP"))) {
                         (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgs, (string, PermitState,address));

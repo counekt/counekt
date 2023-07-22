@@ -13,6 +13,8 @@ class Idea(db.Model, Base, LocationBase):
     address = db.Column(db.String(42)) # ETH address
     block = db.Column(db.Integer) # ETH block number
     current_clock = db.Column(db.Integer) # Shardable clock
+    total_amount = db.Column(db.Integer) # Total Amount of shards
+
     timeline_last_updated_at = db.Column(db.Integer) # ETH block number
     ownership_last_updated_at = db.Column(db.Integer) # ETH block number
     structure_last_updated_at = db.Column(db.Integer) # ETH block number
@@ -95,8 +97,6 @@ class Idea(db.Model, Base, LocationBase):
                 if e.blockNumber > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = e.blockNumber
 
-        # TO BE CONTINUED...
-
     def update_ownership(self):
         contract = self.get_w3_contract()
         start_at = self.ownership_last_updated_at
@@ -121,6 +121,7 @@ class Idea(db.Model, Base, LocationBase):
                 self.ownership_last_updated_at = es.blockNumber
         # For reference to decide which shards are currently valid and which ones aren't
         self.current_clock = contract.functions.getCurrentClock().call()
+        self.total_amount = contract.functions.totalShardAmountByClock(self.current_clock).call()
 
     def update_structure(self):
         contract = self.get_w3_contract()
@@ -129,15 +130,39 @@ class Idea(db.Model, Base, LocationBase):
         for e in events:
             if e["args"]["func"] == "iD":
                 if not self.dividends.filter_by(clock=e.args.clock).first():
-                    dividend = models.Dividend(clock=e.args.clock,value=e.args.value)
+                    dividend = models.Dividend(clock=e.args.clock,value=e.args.value,token_address=e.args.tokenAddress)
+                    bank = self.banks.filter_by(name=e.args.bankName)
+                    bank.subtract_value(e.args.value,e.args.tokenAddress)
+            if e["args"]["func"] == "dD":
+                dividend = self.dividends.filter_by(clock=e.args.clock).first()
+                if dividend:
+                    address = contract.functions.getDividendToken(e.args.clock).call()
+                    residual = contract.functions.getDividendResidual(e.args.clock).call()
+                    dividend.dissolved = True
+                    main_bank = self.banks.filter_by(name="main")
+                    main_bank.register_token(address)
+                    main_bank.add_value(residual,address)
             if e["args"]["func"] == "iR":
                 if not self.referendums.filter_by(clock=e.args.clock).first():
                     referendum = models.Referendum(clock=e.args.clock,value=e.args.value)
-
-
-
+                    referendum_info = contract.functions.infoByReferendum(e.args.clock).call()
+                    for i, func in enumerate(referendum_info[1]): # add proposals if any
+                        proposal = models.Proposal(func=func,args=referendum_info[2][i])
+                        referendum.proposals.add(proposal)
+            if e["args"]["func"] == "cB":
+                if not self.banks.filter_by(name=e.args.name).first():
+                    bank = models.Bank(name=e.args.name)
+                    admin = models.Wallet.query.filter_by(address=e.args.address)
+                    bank.admins.add(admin)
+            if e["args"]["func"] == "dB":
+                bank = self.banks.filter_by(name=e.args.name).first()
+                if bank:
+                    db.session.delete(bank)
+                    
             if e.blockNumber > int(self.structure_last_updated_at or self.block):
                 self.structure_last_updated_at = e.blockNumber
+
+        # TO BE CONTINUED... FIX FIX FIX FIX FIX (remember to decode args byte data)
 
 
         dissolved_dividends = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'dD'})

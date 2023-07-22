@@ -26,6 +26,10 @@ class Proposal(db.Model, Base):
 	referendum_id = db.Column(db.Integer, db.ForeignKey('referendum.id', ondelete='CASCADE'))
 	func = db.Column(db.String) # Name of func to be called during implementation.
 	args = db.Column(db.LargeBinary) #The encoded args passed to func call during implementation.
+	def __init__(self, **kwargs):
+        super(Proposal, self).__init__(**kwargs)
+        # do custom initialization here
+        # decode the args
 
 	def __repr__(self):
 		return '<Proposal {}>'.format(self.func)

@@ -8,9 +8,11 @@ class Dividend(db.Model, Base):
 	clock = db.Column(db.Integer) # clock of issuance, used to identify
 	token_address = db.Column(db.String(42)) # ETH token address
 	value = db.Column(db.Integer) # value of dividend
+	residual = db.Column(db.Integer) # residual of dividend
 	claims = db.relationship(
         'DividendClaim', lazy='dynamic',
         foreign_keys='DividendClaim.dívidend_id', passive_deletes=True)
+	dissolved = db.Column(db.Boolean, default=False) # returns true if dissolved and inactive
 
 	def __repr__(self):
 		return '<Dividend {}>'.format(self.clock)
