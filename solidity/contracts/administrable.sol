@@ -42,9 +42,6 @@ contract Administrable is Idea {
     /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
     /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
     mapping(string => mapping(address => PermitState)) permits;
-
-    /// @notice A mapping pointing to a base Permit State, given the name of the permit.
-    mapping(string => PermitState) basePermits;
     
     /// @notice A mapping pointing to a boolean stating if a given Dividend is valid or not.
     mapping(uint256 => bool) validDividends;
@@ -69,11 +66,11 @@ contract Administrable is Idea {
         );
 
     /// @notice Event that triggers when part of a dividend is claimed.
-    /// @param clock The clock tied to the dividend.
+    /// @param dividendClock The clock tied to the dividend.
     /// @param value The value claimed.
     /// @param by The claimant of the dividend.
     event DividendClaimed(
-        uint256 clock,
+        uint256 dividendClock,
         uint256 value,
         address by
         );
@@ -227,14 +224,6 @@ contract Administrable is Idea {
 
     }
 
-    /// @notice Sets the state of a specified base permit.
-    /// @param permitName The name of the base permit, whose state is to be set.
-    /// @param newState The new base Permit State to be applied.
-    function setBasePermit(string memory permitName, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(basePermits[permitName] != newState, "AS");
-        _setBasePermit(permitName,newState);
-    }
-
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
     function liquidize() external onlyWithPermit("lE") {
         _liquidize();
@@ -294,14 +283,14 @@ contract Administrable is Idea {
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function hasPermit(string memory permitName, address account) public view returns(bool) {
-        return permits[permitName][account] >= PermitState.authorized || basePermits[permitName] >= PermitState.authorized;
+        return permits[permitName][account] >= PermitState.authorized;
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.
     /// @param permitName The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function isPermitAdmin(string memory permitName, address account) public view returns(bool) {
-        return permits[permitName][account] == PermitState.administrator || basePermits[permitName] == PermitState.administrator;
+        return permits[permitName][account] == PermitState.administrator;
     }
 
     /// @notice Creates and issues a Dividend (to all current shareholders) of a token amount from a given Bank.
@@ -422,12 +411,13 @@ contract Administrable is Idea {
 
     }
 
-    /// @notice Sets the state of a specified base permit.
-    /// @param permitName The name of the base permit, whose state is to be set.
-    /// @param newState The new base Permit State to be applied.
-    function _setBasePermit(string memory permitName, PermitState newState) internal onlyIfActive {
-        basePermits[permitName] = newState;
-        emit ActionTaken("sB",abi.encode(permitName,newState),msg.sender);
+    /// @notice Issues new shards and puts them for sale.
+    /// @param tokenAddress The token address the shards are put for sale for.
+    /// @param price The price per token.
+    /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
+    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) override internal {
+        super._issueShards(amount,tokenAddress,price,to);
+        emit ActionTaken("iS",abi.encode(amount,tokenAddress,price,to),msg.sender);
     }
 
     /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.

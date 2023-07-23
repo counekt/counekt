@@ -13,6 +13,15 @@ class Wallet(db.Model, Base):
     spenders = db.relationship(
         'User', secondary=spenders, backref="wallets", lazy='dynamic', cascade='all,delete')
 
+    @classmethod
+    def get_or_register(cls,address):
+        wallet = cls.query.filter_by(address=address).first()
+        if wallet:
+            return wallet
+        else:
+            wallet = cls(address=address)
+            return wallet
+
     @property
     def main_spender(self):
         return self.spenders.order_by(models.User.id.desc()).first()

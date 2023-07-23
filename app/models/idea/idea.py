@@ -94,6 +94,82 @@ class Idea(db.Model, Base, LocationBase):
                 payload_json = json.dumps(funcs.decode_event_payload(e))
                 event = models.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
+                if e["args"]["func"] == "iD": # Issue Dividend
+                    if not self.dividends.filter_by(clock=e.args.clock).first():
+                        dividend = models.Dividend(clock=e.args.clock,value=e.args.value,token_address=e.args.tokenAddress)
+                        bank = self.banks.filter_by(name=e.args.bankName)
+                        bank.subtract_value(e.args.value,e.args.tokenAddress)
+                if e["args"]["func"] == "dD": # Dissolve Dividend
+                    dividend = self.dividends.filter_by(clock=e.args.clock).first()
+                    if dividend:
+                        address = contract.functions.getDividendToken(e.args.clock).call()
+                        residual = contract.functions.getDividendResidual(e.args.clock).call()
+                        dividend.dissolved = True
+                        main_bank = self.banks.filter_by(name="main")
+                        main_bank.register_token(address)
+                        main_bank.add_value(residual,address)
+                if e["args"]["func"] == "iR": # Issue Referendum
+                    if not self.referendums.filter_by(clock=e.args.clock).first():
+                        viable_amount = contract.functions.totalShardAmountByClock(e.args.clock).call()
+                        referendum = models.Referendum(clock=e.args.clock,viable_amount=viable_amount)
+                        referendum_info = contract.functions.infoByReferendum(e.args.clock).call()
+                        for i, func in enumerate(referendum_info[1]): # add proposals if any
+                            proposal = models.Proposal(func=func,args=referendum_info[2][i])
+                            referendum.proposals.add(proposal)
+                if e["args"]["func"] == "cB": # Create Bank
+                    if not self.banks.filter_by(name=e.args.name).first():
+                        bank = models.Bank(name=e.args.name)
+                        admin = models.Wallet.get_or_register(address=e.args.address)
+                        bank.admins.add(admin)
+                if e["args"]["func"] == "dB": # Delete Bank
+                    bank = self.banks.filter_by(name=e.args.name).first()
+                    if bank:
+                        db.session.delete(bank)
+                if e["args"]["func"] == "sP": # Set Permit
+                    wallet = models.Wallet.get_or_register(address=e.args.address)
+                    permit = self.permits.filter_by(name=e.args.name,wallet=wallet).first()
+                    if not permit:
+                        permit = models.Permit(wallet=wallet,name=e.args.name)
+                        self.permits.append(permit)
+                    permit.state = e.args.state
+                if e["args"]["func"] == "iP": # Implement Proposal
+                    referendum = self.referendums.filter_by(clock=e.args.clock).first()
+                    proposal = referendum.proposals.filter_by(index=e.args.index).first()
+                    if not proposal:
+                        raise Exception("Proposal does not exist...")
+                    proposal.implemented = True
+                if e["args"]["func"] == "aA": # Add Admin
+                    bank = self.banks.filter_by(name=e.args.name).first()
+                    admin = models.Wallet.get_or_register(address=e.args.address)
+                    if not bank:
+                        raise Exception("Bank does not exist...")
+                    bank.admins.append(admin)
+                if e["args"]["func"] == "rA": # Remove Admin
+                    bank = self.banks.filter_by(name=e.args.name).first()
+                    admin = bank.admins.filter_by(address=e.args.address).first()
+                    if not bank:
+                        raise Exception("Bank does not exist...")
+                    banks.admins.remove(admin)
+                if e["args"]["func"] == "tT": # Transfer Token
+                    bank = self.banks.filter_by(name=e.args.name).first()
+                    if not bank:
+                        raise Exception("Bank does not exist...")
+                    bank.subtract_value(e.args.value,e.args.tokenAddress)
+                    self.liquid.subtract_value(e.args.value,e.args.tokenAddress)
+                if e["args"]["func"] == "mT": # Transfer Token
+                    fromBank = self.banks.filter_by(name=e.args.fromBankName).first()
+                    toBank = self.banks.filter_by(name=e.args.toBankName).first()
+                    if not frombank or toBank:
+                        raise Exception("fromBank or toBank does not exist...")
+                    fromBank.subtract_value(e.args.value,e.args.tokenAddress)
+                    toBank.add_value(e.args.value,e.args.tokenAddress)
+                if e["args"]["func"] == "iS": # Issue Shards
+                    pass
+                if e["args"]["func"] == "uT": # Unregister Token
+                    pass
+                if e["args"]["func"] == "rT": # Register Token
+                    pass
+
                 if e.blockNumber > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = e.blockNumber
 
@@ -123,66 +199,52 @@ class Idea(db.Model, Base, LocationBase):
         self.current_clock = contract.functions.getCurrentClock().call()
         self.total_amount = contract.functions.totalShardAmountByClock(self.current_clock).call()
 
+    def update_dividends(self):
+        contract = self.get_w3_contract()
+        new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.structure_last_updated_at or self.block)
+        for nc in new_claims:
+            dividend = self.dividends.filter_by(clock=nc.args.dividendClock).first()
+            shard = self.shards.filter(models.Shard.owner.has(address=nc.args.by)).first()
+            if not dividend or not shard:
+                raise Exception("Dividend or Shard does not exist...")
+            claim = models.DividendClaim.filter_by(dividend=dividend,shard=shard).first()
+            if not claim:
+                claim = models.DividendClaim(value=nc.args.value)
+                claim.value = nc.args.value
+                claim.shard = shard
+                dividend.claims.append(claim)
+
+    def update_referendums(self):
+        contract = self.get_w3_contract()
+        new_votes = contract.events.VoteCast.getLogs(fromBlock=self.structure_last_updated_at or self.block)
+        for nv in new_votes:
+            referendum = self.referendums.filter_by(clock=nv.args.referendumClock).first()
+            shard = self.shards.filter(models.Shard.owner.has(address=nv.args.by)).first()
+            if not referendum or not shard:
+                raise Exception("Referendum or Shard does not exist...")
+            vote = models.Vote.filter_by(referendum=referendum,shard=shard).first()
+            if not vote:
+                vote = models.Vote(shard=shard, in_favor=nv.args.favor)
+                referendum.votes.append(vote)
+                referendum.cast_amount += vote.shard.amount
+                referendum.in_favor_amount += vote.shard.amount if nv.args.favor else 0
+
+
+
     def update_structure(self):
         contract = self.get_w3_contract()
         start_at = self.structure_last_updated_at
         events = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block)
         for e in events:
-            if e["args"]["func"] == "iD":
-                if not self.dividends.filter_by(clock=e.args.clock).first():
-                    dividend = models.Dividend(clock=e.args.clock,value=e.args.value,token_address=e.args.tokenAddress)
-                    bank = self.banks.filter_by(name=e.args.bankName)
-                    bank.subtract_value(e.args.value,e.args.tokenAddress)
-            if e["args"]["func"] == "dD":
-                dividend = self.dividends.filter_by(clock=e.args.clock).first()
-                if dividend:
-                    address = contract.functions.getDividendToken(e.args.clock).call()
-                    residual = contract.functions.getDividendResidual(e.args.clock).call()
-                    dividend.dissolved = True
-                    main_bank = self.banks.filter_by(name="main")
-                    main_bank.register_token(address)
-                    main_bank.add_value(residual,address)
-            if e["args"]["func"] == "iR":
-                if not self.referendums.filter_by(clock=e.args.clock).first():
-                    referendum = models.Referendum(clock=e.args.clock,value=e.args.value)
-                    referendum_info = contract.functions.infoByReferendum(e.args.clock).call()
-                    for i, func in enumerate(referendum_info[1]): # add proposals if any
-                        proposal = models.Proposal(func=func,args=referendum_info[2][i])
-                        referendum.proposals.add(proposal)
-            if e["args"]["func"] == "cB":
-                if not self.banks.filter_by(name=e.args.name).first():
-                    bank = models.Bank(name=e.args.name)
-                    admin = models.Wallet.query.filter_by(address=e.args.address)
-                    bank.admins.add(admin)
-            if e["args"]["func"] == "dB":
-                bank = self.banks.filter_by(name=e.args.name).first()
-                if bank:
-                    db.session.delete(bank)
+            
                     
             if e.blockNumber > int(self.structure_last_updated_at or self.block):
                 self.structure_last_updated_at = e.blockNumber
 
+        #claimed dividends
+        for 
+
         # TO BE CONTINUED... FIX FIX FIX FIX FIX (remember to decode args byte data)
-
-
-        dissolved_dividends = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'dD'})
-        for d in dissolved_dividends:
-            pass
-        issued_referendums = contract.events.ReferendumIssued.getLogs(fromBlock=start_at or self.block)
-        for r in issued_referendums:
-            pass
-        closed_referendums = contract.events.ReferendumClosed.getLogs(fromBlock=start_at or self.block)
-        for r in closed_referendums:
-            pass
-        created_banks = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'mB'})
-        for b in created_banks:
-            pass
-        deleted_banks = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'dB'})
-        for b in deleted_banks:
-            pass
-        new_permits = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block, argument_filters={'func':'sP'})
-        for p in new_permits:
-            pass
 
 
     def get_w3_contract(self):

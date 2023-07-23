@@ -95,7 +95,7 @@ abstract contract Idea is Shardable {
     /// @param tokenAddress The token address the shards are put for sale for.
     /// @param price The price per token.
     /// @param to The specifically set buyer of the issued shards. Open to anyone, if address(0).
-    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) internal {
+    function _issueShards(uint256 amount, address tokenAddress, uint256 price, address to) virtual internal {
         require(acceptsToken(tokenAddress));
         _expireShard(shardByOwner[address(this)],clock);
         _pushShard(amount+infoByShard[shardByOwner[address(this)]].amount,address(this),clock);

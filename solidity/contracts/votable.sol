@@ -41,13 +41,6 @@ contract Votable is Administrable {
     /// @notice Mapping pointing to a boolean stating if a given Referendum is to be implemented.
     mapping(uint256 => bool) passedReferendums;
 
-
-    /// @notice Event that triggers when a Referendum is issued.
-    /// @param referendum The now pending Referendum that was issued.
-    event ReferendumIssued(
-        uint256 referendum
-        );
-
     /// @notice Event that triggers when a Referendum is closed.
     /// @param referendum The passed Referendum that was closed.
     event ReferendumClosed(
@@ -61,11 +54,11 @@ contract Votable is Administrable {
         );
 
     /// @notice Event that triggers when a vote is cast on a Referendum.
-    /// @param referendum The referendum that was voted on.
+    /// @param referendumClock The clock tied to the referendum that was voted on.
     /// @param favor The boolean value signalling a FOR or AGAINST vote.
     /// @param by The voter.
     event VoteCast(
-        uint256 referendum,
+        uint256 referendumClock,
         bool favor,
         address by
         );
@@ -174,7 +167,7 @@ contract Votable is Administrable {
             proposalFuncs: proposalFuncs,
             proposalArgs: proposalArgs
             });
-        emit ReferendumIssued(clock);
+        emit ActionTaken("iR",abi.encode(clock),msg.sender);
     }
 
     /// @notice Implements a given Proposal, within a given passed Referendum.
@@ -194,10 +187,6 @@ contract Votable is Administrable {
                     if (funcHash == keccak256(bytes("sP"))) {
                         (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgs, (string, PermitState,address));
                         _setPermit(permitName,account,newState);
-                    }
-                    if (funcHash == keccak256(bytes("sB"))) {
-                        (string memory permitName, PermitState newState) = abi.decode(proposalArgs, (string, PermitState));
-                        _setBasePermit(permitName,newState);
                     }
                     if (funcHash == keccak256(bytes("tT"))) {
                         (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgs, (string, address, uint256,address));
