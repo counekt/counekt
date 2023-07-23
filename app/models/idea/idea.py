@@ -7,9 +7,11 @@ from app.models.location_base import LocationBase
 from flask import url_for
 import app.models as models
 import json
+import app.funcs as funcs
 
 class Idea(db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
+    active = db.Column(db.Boolean,default=True)
     address = db.Column(db.String(42)) # ETH address
     block = db.Column(db.Integer) # ETH block number
     current_clock = db.Column(db.Integer) # Shardable clock
@@ -94,90 +96,96 @@ class Idea(db.Model, Base, LocationBase):
                 payload_json = json.dumps(funcs.decode_event_payload(e))
                 event = models.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
-                if e["args"]["func"] == "iD": # Issue Dividend
-                    if not self.dividends.filter_by(clock=e.args.clock).first():
-                        dividend = models.Dividend(clock=e.args.clock,value=e.args.value,token_address=e.args.tokenAddress)
-                        bank = self.banks.filter_by(name=e.args.bankName)
-                        bank.subtract_value(e.args.value,e.args.tokenAddress)
-                if e["args"]["func"] == "dD": # Dissolve Dividend
-                    dividend = self.dividends.filter_by(clock=e.args.clock).first()
+                decoded_payload = funcs.decode_event_payload(e)
+                if decoded_payload["func"] == "iD": # Issue Dividend
+                    if not self.dividends.filter_by(clock=decoded_payload["clock"]).first():
+                        dividend = models.Dividend(clock=decoded_payload["clock"],value=decoded_payload["value"],token_address=decoded_payload["tokenAddress"])
+                        bank = self.banks.filter_by(name=decoded_payload["bankName"])
+                        bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                if decoded_payload["func"] == "dD": # Dissolve Dividend
+                    dividend = self.dividends.filter_by(clock=decoded_payload["clock"]).first()
                     if dividend:
-                        address = contract.functions.getDividendToken(e.args.clock).call()
-                        residual = contract.functions.getDividendResidual(e.args.clock).call()
+                        address = contract.functions.getDividendToken(decoded_payload["clock"]).call()
+                        residual = contract.functions.getDividendResidual(decoded_payload["clock"]).call()
                         dividend.dissolved = True
                         main_bank = self.banks.filter_by(name="main")
                         main_bank.register_token(address)
                         main_bank.add_value(residual,address)
-                if e["args"]["func"] == "iR": # Issue Referendum
-                    if not self.referendums.filter_by(clock=e.args.clock).first():
-                        viable_amount = contract.functions.totalShardAmountByClock(e.args.clock).call()
-                        referendum = models.Referendum(clock=e.args.clock,viable_amount=viable_amount)
-                        referendum_info = contract.functions.infoByReferendum(e.args.clock).call()
+                if decoded_payload["func"] == "iR": # Issue Referendum
+                    if not self.referendums.filter_by(clock=decoded_payload["clock"]).first():
+                        viable_amount = contract.functions.totalShardAmountByClock(decoded_payload["clock"]).call()
+                        referendum = models.Referendum(clock=decoded_payload["clock"],viable_amount=viable_amount)
+                        referendum_info = contract.functions.infoByReferendum(decoded_payload["clock"]).call()
                         for i, func in enumerate(referendum_info[1]): # add proposals if any
                             proposal = models.Proposal(func=func,args=referendum_info[2][i])
                             referendum.proposals.add(proposal)
-                if e["args"]["func"] == "cB": # Create Bank
-                    if not self.banks.filter_by(name=e.args.name).first():
-                        bank = models.Bank(name=e.args.name)
-                        admin = models.Wallet.get_or_register(address=e.args.address)
+                if decoded_payload["func"] == "cB": # Create Bank
+                    if not self.banks.filter_by(name=decoded_payload["name"]).first():
+                        bank = models.Bank(name=decoded_payload["name"])
+                        admin = models.Wallet.get_or_register(address=decoded_payload["admin"])
                         bank.admins.add(admin)
-                if e["args"]["func"] == "dB": # Delete Bank
-                    bank = self.banks.filter_by(name=e.args.name).first()
+                if decoded_payload["func"] == "dB": # Delete Bank
+                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
                     if bank:
                         db.session.delete(bank)
-                if e["args"]["func"] == "sP": # Set Permit
-                    wallet = models.Wallet.get_or_register(address=e.args.address)
-                    permit = self.permits.filter_by(name=e.args.name,wallet=wallet).first()
+                if decoded_payload["func"] == "sP": # Set Permit
+                    wallet = models.Wallet.get_or_register(address=decoded_payload["account"])
+                    permit = self.permits.filter_by(name=decoded_payload["name"],wallet=wallet).first()
                     if not permit:
-                        permit = models.Permit(wallet=wallet,name=e.args.name)
+                        permit = models.Permit(wallet=wallet,name=decoded_payload["name"])
                         self.permits.append(permit)
-                    permit.state = e.args.state
+                    permit.state = decoded_payload["state"]
                 if e["args"]["func"] == "iP": # Implement Proposal
-                    referendum = self.referendums.filter_by(clock=e.args.clock).first()
-                    proposal = referendum.proposals.filter_by(index=e.args.index).first()
+                    referendum = self.referendums.filter_by(clock=decoded_payload["clock"]).first()
+                    proposal = referendum.proposals.filter_by(index=decoded_payload["index"]).first()
                     if not proposal:
                         raise Exception("Proposal does not exist...")
                     proposal.implemented = True
                 if e["args"]["func"] == "aA": # Add Admin
-                    bank = self.banks.filter_by(name=e.args.name).first()
-                    admin = models.Wallet.get_or_register(address=e.args.address)
+                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
+                    admin = models.Wallet.get_or_register(address=decoded_payload["admin"])
                     if not bank:
                         raise Exception("Bank does not exist...")
                     bank.admins.append(admin)
                 if e["args"]["func"] == "rA": # Remove Admin
-                    bank = self.banks.filter_by(name=e.args.name).first()
-                    admin = bank.admins.filter_by(address=e.args.address).first()
+                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
+                    admin = bank.admins.filter_by(address=decoded_payload["tokenAddress"]).first()
                     if not bank:
                         raise Exception("Bank does not exist...")
                     banks.admins.remove(admin)
                 if e["args"]["func"] == "tT": # Transfer Token
-                    bank = self.banks.filter_by(name=e.args.name).first()
+                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
                     if not bank:
                         raise Exception("Bank does not exist...")
-                    bank.subtract_value(e.args.value,e.args.tokenAddress)
-                    self.liquid.subtract_value(e.args.value,e.args.tokenAddress)
+                    bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                    self.liquid.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                 if e["args"]["func"] == "mT": # Transfer Token
-                    fromBank = self.banks.filter_by(name=e.args.fromBankName).first()
-                    toBank = self.banks.filter_by(name=e.args.toBankName).first()
+                    fromBank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
+                    toBank = self.banks.filter_by(name=decoded_payload["toBankName"]).first()
                     if not frombank or toBank:
                         raise Exception("fromBank or toBank does not exist...")
-                    fromBank.subtract_value(e.args.value,e.args.tokenAddress)
-                    toBank.add_value(e.args.value,e.args.tokenAddress)
+                    fromBank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                    toBank.add_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                 if e["args"]["func"] == "iS": # Issue Shards
                     pass
                 if e["args"]["func"] == "uT": # Unregister Token
-                    pass
+                    token = self.liquid.tokens.filter_by(address=decoded_payload["tokenAddress"]).first()
+                    self.liquid.tokens.remove(token)
                 if e["args"]["func"] == "rT": # Register Token
-                    pass
-
+                    token = self.liquid.tokens.filter_by(address=decoded_payload["tokenAddress"]).first()
+                    if not token:
+                        token = models.TokenAmount(address=decoded_payload["tokenAddress"])
+                        self.liquid.tokens.append(token)
+                if e["args"]["func"] == "lE": # Liquidize Entity
+                    self.active = False
                 if e.blockNumber > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = e.blockNumber
 
     def update_ownership(self):
         contract = self.get_w3_contract()
-        start_at = self.ownership_last_updated_at
+        start_at_ns, start_at_es = [self.ownership_last_updated_at]*2
         # Register new shards
-        new_shards = contract.events.NewShard.getLogs(fromBlock=start_at or self.block)
+        new_shards = contract.events.NewShard.getLogs(fromBlock=start_at_nz or self.block)
         for ns in new_shards:
             if not self.shards.filter_by(identity=ns.args.shard).first():
                 shard = models.Shard(identity=ns.args.shard,owner_address=ns.args.owner,creation_clock=ns.args.creationClock)
@@ -185,22 +193,24 @@ class Idea(db.Model, Base, LocationBase):
                 shard.amount = shard_info[0]
                 shard.creation_timestamp = w3.eth.getBlock(ns.blockNumber).timestamp
                 self.shards.append(shard)
-                if ns.blockNumber > int(self.ownership_last_updated_at or self.block):
-                    self.ownership_last_updated_at = ns.blockNumber
+                if ns.blockNumber > int(start_at_ns or self.block):
+                    start_at_ns = ns.blockNumber
         # Register expired shards
-        expired_shards = contract.events.ExpiredShard.getLogs(fromBlock=start_at or self.block)
+        expired_shards = contract.events.ExpiredShard.getLogs(fromBlock=start_at_es or self.block)
         for es in expired_shards:
             shard = self.shards.filter_by(identity=es.args.shard).first()
             shard.expiration_clock = es.args.expiration_clock
             shard.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
-            if es.blockNumber > int(self.ownership_last_updated_at or self.block):
-                self.ownership_last_updated_at = es.blockNumber
+            if es.blockNumber > int(start_at_es or self.block):
+                start_at_es = es.blockNumber
         # For reference to decide which shards are currently valid and which ones aren't
         self.current_clock = contract.functions.getCurrentClock().call()
         self.total_amount = contract.functions.totalShardAmountByClock(self.current_clock).call()
+        self.ownership_last_updated_at = min(start_at_ns,start_at_es)
 
-    def update_dividends(self):
+    def update_structure(self):
         contract = self.get_w3_contract()
+        # Dividend Claims
         new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.structure_last_updated_at or self.block)
         for nc in new_claims:
             dividend = self.dividends.filter_by(clock=nc.args.dividendClock).first()
@@ -213,9 +223,7 @@ class Idea(db.Model, Base, LocationBase):
                 claim.value = nc.args.value
                 claim.shard = shard
                 dividend.claims.append(claim)
-
-    def update_referendums(self):
-        contract = self.get_w3_contract()
+        # Referendum Votes
         new_votes = contract.events.VoteCast.getLogs(fromBlock=self.structure_last_updated_at or self.block)
         for nv in new_votes:
             referendum = self.referendums.filter_by(clock=nv.args.referendumClock).first()
@@ -228,23 +236,6 @@ class Idea(db.Model, Base, LocationBase):
                 referendum.votes.append(vote)
                 referendum.cast_amount += vote.shard.amount
                 referendum.in_favor_amount += vote.shard.amount if nv.args.favor else 0
-
-
-
-    def update_structure(self):
-        contract = self.get_w3_contract()
-        start_at = self.structure_last_updated_at
-        events = contract.events.ActionTaken.getLogs(fromBlock=start_at or self.block)
-        for e in events:
-            
-                    
-            if e.blockNumber > int(self.structure_last_updated_at or self.block):
-                self.structure_last_updated_at = e.blockNumber
-
-        #claimed dividends
-        for 
-
-        # TO BE CONTINUED... FIX FIX FIX FIX FIX (remember to decode args byte data)
 
 
     def get_w3_contract(self):

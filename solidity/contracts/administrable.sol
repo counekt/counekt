@@ -298,19 +298,18 @@ contract Administrable is Idea {
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
     function _issueDividend(string memory bankName, address tokenAddress, uint256 value) internal onlyIfActive {
-        uint256 transferClock = clock;
         require(value <= balanceByBank[bankName][tokenAddress], "IF");
         balanceByBank[bankName][tokenAddress] -= value;
         if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
             storedTokenAddressesByBank[bankName] -= 1;
         }
-        infoByDividend[transferClock] = DividendInfo({
+        infoByDividend[clock] = DividendInfo({
             tokenAddress:tokenAddress,
             value:value
         });
-        residualByDividend[transferClock] = value;
-        validDividends[transferClock] = true;
-        emit ActionTaken("iD",abi.encode(bankName,tokenAddress,value),msg.sender);
+        residualByDividend[clock] = value;
+        validDividends[clock] = true;
+        emit ActionTaken("iD",abi.encode(clock,bankName,tokenAddress,value),msg.sender);
     }
 
     /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.

@@ -19,21 +19,24 @@ def decode_event_payload(e):
     if e["args"]["func"] == "sP":
         permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
         return {"func":e["args"]["func"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
-    if e["args"]["func"] == "sB":
-        permitName, newState = abi.decode_abi(["string","uint8"],e["args"]["args"])
-        return {"func":e["args"]["func"], "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
-    if e["args"]["func"] == "sNS":
-        newState = abi.decode_abi(["bool"],e["args"]["args"])
-        return {"func":e["args"]["func"], "newState":newState, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iS":
+        amount, tokenAddress, price, to = abi.decode_abi(["uint256","address","uint256","address"],e["args"]["args"])
+        return {"func":e["args"]["func"],"amount":amount,"tokenAddress":tokenAddress,"price":price,"to":to,"by":e["args"]["by"]}
+    if e["args"]["func"] in ["uT","rT"] :
+        tokenAddress = abi.decode_abi(["address"],e["args"]["args"])
+        return {"func":e["args"]["func"], "tokenAddress":tokenAddress, "by":e["args"]["by"]}
     if e["args"]["func"] == "iD":
-        bankName, tokenAddress, value = abi.decode_abi(["string","address","uint256"],e["args"]["args"])
-        return {"func":e["args"]["func"], "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
+        clock, bankName, tokenAddress, value = abi.decode_abi(["uint256","string","address","uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "clock":clock, "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
     if e["args"]["func"] == "dD":
-        dividend = abi.decode_abi(["uint256"],e["args"]["args"])
-        return {"func":e["args"]["func"], "dividend":dividend, "by":e["args"]["by"]}
-    if e["args"]["func"] == "cD":
-        dividend, dividendValue = abi.decode_abi(["uint256", "uint256"],e["args"]["args"])
-        return {"func":e["args"]["func"], "dividend":dividend, "dividendValue":dividendValue, "by":e["args"]["by"]}
+        dividendClock = abi.decode_abi(["uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "clock":dividendClock, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iR":
+        clock = abi.decode_abi(["uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "clock":clock, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iP":
+        referendumClock, index = abi.decode_abi(["uint256", "uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "referendumClock":referendumClock, "index":index, "by":e["args"]["by"]}
     if e["args"]["func"] in ["cB","aA","rA"]:
         bankName, bankAdmin = abi.decode_abi(["string","address"],e["args"]["args"])
         return {"func":e["args"]["func"], "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
@@ -46,6 +49,10 @@ def decode_event_payload(e):
     if e["args"]["func"] == "mT":
         fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
         return {"func":e["args"]["func"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
+    if e["args"]["func"] == "lE":
+        return {"func":e["args"]["func"], "by":e["args"]["by"]}
+
+
 
 def get_bytecode():
     with open("solidity/build/contracts/Votable.json","r") as json_file:

@@ -180,7 +180,7 @@ contract Votable is Administrable {
         string memory proposalFunc = infoByReferendum[referendum].proposalFuncs[proposalIndex];
         bytes memory proposalArgs = infoByReferendum[referendum].proposalArgs[proposalIndex];
         bytes32 funcHash = keccak256(bytes(proposalFunc));
-                    if (funcHash == keccak256(bytes("iV"))) {
+                    if (funcHash == keccak256(bytes("iR"))) {
                         (string[] memory proposalFuncs, bytes[] memory _proposalArgs) = abi.decode(proposalArgs, (string[], bytes[]));
                         _issueReferendum(proposalFuncs, _proposalArgs);
                     }
@@ -216,23 +216,23 @@ contract Votable is Administrable {
                         (string memory bankName) = abi.decode(proposalArgs, (string));
                         _deleteBank(bankName);
                     }
-                    if (funcHash == keccak256(bytes("aBA"))) {
+                    if (funcHash == keccak256(bytes("aA"))) {
                         (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
                         _addBankAdmin(bankName,bankAdmin);
                     }
-                    if (funcHash == keccak256(bytes("rBA"))) {
+                    if (funcHash == keccak256(bytes("rA"))) {
                         (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
                         _removeBankAdmin(bankName,bankAdmin);
                     }
-                    if (funcHash == keccak256(bytes("rTA"))) {
+                    if (funcHash == keccak256(bytes("rT"))) {
                         (address tokenAddress) = abi.decode(proposalArgs, (address));
                         _registerTokenAddress(tokenAddress);
                     }
-                    if (funcHash == keccak256(bytes("uTA"))) {
+                    if (funcHash == keccak256(bytes("uT"))) {
                         (address tokenAddress) = abi.decode(proposalArgs, (address));
                         _unregisterTokenAddress(tokenAddress);
                     }
-                    if (funcHash == keccak256(bytes("l"))) {
+                    if (funcHash == keccak256(bytes("lE"))) {
                         _liquidize();
                     }
                     else {
