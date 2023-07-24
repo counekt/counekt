@@ -22,6 +22,11 @@ class Shard(db.Model, Base):
 	creation_clock = db.Column(db.BigInteger) # Shardable Clock push time
 	expiration_clock = db.Column(db.BigInteger, default=9223372036854775807) # Shardable Clock expiration time
 
+	@property
+	def is_expired(self):
+		return self.expiration_clock != 9223372036854775807
+
+
 	def __repr__(self):
 		return '<Shard {}>'.format(self.amount)
 

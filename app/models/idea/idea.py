@@ -17,9 +17,12 @@ class Idea(db.Model, Base, LocationBase):
     current_clock = db.Column(db.Integer) # Shardable clock
     total_amount = db.Column(db.Integer) # Total Amount of shards
 
-    timeline_last_updated_at = db.Column(db.Integer) # ETH block number
-    ownership_last_updated_at = db.Column(db.Integer) # ETH block number
-    structure_last_updated_at = db.Column(db.Integer) # ETH block number
+    events_last_updated_at = db.Column(db.Integer) # ETH block number
+    shards_last_updated_at = db.Column(db.Integer) # ETH block number
+    dividend_claims_last_updated_at = db.Column(db.Integer) # ETH block number
+    referendum_votes_last_updated_at = db.Column(db.Integer) # ETH block number
+
+
 
     symbol = "€"
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
@@ -183,35 +186,34 @@ class Idea(db.Model, Base, LocationBase):
 
     def update_ownership(self):
         contract = self.get_w3_contract()
-        start_at_ns, start_at_es = [self.ownership_last_updated_at]*2
         # Register new shards
-        new_shards = contract.events.NewShard.getLogs(fromBlock=start_at_nz or self.block)
-        for ns in new_shards:
-            if not self.shards.filter_by(identity=ns.args.shard).first():
-                shard = models.Shard(identity=ns.args.shard,owner_address=ns.args.owner,creation_clock=ns.args.creationClock)
-                shard_info = contract.functions.infoByShard(ns.args.shard).call()
-                shard.amount = shard_info[0]
-                shard.creation_timestamp = w3.eth.getBlock(ns.blockNumber).timestamp
-                self.shards.append(shard)
-                if ns.blockNumber > int(start_at_ns or self.block):
-                    start_at_ns = ns.blockNumber
-        # Register expired shards
-        expired_shards = contract.events.ExpiredShard.getLogs(fromBlock=start_at_es or self.block)
-        for es in expired_shards:
-            shard = self.shards.filter_by(identity=es.args.shard).first()
-            shard.expiration_clock = es.args.expiration_clock
-            shard.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
-            if es.blockNumber > int(start_at_es or self.block):
-                start_at_es = es.blockNumber
+        updated_shards = contract.events.ShardUpdated.getLogs(fromBlock=self.shards_last_updated_at or self.block)
+        for s in updated_shards:
+            if s.args.status == True: # Register new shards
+                if not self.shards.filter_by(identity=s.args.shard).first():
+                    shard_info = contract.functions.infoByShard(s.args.shard).call()
+                    shard = models.Shard(identity=s.args.shard,owner_address=shard_info[1],creation_clock=shard_info[2])
+                    shard.amount = shard_info[0]
+                    shard.creation_timestamp = w3.eth.getBlock(s.blockNumber).timestamp
+                    self.shards.append(shard)
+                    if ns.blockNumber > int(self.shards_last_updated_at or self.block):
+                        self.shards_last_updated_at = s.blockNumber
+            else: # Register expired shards
+                if not self.shards.filter_by(identity=s.args.shard).first().is_expired:
+                    expiration_clock = contract.functions.getShardExpirationClock(s.args.shard).call()
+                    shard = self.shards.filter_by(identity=es.args.shard).first()
+                    shard.expiration_clock = expiration_clock
+                    shard.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
+            if s.blockNumber > int(self.shards_last_updated_at or self.block):
+                self.shards_last_updated_at = s.blockNumber
         # For reference to decide which shards are currently valid and which ones aren't
         self.current_clock = contract.functions.getCurrentClock().call()
         self.total_amount = contract.functions.totalShardAmountByClock(self.current_clock).call()
-        self.ownership_last_updated_at = min(start_at_ns,start_at_es)
 
     def update_structure(self):
         contract = self.get_w3_contract()
         # Dividend Claims
-        new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.structure_last_updated_at or self.block)
+        new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.dividend_claims_last_updated_at or self.block)
         for nc in new_claims:
             dividend = self.dividends.filter_by(clock=nc.args.dividendClock).first()
             shard = self.shards.filter(models.Shard.owner.has(address=nc.args.by)).first()
@@ -223,8 +225,10 @@ class Idea(db.Model, Base, LocationBase):
                 claim.value = nc.args.value
                 claim.shard = shard
                 dividend.claims.append(claim)
+            if nc.blockNumber > int(self.dividend_claims_last_updated_at or self.block):
+                self.dividend_claims_last_updated_at = ns.blockNumber
         # Referendum Votes
-        new_votes = contract.events.VoteCast.getLogs(fromBlock=self.structure_last_updated_at or self.block)
+        new_votes = contract.events.VoteCast.getLogs(fromBlock=self.referendum_votes_last_updated_at or self.block)
         for nv in new_votes:
             referendum = self.referendums.filter_by(clock=nv.args.referendumClock).first()
             shard = self.shards.filter(models.Shard.owner.has(address=nv.args.by)).first()
@@ -236,7 +240,8 @@ class Idea(db.Model, Base, LocationBase):
                 referendum.votes.append(vote)
                 referendum.cast_amount += vote.shard.amount
                 referendum.in_favor_amount += vote.shard.amount if nv.args.favor else 0
-
+            if nv.blockNumber > int(self.referendum_votes_last_updated_at or self.block):
+                self.referendum_votes_last_updated_at = ns.blockNumber
 
     def get_w3_contract(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())

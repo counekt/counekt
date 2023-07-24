@@ -27,6 +27,16 @@ function divideUnequallyIntoTwoWithRemainder(uint256 dividend, uint256 numerator
 /// @custom:beaware This is a commercial contract.
 contract Shardable {
 
+    /// @notice An enum representing a Sale State of a Shard.
+    /// @param notForSale The Shard is NOT for sale.
+    /// @param forSale The Shard IS for sale.
+    /// @param sold The Shard has been sold.
+    enum SaleState {
+        notForSale,
+        forSale,
+        sold
+    }
+
     /// @notice A struct representing the related info of a non-fungible Shard token.
     /// @dev Is represented via a bytes32 value created from the hash: keccak256(owner, creationClock).
     /// @param amount Amount that the Shard represents.
@@ -41,13 +51,13 @@ contract Shardable {
 
     /// @notice A struct representing the related sale info of a non-fungible Shard token.
     /// @param amount Amount that is for sale.
-    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
+    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param to Address pointing to a potentially specifically set buyer of the sale.
     struct ShardSale {
         uint256 amount;
-        address tokenAddress;
         uint256 price;
+        address tokenAddress;
         address to;
     }
 
@@ -64,57 +74,29 @@ contract Shardable {
     mapping(bytes32 => ShardInfo) public infoByShard;
     /// @notice Mapping pointing to a currently valid shard given the address of its owner.
     mapping(address => bytes32) public shardByOwner;
-    /// @notice Mapping pointing to a boolean stating if a given Shard is for sale or not.
-    mapping(bytes32 => bool) shardsForSale;
+    /// @notice Mapping pointing to an enum stating whether a given Shard isn't, is for sale, or has been sold.
+    mapping(bytes32 => SaleState) saleStateByShard;
     /// @notice Mapping pointing to related sale info of a Shard given the bytes of a unique Shard instance.
     mapping(bytes32 => ShardSale) saleByShard;
     // @notice Mapping pointing to an expired clock given a shard.
     mapping(bytes32 => uint256) shardExpirationClock;
 
     /// @notice Event emitted when a Shard is created.
+    /// @param status The boolean indicating whether a shard is newly created (true) or expired (false).
     /// @param shard The Shard byte identifier, which was created.
-    /// @param owner The owner of the created Shard.
-    /// @param creationClock The clock at which the shard was created.
-    event NewShard(
-        bytes32 shard,
-        address owner,
-        uint256 creationClock
-        );
-
-    /// @notice Event emitted when a Shard expires.
-    /// @param shard The Shard byte identifier, which expired.
-    /// @param expirationClock The clock at which the shard expired.
-    event ExpiredShard(
-        bytes32 shard,
-        uint256 expirationClock
+    event ShardUpdated(
+        bool status,
+        bytes32 shard
         );
 
     /// @notice Event emitted when a sale of a Shard is sold.
-    /// @param shard The shard that was sold from.
-    /// @param amount Amount of the Shard that was sold.
-    /// @param to The buyer of the sale.
-    /// @param tokenAddress The address of the token that was accepted in the purchase. A value of 0x0 represents ether.
-    /// @param price The amount which the Shard was for sale for. The token address being the valuta.
-    event SaleSold(
+    /// @param status The enum stating whether the given Shard now isn't, is for sale, or has been sold.
+    /// @param shard The shard whose sale state was updated.
+    /// @param sale The sale info reffering to either a listing or a purchase, depending on the status.
+    event SaleStateUpdated(
+        SaleState status,
         bytes32 shard,
-        uint256 amount,
-        address to,
-        address tokenAddress,
-        uint256 price
-        );
-
-    /// @notice Event emitted when a Shard is put up for sale.
-    /// @param shard The shard that was put for sale.
-    /// @param amount Amount of the Shard put for sale.
-    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
-    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    /// @param to The specifically set buyer of the sale, if any.
-    event PutForSale(
-        bytes32 shard,
-        uint256 amount,
-        address tokenAddress,
-        uint256 price,
-        address to
+        ShardSale sale
         );
 
     modifier incrementClock {
@@ -160,12 +142,13 @@ contract Shardable {
     /// @notice Purchases a listed Shard for sale.
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shard The shard of which a fraction will be purchased.
-    function purchase(bytes32 shard, uint256 amount) external payable onlyValidShard(shard) {
-        require(shardsForSale[shard], "NS");
+    function purchase(bytes32 shard, uint256 amount, uint256 price) external payable onlyValidShard(shard) {
+        require(saleStateByShard[shard]==SaleState.forSale, "NS");
+        require(price == saleByShard[shard].price, "WP");
         require(amount != 0, "ES");
         require(saleByShard[shard].amount >= amount, "ES");
         require((saleByShard[shard].to == msg.sender) || (saleByShard[shard].to == address(0x0)), "SR");
-        _cancelSale(shard);
+        saleStateByShard[shard] = SaleState.sold; // shard has been sold
         uint256 totalPrice = amount * saleByShard[shard].price;
         (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(totalPrice,25,1000);
         profitToSeller += remainder; // remainder goes to seller
@@ -191,7 +174,7 @@ contract Shardable {
             // add those to the outstanding shard amount
             totalShardAmountByClock[clock] += amount;
         }
-        emit SaleSold(shard,amount,msg.sender,saleByShard[shard].tokenAddress,saleByShard[shard].price);
+        emit SaleStateUpdated(SaleState.sold,shard,ShardSale(amount,saleByShard[shard].price,saleByShard[shard].tokenAddress,saleByShard[shard].to));
         // if not whole shard is bought
         if (saleByShard[shard].amount != amount) { 
             // put the rest to sale again
@@ -212,7 +195,7 @@ contract Shardable {
     /// @notice Cancels a sell of a given shard.
     /// @param shard The shard to be put off sale.
     function cancelSale(bytes32 shard) public onlyHolder(shard) onlyValidShard(shard) {
-        require(shardsForSale[shard], "NS");
+        require(saleStateByShard[shard]==SaleState.forSale, "NS");
         _cancelSale(shard);
     }
 
@@ -261,7 +244,8 @@ contract Shardable {
     /// @notice Cancels a sell of a given Shard.
     /// @param shard The shard to be put off sale.
     function _cancelSale(bytes32 shard) internal onlyValidShard(shard) {
-        shardsForSale[shard] = false;
+        saleStateByShard[shard] = SaleState.notForSale;
+        emit SaleStateUpdated(SaleState.notForSale,shard,ShardSale(0,0,address(0),address(0)));
     }
 
     /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
@@ -273,9 +257,9 @@ contract Shardable {
         if (isShardHolder(to)) { // if Receiver already owns a shard
             // The amounts are added and the shard thereby upgraded
             uint256 sumAmount = amount + infoByShard[shardByOwner[to]].amount;
-            _pushShard(sumAmount,to,clock);
             // Expire the Old Receiver Shard
             _expireShard(shardByOwner[to], clock);
+            _pushShard(sumAmount,to,clock);
         }
 
         else {
@@ -290,7 +274,6 @@ contract Shardable {
         if (diff != 0) {
         _pushShard(diff,infoByShard[senderShard].owner,clock);
         }
-        emit SaleSold(senderShard,amount,to,address(0),0);
     }
 
     /// @notice Puts a given shard for sale.
@@ -300,16 +283,16 @@ contract Shardable {
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale. For anyone to buy if address(0).
     function _putForSale(bytes32 shard, uint256 amount, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {
-        require(shardsForSale[shard] == false);
+        require(saleStateByShard[shard]==SaleState.notForSale);
         require(amount <= infoByShard[shard].amount, "IA");
         saleByShard[shard] = ShardSale({
             amount: amount,
-            tokenAddress: tokenAddress,
             price: price,
+            tokenAddress: tokenAddress,
             to: to
         });
-        shardsForSale[shard] = true;
-        emit PutForSale(shard,amount,tokenAddress,price,to);
+        saleStateByShard[shard] = SaleState.forSale;
+        emit SaleStateUpdated(SaleState.forSale,shard,saleByShard[shard]);
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
@@ -328,7 +311,7 @@ contract Shardable {
                                 owner: owner,
                                 creationClock: creationClock
                                 });
-        emit NewShard(shard,owner,creationClock);
+        emit ShardUpdated(true,shard);
 
     }
 
@@ -336,9 +319,8 @@ contract Shardable {
     /// @param shard The shard to be expired.
     /// @param expirationClock The clock at which the Shard will expire.
     function _expireShard(bytes32 shard, uint256 expirationClock) internal {
-        shardByOwner[infoByShard[shard].owner] = bytes32(0);
         shardExpirationClock[shard] = expirationClock;
-        emit ExpiredShard(shard,expirationClock);
+        emit ShardUpdated(false,shard);
     }
 
     /// @notice Pays profit to the seller. 
