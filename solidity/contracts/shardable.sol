@@ -261,7 +261,6 @@ contract Shardable {
             _expireShard(shardByOwner[to], clock);
             _pushShard(sumAmount,to,clock);
         }
-
         else {
             // The amount of the Receiver Shard is equal to the one split off of the Sender Shard
             _pushShard(amount,to,clock);
@@ -301,8 +300,16 @@ contract Shardable {
     /// @param creationClock The clock at which the Shard will be created.
     function _pushShard(uint256 amount, address owner, uint256 creationClock) internal {
         require(amount > 0, "SZ");
-        // The representation, bytes and hash
-        bytes32 shard = keccak256(abi.encodePacked(owner,creationClock));
+        uint256 counter;
+        bytes32 shard;
+        while (true) {
+            // The representation, bytes and hash
+            shard = keccak256(abi.encodePacked(owner,creationClock,counter));
+            if (infoByShard[shard].owner == address(0)) { // make sure shard byte does not already exist
+                break;
+            }
+            counter++;
+        }
         shardByOwner[owner] = shard;
         shardExpirationClock[shard] = type(uint256).max; // The maximum value: (2^256)-1;
         // The info, attributes and details
