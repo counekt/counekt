@@ -181,55 +181,55 @@ contract Votable is Administrable {
         bytes memory proposalArgs = infoByReferendum[referendum].proposalArgs[proposalIndex];
         bytes32 funcHash = keccak256(bytes(proposalFunc));
                     if (funcHash == keccak256(bytes("iR"))) {
-                        (string[] memory proposalFuncs, bytes[] memory _proposalArgs) = abi.decode(proposalArgs, (string[], bytes[]));
+                        (string[] memory proposalFuncs, bytes[] memory _proposalArgs) = abi.decode(proposalArgs,(string[],bytes[]));
                         _issueReferendum(proposalFuncs, _proposalArgs);
                     }
                     if (funcHash == keccak256(bytes("sP"))) {
-                        (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgs, (string, PermitState,address));
+                        (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgs,(string,PermitState,address));
                         _setPermit(permitName,account,newState);
                     }
                     if (funcHash == keccak256(bytes("tT"))) {
-                        (string memory fromBankName, address tokenAddress, uint256 value, address to) = abi.decode(proposalArgs, (string, address, uint256,address));
-                        _transferTokenFromBank(fromBankName,tokenAddress,value,to);
+                        (string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) = abi.decode(proposalArgs,(string,address,uint256,address,string));
+                        _transferTokenFromBank(fromBankName,tokenAddress,value,to, toBankName);
                     }
                     if (funcHash == keccak256(bytes("mT"))) {
-                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs, (string, string, address, uint256));
+                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs,(string,string,address,uint256));
                         _moveToken(fromBankName,toBankName,tokenAddress,value);
                     }
                     if (funcHash == keccak256(bytes("iD"))) {
-                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs, (string,address,uint256));
+                        (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs,(string,address,uint256));
                         _issueDividend(bankName,tokenAddress,value);
                     }
                     if (funcHash == keccak256(bytes("iS"))) {
-                        (uint256 amount, address tokenAddress, uint256 price, address to) = abi.decode(proposalArgs, (uint256,address,uint256,address));
+                        (uint256 amount, address tokenAddress, uint256 price, address to) = abi.decode(proposalArgs,(uint256,address,uint256,address));
                         _issueShards(amount,tokenAddress,price,to);
                     }
                     if (funcHash == keccak256(bytes("dD"))) {
-                        (uint256 dividend) = abi.decode(proposalArgs, (uint256));
+                        (uint256 dividend) = abi.decode(proposalArgs,(uint256));
                         _dissolveDividend(dividend);
                     }
                     if (funcHash == keccak256(bytes("cB"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string,address));
                         _createBank(bankName,bankAdmin);
                     }
                     if (funcHash == keccak256(bytes("dB"))) {
-                        (string memory bankName) = abi.decode(proposalArgs, (string));
+                        (string memory bankName) = abi.decode(proposalArgs,(string));
                         _deleteBank(bankName);
                     }
-                    if (funcHash == keccak256(bytes("aA"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
+                    if (funcHash == keccak256(bytes("aBA"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs,(string,address));
                         _addBankAdmin(bankName,bankAdmin);
                     }
-                    if (funcHash == keccak256(bytes("rA"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string, address));
+                    if (funcHash == keccak256(bytes("rBA"))) {
+                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs,(string, address));
                         _removeBankAdmin(bankName,bankAdmin);
                     }
-                    if (funcHash == keccak256(bytes("rT"))) {
-                        (address tokenAddress) = abi.decode(proposalArgs, (address));
+                    if (funcHash == keccak256(bytes("rTA"))) {
+                        (address tokenAddress) = abi.decode(proposalArgs,(address));
                         _registerTokenAddress(tokenAddress);
                     }
-                    if (funcHash == keccak256(bytes("uT"))) {
-                        (address tokenAddress) = abi.decode(proposalArgs, (address));
+                    if (funcHash == keccak256(bytes("uTA"))) {
+                        (address tokenAddress) = abi.decode(proposalArgs,(address));
                         _unregisterTokenAddress(tokenAddress);
                     }
                     if (funcHash == keccak256(bytes("lE"))) {

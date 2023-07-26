@@ -26,53 +26,9 @@ abstract contract Idea is Shardable {
     /// @notice Mapping pointing to another mapping (given a token address) pointing to a boolean stating if the owner of a given Shard has claimed their fair share following a liquidization.
     mapping(address => mapping(bytes32 => bool)) hasClaimedLiquid;
 
-    /// @notice Event that triggers when a token is received.
-    /// @param tokenAddress The address of the received token.
-    /// @param value The value/amount of the received token.
-    /// @param from The sender of the received token.
-    event TokenReceived(
-        address tokenAddress,
-        uint256 value,
-        address from
-    );
-
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
     /// @param amount Amount of shards to construct Shardable with.
     constructor(uint256 amount) Shardable(amount) {}
-
-    /// @notice Receive function that receives ether when there's no supplying data
-    receive() external payable {
-        _processTokenReceipt(address(0),msg.value,msg.sender);
-    }
-
-    /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
-    /// @param tokenAddress The address of the token to be received.
-    /// @param value The value/amount of the token to be received.
-    function receiveToken(address tokenAddress, uint256 value) external {
-        _receiveToken(tokenAddress,value);
-    }
-
-    /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
-    /// @param tokenAddress The address of the token to be claimed.
-    function claimLiquid(address tokenAddress) external onlyShardHolder {
-        require(active == false, "SA");
-        bytes32 shard = shardByOwner[msg.sender];
-        require(!hasClaimedLiquid[tokenAddress][shard], "AC");
-        hasClaimedLiquid[tokenAddress][shard] = true;
-        uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].amount / totalShardAmountByClock[clock];
-        require(liquidValue != 0, "E");
-        liquidResidual[tokenAddress] -= liquidValue;
-        _transferToken(tokenAddress,liquidValue,msg.sender);
-    }
-
-    /// @notice Claims the remaining unclaimed liquid value after termination (100 days passed since liquidization) as the property of Counekt.
-    /// @param tokenAddress The address of the token to be claimed.
-    function claimTerminatedLiquid(address tokenAddress) external {
-        require(isTerminated(),"WH"); // Guarantees shard holders 100 days to claim their respective parts of the liquid.
-        require(liquidResidual[tokenAddress] > 0, "E");
-        _transferToken(tokenAddress,liquidResidual[tokenAddress],0x49a71890aea5A751E30e740C504f2E9683f347bC);
-        liquidResidual[tokenAddress] = 0;
-    }
 
     /// @notice Returns the residual of a liquid, after liquidization/inactivation.
     /// @param tokenAddress The address of the token to be checked for.
@@ -102,68 +58,12 @@ abstract contract Idea is Shardable {
         _putForSale(shardByOwner[address(this)],amount,tokenAddress,price,to);
     }
 
-    /// @notice Transfers a token from the Idea to a recipient. 
-    /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        require(liquid[tokenAddress] >= value, "IT");
-        if (tokenAddress == address(0)) { _transferEther(value, to);}
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "NA");
-            if (to.code.length > 0) {
-                try IIdea(to).receiveToken(tokenAddress, value) {
-                    // do nothing
-                }
-                catch {// do regular and skip the exception}
-                    require(token.transfer(to,value), "NT");
-                }
-            }
-            else {
-              require(token.transfer(to,value), "NT");
-            }
-        }
-        if (active) {_processTokenTransfer(tokenAddress,value);}
-        
-    }
-
     /// @notice Transfers ether from the Idea to a recipient
     /// @param value The value/amount of ether to be transferred.
     /// @param to The recipient of the ether to be transferred.
     function _transferEther(uint256 value, address to) internal {
         (bool success, ) = address(to).call{value:value}("");
         require(success, "TF");
-    }
-
-    /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
-    /// @param tokenAddress The address of the token to be received.
-    /// @param value The value/amount of the token to be received.
-    function _receiveToken(address tokenAddress, uint256 value) internal {
-        require(acceptsToken(tokenAddress),"UT");
-        ERC20 token = ERC20(tokenAddress);
-        require(token.allowance(msg.sender,address(this)) >= value,"IT");
-        require(token.transferFrom(msg.sender,address(this), value), "NT");
-        _processTokenReceipt(tokenAddress,value,msg.sender);
-    }
-
-    /// @notice Processes a token receipt and adds it to the token registry.
-    /// @param tokenAddress The address of the received token.
-    /// @param value The value/amount of the received token.
-    /// @param from The sender of the received token.
-    function _processTokenReceipt(address tokenAddress, uint256 value, address from) virtual internal {
-        liquid[tokenAddress] += value;
-        liquidResidual[tokenAddress] += value;
-        emit TokenReceived(tokenAddress,value,from);
-    }
-
-    /// @notice Processes a token transfer and subtracts it from the token registry.
-    /// @param tokenAddress The address of the transferred token.
-    /// @param value The value/amount of the transferred token.
-    function _processTokenTransfer(address tokenAddress, uint256 value) virtual internal {
-        liquid[tokenAddress] -= value;
-        liquidResidual[tokenAddress] -= value;
     }
 
     /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
@@ -185,22 +85,6 @@ abstract contract Idea is Shardable {
     function _liquidize() virtual internal onlyIfActive {
         active = false; // stops trading of Shards
         liquidized_at = block.timestamp;
-    }
-
-    /// @notice Pays profit to the seller during a shard purchase. 
-    /// @dev Is modified. Takes into account buying of issued shards.
-    /// @param account The address of the seller.
-    /// @param account The address of the token address.
-    /// @param value The value to be sent to the seller as payment. 
-    function _payProfitToSeller(address account, address tokenAddress, uint256 value) override internal {
-        if (account == address(this)) { // if seller is this contract (msg.sender buys newly issued shards)
-            _receiveToken(tokenAddress,value); // then the payment gets received and processed
-        }
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.transferFrom(msg.sender,address(this), value), "NT");
-        }
-        
     }
 
 }

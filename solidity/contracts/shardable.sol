@@ -4,11 +4,6 @@ pragma solidity ^0.8.4;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-interface IIdea {
-
-    function receiveToken(address,uint256) external;
-}
-
 /// @notice Returns the two quotients and the remainder of an uneven division with a fraction. Useful for dividing ether and tokens.
 /// @param dividend The dividend, which will be divided by the fraction.
 /// @param numerator Numerator of fraction, which the dividend will be divided into.
