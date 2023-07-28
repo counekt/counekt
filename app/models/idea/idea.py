@@ -12,13 +12,14 @@ import app.funcs as funcs
 class Idea(db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)
-    address = db.Column(db.String(42)) # ETH address
+    address = db.Column(db.String(42)) # ETH token address
     block = db.Column(db.Integer) # ETH block number
     current_clock = db.Column(db.Integer) # Shardable clock
     total_amount = db.Column(db.Integer) # Total Amount of shards
 
     events_last_updated_at = db.Column(db.Integer) # ETH block number
     shards_last_updated_at = db.Column(db.Integer) # ETH block number
+    bank_exchanges_last_updated_at = db.Column(db.Integer) # ETH block number
     dividend_claims_last_updated_at = db.Column(db.Integer) # ETH block number
     referendum_votes_last_updated_at = db.Column(db.Integer) # ETH block number
 
@@ -40,19 +41,19 @@ class Idea(db.Model, Base, LocationBase):
 
     events = db.relationship(
         'Event', backref='entity', lazy='dynamic',
-        foreign_keys='Event.entity_id', passive_deletes=True)
+        foreign_keys='Event.entity_id', order_by="InternalTokenExchange.timestamp", passive_deletes=True)
 
     shards = db.relationship(
         'Shard', backref='entity', lazy='dynamic',
-        foreign_keys='Shard.entity_id', passive_deletes=True)
+        foreign_keys='Shard.entity_id',order_by="Shard.creationClock",passive_deletes=True)
 
     dividends = db.relationship(
         'Dividend', backref='entity', lazy='dynamic',
-        foreign_keys='Dividend.entity_id', passive_deletes=True)
+        foreign_keys='Dividend.entity_id',order_by="Dividend.clock", passive_deletes=True)
 
     referendums = db.relationship(
         'Referendum', backref='entity', lazy='dynamic',
-        foreign_keys='Referendum.entity_id', passive_deletes=True)
+        foreign_keys='Referendum.entity_id',order_by="Referendum.clock",passive_deletes=True)
 
     banks = db.relationship(
         'Bank', backref='entity', lazy='dynamic',
@@ -157,9 +158,10 @@ class Idea(db.Model, Base, LocationBase):
                         raise Exception("Bank does not exist...")
                     banks.admins.remove(admin)
                 if e["args"]["func"] == "tT": # Transfer Token
-                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
+                    bank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
                     if not bank:
                         raise Exception("Bank does not exist...")
+                    bank.external_transfers.append(models.ExternalTokenTransfer(recipient_address=decoded_payload["to"]))
                     bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                     self.liquid.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                 if e["args"]["func"] == "mT": # Transfer Token
@@ -244,11 +246,11 @@ class Idea(db.Model, Base, LocationBase):
                 self.referendum_votes_last_updated_at = ns.blockNumber
 
     def get_w3_contract(self):
-        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
+        contract = w3.eth.contract(address=self.address.hexadecimal,abi=funcs.get_abi())
         return contract
 
     def get_shard_by_clock(self,owner_address,clock):
-        return self.shards.filter_by(owner_address=owner_address).filter(models.Shard.creation_clock <= self.current_clock < models.expiration_clock).first()
+        return self.shards.filter(models.Shard.owner.address.has(hexadecimal=owner_address)).filter(models.Shard.creation_clock <= self.current_clock < models.expiration_clock).first()
 
     @hybrid_property
     def valid_shards(self):

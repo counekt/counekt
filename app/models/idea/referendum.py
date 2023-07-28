@@ -1,6 +1,7 @@
 from app import db
 import app.models as models
 from app.models.base import Base
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
 class Referendum(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)

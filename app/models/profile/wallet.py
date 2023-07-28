@@ -9,7 +9,7 @@ spenders  = db.Table('spenders',
 
 class Wallet(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
-    address = db.Column(db.String(42)) # ETH address
+    address = db.Column(db.String(42)) # ETH token address
     spenders = db.relationship(
         'User', secondary=spenders, backref="wallets", lazy='dynamic', cascade='all,delete')
 
@@ -24,7 +24,8 @@ class Wallet(db.Model, Base):
 
     @property
     def main_spender(self):
-        return self.spenders.order_by(models.User.id.desc()).first()
+        return self.spenders[-1]
 
     def __repr__(self):
         return "<Wallet {}>".format(self.address)
+

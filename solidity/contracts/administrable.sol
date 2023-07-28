@@ -7,6 +7,8 @@ import "./idea.sol";
 interface IIdea {
 
     function receiveToken(string memory,address,uint256) external;
+    function receiveEther(string memory) payable external;
+
 }
 
 /// @title An extension of the Idea providing an administrable interface.
@@ -128,15 +130,21 @@ contract Administrable is Idea {
 
     /// @notice Receive function that receives ether when there's no supplying data
     receive() external payable {
-        _processTokenReceipt("",address(0),msg.value);
+        _processTokenReceipt(address(0),msg.value,"");
+    }
+
+    /// @notice Receives Ether and adds it to the registry.
+    /// @param bankName The name of the Bank where the ether is to be received.
+    function receiveEther(string memory bankName) external payable {
+        _processTokenReceipt(address(0),msg.value,bankName);
     }
 
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
-    /// @param bankName The name of the Bank where the token is to be received.
     /// @param tokenAddress The address of the token to be received.
     /// @param value The value/amount of the token to be received.
-    function receiveToken(string memory bankName, address tokenAddress, uint256 value) external {
-        _receiveToken(bankName,tokenAddress,value);
+    /// @param bankName The name of the Bank where the token is to be received.
+    function receiveToken(address tokenAddress, uint256 value, string memory bankName) external {
+        _receiveToken(tokenAddress,value,bankName);
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
@@ -149,7 +157,7 @@ contract Administrable is Idea {
         uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].amount / totalShardAmountByClock[clock];
         require(liquidValue != 0, "E");
         liquidResidual[tokenAddress] -= liquidValue;
-        _transferToken(tokenAddress,liquidValue,msg.sender,"");
+        _transferToken(tokenAddress,liquidValue,msg.sender);
     }
 
     /// @notice Claims the remaining unclaimed liquid value after termination (100 days passed since liquidization) as the property of Counekt.
@@ -157,7 +165,7 @@ contract Administrable is Idea {
     function claimTerminatedLiquid(address tokenAddress) external {
         require(isTerminated(),"WH"); // Guarantees shard holders 100 days to claim their respective parts of the liquid.
         require(liquidResidual[tokenAddress] > 0, "E");
-        _transferToken(tokenAddress,liquidResidual[tokenAddress],0x49a71890aea5A751E30e740C504f2E9683f347bC,"");
+        _transferToken(tokenAddress,liquidResidual[tokenAddress],0x49a71890aea5A751E30e740C504f2E9683f347bC);
         liquidResidual[tokenAddress] = 0;
     }
 
@@ -171,7 +179,7 @@ contract Administrable is Idea {
         uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].amount / totalShardAmountByClock[clock];
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
-        _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender,"");
+        _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
@@ -396,23 +404,66 @@ contract Administrable is Idea {
     /// @notice Deletes a given Bank.
     /// @param bankName The name of the Bank to be deleted.
     function _deleteBank(string memory bankName) internal onlyIfActive {
-        require(bankExists(bankName), "UB!");
-        require(keccak256(bytes(bankName)) != keccak256(bytes("main")), "MB");
+        require(bankExists(bankName), "UB");
+        require(keccak256(bytes(bankName)) != keccak256(bytes("")), "MB");
         require(bankIsEmpty(bankName), "BE");
         validBanks[bankName] = false;
         emit ActionTaken("dB",abi.encode(bankName),msg.sender);
 
     }
 
-    /// @notice Transfers a token from a Bank to a recipient.
-    /// @param fromBankName The name of the Bank from which the token is to be transferred.
+
+
+    /// @notice Transfers a token from the Idea to a recipient without processing the transfer.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
+    function _transferToken(address tokenAddress, uint256 value, address to) internal {
+        if (tokenAddress == address(0)) {_transferEther(value,to);}
+        else {
+            ERC20 token = ERC20(tokenAddress);
+            require(token.approve(to, value), "NA");
+            require(token.transfer(to,value), "NT");
+        }
+    }
+
+    /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
+    /// @param tokenAddress The address of the token to be received.
+    /// @param value The value/amount of the token to be received.
+    /// @param bankName The name of the Bank where the token is to be received.
+    function _receiveToken(address tokenAddress, uint256 value, string memory bankName) internal {
+        require(tokenAddress != address(0));
+        require(acceptsToken(tokenAddress),"UT");
+        ERC20 token = ERC20(tokenAddress);
+        require(token.allowance(msg.sender,address(this)) >= value,"IT");
+        require(token.transferFrom(msg.sender,address(this), value), "NT");
+        _processTokenReceipt(tokenAddress,value,bankName);
+    }
+
+    /// @notice Transfers a token from the Idea to a recipient while processing the transfer. 
+    /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
+    /// @param fromBankName The name of the Bank where the token is to be transfered from.
     /// @param tokenAddress The address of the token to be transferred.
     /// @param value The value/amount of the token to be transferred.
     /// @param to The recipient of the token to be transferred.
     /// @param toBankName If the recipient is an Idea: The name of the Bank where the token is to be received.
-    function _transferTokenFromBank(string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) internal onlyIfActive {
-        require(value <= balanceByBank[fromBankName][tokenAddress], "IF");
-        _transferToken(tokenAddress,value,to,toBankName);
+    function _transferTokenFromBank(string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) internal {
+        require(liquid[tokenAddress] >= value, "IT");
+        if (tokenAddress == address(0)) {
+            if (to.code.length > 0) {
+            try IIdea(to).receiveEther{value:value}(toBankName) {}
+            catch {toBankName = ""; try IIdea(to).receiveEther{value:value}("") {} catch {_transferEther(value,to);}}
+            } else {_transferEther(value,to);}
+        } 
+        else {
+            ERC20 token = ERC20(tokenAddress);
+            require(token.approve(to, value), "NA");
+            if (to.code.length > 0) {
+                    try IIdea(to).receiveToken(toBankName,tokenAddress,value) {} 
+                    catch {toBankName = ""; try IIdea(to).receiveToken("",tokenAddress,value) {} catch {require(token.transfer(to,value), "NT");}}
+            }
+            else {require(token.transfer(to,value), "NT");}
+            }
         _processTokenTransfer(fromBankName,tokenAddress,value,to,toBankName);
     }
 
@@ -471,44 +522,6 @@ contract Administrable is Idea {
         emit ActionTaken("rTA",abi.encode(tokenAddress),msg.sender);
     }
 
-    /// @notice Transfers a token from the Idea to a recipient. 
-    /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    /// @param toBankName If the recipient is an Idea: The name of the Bank where the token is to be received.
-    function _transferToken(address tokenAddress, uint256 value, address to, string memory toBankName) internal {
-        require(liquid[tokenAddress] >= value, "IT");
-        if (tokenAddress == address(0)) { _transferEther(value, to);}
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "NA");
-            if (to.code.length > 0) {
-                try IIdea(to).receiveToken(toBankName,tokenAddress,value) {
-                    // do nothing
-                }
-                catch {// do the regular and skip the exception}
-                    require(token.transfer(to,value), "NT");
-                }
-            }
-            else {
-              require(token.transfer(to,value), "NT");
-            }
-        }
-    }
-
-    /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
-    /// @param bankName The name of the Bank where the token is to be received.
-    /// @param tokenAddress The address of the token to be received.
-    /// @param value The value/amount of the token to be received.
-    function _receiveToken(string memory bankName, address tokenAddress, uint256 value) internal onlyExistingBank(bankName) {
-        require(acceptsToken(tokenAddress),"UT");
-        ERC20 token = ERC20(tokenAddress);
-        require(token.allowance(msg.sender,address(this)) >= value,"IT");
-        require(token.transferFrom(msg.sender,address(this), value), "NT");
-        _processTokenReceipt(bankName,tokenAddress,value);
-    }
-
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
     function _liquidize() override internal {
         super._liquidize();
@@ -533,10 +546,10 @@ contract Administrable is Idea {
     }
 
     /// @notice Keeps track of a token receipt by adding it to the registry.
-    /// @param bankName The name of the Bank where the token is to be received.
     /// @param tokenAddress The address of the received token.
     /// @param value The value/amount of the received token.
-    function _processTokenReceipt(string memory bankName, address tokenAddress, uint256 value) internal onlyExistingBank(bankName) {
+    /// @param bankName The name of the Bank where the token is to be received.
+    function _processTokenReceipt(address tokenAddress,uint256 value,string memory bankName) internal onlyExistingBank(bankName) {
         liquid[tokenAddress] += value;
         liquidResidual[tokenAddress] += value;
         // Then: Bank logic
@@ -555,11 +568,14 @@ contract Administrable is Idea {
     /// @param value The value to be sent to the seller as payment. 
     function _payProfitToSeller(address account, address tokenAddress, uint256 value) override internal {
         if (account == address(this)) { // if seller is this contract (msg.sender buys newly issued shards)
-            _receiveToken("",tokenAddress,value); // then the payment gets received and processed
+            if (tokenAddress == address(0)) {
+                _processTokenReceipt(tokenAddress,value,"");
+            }
+            else {_receiveToken(tokenAddress,value,"");}
         }
         else {
             ERC20 token = ERC20(tokenAddress);
-            require(token.transferFrom(msg.sender,address(this), value), "NT");
+            require(token.transferFrom(msg.sender,account, value), "NT");
         }
         
     }

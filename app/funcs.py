@@ -44,8 +44,11 @@ def decode_event_payload(e):
         bankName = abi.decode_abi(["string"],e["args"]["args"])
         return {"func":e["args"]["func"], "bankName":bankName, "by":e["args"]["by"]}
     if e["args"]["func"] == "tT":
-        bankName, tokenAddress, value, to = abi.decode_abi(["string","address","uint256","address"],e["args"]["args"])
-        return {"func":e["args"]["func"], "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "to":to, "by":e["args"]["by"]}
+        fromBankName, tokenAddress, value, to, toBankName = abi.decode_abi(["string","address","uint256","address","string"],e["args"]["args"])
+        return {"func":e["args"]["func"], "fromBankName":fromBankName, "tokenAddress":tokenAddress, "value":value, "to":to, "toBankName":toBankName, "by":e["args"]["by"]}
+    if e["args"]["func"] == "tT":
+        bankName,tokenAddress,value = abi.decode_abi(["string","address","uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
     if e["args"]["func"] == "mT":
         fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
         return {"func":e["args"]["func"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
