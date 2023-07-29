@@ -58,6 +58,19 @@ abstract contract Idea is Shardable {
         _putForSale(shardByOwner[address(this)],amount,tokenAddress,price,to);
     }
 
+    /// @notice Transfers a token from the Idea to a recipient without processing the transfer.
+    /// @param tokenAddress The address of the token to be transferred.
+    /// @param value The value/amount of the token to be transferred.
+    /// @param to The recipient of the token to be transferred.
+    function _transferToken(address tokenAddress, uint256 value, address to) internal {
+        if (tokenAddress == address(0)) {_transferEther(value,to);}
+        else {
+            ERC20 token = ERC20(tokenAddress);
+            require(token.approve(to, value), "NA");
+            require(token.transfer(to,value), "NT");
+        }
+    }
+
     /// @notice Transfers ether from the Idea to a recipient
     /// @param value The value/amount of ether to be transferred.
     /// @param to The recipient of the ether to be transferred.

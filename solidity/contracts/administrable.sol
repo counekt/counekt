@@ -6,7 +6,7 @@ import "./idea.sol";
 
 interface IIdea {
 
-    function receiveToken(string memory,address,uint256) external;
+    function receiveToken(address,uint256,string memory) external;
     function receiveEther(string memory) payable external;
 
 }
@@ -49,9 +49,6 @@ contract Administrable is Idea {
     /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
     /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
     mapping(string => mapping(address => PermitState)) permits;
-    
-    /// @notice A mapping pointing to a boolean stating if a given Dividend is valid or not.
-    mapping(uint256 => bool) validDividends;
 
     /// @notice A mapping pointing to the info of a Dividend given the creation clock of the Dividend.
     mapping(uint256 => DividendInfo) infoByDividend;
@@ -60,7 +57,7 @@ contract Administrable is Idea {
     mapping(uint256 => uint256) residualByDividend;
 
     /// @notice Mapping pointing to a boolean stating if the owner of a Shard has claimed their fair share of the Dividend, given the bank name and the shard.
-    mapping(uint256 => mapping(bytes32  => bool)) hasClaimedDividend;
+    mapping(uint256 => mapping(bytes32  => bool)) hasActionCompleted;
 
     /// @notice Event that triggers when an action is taken by somebody.
     /// @param func The name of the function that was called.
@@ -94,7 +91,6 @@ contract Administrable is Idea {
     modifier onlyPermitAdmin(string memory permitName) {
         require(isPermitAdmin(permitName, msg.sender));
         _;
-
     }
 
     /// @notice Modifier that makes sure msg.sender is admin of a given bank.
@@ -172,10 +168,10 @@ contract Administrable is Idea {
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
     /// @param shard The shard that was valid at the clock of the Dividend creation
     /// @param dividend The dividend to be claimed.
-    function claimDividend(bytes32 shard, uint256 dividend) external onlyHolder(shard) onlyExistingDividend(dividend) onlyIfActive {
+    function claimDividend(bytes32 shard, uint256 dividend) external onlyHolder(shard) onlyIfActive {
         require(shardExisted(shard,dividend), "NAF");
-        require(hasClaimedDividend[dividend][shard] == false, "AC");
-        hasClaimedDividend[dividend][shard] = true;
+        require(hasActionCompleted[dividend][shard] == false, "AC");
+        hasActionCompleted[dividend][shard] = true;
         uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].amount / totalShardAmountByClock[clock];
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
@@ -211,7 +207,7 @@ contract Administrable is Idea {
         _issueDividend(bankName,tokenAddress,value);  
     }
 
-    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
+    /// @notice Dissolves a Dividend and moves its last contents to the '' Bank.
     /// @param dividend The Dividend to be dissolved.
     function dissolveDividend(uint256 dividend) external onlyWithPermit("mD") {
         _dissolveDividend(dividend);
@@ -318,7 +314,7 @@ contract Administrable is Idea {
     /// @notice Returns a boolean stating if a given Dividend exists.
     /// @param dividend The Dividend to be checked for.
     function dividendExists(uint256 dividend) public view returns(bool) {
-      return validDividends[dividend];
+      return residualByDividend[dividend] > 0;
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given bank.
@@ -357,15 +353,14 @@ contract Administrable is Idea {
             value:value
         });
         residualByDividend[clock] = value;
-        validDividends[clock] = true;
         emit ActionTaken("iD",abi.encode(clock,bankName,tokenAddress,value),msg.sender);
     }
 
-    /// @notice Dissolves a Dividend and moves its last contents to the 'main' Bank.
+    /// @notice Dissolves a Dividend and moves its last contents to the '' Bank.
     /// @param dividend The Dividend to be dissolved.
     function _dissolveDividend(uint256 dividend) internal onlyExistingDividend(dividend) onlyIfActive {
-        validDividends[dividend] = false; // -1 to distinguish between empty values;
-        balanceByBank["main"][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];
+        balanceByBank[""][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];
+        residualByDividend[dividend] = 0; // -1 to distinguish between empty values;
         emit ActionTaken("dD",abi.encode(dividend),msg.sender);
 
     }
@@ -412,21 +407,6 @@ contract Administrable is Idea {
 
     }
 
-
-
-    /// @notice Transfers a token from the Idea to a recipient without processing the transfer.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        if (tokenAddress == address(0)) {_transferEther(value,to);}
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "NA");
-            require(token.transfer(to,value), "NT");
-        }
-    }
-
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
     /// @param tokenAddress The address of the token to be received.
     /// @param value The value/amount of the token to be received.
@@ -457,10 +437,10 @@ contract Administrable is Idea {
         } 
         else {
             ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "NA");
+            token.approve(to, value);
             if (to.code.length > 0) {
-                    try IIdea(to).receiveToken(toBankName,tokenAddress,value) {} 
-                    catch {toBankName = ""; try IIdea(to).receiveToken("",tokenAddress,value) {} catch {require(token.transfer(to,value), "NT");}}
+                    try IIdea(to).receiveToken(tokenAddress,value,toBankName) {} 
+                    catch {toBankName = ""; try IIdea(to).receiveToken(tokenAddress,value,"") {} catch {require(token.transfer(to,value), "NT");}}
             }
             else {require(token.transfer(to,value), "NT");}
             }
@@ -575,7 +555,7 @@ contract Administrable is Idea {
         }
         else {
             ERC20 token = ERC20(tokenAddress);
-            require(token.transferFrom(msg.sender,account, value), "NT");
+            require(token.transferFrom(msg.sender,account,value), "NT");
         }
         
     }
