@@ -4,17 +4,17 @@ pragma solidity ^0.8.4;
 
 import "./idea.sol";
 
-interface IIdea {
+interface ERC20Holder {
 
-    function receiveToken(address,uint256,string memory) external;
-    function receiveEther(string memory) payable external;
+    function receiveToken(address,uint256) external;
+    function transferToken(address,address,uint256) external;
 
 }
 
 /// @title An extension of the Idea providing an administrable interface.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract adds administrability via permits and internally closed money supplies.
-contract Administrable is Idea {
+contract Administrable is Idea, ERC20Holder {
 
     /// @notice An enum representing a Permit State of one of the many permits.
     /// @param unauthorized The permit is NOT authorized.
@@ -138,9 +138,8 @@ contract Administrable is Idea {
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
     /// @param tokenAddress The address of the token to be received.
     /// @param value The value/amount of the token to be received.
-    /// @param bankName The name of the Bank where the token is to be received.
-    function receiveToken(address tokenAddress, uint256 value, string memory bankName) external {
-        _receiveToken(tokenAddress,value,bankName);
+    function receiveToken(address tokenAddress, uint256 value) external {
+        _receiveToken(tokenAddress,value);
     }
 
     /// @notice Claims the owed liquid value corresponding to the shard holder's respective shard fraction after the entity has been liquidized/dissolved.
@@ -268,6 +267,20 @@ contract Administrable is Idea {
         _setPermit(permitName,account,newState);
 
     }
+
+    /// @notice Calls a function of an external contract.
+    /// @param bankName The name of the Bank where the potential value sent is deducted from.
+    /// @param externalAddress The address of the external contract, whose function is to be called. 
+    /// @param signature The signature of the function to be called.
+    /// @param encodedArgs The encoded arguments to be passed as parameters in the function call.
+    /// @param value The value to be sent through the function call.
+    /// @param gas The maximum amount of gas to be spent on the function call.
+    function _callExternalAddress(
+        string memory bankName,
+        address externalAddress,
+        string memory signature,
+        bytes memory encodedArgs,
+        uint256 value) onlyPermitAdmin("cE") {_callExternalAddress(bankName,externalAddress,signature,encodedArgs,value);}
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
     function liquidize() external onlyWithPermit("lE") {
@@ -400,58 +413,53 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to be deleted.
     function _deleteBank(string memory bankName) internal onlyIfActive {
         require(bankExists(bankName), "UB");
-        require(keccak256(bytes(bankName)) != keccak256(bytes("")), "MB");
+        require(keccak256(bytes(bankName)) != keccak256(bytes("")), "WB");
         require(bankIsEmpty(bankName), "BE");
         validBanks[bankName] = false;
         emit ActionTaken("dB",abi.encode(bankName),msg.sender);
-
     }
 
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
     /// @param tokenAddress The address of the token to be received.
     /// @param value The value/amount of the token to be received.
-    /// @param bankName The name of the Bank where the token is to be received.
-    function _receiveToken(address tokenAddress, uint256 value, string memory bankName) internal {
+    function _receiveToken(address tokenAddress, uint256 value) internal {
         require(tokenAddress != address(0));
         require(acceptsToken(tokenAddress),"UT");
         ERC20 token = ERC20(tokenAddress);
-        require(token.allowance(msg.sender,address(this)) >= value,"IT");
-        require(token.transferFrom(msg.sender,address(this), value), "NT");
-        _processTokenReceipt(tokenAddress,value,bankName);
+        require(token.transferFrom(msg.sender,address(this),value), "NT");
+        _processTokenReceipt(tokenAddress,value);
     }
 
-
     /// @notice Calls a function of an external contract.
-    /// @param bankName The name of the bank, which contains the funds for the function call.
-    /// @param externalContract The address of the external contract, whose function is to be called. 
+    /// @param bankName The name of the Bank where the potential value sent is deducted from.
+    /// @param externalAddress The address of the external contract, whose function is to be called. 
     /// @param signature The signature of the function to be called.
     /// @param encodedArgs The encoded arguments to be passed as parameters in the function call.
     /// @param value The value to be sent through the function call.
     /// @param gas The maximum amount of gas to be spent on the function call.
-    function _callExternalContract(
+    function _callExternalAddress(
         string memory bankName,
-        address externalContract,
+        address externalAddress,
         string memory signature,
         bytes memory encodedArgs,
-        uint256 value,
-        uint256 gas) payable onlyBankAdmin(bankName) onlyExistingBank(bankName) {
+        uint256 value) {
         
         // Encode the function arguments with the provided signature
         bytes memory data = abi.encodePacked(bytes4(keccak256(bytes(signature))), encodedArgs);
 
         // Call the external contract's function with specified value and gas
-        (bool success, bytes memory returndata) = externalContract.call{value: value, gas: gas}(data);
+        (bool success, bytes memory returndata) = externalAddress.call{value: value}(data);
 
         // Require the external contract call to be successful
         require(success);
 
         // Update the bank's balance with any excess Ether sent (excluding value and gas)
-        balanceByBank[bankName][address(0)] += msg.value - value - gas;
+        balanceByBank[bankName][address(0)] -= value;
 
         // Require the bank's balance not to be negative after the update
         require(balanceByBank[bankName][address(0)] >= 0);
 
-        emit ActionTaken("cE",abi.encode(bankName,externalContract,signature,encodedArgs,value,gas));
+        emit ActionTaken("cE",abi.encode(bankName,externalAddress,signature,encodedArgs,value,gas));
     }
 
     /// @notice Transfers a token from the Idea to a recipient while processing the transfer. 
@@ -463,21 +471,6 @@ contract Administrable is Idea {
     /// @param toBankName If the recipient is an Idea: The name of the Bank where the token is to be received.
     function _transferTokenFromBank(string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) internal {
         require(liquid[tokenAddress] >= value, "IT");
-        if (tokenAddress == address(0)) {
-            if (to.code.length > 0) {
-            try IIdea(to).receiveEther{value:value}(toBankName) {}
-            catch {toBankName = ""; try IIdea(to).receiveEther{value:value}("") {} catch {_transferEther(value,to);}}
-            } else {_transferEther(value,to);}
-        } 
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            token.approve(to, value);
-            if (to.code.length > 0) {
-                    try IIdea(to).receiveToken(tokenAddress,value,toBankName) {} 
-                    catch {toBankName = ""; try IIdea(to).receiveToken(tokenAddress,value,"") {} catch {require(token.transfer(to,value), "NT");}}
-            }
-            else {require(token.transfer(to,value), "NT");}
-            }
         _processTokenTransfer(fromBankName,tokenAddress,value,to,toBankName);
     }
 
@@ -562,8 +555,7 @@ contract Administrable is Idea {
     /// @notice Keeps track of a token receipt by adding it to the registry.
     /// @param tokenAddress The address of the received token.
     /// @param value The value/amount of the received token.
-    /// @param bankName The name of the Bank where the token is to be received.
-    function _processTokenReceipt(address tokenAddress,uint256 value,string memory bankName) internal onlyExistingBank(bankName) {
+    function _processTokenReceipt(address tokenAddress,uint256 value) internal onlyExistingBank(bankName) {
         liquid[tokenAddress] += value;
         liquidResidual[tokenAddress] += value;
         // Then: Bank logic
