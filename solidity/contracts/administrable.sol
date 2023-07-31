@@ -420,6 +420,40 @@ contract Administrable is Idea {
         _processTokenReceipt(tokenAddress,value,bankName);
     }
 
+
+    /// @notice Calls a function of an external contract.
+    /// @param bankName The name of the bank, which contains the funds for the function call.
+    /// @param externalContract The address of the external contract, whose function is to be called. 
+    /// @param signature The signature of the function to be called.
+    /// @param encodedArgs The encoded arguments to be passed as parameters in the function call.
+    /// @param value The value to be sent through the function call.
+    /// @param gas The maximum amount of gas to be spent on the function call.
+    function _callExternalContract(
+        string memory bankName,
+        address externalContract,
+        string memory signature,
+        bytes memory encodedArgs,
+        uint256 value,
+        uint256 gas) payable onlyBankAdmin(bankName) onlyExistingBank(bankName) {
+        
+        // Encode the function arguments with the provided signature
+        bytes memory data = abi.encodePacked(bytes4(keccak256(bytes(signature))), encodedArgs);
+
+        // Call the external contract's function with specified value and gas
+        (bool success, bytes memory returndata) = externalContract.call{value: value, gas: gas}(data);
+
+        // Require the external contract call to be successful
+        require(success);
+
+        // Update the bank's balance with any excess Ether sent (excluding value and gas)
+        balanceByBank[bankName][address(0)] += msg.value - value - gas;
+
+        // Require the bank's balance not to be negative after the update
+        require(balanceByBank[bankName][address(0)] >= 0);
+
+        emit ActionTaken("cE",abi.encode(bankName,externalContract,signature,encodedArgs,value,gas));
+    }
+
     /// @notice Transfers a token from the Idea to a recipient while processing the transfer. 
     /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
     /// @param fromBankName The name of the Bank where the token is to be transfered from.
