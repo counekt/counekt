@@ -3,13 +3,13 @@
 pragma solidity ^0.8.4;
 
 import "./shardable.sol";
+import "./erc20holder.sol";
 
 /// @title A proof of fractional ownership of an entity with valuables.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable business entity. 
-/// @custom:illustration Idea => Idea.Administration => Idea
 /// @custom:beaware This is a commercial contract.
-abstract contract Idea is Shardable {
+abstract contract Idea is Shardable, ERC20Holder {
 
     /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
     mapping(address => bool) validTokenAddresses;
@@ -58,40 +58,21 @@ abstract contract Idea is Shardable {
         _putForSale(shardByOwner[address(this)],amount,tokenAddress,price,to);
     }
 
-    /// @notice Transfers a token from the Idea to a recipient without processing the transfer.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    function _transferToken(address tokenAddress, uint256 value, address to) internal {
-        if (tokenAddress == address(0)) {_transferEther(value,to);}
-        else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.approve(to, value), "NA");
-            require(token.transfer(to,value), "NT");
-        }
+    /// @notice Transfers funds (tokens or ether) to a recipient.
+    /// @param to The recipient of the ether to be transferred.
+    /// @param tokenAddress The address of the token to be transferred - is address(0) if ether
+    /// @param amount The amount of funds to be transferred.
+    function _transferFunds(address to, address tokenAddress, uint256 amount) {
+        if (tokenAddress == address(0)) {_transferEther(to,amount)}
+        else {_transferToken(to,tokenAddress,amount)}
     }
 
-    /// @notice Transfers ether from the Idea to a recipient
-    /// @param value The value/amount of ether to be transferred.
+    /// @notice Transfers ether to a recipient
+    /// @param amount The value of ether to be transferred.
     /// @param to The recipient of the ether to be transferred.
-    function _transferEther(uint256 value, address to) internal {
+    function _transferEther(address to,uint256 value) internal {
         (bool success, ) = address(to).call{value:value}("");
         require(success, "TF");
-    }
-
-    /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
-    /// @param tokenAddress The token address to be registered.
-    function _registerTokenAddress(address tokenAddress) virtual internal {
-        require(!acceptsToken(tokenAddress), "AR");
-        validTokenAddresses[tokenAddress] = true;
-    }
-
-    /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
-    /// @param tokenAddress The token address to be unregistered.
-    function _unregisterTokenAddress(address tokenAddress) virtual internal {
-        require(acceptsToken(tokenAddress), "UT");
-        require(liquid[tokenAddress] == 0, "NZ");
-        validTokenAddresses[tokenAddress] = false;
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.

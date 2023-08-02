@@ -4,17 +4,10 @@ pragma solidity ^0.8.4;
 
 import "./idea.sol";
 
-interface ERC20Holder {
-
-    function receiveToken(address,uint256) external;
-    function transferToken(address,address,uint256) external;
-
-}
-
 /// @title An extension of the Idea providing an administrable interface.
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract adds administrability via permits and internally closed money supplies.
-contract Administrable is Idea, ERC20Holder {
+contract Administrable is Idea {
 
     /// @notice An enum representing a Permit State of one of the many permits.
     /// @param unauthorized The permit is NOT authorized.
@@ -33,12 +26,12 @@ contract Administrable is Idea, ERC20Holder {
         address tokenAddress;
         uint256 value;
     }
-
-    /// @notice A mapping pointing to a boolean stating if a given Bank is valid/exists or not.
-    mapping(string => bool) validBanks;
     
     /// @notice A mapping pointing to an unsigned integer representing the amount of stored kinds of tokens of a bank.
     mapping(string => uint256) storedTokenAddressesByBank;
+
+    /// @notice A mapping pointing to an unsigned integer representing the amount of admins of a bank.
+    mapping(string => uint256) adminsByBank;
 
     /// @notice A mapping pointing to the a value/amount of a stored token of a Bank, given the name of it and the respective token address.
     mapping(string => mapping(address => uint256)) balanceByBank;
@@ -152,16 +145,7 @@ contract Administrable is Idea, ERC20Holder {
         uint256 liquidValue = liquid[tokenAddress] * infoByShard[shard].amount / totalShardAmountByClock[clock];
         require(liquidValue != 0, "E");
         liquidResidual[tokenAddress] -= liquidValue;
-        _transferToken(tokenAddress,liquidValue,msg.sender);
-    }
-
-    /// @notice Claims the remaining unclaimed liquid value after termination (100 days passed since liquidization) as the property of Counekt.
-    /// @param tokenAddress The address of the token to be claimed.
-    function claimTerminatedLiquid(address tokenAddress) external {
-        require(isTerminated(),"WH"); // Guarantees shard holders 100 days to claim their respective parts of the liquid.
-        require(liquidResidual[tokenAddress] > 0, "E");
-        _transferToken(tokenAddress,liquidResidual[tokenAddress],0x49a71890aea5A751E30e740C504f2E9683f347bC);
-        liquidResidual[tokenAddress] = 0;
+        _transferFunds(tokenAddress,liquidValue,msg.sender);
     }
 
     /// @notice Claims the value of an existing dividend corresponding to the shard holder's respective shard fraction.
@@ -174,20 +158,15 @@ contract Administrable is Idea, ERC20Holder {
         uint256 dividendValue = infoByDividend[dividend].value * infoByShard[shard].amount / totalShardAmountByClock[clock];
         require(dividendValue != 0, "DTS");
         residualByDividend[dividend] -= dividendValue;
-        _transferToken(infoByDividend[dividend].tokenAddress,dividendValue,msg.sender);
+        _transferFunds(msg.sender,infoByDividend[dividend].tokenAddress,dividendValue);
         emit DividendClaimed(dividend,dividendValue,msg.sender);
     }
 
-    /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
-    /// @param tokenAddress The token address to be registered.
-    function registerTokenAddress(address tokenAddress) external onlyWithPermit("mAT") onlyIfActive {
-        _registerTokenAddress(tokenAddress);
-    }
-
-    /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
-    /// @param tokenAddress The token address to be unregistered.
-    function unregisterTokenAddress(address tokenAddress) external onlyWithPermit("mAT") onlyIfActive {
-        _unregisterTokenAddress(tokenAddress);
+    /// @notice Registers a token as either acceptable or unacceptable. Approves or denies any future receipts of said token unless set to other status.
+    /// @param tokenAddress The token address whose status is to be set.
+    /// @param status The status to be set.
+    function setTokenStatus(address tokenAddress, bool status) external onlyWithPermit("sTS") onlyIfActive {
+        _setTokenStatus(tokenAddress,status);
     }
 
     /// @notice Issues new shards and puts them for sale.
@@ -213,49 +192,36 @@ contract Administrable is Idea, ERC20Holder {
     }
 
     /// @notice Creates a new Bank.
-    /// @param bankName The name of the Bank to be created.
-    /// @param bankAdmin The address of the first Bank administrator.
-    function createBank(string memory bankName, address bankAdmin) external onlyWithPermit("mB") onlyIfActive {
-       _createBank(bankName,bankAdmin);
+    /// @param name The name of the Bank to be created.
+    /// @param admin The address of the initial bank admin.
+    function createBank(string memory name, address admin) external onlyWithPermit("mB") onlyIfActive {
+       _createBank(name,admin);
     }
 
-    /// @notice Adds a new given administrator to a given Bank.
-    /// @param bankName The name of the Bank to which the new administrator is to be added.
-    /// @param bankAdmin The address of the new Bank administrator to be added.
-    function addBankAdmin(string memory bankName, address bankAdmin) external onlyWithPermit("mB") onlyBankAdmin(bankName) {
-        _addBankAdmin(bankName,bankAdmin);
-    }
-
-    /// @notice Removes a given administrator of a given Bank.
-    /// @param bankName The name of the Bank from which the given administrator is to be removed.
-    /// @param bankAdmin The address of the current Bank administrator to be removed.
-    function removeBankAdmin(string memory bankName, address bankAdmin) external onlyPermitAdmin("mB") onlyBankAdmin(bankName) {
-        _removeBankAdmin(bankName,bankAdmin);
-    }
-
-    /// @notice Deletes a given Bank.
-    /// @param bankName The name of the Bank to be deleted.
-    function deleteBank(string memory bankName) external onlyPermitAdmin("mB") onlyBankAdmin(bankName) {
-        _deleteBank(bankName);
+        /// @notice Sets the admin status within a specific Bank of a given account.
+    /// @param bankName The name of the Bank from which the given account's admin status is to be set.
+    /// @param admin The address of the account, whose admin status it to be set.
+    /// @param status The admin status to be set.
+    function setBankAdminStatus(string memory bankName, address admin, bool status) internal onlyIfActive {
+        _setBankAdminStatus(bankName,status,admin);
     }
 
     /// @notice Transfers a token bankAdmin a Bank to a recipient.
-    /// @param fromBankName The name of the Bank from which the token is to be transferred.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    /// @param toBankName If the recipient is an Idea: The name of the Bank where the token is to be received.
-    function transferTokenFromBank(string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) external onlyBankAdmin(fromBankName) {
-        _transferTokenFromBank(fromBankName,tokenAddress,value,to,toBankName);
+    /// @param bankName The name of the Bank from which the funds are to be transferred.
+    /// @param tokenAddress The address of the token to be transferred - address(0) if ether
+    /// @param value The value/amount of the funds to be transferred.
+    /// @param to The recipient of the funds to be transferred.
+    function transferFundsFromBank(string memory bankName, address to, address tokenAddress, uint256 amount) external onlyBankAdmin(bankName) {
+        _transferFundsFromBank(fromBankName,tokenAddress,value,to,toBankName);
     }
 
-    /// @notice Internally moves a token from one Bank to another.
-    /// @param fromBankName The name of the Bank from which the token is to be moved.
-    /// @param toBankName The name of the Bank to which the token is to be moved.
-    /// @param tokenAddress The address of the token to be moved.
-    /// @param value The value/amount of the token to be moved.
-    function moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) external onlyBankAdmin(fromBankName) {
-        _moveToken(fromBankName,toBankName,tokenAddress,value);
+    /// @notice Internally moves funds from one Bank to another.
+    /// @param fromBankName The name of the Bank from which the funds are to be moved.
+    /// @param toBankName The name of the Bank to which the funds are to be moved.
+    /// @param tokenAddress The address of the token to be moved - address(0) if ether
+    /// @param amount The value/amount of the funds to be moved.
+    function moveFunds(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 amount) external onlyBankAdmin(fromBankName) {
+        _moveFunds(fromBankName,toBankName,tokenAddress,amount);
     }
 
     /// @notice Sets the state of a specified permit of a given address.
@@ -263,24 +229,20 @@ contract Administrable is Idea, ERC20Holder {
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
     function setPermit(string memory permitName, address account, PermitState newState) external onlyPermitAdmin(permitName) {
-        require(permits[permitName][account] != newState, "AHP");
         _setPermit(permitName,account,newState);
-
     }
 
     /// @notice Calls a function of an external contract.
-    /// @param bankName The name of the Bank where the potential value sent is deducted from.
     /// @param externalAddress The address of the external contract, whose function is to be called. 
     /// @param signature The signature of the function to be called.
     /// @param encodedArgs The encoded arguments to be passed as parameters in the function call.
     /// @param value The value to be sent through the function call.
     /// @param gas The maximum amount of gas to be spent on the function call.
     function _callExternalAddress(
-        string memory bankName,
         address externalAddress,
         string memory signature,
         bytes memory encodedArgs,
-        uint256 value) onlyPermitAdmin("cE") {_callExternalAddress(bankName,externalAddress,signature,encodedArgs,value);}
+        uint256 value) onlyPermitAdmin("mB") {_callExternalAddress(externalAddress,signature,encodedArgs,value);}
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
     function liquidize() external onlyWithPermit("lE") {
@@ -315,7 +277,7 @@ contract Administrable is Idea, ERC20Holder {
     /// @notice Returns a boolean stating if a given Bank exists.
     /// @param bankName The name of the Bank to be checked for.
     function bankExists(string memory bankName) public view returns(bool) {
-        return validBanks[bankName] == true;
+        return adminsByBank[bankName] != 0;
     }
 
     /// @notice Returns a boolean stating if a given Bank is empty.
@@ -371,52 +333,38 @@ contract Administrable is Idea, ERC20Holder {
 
     /// @notice Dissolves a Dividend and moves its last contents to the '' Bank.
     /// @param dividend The Dividend to be dissolved.
-    function _dissolveDividend(uint256 dividend) internal onlyExistingDividend(dividend) onlyIfActive {
-        balanceByBank[""][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];
-        residualByDividend[dividend] = 0; // -1 to distinguish between empty values;
-        emit ActionTaken("dD",abi.encode(dividend),msg.sender);
-
+    function _dissolveDividend(uint256 dividend) internal onlyIfActive {
+        if (dividendExists(dividend)) {
+            balanceByBank[""][infoByDividend[dividend].tokenAddress] += residualByDividend[dividend];
+            residualByDividend[dividend] = 0; // -1 to distinguish between empty values;
+            emit ActionTaken("dD",abi.encode(dividend),msg.sender);
+        }
     }
 
     /// @notice Creates a new Bank.
-    /// @param bankName The name of the Bank to be created.
-    /// @param bankAdmin The address of the first Bank administrator.
-    function _createBank(string memory bankName, address bankAdmin) internal onlyIfActive {
-        require(!bankExists(bankName), "AE");
-        adminOfBank[bankName][bankAdmin] = true;
-        validBanks[bankName] = true;
-        emit ActionTaken("cB",abi.encode(bankName,bankAdmin),msg.sender);
-
+    /// @param name The name of the Bank to be created.
+    /// @param admin The address of the first Bank administrator.
+    function _createBank(string memory name, address admin) internal onlyIfActive {
+        if (!bankExists(name)) {
+            adminOfBank[name][admin] = true;
+            adminsByBank[name] = 1;
+            emit ActionTaken("cB",abi.encode(name,admin),msg.sender);
+        }
     }
 
-    /// @notice Adds a new given administrator to a given Bank.
-    /// @param bankName The name of the Bank to which the new administrator is to be added.
-    /// @param bankAdmin The address of the new Bank administrator to be added.
-    function _addBankAdmin(string memory bankName, address bankAdmin) internal onlyIfActive {
-        require(hasPermit("mB",bankAdmin),"NP");
-        adminOfBank[bankName][bankAdmin] = true;
-        emit ActionTaken("aBA",abi.encode(bankName,bankAdmin),msg.sender);
-
-    }
-
-    /// @notice Removes a given administrator of a given Bank.
-    /// @param bankName The name of the Bank from which the given administrator is to be removed.
-    /// @param bankAdmin The address of the current Bank administrator to be removed.
-    function _removeBankAdmin(string memory bankName, address bankAdmin) internal onlyIfActive {
-        require(isBankAdmin(bankName,bankAdmin));
-        adminOfBank[bankName][bankAdmin] = false;
-        emit ActionTaken("rBA",abi.encode(bankName,bankAdmin),msg.sender);
-
-    }
-
-    /// @notice Deletes a given Bank.
-    /// @param bankName The name of the Bank to be deleted.
-    function _deleteBank(string memory bankName) internal onlyIfActive {
-        require(bankExists(bankName), "UB");
-        require(keccak256(bytes(bankName)) != keccak256(bytes("")), "WB");
-        require(bankIsEmpty(bankName), "BE");
-        validBanks[bankName] = false;
-        emit ActionTaken("dB",abi.encode(bankName),msg.sender);
+    /// @notice Sets the admin status within a specific Bank of a given account.
+    /// @param bankName The name of the Bank from which the given account's admin status is to be set.
+    /// @param admin The address of the account, whose admin status it to be set.
+    /// @param status The admin status to be set.
+    function _setBankAdminStatus(string memory bankName, address admin, bool status) internal onlyIfActive {
+        require(hasPermit("mB",admin),"NP");
+        if (isBankAdmin(bankName,admin) != status) { // makes sure the status isn't already set
+            if (!status && adminsByBank[bankName] == 1) {require(bankIsEmpty(bankName), "BE");} // can't remove last admin unless bank is empty
+            adminOfBank[bankName][admin] = status;
+            if (status) {adminsByBank[bankName] += 1;}
+            else {adminsByBank[bankName] -= 1;}
+            emit ActionTaken("sBA",abi.encode(bankName,bankAdmin,status),msg.sender);
+        }
     }
 
     /// @notice Receives a specified token and adds it to the registry. Make sure 'token.approve()' is called beforehand.
@@ -431,14 +379,11 @@ contract Administrable is Idea, ERC20Holder {
     }
 
     /// @notice Calls a function of an external contract.
-    /// @param bankName The name of the Bank where the potential value sent is deducted from.
     /// @param externalAddress The address of the external contract, whose function is to be called. 
     /// @param signature The signature of the function to be called.
     /// @param encodedArgs The encoded arguments to be passed as parameters in the function call.
     /// @param value The value to be sent through the function call.
-    /// @param gas The maximum amount of gas to be spent on the function call.
     function _callExternalAddress(
-        string memory bankName,
         address externalAddress,
         string memory signature,
         bytes memory encodedArgs,
@@ -453,35 +398,36 @@ contract Administrable is Idea, ERC20Holder {
         // Require the external contract call to be successful
         require(success);
 
-        // Update the bank's balance with any excess Ether sent (excluding value and gas)
-        balanceByBank[bankName][address(0)] -= value;
+        // Require the bank's balance to be sufficient.
+        require(balanceByBank[""][address(0)] >= value);
 
-        // Require the bank's balance not to be negative after the update
-        require(balanceByBank[bankName][address(0)] >= 0);
+        // Update the bank's balance with any excess Ether sent.
+        balanceByBank[""][address(0)] -= value;
 
-        emit ActionTaken("cE",abi.encode(bankName,externalAddress,signature,encodedArgs,value,gas));
+        emit ActionTaken("cE",abi.encode(externalAddress,signature,encodedArgs,value));
     }
 
-    /// @notice Transfers a token from the Idea to a recipient while processing the transfer. 
-    /// @dev First 'token.approve()' is called, then 'to.receiveToken()', if it's an Idea.
-    /// @param fromBankName The name of the Bank where the token is to be transfered from.
-    /// @param tokenAddress The address of the token to be transferred.
-    /// @param value The value/amount of the token to be transferred.
-    /// @param to The recipient of the token to be transferred.
-    /// @param toBankName If the recipient is an Idea: The name of the Bank where the token is to be received.
-    function _transferTokenFromBank(string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) internal {
-        require(liquid[tokenAddress] >= value, "IT");
-        _processTokenTransfer(fromBankName,tokenAddress,value,to,toBankName);
+    /// @notice Transfers a token bankAdmin a Bank to a recipient.
+    /// @param bankName The name of the Bank from which the funds are to be transferred.
+    /// @param tokenAddress The address of the token to be transferred - address(0) if ether
+    /// @param value The value/amount of the funds to be transferred.
+    /// @param to The recipient of the funds to be transferred.
+    function _transferFundsFromBank(string memory bankName, address to, address tokenAddress, uint256 amount) internal {
+        require(balanceByBank[bankName][tokenAddress] >= amount, "IT");
+        balanceByBank[bankName][tokenAddress] -= amount;
+        _transferFunds(to,tokenAddress,amount);
+        emit ActionTaken("tF",abi.encode(bankName,to,tokenAddress,amount));
+
     }
 
-    /// @notice Internally moves a token from one Bank to another.
-    /// @param fromBankName The name of the Bank from which the token is to be moved.
-    /// @param toBankName The name of the Bank to which the token is to be moved.
-    /// @param tokenAddress The address of the token to be moved.
-    /// @param value The value/amount of the token to be moved.
-    function _moveToken(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
-        require(value <= balanceByBank[fromBankName][tokenAddress], "IF");
-        balanceByBank[fromBankName][tokenAddress] -= value;
+    /// @notice Internally moves funds from one Bank to another.
+    /// @param fromBankName The name of the Bank from which the funds are to be moved.
+    /// @param toBankName The name of the Bank to which the funds are to be moved.
+    /// @param tokenAddress The address of the token to be moved - address(0) if ether
+    /// @param amount The value/amount of the funds to be moved.
+    function _moveFunds(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 amount) internal onlyExistingBank(fromBankName) onlyExistingBank(toBankName) onlyIfActive {
+        require(amount <= balanceByBank[fromBankName][tokenAddress], "IF");
+        balanceByBank[fromBankName][tokenAddress] -= amount;
         if (tokenAddress != address(0)) {
             if (balanceByBank[fromBankName][tokenAddress] == 0) {
                 storedTokenAddressesByBank[fromBankName] -= 1;
@@ -491,8 +437,8 @@ contract Administrable is Idea, ERC20Holder {
                 storedTokenAddressesByBank[toBankName] += 1;
             }
         }
-        balanceByBank[toBankName][tokenAddress] += value;
-        emit ActionTaken("mT",abi.encode(fromBankName,toBankName,tokenAddress,value),msg.sender);
+        balanceByBank[toBankName][tokenAddress] += amount;
+        emit ActionTaken("mF",abi.encode(fromBankName,toBankName,tokenAddress,amount),msg.sender);
 
     }
 
@@ -501,9 +447,10 @@ contract Administrable is Idea, ERC20Holder {
     /// @param account The address, whose permit state is to be set.
     /// @param newState The new Permit State to be applied.
     function _setPermit(string memory permitName, address account, PermitState newState) internal onlyIfActive {
-        permits[permitName][account] = newState;
-        emit ActionTaken("sP",abi.encode(permitName,account,newState),msg.sender);
-
+        if (permits[permitName][account] != newState) {
+            permits[permitName][account] = newState;
+            emit ActionTaken("sP",abi.encode(permitName,account,newState),msg.sender);
+        }
     }
 
     /// @notice Issues new shards and puts them for sale.
@@ -515,18 +462,14 @@ contract Administrable is Idea, ERC20Holder {
         emit ActionTaken("iS",abi.encode(amount,tokenAddress,price,to),msg.sender);
     }
 
-    /// @notice Removes a token address from the registry. Also cancels any future receipts of said token unless added again.
-    /// @param tokenAddress The token address to be unregistered.
-    function _unregisterTokenAddress(address tokenAddress) override internal {
-        super._unregisterTokenAddress(tokenAddress);
-        emit ActionTaken("uTA",abi.encode(tokenAddress),msg.sender);
-    }
-
-    /// @notice Adds a token address to the registry. Also approves any future receipts of said token unless removed again.
-    /// @param tokenAddress The token address to be registered.
-    function _registerTokenAddress(address tokenAddress) override internal {
-        super._registerTokenAddress(tokenAddress);
-        emit ActionTaken("rTA",abi.encode(tokenAddress),msg.sender);
+    /// @notice Registers a token as either acceptable or unacceptable. Approves or denies any future receipts of said token unless set to other status.
+    /// @param tokenAddress The token address whose status is to be set.
+    /// @param status The status to be set.
+    function _setTokenStatus(address tokenAddress, bool status) override internal {
+        if (acceptsToken(tokenAddress) != status) {
+            validTokenAddresses[tokenAddress] = status;
+            emit ActionTaken("sTS",abi.encode(tokenAddress,bool),msg.sender);
+        }
     }
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
@@ -555,14 +498,14 @@ contract Administrable is Idea, ERC20Holder {
     /// @notice Keeps track of a token receipt by adding it to the registry.
     /// @param tokenAddress The address of the received token.
     /// @param value The value/amount of the received token.
-    function _processTokenReceipt(address tokenAddress,uint256 value) internal onlyExistingBank(bankName) {
+    function _processTokenReceipt(address tokenAddress,uint256 value) override internal onlyExistingBank(bankName) {
         liquid[tokenAddress] += value;
         liquidResidual[tokenAddress] += value;
         // Then: Bank logic
-        if (balanceByBank[bankName][tokenAddress] == 0 && tokenAddress != address(0)) {
-            storedTokenAddressesByBank[bankName] += 1;
+        if (balanceByBank[""][tokenAddress] == 0 && tokenAddress != address(0)) {
+            storedTokenAddressesByBank[""] += 1;
         }
-        balanceByBank[bankName][tokenAddress] += value;
+        balanceByBank[""][tokenAddress] += value;
         emit ActionTaken("rT",abi.encode(bankName,tokenAddress,value),msg.sender);
 
     }

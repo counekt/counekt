@@ -148,16 +148,16 @@ contract Votable is Administrable {
                         _issueReferendum(proposalFuncs, _proposalArgs);
                     }
                     if (funcHash == keccak256(bytes("sP"))) {
-                        (string memory permitName, PermitState newState, address account) = abi.decode(proposalArgs,(string,PermitState,address));
+                        (string memory permitName, address account, PermitState newState) = abi.decode(proposalArgs,(string,address,PermitState));
                         _setPermit(permitName,account,newState);
                     }
-                    if (funcHash == keccak256(bytes("tT"))) {
-                        (string memory fromBankName, address tokenAddress, uint256 value, address to, string memory toBankName) = abi.decode(proposalArgs,(string,address,uint256,address,string));
-                        _transferTokenFromBank(fromBankName,tokenAddress,value,to, toBankName);
+                    if (funcHash == keccak256(bytes("tF"))) {
+                        (string memory fromBankName, address to, address tokenAddress, uint256 amount) = abi.decode(proposalArgs,(string,address,address,uint256));
+                        _transferFundsFromBank(fromBankName,to,tokenAddress,amount);
                     }
-                    if (funcHash == keccak256(bytes("mT"))) {
-                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs,(string,string,address,uint256));
-                        _moveToken(fromBankName,toBankName,tokenAddress,value);
+                    if (funcHash == keccak256(bytes("mF"))) {
+                        (string memory fromBankName, string memory toBankName, address tokenAddress, uint256 amount) = abi.decode(proposalArgs,(string,string,address,uint256));
+                        _moveToken(fromBankName,toBankName,tokenAddress,amount);
                     }
                     if (funcHash == keccak256(bytes("iD"))) {
                         (string memory bankName, address tokenAddress, uint256 value) = abi.decode(proposalArgs,(string,address,uint256));
@@ -175,25 +175,13 @@ contract Votable is Administrable {
                         (string memory bankName, address bankAdmin) = abi.decode(proposalArgs, (string,address));
                         _createBank(bankName,bankAdmin);
                     }
-                    if (funcHash == keccak256(bytes("dB"))) {
-                        (string memory bankName) = abi.decode(proposalArgs,(string));
-                        _deleteBank(bankName);
+                    if (funcHash == keccak256(bytes("sBA"))) {
+                        (string memory bankName,address admin,bool status) = abi.decode(proposalArgs,(string,address,bool));
+                        _setBankAdminStatus(bankName,admin,status);
                     }
-                    if (funcHash == keccak256(bytes("aBA"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs,(string,address));
-                        _addBankAdmin(bankName,bankAdmin);
-                    }
-                    if (funcHash == keccak256(bytes("rBA"))) {
-                        (string memory bankName, address bankAdmin) = abi.decode(proposalArgs,(string, address));
-                        _removeBankAdmin(bankName,bankAdmin);
-                    }
-                    if (funcHash == keccak256(bytes("rTA"))) {
-                        (address tokenAddress) = abi.decode(proposalArgs,(address));
-                        _registerTokenAddress(tokenAddress);
-                    }
-                    if (funcHash == keccak256(bytes("uTA"))) {
-                        (address tokenAddress) = abi.decode(proposalArgs,(address));
-                        _unregisterTokenAddress(tokenAddress);
+                    if (funcHash == keccak256(bytes("sTS"))) {
+                        (address tokenAddress, bool status) = abi.decode(proposalArgs,(address,bool));
+                        _setTokenStatus(tokenAddress,status);
                     }
                     if (funcHash == keccak256(bytes("lE"))) {
                         _liquidize();
