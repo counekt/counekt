@@ -11,14 +11,14 @@ import "./erc20holder.sol";
 /// @custom:beaware This is a commercial contract.
 abstract contract Idea is Shardable, ERC20Holder {
 
+    /// @notice Boolean stating if the Shardable is active and tradeable or not.
+    bool public active;
+
     /// @notice Mapping pointing to boolean stating if a given token address is valid and registered or not.
     mapping(address => bool) validTokenAddresses;
 
 	/// @notice Mapping pointing to a value/amount given the address of an ERC20 token.
     mapping(address => uint256) public liquid;
-
-    /// @notice Integer block.timestamp of liquidization.
-    uint256 liquidized_at;
 
     /// @notice Mapping pointing to the value/amount of a liquid token left to be claimed after liquidization/inactivation of the Idea.
     mapping(address => uint256) liquidResidual;
@@ -40,11 +40,6 @@ abstract contract Idea is Shardable, ERC20Holder {
     /// @param tokenAddress The address of the token to be checked for.
     function acceptsToken(address tokenAddress) public view returns(bool) {
       return validTokenAddresses[tokenAddress] == true || tokenAddress == address(0);
-    }
-
-    /// @notice Returns a boolean value, stating if the liquidization is terminated (100 days have passed since).
-    function isTerminated() public view returns(bool) {
-        return active == false && (block.timestamp-liquidized_at >= 300); //8640000
     }
 
     /// @notice Issues new shards and puts them for sale.

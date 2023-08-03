@@ -6,6 +6,8 @@ interface IERC20Receiver {
 	function receiveToken(address tokenAddress, uint256 amount) external {}
 }
 
+error ERC20InvalidReceiver(address);
+
 /// @title A standard for interacting with ERC20 tokens.
 /// @author Frederik W. L. Christoffersen
 abstract contract ERC20Holder is IERC20Receiver {
@@ -28,9 +30,9 @@ abstract contract ERC20Holder is IERC20Receiver {
     /// @param to The recipient of the transfer.
 	function _transferToken(address to, address tokenAddress, uint256 amount) internal {
 		IERC20 token = IERC20(tokenAddress);
-		if (to.code > 0) {
+		if (to.code.length > 0) {
 			token.safeApprove(to,amount);
-			to.receiveToken(tokenAddress,amount);
+			try {to.receiveToken(tokenAddress,amount);} catch {revert ERC20InvalidReceiver(to);}
 		}
 		else {token.safeTransfer(to,amount)}
 		_processTokenTransfer(to,tokenAddress,amount);
@@ -39,5 +41,4 @@ abstract contract ERC20Holder is IERC20Receiver {
 	function _processTokenReceipt(address tokenAddress, uint256 amount) virtual internal {}
 
 	function _processTokenTransfer(address to, address tokenAddress, uint256 amount) virtual internal{}
-
 }

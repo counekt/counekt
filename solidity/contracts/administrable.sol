@@ -361,8 +361,7 @@ contract Administrable is Idea {
         if (isBankAdmin(bankName,admin) != status) { // makes sure the status isn't already set
             if (!status && adminsByBank[bankName] == 1) {require(bankIsEmpty(bankName), "BE");} // can't remove last admin unless bank is empty
             adminOfBank[bankName][admin] = status;
-            if (status) {adminsByBank[bankName] += 1;}
-            else {adminsByBank[bankName] -= 1;}
+            adminsByBank[bankName] += status ? 1 : -1;
             emit ActionTaken("sBA",abi.encode(bankName,bankAdmin,status),msg.sender);
         }
     }
