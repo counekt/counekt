@@ -9,7 +9,7 @@ import "./erc20holder.sol";
 /// @author Frederik W. L. Christoffersen
 /// @notice This contract is used as an administrable business entity. 
 /// @custom:beaware This is a commercial contract.
-abstract contract Idea is Shardable, ERC20Holder {
+abstract contract Idea is ERC20Holder {
 
     /// @notice Boolean stating if the Shardable is active and tradeable or not.
     bool public active;
@@ -25,6 +25,12 @@ abstract contract Idea is Shardable, ERC20Holder {
 
     /// @notice Mapping pointing to another mapping (given a token address) pointing to a boolean stating if the owner of a given Shard has claimed their fair share following a liquidization.
     mapping(address => mapping(bytes32 => bool)) hasClaimedLiquid;
+
+    /// @notice Modifier that makes sure the entity is active and not liquidized/dissolved.
+    modifier onlyIfActive() {
+        require(active == true, "EL");
+        _;
+    }
 
     /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
     /// @param amount Amount of shards to construct Shardable with.

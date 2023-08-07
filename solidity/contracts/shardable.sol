@@ -2,186 +2,8 @@
 
 pragma solidity ^0.8.4;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import {IERC721} from "./IERC721.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/// @title A semi-fungible token that represents time-based fractional ownership.
-/// @author Frederik W. L. Christoffersen
-contract Shardable {
-    /// @notice Integer value to implement a concept of time and to distinguish shards by id's.
-    uint256 clock;
-
-    /// @notice A struct representing the related info of a non-fungible Shard token.
-    /// @dev Is represented via a bytes32 value created from the hash: keccak256(owner, creationClock).
-    /// @param amount Amount that the Shard represents.
-    /// @param owner The owner of the Shard.
-    struct ShardInfo {
-        uint256 amount;
-        address owner; 
-    }
-
-    /// @notice Mapping pointing to integer value representing the total number of shards issued, provided the clock.
-    mapping(uint256 => uint256) public totalShardAmountByClock;
-
-    /// @notice Mapping pointing to related info of a Shard given the shardId.
-    mapping(uint256 => ShardInfo) public infoByShard;
-    
-    /// @notice Mapping pointing to a currently valid shardId given the address of its owner.
-    mapping(address => uint256) public shardByOwner;
-    
-    // @notice Mapping pointing to an expiration clock given a shardId.
-    mapping(uint256 => uint256) shardExpirationClock;
-
-    mapping(address => mapping(address => uint256)) public allowance;
-
-
-    /// @notice Event emitted when a Shard is created.
-    /// @param status The boolean indicating whether a shard is newly created (true) or expired (false).
-    /// @param shardId The Shard byte identifier, which was created.
-    event ShardUpdated(
-        bool status,
-        uint256 shardId
-        );
-
-    /// @notice Modifier that requires the msg.sender to be a current valid Shard holder.
-    modifier onlyShardHolder {
-        require(isShardHolder(msg.sender), "UH");
-        _;
-    }
-
-    /// @notice Modifier that requires a given Shard to be currently valid.
-    modifier onlyValidShard(uint256 shardId) {
-        require(isValidShard(shardId), "US");
-        _;
-    }
-
-    /// @notice Modifier that makes sure the entity is active and not liquidized/dissolved.
-    modifier onlyIfActive() {
-        require(active == true, "EL");
-        _;
-    }
-
-    /// @notice Modifier that requires the msg.sender to be the owner of a given Shard
-    /// @param shard The Shard, whose ownership is tested for.
-    modifier onlyHolder(uint256 shardId) {
-        require(infoByShard[shardId].owner == msg.sender, "OH");
-        _;
-    }
-
-    /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
-    /// @param amount Amount of shards to construct Shardable with.
-    constructor(uint256 amount) {
-        // passes full ownership to creator of contract
-        _pushShard(msg.sender,amount);
-        totalShardAmountByClock[clock] = amount;
-        active = true;
-    }
-
-    /// @notice Approves the allowance of a certain amount of the sender's shard to a spender
-    /// @param spender The spender of the approved amount.
-    /// @param amount The amount to be approved to be spent by the spender.
-    function approve(address spender, uint256 amount) external returns(bool) {
-        require(infoByShard[shardByOwner[msg.sender]].amount >= amount);
-        allowance[msg.sender][spender] = amount;
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
-    /// @param shardId The shard to be split.
-    /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
-    /// @param to The receiver of the new Shard.
-    function split(uint256 shardId, uint256 amount, address to) public onlyValidShard(senderShard) {
-        require(infoByShard[shardId].owner == msg.sender || allowance[infoByShard[shardId].owner][msg.sender] >= amount);
-        _split(senderShard,amount,to);
-    }
-
-    /// @notice Returns the clock.
-    function getCurrentClock() public view returns(uint256) {
-        return clock;
-    }
-
-    /// @notice Returns the clock, in which a shard will or has expired.
-    function getShardExpirationClock(uint256 shardId) public view returns(uint256) {
-        return shardExpirationClock[shardId];
-    }
-
-    /// @notice Returns the price, at which a shard is for sale.
-    function getShardSalePrice(uint256 shardId) public view returns(uint256) {
-        return saleByShard[shardId].price;
-    }
-
-    /// @notice Returns a boolean stating if a given shard is currently valid or not.
-    /// @param shard The shard, whose validity is to be checked for.
-    function isValidShard(uint256 shardId) public view returns(bool) {
-        return getShardExpirationClock(shard) > clock;
-    }
-
-    /// @notice Checks if address is a shard holder - at least a partial owner of the contract.
-    /// @param account The address to be checked for.
-    function isShardHolder(address account) public view returns(bool) {
-        return isValidShard(shardByOwner[account]);
-    }
-    
-    /// @notice Returns a boolean stating if the given shard was valid at a given clock.
-    /// @param shardId The shard, whose validity is to be checked for.
-    /// @param atClock The clock to be checked for.
-    function shardExisted(uint256 shardId, uint256 atClock) public view returns(bool) {
-        return infoByShard[shard].creationClock <= atClock && atClock < getShardExpirationClock(shard);
-    }
-
-    /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
-    /// @param shardId The shard to be split.
-    /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
-    /// @param to The receiver of the new Shard.
-    function _split(uint256 shardId, uint256 amount, address to) internal onlyValidShard(senderShard) onlyIfActive {
-        require(amount <= infoByShard[shardId].amount, "IA");
-        if (isShardHolder(to)) { // if Receiver already owns a shard
-            // The amounts are added and the shard thereby upgraded
-            uint256 sumAmount = amount + infoByShard[shardByOwner[to]].amount;
-            // Expire the Old Receiver Shard
-            _expireShard(shardByOwner[to]);
-            _pushShard(to,sumAmount);
-        }
-        else {
-            // The amount of the Receiver Shard is equal to the one split off of the Sender Shard
-            _pushShard(to,amount);
-        }
-
-        // Expire the Old Sender Shard
-        _expireShard(shardId);
-        // The new amount of the Sender Shard has been subtracted by the Split amount.
-        uint256 diff = infoByShard[shardId].amount - amount;
-        if (diff != 0) {
-        _pushShard(infoByShard[shardId].owner,diff);
-        }
-    }
-
-    /// @notice Pushes a shard to the registry of currently valid shards.
-    /// @param owner The owner of the Shard.
-    /// @param amount Amount of the Shard represents.
-    function _pushShard(address owner,uint256 amount) internal {
-        require(amount > 0, "SZ");
-        totalShardAmountByClock[clock+1] = totalShardAmountByClock[clock]; // remember the total shard amount at previous clock
-        clock++; // increment clock/shardId
-        shardByOwner[owner] = clock;
-        shardExpirationClock[clock] = type(uint256).max; // The maximum value: (2^256)-1;
-        // The info, attributes and details
-        infoByShard[clock] = ShardInfo({
-                                amount:amount,
-                                owner: owner});
-        emit ShardUpdated(true,clock);
-    }
-
-    /// @notice Removes a shard from the registry of currently valid shards.
-    /// @param shard The shard to be expired.
-    function _expireShard(uint256 shardId) internal {
-        shardExpirationClock[shardId] = clock;
-        emit ShardUpdated(false,shardId);
-    }
-
-}
 
 contract ShardableBroker {
 
@@ -229,7 +51,8 @@ contract ShardableBroker {
     /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale. Open to anyone, if address(0).
-    function putForSale(uint256 shardId, uint256 amount, address tokenAddress, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
+    function putForSale(uint256 amount, address tokenAddress, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
+        require(tok)
         _putForSale(shard,amount,tokenAddress,price,to);
     }
 
@@ -263,12 +86,13 @@ contract ShardableBroker {
             require(successToSeller && successToCounekt, "TF");
         }
         else {
-            ERC20 token = ERC20(saleByShard[shardId].tokenAddress);
+            IERC20 token = IERC20(saleByShard[shardId].tokenAddress);
             require(token.allowance(msg.sender,address(this)) >= totalPrice,"IT");
             // Pay Service Fee of 2.5% to Counekt
             require(token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt), "NT");
             // Rest goes to the seller
             if (infoByShard[shardId].owner.code.length > 0) {
+                token.transferFrom(msg.sender, address(this), profitToSeller);
                 token.approve(infoByShard[shardId].owner,profitToSeller);
                 infoByShard[shardId].owner.receiveToken(tokenAddress,profitToSeller);
             }
@@ -277,14 +101,19 @@ contract ShardableBroker {
         _split(shardId, amount,msg.sender);
         if (infoByShard[shardId].owner == address(this)) { // if newly issued shards
             // add those to the outstanding shard amount
-            totalShardAmountByClock[clock] += amount;
+            totalSupplyByClock[clock] += amount;
         }
         emit SaleStateUpdated(SaleState.sold,shard,ShardSale(amount,saleByShard[shardId].price,saleByShard[shardId].tokenAddress,saleByShard[shardId].to));
         // if not whole shard is bought
         if (saleByShard[shardId].amount != amount) { 
             // put the rest to sale again
-            _putForSale(shardByOwner[infoByShard[shardId].owner],saleByShard[shardId].amount-amount,saleByShard[shardId].tokenAddress,saleByShard[shardId].price,saleByShard[shardId].to);
+            _putForSale(currentShardIdByOwner[infoByShard[shardId].owner],saleByShard[shardId].amount-amount,saleByShard[shardId].tokenAddress,saleByShard[shardId].price,saleByShard[shardId].to);
         }
+    }
+
+    /// @notice Returns the price, at which a shard is for sale.
+    function getShardSalePrice(uint256 shardId) public view returns(uint256) {
+        return saleByShard[shardId].price;
     }
 
     /// @notice Cancels a sell of a given Shard.
