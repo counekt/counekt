@@ -1,12 +1,16 @@
-import "IERC360.sol";
+import {IERC360} from "IERC360.sol";
+import {IERC360Metadata} from "IERC360Metadata.sol";
+import {Context} from "../../utils/Context.sol";
+import {IERC360Errors} from "IERC360Errors.sol";
+
 
 /// @title A semi-fungible token that represents time-based fractional ownership.
 /// @author Frederik W. L. Christoffersen
-contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Errors {
+abstract contract ERC360 is Context, Pausable, ERC165, IERC360, IERC360Metadata, IERC360Errors {
     using Counters for Counters.Counter;
 
     /// @notice Integer value to implement a concept of time and to distinguish tokens by id's.
-    Counters.Counters tokenClock;
+    Counters.Counters tokenIdClock;
 
     /// @notice A struct representing the related info of a semi-fungible Shard token.
     /// @param amount Amount that the token represents.
@@ -44,13 +48,12 @@ contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Errors {
     constructor(uint256 amount) {
         // passes full ownership to creator of contract
         _mint(_msgSender(),amount);
-        totalSupplyByClock[currentClock()] = amount;
     }
 
     /// @notice Approves the allowance of a certain amount of the sender's shard to a spender
     /// @param spender The spender of the approved amount.
     /// @param amount The amount to be approved to be spent by the spender.
-    function approve(address spender, uint256 amount) external returns(bool) {
+    function approve(address spender, uint256 amount) external virtual returns(bool) {
         require(balanceOf(_msgSender()) >= amount);
         allowance[_msgSender()][spender] = amount;
         emit Approval(_msgSender(), spender, amount);
@@ -78,17 +81,17 @@ contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Errors {
         return infoByTokenId[tokenId].amount;
     }
 
-    function tokenOf(address account) public view virtual returns (uint256) {
+    function tokenIdOf(address account) public view virtual returns (uint256) {
         return currentTokenIdByOwner[account]; // if 0, account has never been owner of this token before
     }
 
     function balanceOf(address account) public view virtual returns (uint256) {
-        return amountOf(tokenOf(account));
+        return amountOf(tokenIdOf(account));
     }
 
     /// @notice Returns the clock.
     function currentClock() public view returns(uint256) {
-        return tokenClock.current();
+        return tokenIdClock.current();
     }
 
     /// @notice Returns the clock.
@@ -126,7 +129,6 @@ contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Errors {
     }
 
     function _mint(address account, uint256 amount) internal {
-        if (account == address(0)) {revert ERC360InvalidReceiver(address(0));}
         _update(_msgSender(),amount);
         totalSupplyByClock[currentClock()] += amount;
     }
@@ -134,16 +136,17 @@ contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Errors {
     /// @notice Pushes a shard to the registry of currently valid shards.
     /// @param owner The owner of the Shard.
     /// @param amount Amount of the Shard represents.
-    function _update(address owner,uint256 amount) internal {
-        expirationByTokenId[tokenOf(owner)] = currentClock(); // Expire the old token
+    function _update(address account,uint256 amount) internal {
+        if (account == address(0)) {revert ERC360InvalidReceiver(address(0));}
         totalSupplyByClock[currentClock()+1] = totalSupplyByClock[currentClock()]; // forward the total supply to next clock/tokenId
-        tokenClock.increment(); // increment clock/tokenId
-        currentTokenIdByOwner[owner] = currentClock();
-        // The info, attributes and details
+        tokenIdClock.increment(); // increment clock/tokenId
+        expirationByTokenId[tokenIdOf(account)] = currentClock(); // Expire the old token
+        currentTokenIdByOwner[account] = currentClock();
+        // The static info, amount and owner
         infoByTokenId[currentClock()] = TokenInfo({
                                 amount:amount,
                                 owner: owner});
-        emit NewTokenId(owner,currentClock());
+        emit NewTokenId(account,currentClock());
     }
 
 }

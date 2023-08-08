@@ -181,7 +181,7 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank to issue the Dividend from.
     /// @param tokenAddress The address of the token to make up the Dividend.
     /// @param value The value/amount of the token to be issued in the Dividend.
-    function issueDividend(string memory bankName, address tokenAddress, uint256 value) external onlyWithPermit("mD") onlyBankAdmin(bankName) {
+    function issueDividend(string calldata bankName, address tokenAddress, uint256 value) external onlyWithPermit("mD") onlyBankAdmin(bankName) {
         _issueDividend(bankName,tokenAddress,value);  
     }
 
@@ -194,7 +194,7 @@ contract Administrable is Idea {
     /// @notice Creates a new Bank.
     /// @param name The name of the Bank to be created.
     /// @param admin The address of the initial bank admin.
-    function createBank(string memory name, address admin) external onlyWithPermit("mB") onlyIfActive {
+    function createBank(string calldata name, address admin) external onlyWithPermit("mB") onlyIfActive {
        _createBank(name,admin);
     }
 
@@ -202,7 +202,7 @@ contract Administrable is Idea {
     /// @param bankName The name of the Bank from which the given account's admin status is to be set.
     /// @param admin The address of the account, whose admin status it to be set.
     /// @param status The admin status to be set.
-    function setBankAdminStatus(string memory bankName, address admin, bool status) internal onlyIfActive {
+    function setBankAdminStatus(string calldata bankName, address admin, bool status) internal onlyIfActive {
         _setBankAdminStatus(bankName,status,admin);
     }
 
@@ -211,7 +211,7 @@ contract Administrable is Idea {
     /// @param tokenAddress The address of the token to be transferred - address(0) if ether
     /// @param value The value/amount of the funds to be transferred.
     /// @param to The recipient of the funds to be transferred.
-    function transferFundsFromBank(string memory bankName, address to, address tokenAddress, uint256 amount) external onlyBankAdmin(bankName) {
+    function transferFundsFromBank(string calldata bankName, address to, address tokenAddress, uint256 amount) external onlyBankAdmin(bankName) {
         _transferFundsFromBank(fromBankName,tokenAddress,value,to,toBankName);
     }
 
@@ -220,7 +220,7 @@ contract Administrable is Idea {
     /// @param toBankName The name of the Bank to which the funds are to be moved.
     /// @param tokenAddress The address of the token to be moved - address(0) if ether
     /// @param amount The value/amount of the funds to be moved.
-    function moveFunds(string memory fromBankName, string memory toBankName, address tokenAddress, uint256 amount) external onlyBankAdmin(fromBankName) {
+    function moveFunds(string calldata fromBankName, string calldata toBankName, address tokenAddress, uint256 amount) external onlyBankAdmin(fromBankName) {
         _moveFunds(fromBankName,toBankName,tokenAddress,amount);
     }
 
@@ -228,7 +228,7 @@ contract Administrable is Idea {
     /// @param account The address, whose permit state is to be set.
     /// @param permitName The name of the permit, whose state is to be set.
     /// @param newState The new Permit State to be applied.
-    function setPermit(string memory permitName, address account, PermitState newState) external onlyPermitAdmin(permitName) {
+    function setPermit(string calldata permitName, address account, PermitState newState) external onlyPermitAdmin(permitName) {
         _setPermit(permitName,account,newState);
     }
 
@@ -238,10 +238,10 @@ contract Administrable is Idea {
     /// @param encodedArgs The encoded arguments to be passed as parameters in the function call.
     /// @param value The value to be sent through the function call.
     /// @param gas The maximum amount of gas to be spent on the function call.
-    function _callExternalAddress(
+    function callExternalAddress(
         address externalAddress,
-        string memory signature,
-        bytes memory encodedArgs,
+        string calldata signature,
+        bytes calldata encodedArgs,
         uint256 value) onlyPermitAdmin("mB") {_callExternalAddress(externalAddress,signature,encodedArgs,value);}
 
     /// @notice Liquidizes and dissolves the entity. This cannot be undone.
@@ -252,7 +252,7 @@ contract Administrable is Idea {
     /// @notice Returns the balance of a bank.
     /// @param bankName The name of the Bank.
     /// @param tokenAddress The address of the token balance to check for.
-    function getBankBalance(string memory bankName, address tokenAddress) public view returns(uint256) {
+    function getBankBalance(string calldata bankName, address tokenAddress) public view returns(uint256) {
         return balanceByBank[bankName][tokenAddress];
     }
     

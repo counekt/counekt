@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import "../node_modules/@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "../@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IERC20Receiver {
 	function receiveToken(address tokenAddress, uint256 amount) external {}

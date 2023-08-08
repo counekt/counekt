@@ -82,17 +82,6 @@ interface IERC360 {
      */
     function currentClock() external view returns (uint256);
 
-
-    /**
-     * @dev Returns the amount of tokens currently owned by ``account``.
-     */
-    function balanceOf(address account) external view returns (uint256 balance);
-
-    /**
-     * @dev Returns the amount tied to the ``tokenId``.
-     */
-    function amountOf(uint256 tokenId) external view returns (uint256 amount);
-
     /**
      * @dev Returns the owner of the `tokenId` token.
      *
@@ -102,6 +91,22 @@ interface IERC360 {
      */
     function ownerOf(uint256 tokenId) external view returns (address owner);
 
+    /**
+     * @dev Returns the amount tied to the ``tokenId``.
+     */
+    function amountOf(uint256 tokenId) external view returns (uint256 amount);
+
+    /**
+     * @dev Returns the current tokenId tied to an ``account``.
+     */
+    function tokenIdOf(address account) external view returns (uint256 tokenId);
+
+
+    /**
+     * @dev Returns the amount of tokens currently owned by ``account``.
+     */
+    function balanceOf(address account) external view returns (uint256 balance);
+    
     /**
      * @dev Returns true if the `tokenId` is currently valid.
      *
