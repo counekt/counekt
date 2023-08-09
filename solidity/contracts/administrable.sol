@@ -416,7 +416,6 @@ contract Administrable is Idea {
         balanceByBank[bankName][tokenAddress] -= amount;
         _transferFunds(to,tokenAddress,amount);
         emit ActionTaken("tF",abi.encode(bankName,to,tokenAddress,amount));
-
     }
 
     /// @notice Internally moves funds from one Bank to another.

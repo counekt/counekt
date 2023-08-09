@@ -20,10 +20,10 @@ interface IERC360 {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /**
-     * @dev Emitted when the current balance of an `owner` is tied to
+     * @dev Emitted when the current balance of an `account` is tied to
      * a new `tokenId`.
      */
-    event NewTokenId(address owner, uint256 tokenId);
+    event NewTokenId(address account, uint256 tokenId);
 
     /**
      * @dev Moves an `amount` of tokens from the caller's account to `to`.

@@ -1,12 +1,13 @@
 import {IERC360} from "IERC360.sol";
 import {IERC360Metadata} from "IERC360Metadata.sol";
-import {Context} from "../../utils/Context.sol";
+import {Context} from "../../@openzeppelin/contracts/utils/Context.sol";
+
 import {IERC360Errors} from "IERC360Errors.sol";
 
 
 /// @title A semi-fungible token that represents time-based fractional ownership.
 /// @author Frederik W. L. Christoffersen
-abstract contract ERC360 is Context, Pausable, ERC165, IERC360, IERC360Metadata, IERC360Errors {
+abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Errors {
     using Counters for Counters.Counter;
 
     /// @notice Integer value to implement a concept of time and to distinguish tokens by id's.
@@ -20,19 +21,25 @@ abstract contract ERC360 is Context, Pausable, ERC165, IERC360, IERC360Metadata,
         address owner; 
     }
 
+    // Token name
+    string private _name;
+
+    // Token symbol
+    string private _symbol;
+
     /// @notice Mapping pointing to integer value representing the total amount of tokens on the market, provided the clock.
-    mapping(uint256 => uint256) totalSupplyByClock;
+    mapping(uint256 => uint256) private totalSupplyByClock;
     
-    /// @notice Mapping pointing to a currently valid shardId given the address of its owner.
-    mapping(address => uint256) currentTokenIdByOwner;
+    /// @notice Mapping pointing to a currently valid tokenId given the address of its owner.
+    mapping(address => uint256) private currentTokenIdByOwner;
     
     /// @notice Mapping pointing to related info of a token given the tokenId.
-    mapping(uint256 => TokenInfo) infoByTokenId;
+    mapping(uint256 => TokenInfo) private infoByTokenId;
 
-    // @notice Mapping pointing to an expiration clock given a shardId.
-    mapping(uint256 => uint256) expirationByTokenId;
+    // @notice Mapping pointing to an expiration clock given a tokenId.
+    mapping(uint256 => uint256) private expirationByTokenId;
 
-    mapping(address => mapping(address => uint256)) public allowance;
+    mapping(address => mapping(address => uint256)) private allowance;
 
 
     /// @notice Event emitted when a new token is minted.
@@ -43,34 +50,32 @@ abstract contract ERC360 is Context, Pausable, ERC165, IERC360, IERC360Metadata,
         uint256 tokenId
         );
 
-    /// @notice Constructor function that pushes the first Shard being the property of the Shardable creator.
-    /// @param amount Amount of shards to construct Shardable with.
-    constructor(uint256 amount) {
-        // passes full ownership to creator of contract
-        _mint(_msgSender(),amount);
+    /**
+     * @dev Sets the values for {name} and {symbol}.
+     *
+     * All two of these values are immutable: they can only be set once during
+     * construction.
+     */
+    constructor(string memory name_, string memory symbol_) {
+        _name = name_;
+        _symbol = symbol_;
     }
 
-    /// @notice Approves the allowance of a certain amount of the sender's shard to a spender
-    /// @param spender The spender of the approved amount.
-    /// @param amount The amount to be approved to be spent by the spender.
-    function approve(address spender, uint256 amount) external virtual returns(bool) {
-        require(balanceOf(_msgSender()) >= amount);
-        allowance[_msgSender()][spender] = amount;
-        emit Approval(_msgSender(), spender, amount);
-        return true;
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return
+            interfaceId == type(IERC360).interfaceId ||
+            interfaceId == type(IERC360Metadata).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
-    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
-        address spender = _msgSender();
-        _spendAllowance(from, spender, amount);
-        _transfer(from, to, amount);
-        return true;
-    }
-
-    function transfer(address to, uint256 amount) public virtual returns (bool) {
-        address owner = _msgSender();
-        _transfer(owner, to, amount);
-        return true;
+    /**
+     * @dev See {IERC360-allowance}.
+     */
+    function allowance(address owner, address spender) public view virtual returns (uint256) {
+        return _allowances[owner][spender];
     }
 
     function ownerOf(uint256 tokenId) public view virtual returns (address) {
@@ -117,6 +122,39 @@ abstract contract ERC360 is Context, Pausable, ERC165, IERC360, IERC360Metadata,
         return tokenId <= clock && clock < expirationOf(tokenId);
     }
 
+    /// @notice Approves the allowance of a certain amount of the sender to a spender
+    /// @param spender The spender of the approved amount.
+    /// @param amount The amount to be approved to be spent by the spender.
+    function approve(address spender, uint256 amount) external virtual returns(bool) {
+        _approve(spender,account);
+        emit Approval(_msgSender(), spender, amount);
+    }
+
+    function transfer(address to, uint256 amount) public virtual returns (bool) {
+        address owner = _msgSender();
+        _transfer(owner, to, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        address spender = _msgSender();
+        uint256 currentAllowance = allowance(from,spender);
+        if (currentAllowance < amount) {revert ERC360InsufficientAllowance(spender, currentAllowance, amount);}
+        unchecked {_approve(from, spender, currentAllowance - amount, false);}
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    
+    /// @notice Approves the allowance of a certain amount of the sender to a spender
+    /// @param spender The spender of the approved amount.
+    /// @param amount The amount to be approved to be spent by the spender.
+    function _approve(address spender, uint256 amount) internal virtual returns(bool) {
+        require(balanceOf(_msgSender()) >= amount);
+        allowance[_msgSender()][spender] = amount;
+        return true;
+    }
+
     /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
     /// @param shardId The shard to be split.
     /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
@@ -127,7 +165,7 @@ abstract contract ERC360 is Context, Pausable, ERC165, IERC360, IERC360Metadata,
         _update(from,balanceOf(from) - amount);
         _update(to,balanceOf(to) + amount);
     }
-
+   
     function _mint(address account, uint256 amount) internal {
         _update(_msgSender(),amount);
         totalSupplyByClock[currentClock()] += amount;
