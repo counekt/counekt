@@ -1,42 +1,28 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.20;
 
+import {Administrable} from "Administrable.sol";
 
 /**
- * @dev Contract with access-specified spendable encapseled funds.
+ * @dev Contract with spendable access-specified encapsulated funds via Administrable.
  *
  * Useful for scenarios such as preventing fraud and
  * making sure that spenders won't have access to all funds at once, 
- * which is specifically appreciated within a corporation.
+ * which is fx. specifically appreciated within a corporation.
  *
- * IMPORTANT: This contract does not include public setBankAccess, moveFunds and transferFundsFromBank functions.
+ * IMPORTANT: This contract does not include external {Spendable-moveFunds} and {Spendable-transferFundsFromBank} functions.
  * In addition to inheriting this contract, you must define these functions, invoking the
- * {Spendable-_setBankAccess}, {Spendable-_moveFunds} and {Spendable-_transferFundsFromBank} internal functions, with appropriate
- * access control, e.g. using {Administrable} or {Ownable}. Not doing so will
+ * {Spendable-_moveFunds} and {Spendable-_transferFundsFromBank} internal functions, with appropriate
+ * access control. Not doing so will
  * make the contract mechanism unreachable, and thus unusable.
  */
-abstract contract Spendable {
+abstract contract Spendable is Administrable {
 
     /// @notice A mapping pointing to the a value/amount of a stored token of a Bank, given the name of it and the respective token address.
-    mapping(uint256 => mapping(address => uint256)) private balanceByBank;
+    mapping(bytes32 => mapping(address => uint256)) private _balanceByBank;
 
-    /// @notice A mapping pointing to a boolean stating if an address is an if a given address is a valid Bank admin.
-    mapping(uint256 => mapping(address => bool)) private accessToBank;
-
-    function bankBalanceOf(uint256 bank, address tokenAddress) public view returns(uint256) {
+    function bankBalanceOf(bytes32 bank, address tokenAddress) public view returns(uint256) {
         return balanceByBank[bank][tokenAddress];
-    }
-
-    function hasAccessToBank(uint256 bank,address account) public view returns(bool){
-        return accessToBank[bank][account];
-    }
-
-    /// @notice Sets the admin status within a specific Bank of a given account.
-    /// @param bank The name of the Bank from which the given account's admin status is to be set.
-    /// @param admin The address of the account, whose admin status it to be set.
-    /// @param status The admin status to be set.
-    function _setBankAccess(uint256 bank, address admin, bool status) internal {
-        adminOfBank[bank][admin] = status;
     }
 
     /// @notice Internally moves funds from one Bank to another.
@@ -44,7 +30,7 @@ abstract contract Spendable {
     /// @param toBankName The Bank to which the funds are to be moved.
     /// @param tokenAddress The address of the token to be moved - address(0) if ether
     /// @param amount The value/amount of the funds to be moved.
-    function _moveFunds(uint256 fromBank, uint256 toBank, address tokenAddress, uint256 amount) internal {
+    function _moveFunds(bytes32 fromBank, bytes32 toBank, address tokenAddress, uint256 amount) internal {
         require(amount <= balanceByBank[fromBank][tokenAddress]);
         unchecked {
             balanceByBank[fromBank][tokenAddress] -= amount;
@@ -57,7 +43,7 @@ abstract contract Spendable {
     /// @param tokenAddress The address of the token to be transferred - address(0) if ether
     /// @param value The value/amount of the funds to be transferred.
     /// @param to The recipient of the funds to be transferred.
-    function _transferFundsFromBank(uint256 bank, address to, address tokenAddress, uint256 amount) internal {
+    function _transferFundsFromBank(bytes32 bank, address to, address tokenAddress, uint256 amount) internal {
         require(amount <= balanceByBank[bank][tokenAddress]);
         unchecked {balanceByBank[bank][tokenAddress] -= amount;}
         _transferFunds(to,tokenAddress,amount);
