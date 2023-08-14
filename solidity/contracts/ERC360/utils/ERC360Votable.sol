@@ -36,6 +36,10 @@ abstract contract ERC360Votable is ERC360, Redeemable {
         return _delegateByVoter[voter];
     }
 
+    function durationOf(uint256 referendumId) public view returns(uint256) {
+        return _statusByReferendum[referendumId];
+    }
+
     function statusOf(uint256 referendumId) public view returns(uint256) {
         return _statusByReferendum[referendumId];
     }
@@ -77,6 +81,12 @@ abstract contract ERC360Votable is ERC360, Redeemable {
         });
         _statusByReferendumId[referendumId] = ReferendumStatus.pending;
         emit VoteIssued(referendumId);
+    }
+
+    function _implementResolution(uint256 referendumId) {
+        if (_infoByReferendumId[referendumId].blockTimestamp+_infoByReferendumId[referendumId].duration<block.timestamp) {revert ERC360VotableVotingNotFinished(referendumId);}
+        if (2*_favorAmountByReferendumId[referendumId]/_totalAmountByReferendumId[referendumId]<=1) {revert ERC360VotableVoteNotInFavor(referendumId);}
+        // CONTINUE
     }
 
 
