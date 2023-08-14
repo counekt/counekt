@@ -41,8 +41,8 @@ abstract contract Administrable is Context {
 
     /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.
     /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;
-    mapping(bytes32 => mapping(address => bool)) _hasPermit;
-    mapping(bytes32 => bytes32) _parentByPermit;
+    mapping(bytes32 => mapping(address => bool)) private _hasPermit;
+    mapping(bytes32 => bytes32) private _parentByPermit;
 
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permit The name of the permit to be checked for.
