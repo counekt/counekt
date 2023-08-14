@@ -11,6 +11,7 @@ abstract contract ERC360Votable is ERC360, Redeemable {
     }
 
     struct ReferendumInfo {
+        uint256 clock,
         uint256 blockTimestamp;
         uint256 duration;
         bytes4[] proposalSigs;
@@ -34,10 +35,6 @@ abstract contract ERC360Votable is ERC360, Redeemable {
 
     function delegateOf(address voter) public view returns(address) {
         return _delegateByVoter[voter];
-    }
-
-    function durationOf(uint256 referendumId) public view returns(uint256) {
-        return _statusByReferendum[referendumId];
     }
 
     function statusOf(uint256 referendumId) public view returns(uint256) {
@@ -74,6 +71,7 @@ abstract contract ERC360Votable is ERC360, Redeemable {
         if (duration < 86400) {revert ERC360VotableInvalidDuration(duration);}
         uint256 referendumId = _createEvent();
         _infoByReferendum[referendumId] = ReferendumInfo({
+            clock:currentClock(),
             blockTimestamp:block.timestamp,
             duration:duration,
             proposalSigs:proposalSigs,
