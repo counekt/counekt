@@ -22,7 +22,7 @@ abstract contract Redeemable {
         _tokenIdHasRedeemedEventId[tokenId][eventId] = true;
     }
 
-    function _createEvent() returns(uint256) {
+    function _createEvent() returns(uint256) internal {
         _eventIdClock.increment();
         return _eventIdClock.current();
     }

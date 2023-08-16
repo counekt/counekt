@@ -34,11 +34,11 @@ abstract contract Spendable is ERC20Holder, Administrable {
         else {return _balanceByBank[bank][tokenAddress];}
     }
 
-    function moveFunds(bytes32 fromBank, bytes32 toBank, address tokenAddress, uint256 amount) external hasPermit(fromBank) {
+    function moveFunds(bytes32 fromBank, bytes32 toBank, address tokenAddress, uint256 amount) external onlyPermit(fromBank) {
         _moveFunds(fromBank,toBank,tokenAddress,amount);
     }
 
-    function transferFundsFromBank(bytes32 bank, address tokenAddress, uint256 amount) external hasPermit(bank) {
+    function transferFundsFromBank(bytes32 bank, address tokenAddress, uint256 amount) external onlyPermit(bank) {
         _transferFundsFromBank(bank,toBank,tokenAddress,amount);
     }
 
@@ -65,13 +65,7 @@ abstract contract Spendable is ERC20Holder, Administrable {
     /// @param value The value/amount of the funds to be transferred.
     /// @param to The recipient of the funds to be transferred.
     function _transferFundsFromBank(bytes32 bank, address to, address tokenAddress, uint256 amount) internal {
-        require(amount <= bankBalanceOf(fromBank,tokenAddress));
-        if (bank != bytes32(0)) {
-            unchecked {
-                _balanceByBank[bank][tokenAddress] -= amount;
-                _balanceByBank[bytes32(0)][tokenAddress] -= amount;
-            }
-        }    
+        _registerTransferFromBank(bank,tokenAddress,amount);
         _transferFunds(to,tokenAddress,amount);
     }
 
@@ -81,6 +75,16 @@ abstract contract Spendable is ERC20Holder, Administrable {
         require(success);
         }
         else {_transferToken(to,tokenAddress,amount);}
+    }
+
+    function _registerTransferFromBank(bytes32 bank,address tokenAddress, uint256 amount) internal {
+        require(amount <= bankBalanceOf(fromBank,tokenAddress));
+        if (bank != bytes32(0)) {
+            unchecked {
+                _balanceByBank[bank][tokenAddress] -= amount;
+                _balanceByBank[bytes32(0)][tokenAddress] -= amount;
+            }
+        }    
     }
 
 }

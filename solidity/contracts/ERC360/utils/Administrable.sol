@@ -46,7 +46,7 @@ abstract contract Administrable is Context {
 
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permit The name of the permit to be checked for.
-    modifier onlyWithPermit(bytes32 permit) {
+    modifier onlyPermit(bytes32 permit) {
         require(hasPermit(permit,_msgSender()));
         _;
     }

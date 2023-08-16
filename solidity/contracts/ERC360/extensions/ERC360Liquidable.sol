@@ -5,16 +5,16 @@ import {Spendable} from "Spendable.sol";
 import {Redeemable} from "Redeemable.sol";
 
 
-abstract contract Liquidable is Redeemable, Spendable {
+abstract contract ERC360Liquidable is Redeemable, Spendable {
 
-    mapping(address => mapping(bytes32  => bool)) private _hasClaimedLiquid;
+    mapping(address => mapping(bytes32 => bool)) private _hasClaimedLiquid;
 
 
     function claimLiquid(uint256 clock) external {
 
     }
 
-    function _issueLiquid(uint256 clock) internal {
+    function _issueDividend(uint256 clock) internal {
         
     }
 
