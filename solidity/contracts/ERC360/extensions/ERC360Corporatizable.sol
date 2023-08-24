@@ -2,15 +2,10 @@ pragma solidity ^0.8.20;
 
 import {ERC360Liquidable} from "ERC360Liquidable.sol";
 import {ERC360Votable} from "ERC360Votable.sol";
-import {Callable} from "../utils/Callable.sol";
+import {ERC360Managable} from "ERC360Managable.sol";
 
 /// @author Frederik W. L. Christoffersen
-abstract contract ERC360Corporatizable is ERC360Votable, ERC360Liquidable, Callable {
-    
-    constructor(uint256 amount, string memory name_, string memory symbol_) ERC360(name_,symbol_) {
-        _mint(_msgSender(),amount); // mint the initial supply to creator
-        _setPermit(_msgSender(),bytes32(0),true); // grant the master permit to creator
-    }
+abstract contract ERC360Corporatizable is ERC360Votable, ERC360Liquidable, ERC360Managable {
 
     function issueVote(bytes4[] sigs, bytes[] args, uint256 duration) external onlyPermit(keccak256("ISSUE_VOTE")) {
         _issueVote(sigs,args,duration);
