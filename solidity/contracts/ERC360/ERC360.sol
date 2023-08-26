@@ -1,8 +1,14 @@
-import {Context} from "../../@openzeppelin/contracts/utils/Context.sol";
-import {IERC360} from "IERC360.sol";
-import {IERC360Metadata} from "IERC360Metadata.sol";
-import {IERC360Errors} from "IERC360Errors.sol";
+// SPDX-License-Identifier: MIT
 
+pragma solidity ^0.8.20;
+
+import {Context} from "@openzeppelin/contracts/utils/Context.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC360} from "contracts/ERC360/IERC360.sol";
+import {IERC360Metadata} from "contracts/ERC360/IERC360Metadata.sol";
+import {IERC360Errors} from "contracts/ERC360/IERC360Errors.sol";
+import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @title A semi-fungible token that represents time-based fractional ownership.
 /// @author Frederik W. L. Christoffersen
@@ -10,7 +16,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     using Counters for Counters.Counter;
 
     /// @notice Integer value to implement a concept of time and to distinguish tokens by id's.
-    Counters.Counters _tokenIdClock;
+    Counters.Counter _tokenIdClock;
 
     /// @notice A struct representing the related info of a semi-fungible Shard token.
     /// @param amount Amount that the token represents.
@@ -48,6 +54,10 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         address owner,
         uint256 tokenId
         );
+
+    error ERC360InvalidReceiver(address);
+    error ERC360InvalidTokenId(uint256, uint256);
+    error ERC360InsufficientAllowance(address,uint256,uint256);
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -130,7 +140,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /// @param spender The spender of the approved amount.
     /// @param amount The amount to be approved to be spent by the spender.
     function approve(address spender, uint256 amount) external virtual returns(bool) {
-        _approve(spender,account);
+        _approve(spender,amount);
         emit Approval(_msgSender(), spender, amount);
     }
 
@@ -187,7 +197,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         // The static info, amount and owner
         _infoByTokenId[currentClock()] = TokenInfo({
                                 amount:amount,
-                                owner: owner});
+                                owner: account});
         emit NewTokenId(account,currentClock());
     }
 

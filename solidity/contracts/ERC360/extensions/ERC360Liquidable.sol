@@ -1,8 +1,8 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC360} from "../ERC360.sol";
-import {Spendable} from "Spendable.sol";
-import {Redeemable} from "Redeemable.sol";
+import {ERC360Redeemable} from "contracts/ERC360/extensions/ERC360Redeemable.sol";
+import {ERC20Holder} from "contracts/ERC360/utils/ERC20Holder.sol";
 
 
 abstract contract ERC360Liquidable is ERC360Redeemable, ERC20Holder {

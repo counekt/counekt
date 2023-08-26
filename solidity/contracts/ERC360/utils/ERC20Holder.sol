@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
-
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-
-import "../@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "../@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title A standard for interacting with ERC20 tokens.
 /// @author Frederik W. L. Christoffersen
@@ -23,7 +21,7 @@ abstract contract ERC20Holder {
 
 	function _transferFunds(address to, address token, uint256 amount) {
         if (token == address(0)) {
-        (bool success, ) = address(to).call{value:value}("");
+        (bool success, ) = address(to).call{value:amount}("");
         require(success);
         }
         else {_transferToken(to,token,amount);}

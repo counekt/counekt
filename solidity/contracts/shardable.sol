@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
 contract ShardableBroker {
@@ -36,23 +36,22 @@ contract ShardableBroker {
     /// @notice A struct representing the related sale info of a non-fungible Shard token.
     /// @param amount Amount that is for sale.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param token The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param to Address pointing to a potentially specifically set buyer of the sale.
     struct ShardSale {
         uint256 amount;
         uint256 price;
-        address tokenAddress;
+        address token;
         address to;
     }
 
     /// @notice Puts a given shard for sale.
     /// @param shardId The shard to be put for sale.
     /// @param amount Amount of the Shard to be put for sale.
-    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param token The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the Shard is for sale as. The token address being the valuta.
     /// @param to The specifically set buyer of the sale. Open to anyone, if address(0).
-    function putForSale(uint256 amount, address tokenAddress, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
-        require(tok)
+    function putForSale(uint256 amount, address token, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
         _putForSale(shard,amount,tokenAddress,price,to);
     }
 

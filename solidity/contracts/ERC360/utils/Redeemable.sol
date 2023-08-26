@@ -1,14 +1,17 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC20Holder} from "../ERC20Holder.sol";
+import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
 
 abstract contract Redeemable {
 
     using Counters for Counters.Counter;
 
-    Counters.Counters private _eventIdClock;
+    Counters.Counter private _eventIdClock;
 
     mapping(uint256 => mapping(uint256 => bool)) private _tokenIdHasRedeemedEventId;
+
+    error ReedeemableAlreadyRedeemed(uint256,uint256);
 
     function hasRedeemed(uint256 tokenId,uint256 eventId) public view returns(bool){
         return _tokenIdHasRedeemedEventId[tokenId][eventId];
@@ -22,7 +25,7 @@ abstract contract Redeemable {
         _tokenIdHasRedeemedEventId[tokenId][eventId] = true;
     }
 
-    function _createEvent() returns(uint256) virtual internal {
+    function _createEvent() virtual internal returns(uint256) {
         _eventIdClock.increment();
         return _eventIdClock.current();
     }

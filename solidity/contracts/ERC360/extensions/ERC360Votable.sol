@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC360Redeemable} from "ERC360Redeemable.sol";
+import {ERC360Redeemable} from "contracts/ERC360/extensions/ERC360Redeemable.sol";
 
 abstract contract ERC360Votable is ERC360Redeemable {
 
@@ -11,7 +12,7 @@ abstract contract ERC360Votable is ERC360Redeemable {
         bytes[] args;
     }
 
-    mapping(address => address) private _delegateByAccount;
+    mapping(address => address) private _delegateByVoter;
 
     mapping(uint256 => VoteInfo) private _infoByVoteId;
 
@@ -25,6 +26,13 @@ abstract contract ERC360Votable is ERC360Redeemable {
     event VoteIssued(uint256 voteId);
     event VoteCast(address voter, uint256 tokenId, uint256 voteId, bool favor);
     event ResolutionImplemented(uint256 voteId);
+
+    error ERC360VotableInvalidDuration(uint256);
+    error ERC360VotableVoteNotActive(uint256);
+    error ERC360VotableVoteNotInFavor(uint256);
+    error ERC360VotableVoteNotFinished(uint256);
+    error ERC360VotableNonPendingVote(uint256);
+    error ERC360VotableInvalidVoter(address,uint256);
 
     function delegateOf(address voter) public view returns(address) {return _delegateByVoter[voter];}
 
@@ -41,8 +49,8 @@ abstract contract ERC360Votable is ERC360Redeemable {
         _requirePendingVote(voteId);
         _redeemEvent(tokenId,voteId);
         unchecked {
-            _totalAmountByVote[voteId]+=amountOf(tokenId);
-            if (favor) {_favorAmountByVote[voteId]+=amountOf(tokenId);}
+            _totalAmountByVoteId[voteId]+=amountOf(tokenId);
+            if (favor) {_favorAmountByVoteId[voteId]+=amountOf(tokenId);}
         }
         emit VoteCast(_msgSender(),tokenId,voteId,favor);
     }
@@ -51,13 +59,13 @@ abstract contract ERC360Votable is ERC360Redeemable {
         _setDelegate(_msgSender(),delegate);
     }
 
-    function forwardDelegate(address to, address account) external {
-        require(delegateOf(account) == _msgSender());
-        _setDelegate(account,to);
+    function forwardDelegate(address to, address voter) external {
+        require(delegateOf(voter) == _msgSender());
+        _setDelegate(voter,to);
     }
 
-    function _setDelegate(address account, address delegate) {
-        _delegateByAccount[account] = delegate;
+    function _setDelegate(address voter, address delegate) {
+        _delegateByVoter[voter] = delegate;
     }
 
     function _issueVote(bytes4[] sigs, bytes[] args, uint256 duration) {
@@ -78,8 +86,8 @@ abstract contract ERC360Votable is ERC360Redeemable {
         if (_infoByVoteId[voteId].timestamp+_infoByVoteId[voteId].duration<block.timestamp) {revert ERC360VotableVoteNotFinished(voteId);}
         if (2*_favorAmountByVoteId[voteId]/_totalAmountByVoteId[voteId]<=1) {revert ERC360VotableVoteNotInFavor(voteId);}
         // CONTINUE
-        for (i; i>sigsOf(voteId).length; i++) {
-            _implementProposal(sigsOf(voteId)[i], argsOf(voteId)[i]));
+        for (uint256 i; i>sigsOf(voteId).length; i++) {
+            _implementProposal(sigsOf(voteId)[i], argsOf(voteId)[i]);
         }
         _statusByVoteId[voteId] = false;
         emit ResolutionImplemented(voteId);
@@ -88,7 +96,7 @@ abstract contract ERC360Votable is ERC360Redeemable {
     function _implementProposal(bytes4 sig, bytes args) virtual internal {}
 
     function _requireValidVoter(uint256 tokenId) internal view {
-        if(ownerOf(tokenId)!=_msgSender() && delegateOf(ownerOf(tokenIdOf)) != _msgSender()) {revert ERC360VotableInvalidVoter(_msgSender(),tokenId);}
+        if(ownerOf(tokenId)!=_msgSender() && delegateOf(ownerOf(tokenId)) != _msgSender()) {revert ERC360VotableInvalidVoter(_msgSender(),tokenId);}
     }
 
     function _requirePendingVote(uint256 voteId) internal view {

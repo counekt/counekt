@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Administrable} from "Administrable.sol";
-import {ERC20Holder} from "ERC20Holder.sol";
+import {Administrable} from "contracts/ERC360/utils/Administrable.sol";
+import {ERC20Holder} from "contracts/ERC360/utils/ERC20Holder.sol";
 
 /**
  * @dev Contract with spendable access-controlled encapsulated funds via Administrable.

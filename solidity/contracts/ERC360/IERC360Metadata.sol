@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.20;
 
-import {IERC360} from "../IERC360.sol";
+import {IERC360} from "contracts/ERC360/IERC360.sol";
 
 /**
  * @dev Interface for the optional metadata functions from the ERC360 standard.

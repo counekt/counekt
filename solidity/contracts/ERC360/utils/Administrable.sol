@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Context} from "../../@openzeppelin/contracts/utils/Context.sol";
+import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 
 /**
  * @dev Contract module that allows decendants to implement permit-based access
@@ -94,9 +95,7 @@ abstract contract Administrable is Context {
     /// @param account The address, whose permit state is to be set.
     /// @param newState The new Permit State to be applied.
     function _setPermit(bytes32 permit, address account, bool status) internal {
-        if (_hasPermit[permit][account] != status) {
-            _hasPermit[permit][account] = status;
-        }
+        _hasPermit[permit][account] = status;
     }
 
     function _setPermitParent(bytes32 permit, bytes32 parent) internal {
