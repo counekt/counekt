@@ -1,13 +1,11 @@
 pragma solidity ^0.8.20;
 
-import {ERC360} from "../ERC360.sol";
-import {Redeemable} from "Redeemable.sol";
+import {ERC360Redeemable} from "ERC360Redeemable.sol";
 
-abstract contract ERC360Votable is ERC360, Redeemable {
+abstract contract ERC360Votable is ERC360Redeemable {
 
-    struct ReferendumInfo {
-        uint256 clock,
-        uint256 blockTimestamp;
+    struct VoteInfo {
+        uint256 timestamp;
         uint256 duration;
         bytes4[] sigs;
         bytes[] args;
@@ -15,79 +13,87 @@ abstract contract ERC360Votable is ERC360, Redeemable {
 
     mapping(address => address) private _delegateByAccount;
 
-    mapping(uint256 => ReferendumInfo) private _infoByReferendumId;
+    mapping(uint256 => VoteInfo) private _infoByVoteId;
 
-    mapping(uint256 => uint256) private _favorAmountByReferendumId;
+    mapping(uint256 => uint256) private _favorAmountByVoteId;
 
-    mapping(uint256 => uint256) private _totalAmountByReferendumId;
+    mapping(uint256 => uint256) private _totalAmountByVoteId;
 
-    mapping(uint256 => bool) private _statusByReferendumId;
-
+    mapping(uint256 => bool) private _statusByVoteId;
 
     event NewDelegate(address delegate, address voter);
-    event VoteIssued(uint256 referendumId);
-    event VoteCast(address voter, uint256 tokenId, uint256 referendumId, bool favor);
-    event ResolutionImplemented(uint256 referendumId);
+    event VoteIssued(uint256 voteId);
+    event VoteCast(address voter, uint256 tokenId, uint256 voteId, bool favor);
+    event ResolutionImplemented(uint256 voteId);
 
     function delegateOf(address voter) public view returns(address) {return _delegateByVoter[voter];}
 
-    function statusOf(uint256 referendumId) public view returns(bool) {return _statusByReferendum[referendumId];}
+    function statusOf(uint256 voteId) public view returns(bool) {return _statusByVoteId[voteId];}
 
-    function clockOf(uint256 referendumId) public view returns(uint256) {return _infoByReferendumId[referendumId].clock;}
+    function sigsOf(uint256 voteId) public view returns(bytes4[]) {return _infoByVoteId[voteId].sigs;}
 
-    function sigsOf(uint256 referendumId) public view returns(bytes4[]) {return _infoByReferendumId[referendumId].sigs;}
+    function argsOf(uint256 voteId) public view returns(bytes[]) {return _infoByVoteId[voteId].args;}
 
-    function argsOf(uint256 referendumId) public view returns(bytes[]) {return _infoByReferendumId[referendumId].args;}
-
-    function vote(uint256 tokenId, uint256 referendumId, bool favor) external virtual {
-        _requireUnredeemed(tokenId,referendumId);
-        if(statusOf(referendumId) == false) {revert ERC360VotableNonPendingReferendum(referendumId);}
-        if(ownerOf(tokenId)!=_msgSender() && delegateOf(ownerOf(tokenIdOf)) != _msgSender()) {revert ERC360VotableInvalidVoter(_msgSender(),tokenId);}
-        if(!wasValid(tokenId,clockOf(referendumId))) {revert ERC360VotableInvalidTokenId(tokenId,referendumId);}
+    function vote(uint256 tokenId, uint256 voteId, bool favor) external virtual {
+        _requireUnredeemed(tokenId,voteId);
+        _requireValidAt(tokenId,clockOf(voteId));
+        _requireValidVoter(tokenId);
+        _requirePendingVote(voteId);
+        _redeemEvent(tokenId,voteId);
         unchecked {
-        if (favor) {_favorAmountByReferendum[referendumId]+=amountOf(tokenId);}
-        _totalAmountByReferendum[referendumId]+=amountOf(tokenId);
+            _totalAmountByVote[voteId]+=amountOf(tokenId);
+            if (favor) {_favorAmountByVote[voteId]+=amountOf(tokenId);}
         }
-        _redeemEvent(tokenId,referendumId);
-        emit VoteCast(_msgSender(),tokenId,referendumId,favor);
+        emit VoteCast(_msgSender(),tokenId,voteId,favor);
     }
 
     function setDelegate(address delegate) external {
-        _delegateByAccount[_msgSender()] = delegate;
+        _setDelegate(_msgSender(),delegate);
     }
 
     function forwardDelegate(address to, address account) external {
         require(delegateOf(account) == _msgSender());
-        _delegateByAccount[account] = to;
+        _setDelegate(account,to);
+    }
+
+    function _setDelegate(address account, address delegate) {
+        _delegateByAccount[account] = delegate;
     }
 
     function _issueVote(bytes4[] sigs, bytes[] args, uint256 duration) {
         if (duration < 86400) {revert ERC360VotableInvalidDuration(duration);}
-        uint256 referendumId = _createEvent();
-        _infoByReferendum[referendumId] = ReferendumInfo({
-            clock:currentClock(),
-            blockTimestamp:block.timestamp,
+        uint256 voteId = _createEvent();
+        _infoByVoteId[voteId] = VoteInfo({
+            timestamp:block.timestamp,
             duration:duration,
             sigs:sigs,
             args:args
         });
-        _statusByReferendumId[referendumId] = true;
-        emit VoteIssued(referendumId);
+        _statusByVoteId[voteId] = true;
+        emit VoteIssued(voteId);
     }
 
-    function _implementResolution(uint256 referendumId) {
-        if (statusOf(referendumId) == false) {revert ERC360VotableVoteNotActive(referendumId);}
-        if (_infoByReferendumId[referendumId].blockTimestamp+_infoByReferendumId[referendumId].duration<block.timestamp) {revert ERC360VotableVoteNotFinished(referendumId);}
-        if (2*_favorAmountByReferendumId[referendumId]/_totalAmountByReferendumId[referendumId]<=1) {revert ERC360VotableVoteNotInFavor(referendumId);}
+    function _implementResolution(uint256 voteId) {
+        if (statusOf(voteId) == false) {revert ERC360VotableVoteNotActive(voteId);}
+        if (_infoByVoteId[voteId].timestamp+_infoByVoteId[voteId].duration<block.timestamp) {revert ERC360VotableVoteNotFinished(voteId);}
+        if (2*_favorAmountByVoteId[voteId]/_totalAmountByVoteId[voteId]<=1) {revert ERC360VotableVoteNotInFavor(voteId);}
         // CONTINUE
-        for (i; i>sigsOf(referendumId).length; i++) {
-            _implementProposal(sigsOf(referendumId)[i], argsOf(referendumId)[i]));
+        for (i; i>sigsOf(voteId).length; i++) {
+            _implementProposal(sigsOf(voteId)[i], argsOf(voteId)[i]));
         }
-        _statusByReferendumId[referendumId] = false;
-        emit ResolutionImplemented(referendumId);
+        _statusByVoteId[voteId] = false;
+        emit ResolutionImplemented(voteId);
     }
 
     function _implementProposal(bytes4 sig, bytes args) virtual internal {}
+
+    function _requireValidVoter(uint256 tokenId) internal view {
+        if(ownerOf(tokenId)!=_msgSender() && delegateOf(ownerOf(tokenIdOf)) != _msgSender()) {revert ERC360VotableInvalidVoter(_msgSender(),tokenId);}
+    }
+
+    function _requirePendingVote(uint256 voteId) internal view {
+        if(statusOf(voteId) == false) {revert ERC360VotableNonPendingVote(voteId);}
+    }
 
 
 }

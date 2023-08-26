@@ -6,7 +6,7 @@ import {Spendable} from "Spendable.sol";
 
 /// @title A standard for interacting with ERC20 tokens.
 /// @author Frederik W. L. Christoffersen
-abstract contract Callable is Spendable {
+abstract contract Managable is Spendable {
 
 	mapping(address => mapping(bytes4 => bytes32)) private _permitByFunctionCall;
 

@@ -98,14 +98,19 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         return _tokenIdClock.current();
     }
 
-    /// @notice Returns the clock.
-    function totalSupply() public view returns(uint256) {
-        return _totalSupplyByClock[currentClock()];
-    }
-
     /// @notice Returns the clock, in which a shard will or has expired.
     function expirationOf(uint256 tokenId) public view returns(uint256) {
         return _expirationByTokenId[tokenId] || type(uint256).max;
+    }
+
+    /// @notice Returns the supply at.
+    function totalSupplyAt(uint256 clock) public view returns(uint256) {
+        return _totalSupplyByClock[clock];
+    }
+
+    /// @notice Returns the current supply.
+    function totalSupply() public view returns(uint256) {
+        return totalSupplyAt(currentClock());
     }
 
     /// @notice Returns a boolean stating if a given shard is currently valid or not.
@@ -184,6 +189,10 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
                                 amount:amount,
                                 owner: owner});
         emit NewTokenId(account,currentClock());
+    }
+
+    function _requireValidAt(uint256 tokenId, uint256 clock) internal view {
+        if (!wasValid(tokenId,clock)) {revert ERC360InvalidTokenId(tokenId,clock);}
     }
 
 }

@@ -13,12 +13,19 @@ abstract contract ERC20Holder {
 	using SafeERC20 for IERC20;
 
     /// @notice Transfers a token to a recipient.
-	/// @param tokenAddress The address of the token to be transferred.
+	/// @param token The address of the token to be transferred.
     /// @param amount The amount of the token to be transferred.
     /// @param to The recipient of the transfer.
-	function _transferToken(address to, address tokenAddress, uint256 amount) internal {
-		IERC20 token = IERC20(tokenAddress);
-		else {token.safeTransfer(to,amount)}
+	function _transferToken(address to, IERC20 token, uint256 amount) internal {
+		// IERC20 token = IERC20(token);
+		token.safeTransfer(to,amount);
 	}
 
+	function _transferFunds(address to, address token, uint256 amount) {
+        if (token == address(0)) {
+        (bool success, ) = address(to).call{value:value}("");
+        require(success);
+        }
+        else {_transferToken(to,token,amount);}
+    }
 }

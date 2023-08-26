@@ -5,18 +5,19 @@ import {ERC360Votable} from "ERC360Votable.sol";
 import {ERC360Managable} from "ERC360Managable.sol";
 
 /// @author Frederik W. L. Christoffersen
-abstract contract ERC360Corporatizable is ERC360Votable, ERC360Liquidable, ERC360Managable {
+abstract contract ERC360Corporatizable is ERC360Managable, ERC360Liquidable, ERC360Votable {
 
     function issueVote(bytes4[] sigs, bytes[] args, uint256 duration) external onlyPermit(keccak256("ISSUE_VOTE")) {
         _issueVote(sigs,args,duration);
     }
 
-    function issueDividend(uint256 amount) external onlyPermit(keccak256("ISSUE_DIVIDEND")) {
-        _issueDividend(amount);
+    function issueLiquid(bytes32 bank, address token, uint256 amount) external onlyPermit(bank) onlyPermit(keccak256("ISSUE_LIQUID"))  {
+        _registerTransferFromBank(bank,token,amount);
+        _issueLiquid(token,amount);
     }
 
-    function mint(address account, uint256 amount) external onlyPermit(keccak256("MINT")) {
-        _mint(account,amount);
+    function implementResolution(uint256 voteId) onlyPermit(keccak256("IMPLEMENT_RESOLUTION")) {
+        _implementResolution(voteId);
     }
 
     function _implementProposal(bytes4 sig, bytes args) internal virtual override {
@@ -24,8 +25,8 @@ abstract contract ERC360Corporatizable is ERC360Votable, ERC360Liquidable, ERC36
             _mint(abi.decode(args,(address,uint256)));
         } else if (sig == _issueVote.selector) {
             _issueVote(abi.decode(args,(bytes4[],bytes[],uint256)));
-        } else if (sig == _issueDividend.selector) {
-            _issueDividend(abi.decode(args,(uint256)));
+        } else if (sig == _issueLiquid.selector) {
+            _issueLiquid(abi.decode(args,(uint256)));
         } else if (sig == _setPermit.selector) {
             _setPermit(abi.decode(args,(bytes32,address,bool)));
         } else if (sig == _setPermitParent.selector) {
@@ -38,8 +39,6 @@ abstract contract ERC360Corporatizable is ERC360Votable, ERC360Liquidable, ERC36
             _moveFunds(abi.decode(args,(bytes32,bytes32,address,uint256)));
         } else if (sig == _transferFundsFromBank.selector) {
             _transferFundsFromBank(abi.decode(args,(bytes32,address,address,uint256)));
-        } else if (sig == _liquidate.selector) {
-            _liquidate();
         } else {revert ERC360CorporatizableInvalidProposal(sig);}
     }
 

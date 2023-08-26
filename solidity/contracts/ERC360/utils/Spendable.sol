@@ -24,39 +24,35 @@ abstract contract Spendable is ERC20Holder, Administrable {
      */
     mapping(bytes32 => mapping(address => uint256)) private _balanceByBank;
 
-    function balanceOfToken(address tokenAddress) public view returns(uint256) {
-        if (tokenAddress == address(0)) {return address(this).balance;}
-        else {return tokenAddress.balanceOf(address(this));}
+    function balanceOfToken(address token) public view returns(uint256) {
+        if (token == address(0)) {return address(this).balance;}
+        else {return token.balanceOf(address(this));}
     }
 
-    function bankBalanceOf(bytes32 bank, address tokenAddress) public view returns(uint256) {
-        if (bank == bytes32(0)) {return balanceOfToken(tokenAddress)-_balanceByBank[bank][tokenAddress];}
-        else {return _balanceByBank[bank][tokenAddress];}
+    function bankBalanceOf(bytes32 bank, address token) public view returns(uint256) {
+        if (bank == bytes32(0)) {return balanceOfToken(token)-_balanceByBank[bank][token];}
+        else {return _balanceByBank[bank][token];}
     }
 
-    function moveFunds(bytes32 fromBank, bytes32 toBank, address tokenAddress, uint256 amount) external onlyPermit(fromBank) {
-        _moveFunds(fromBank,toBank,tokenAddress,amount);
+    function moveFunds(bytes32 fromBank, bytes32 toBank, address token, uint256 amount) external onlyPermit(fromBank) {
+        _moveFunds(fromBank,toBank,token,amount);
     }
 
-    function transferFundsFromBank(bytes32 bank, address tokenAddress, uint256 amount) external onlyPermit(bank) {
-        _transferFundsFromBank(bank,toBank,tokenAddress,amount);
+    function transferFundsFromBank(bytes32 bank, address token, uint256 amount) external onlyPermit(bank) {
+        _transferFundsFromBank(bank,toBank,token,amount);
     }
 
     /// @notice Internally moves funds from one Bank to another.
     /// @param fromBank The Bank from which the funds are to be moved.
-    /// @param toBankName The Bank to which the funds are to be moved.
-    /// @param tokenAddress The address of the token to be moved - address(0) if ether
+    /// @param toBank The Bank to which the funds are to be moved.
+    /// @param token The address of the token to be moved - address(0) if ether
     /// @param amount The value/amount of the funds to be moved.
-    function _moveFunds(bytes32 fromBank, bytes32 toBank, address tokenAddress, uint256 amount) internal {
-        require(amount <= bankBalanceOf(fromBank,tokenAddress));
-        if (fromBank == bytes32(0)) {_balanceByBank[fromBank][tokenAddress] += amount;}
-        else {
-            _balanceByBank[fromBank][tokenAddress] -= amount;
-        }
-        if (toBank == bytes32(0)) {_balanceByBank[toBank][tokenAddress] -= amount;}
-        else {_balanceByBank[toBank][tokenAddress] += amount;}  
-        }
-        
+    function _moveFunds(bytes32 fromBank, bytes32 toBank, address token, uint256 amount) internal {
+        require(amount <= bankBalanceOf(fromBank,token));
+        if (fromBank == bytes32(0)) {_balanceByBank[fromBank][token] += amount;}
+        else {_balanceByBank[fromBank][token] -= amount;}
+        if (toBank == bytes32(0)) {_balanceByBank[toBank][token] -= amount;}
+        else {_balanceByBank[toBank][token] += amount;}  
     }
 
     /// @notice Transfers a token bankAdmin a Bank to a recipient.
@@ -69,20 +65,12 @@ abstract contract Spendable is ERC20Holder, Administrable {
         _transferFunds(to,tokenAddress,amount);
     }
 
-    function _transferFunds(address to, address tokenAddress, uint256 amount) {
-        if (tokenAddress == address(0)) {
-        (bool success, ) = address(to).call{value:value}("");
-        require(success);
-        }
-        else {_transferToken(to,tokenAddress,amount);}
-    }
-
-    function _registerTransferFromBank(bytes32 bank,address tokenAddress, uint256 amount) internal {
-        require(amount <= bankBalanceOf(fromBank,tokenAddress));
+    function _registerTransferFromBank(bytes32 bank,address token, uint256 amount) internal {
+        require(amount <= bankBalanceOf(fromBank,token));
         if (bank != bytes32(0)) {
             unchecked {
-                _balanceByBank[bank][tokenAddress] -= amount;
-                _balanceByBank[bytes32(0)][tokenAddress] -= amount;
+                _balanceByBank[bank][token] -= amount;
+                _balanceByBank[bytes32(0)][token] -= amount;
             }
         }    
     }

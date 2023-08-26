@@ -72,9 +72,15 @@ interface IERC360 {
     function allowance(address owner, address spender) external view returns (uint256);
 
     /**
-     * @dev Returns the amount of valid tokens in existence.
+     * @dev Returns the amount of currently valid tokens in existence.
      */
     function totalSupply() external view returns (uint256);
+
+
+    /**
+     * @dev Returns the amount of valid tokens in existence at a specific timeframe.
+     */
+    function totalSupplyAt(uint256) external view returns (uint256);
 
 
     /**
