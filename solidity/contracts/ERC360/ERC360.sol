@@ -163,7 +163,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /// @param amount The amount to be approved to be spent by the spender.
     function _approve(address spender, uint256 amount) internal virtual returns(bool) {
         require(balanceOf(_msgSender()) >= amount);
-        allowance[_msgSender()][spender] = amount;
+        _allowances[_msgSender()][spender] = amount;
         return true;
     }
 

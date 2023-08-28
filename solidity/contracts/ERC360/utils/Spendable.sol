@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import {Administrable} from "contracts/ERC360/utils/Administrable.sol";
 import {ERC20Holder} from "contracts/ERC360/utils/ERC20Holder.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 
 /**
  * @dev Contract with spendable access-controlled encapsulated funds via Administrable.
@@ -24,7 +26,7 @@ abstract contract Spendable is ERC20Holder, Administrable {
      */
     mapping(bytes32 => mapping(address => uint256)) private _balanceByBank;
 
-    function balanceOfToken(address token) public view returns(uint256) {
+    function balanceOfToken(IERC20 token) public view returns(uint256) {
         if (token == address(0)) {return address(this).balance;}
         else {return token.balanceOf(address(this));}
     }
@@ -38,8 +40,8 @@ abstract contract Spendable is ERC20Holder, Administrable {
         _moveFunds(fromBank,toBank,token,amount);
     }
 
-    function transferFundsFromBank(bytes32 bank, address token, uint256 amount) external onlyPermit(bank) {
-        _transferFundsFromBank(bank,token,amount);
+    function transferFundsFromBank(bytes32 bank, address to, address token, uint256 amount) external onlyPermit(bank) {
+        _transferFundsFromBank(bank,to,token,amount);
     }
 
     /// @notice Internally moves funds from one Bank to another.

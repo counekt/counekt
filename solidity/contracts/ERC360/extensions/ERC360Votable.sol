@@ -40,9 +40,9 @@ abstract contract ERC360Votable is ERC20Holder, ERC360Redeemable {
 
     function statusOf(uint256 voteId) public view returns(bool) {return _statusByVoteId[voteId];}
 
-    function sigsOf(uint256 voteId) public view returns(bytes4[]) {return _infoByVoteId[voteId].sigs;}
+    function sigsOf(uint256 voteId) public view returns(bytes4[] calldata) {return _infoByVoteId[voteId].sigs;}
 
-    function argsOf(uint256 voteId) public view returns(bytes[]) {return _infoByVoteId[voteId].args;}
+    function argsOf(uint256 voteId) public view returns(bytes[] calldata) {return _infoByVoteId[voteId].args;}
 
     function vote(uint256 tokenId, uint256 voteId, bool favor) external virtual {
         _requireUnredeemed(tokenId,voteId);
@@ -70,7 +70,7 @@ abstract contract ERC360Votable is ERC20Holder, ERC360Redeemable {
         _delegateByVoter[voter] = delegate;
     }
 
-    function _issueVote(bytes4[] sigs, bytes[] args, uint256 duration) {
+    function _issueVote(bytes4[] memory sigs, bytes[] memory args, uint256 duration) {
         if (duration < 86400) {revert ERC360VotableInvalidDuration(duration);}
         uint256 voteId = _createEvent();
         _infoByVoteId[voteId] = VoteInfo({
@@ -95,7 +95,7 @@ abstract contract ERC360Votable is ERC20Holder, ERC360Redeemable {
         emit ResolutionImplemented(voteId);
     }
 
-    function _implementProposal(bytes4 sig, bytes args) virtual internal {}
+    function _implementProposal(bytes4 sig, bytes memory args) virtual internal {}
 
     function _requireValidVoter(uint256 tokenId) internal view {
         if(ownerOf(tokenId)!=_msgSender() && delegateOf(ownerOf(tokenId)) != _msgSender()) {revert ERC360VotableInvalidVoter(_msgSender(),tokenId);}

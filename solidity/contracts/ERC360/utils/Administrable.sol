@@ -51,28 +51,28 @@ abstract contract Administrable is Context {
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permit The name of the permit to be checked for.
     modifier onlyPermit(bytes32 permit) {
-        require(hasPermit(permit,_msgSender()));
+        require(hasPermit(_msgSender(),permit));
         _;
     }
     
     /// @notice Modifier that makes sure msg.sender is an admin of a given permit.
     /// @param permit The name of the permit to be checked for.
     modifier onlyPermitAdmin(bytes32 permit) {
-        require(isPermitAdmin(permit,_msgSender()));
+        require(isPermitAdmin(_msgSender(),permit));
         _;
     }
 
     /// @notice Returns a boolean stating if a given address has a given permit or not.
     /// @param permit The name of the permit to be checked for.
     /// @param account The address to be checked for.
-    function hasPermit(bytes32 permit, address account) public view returns(bool) {
+    function hasPermit(address account,bytes32 permit) public view returns(bool) {
         return _hasPermit[permit][account];
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.
     /// @param permit The name of the permit to be checked for.
     /// @param account The address to be checked for.
-    function isPermitAdmin(bytes32 permit, address account) public view returns(bool) {
+    function isPermitAdmin(address account,bytes32 permit) public view returns(bool) {
         return hasPermit(permitParentOf(permit));
     }
 
@@ -83,10 +83,10 @@ abstract contract Administrable is Context {
     /// @notice Sets the state of a specified permit of a given address.
     /// @param account The address, whose permit state is to be set.
     /// @param permit The name of the permit, whose state is to be set.
-    /// @param newState The new Permit State to be applied.
-    function setPermit(bytes32 permit, address account, bool status) external onlyPermitAdmin(permit) {
+    /// @param status The new Permit State to be applied.
+    function setPermit(address account,bytes32 permit,bool status) external onlyPermitAdmin(permit) {
         if (status == false && isPermitAdmin(permit,account)) {revert AdministrableUnauthorizedSet(permit,account);}
-        _setPermit(permit,account,status);
+        _setPermit(account,permit,status);
     }
 
     function setPermitParent(bytes32 permit, bytes32 parent) external onlyPermitAdmin(permit) {
@@ -97,7 +97,7 @@ abstract contract Administrable is Context {
     /// @param permit The permit, whose state is to be set.
     /// @param account The address, whose permit state is to be set.
     /// @param newState The new Permit State to be applied.
-    function _setPermit(bytes32 permit, address account, bool status) internal {
+    function _setPermit(address account, bytes32 permit, bool status) internal {
         _hasPermit[permit][account] = status;
     }
 

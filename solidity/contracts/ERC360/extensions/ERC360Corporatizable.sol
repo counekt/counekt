@@ -9,41 +9,54 @@ import {ERC360Managable} from "contracts/ERC360/extensions/ERC360Managable.sol";
 /// @author Frederik W. L. Christoffersen
 abstract contract ERC360Corporatizable is ERC360Liquidable,ERC360Votable,ERC360Managable {
 
-    constructor(uint256 amount, string memory name_, string memory symbol_) ERC360Managable(amount,name_,symbol_) {}
+    error ERC360CorporatizableInvalidProposal(bytes4);
 
-    function issueVote(bytes4[] sigs, bytes[] args, uint256 duration) external onlyPermit(keccak256("ISSUE_VOTE")) {
+    function issueVote(bytes4[] memory sigs, bytes[] memory args, uint256 duration) external onlyPermit(keccak256("ISSUE_VOTE")) {
         _issueVote(sigs,args,duration);
     }
 
-    function issueLiquid(bytes32 bank, address token, uint256 amount) external onlyPermit(bank) onlyPermit(keccak256("ISSUE_LIQUID"))  {
-        _registerTransferFromBank(bank,token,amount);
-        _issueLiquid(token,amount);
+    function issueDividend(bytes32 bank, address token, uint256 amount) external onlyPermit(bank) onlyPermit(keccak256("ISSUE_DIVIDEND"))  {
+        _issueDividend(bank,token,amount);
     }
 
     function implementResolution(uint256 voteId) onlyPermit(keccak256("IMPLEMENT_RESOLUTION")) {
         _implementResolution(voteId);
     }
 
-    function _implementProposal(bytes4 sig, bytes args) internal virtual override {
-        if (sig == _mint.selector) {
-            _mint(abi.decode(args,(address,uint256)));
-        } else if (sig == _issueVote.selector) {
-            _issueVote(abi.decode(args,(bytes4[],bytes[],uint256)));
-        } else if (sig == _issueLiquid.selector) {
-            _issueLiquid(abi.decode(args,(uint256)));
-        } else if (sig == _setPermit.selector) {
-            _setPermit(abi.decode(args,(bytes32,address,bool)));
-        } else if (sig == _setPermitParent.selector) {
-            _setPermitParent(abi.decode(args,(bytes32,bytes32)));
-        } else if (sig == _callExternal.selector) {
-            _callExternal(abi.decode(args,(address,bytes4,bytes,uint256,bytes32)));
-        } else if (sig == _setExternalCallPermit.selector) {
-            _setExternalCallPermit(abi.decode(args,(address,bytes4,bytes32)));
-        } else if (sig == _moveFunds.selector) {
-            _moveFunds(abi.decode(args,(bytes32,bytes32,address,uint256)));
-        } else if (sig == _transferFundsFromBank.selector) {
-            _transferFundsFromBank(abi.decode(args,(bytes32,address,address,uint256)));
-        } else {revert ERC360CorporatizableInvalidProposal(sig);}
+    function _issueDividend(bytes32 bank, address token, uint256 amount) internal  {
+        _registerTransferFromBank(bank,token,amount);
+        _issueLiquid(token,amount);
+    }
+
+    function _implementProposal(bytes4 _sig, bytes memory _args) internal virtual override {
+        if (_sig == bytes4(keccak256("_mint(address,uint256)"))) {
+            (address account, uint256 amount) = abi.decode(_args,(address,uint256));
+            _mint(account,amount);
+        } else if (_sig == bytes4(keccak256("_issueVote(bytes4[],bytes4[],uint256)"))) {
+            (bytes4[] memory sigs, bytes[] memory args, uint256 duration) = abi.decode(_args,(bytes4[],bytes[],uint256));
+            _issueVote(sigs,args,duration);
+        } else if (_sig == bytes4(keccak256("_issueDividend(bytes32,address,uint256)"))) {
+            (bytes32 bank, address token, uint256 amount) = abi.decode(_args,(bytes32,address,uint256));
+            _issueDividend(bank,token,amount);
+        } else if (_sig == bytes4(keccak256("_setPermit(address,bytes32,bool)"))) {
+            (address account, bytes32 permit, bool status) = abi.decode(_args,(address,bytes32,bool));
+            _setPermit(account,permit,status);
+        } else if (_sig == bytes4(keccak256("_setPermitParent(bytes32,bytes32)"))) {
+            (bytes32 permit, bytes32 parent) = abi.decode(_args,(bytes32,bytes32));
+            _setPermitParent(permit,parent);
+        } else if (_sig == bytes4(keccak256("_callExternal(address,bytes4,bytes,uint256,bytes32)"))) {
+            (address ext, bytes4 sig, bytes memory args, uint256 value, bytes32 bank) = abi.decode(_args,(address,bytes4,bytes,uint256,bytes32));
+            _callExternal(ext,sig,args,value,bank);
+        } else if (_sig == bytes4(keccak256("_setExternalCallPermit(address,bytes4,bytes32)"))) {
+            (address ext, bytes4 sig, bytes32 permit) = abi.decode(_args,(address,bytes4,bytes32));
+            _setExternalCallPermit(ext,sig,permit);
+        } else if (_sig == bytes4(keccak256("_moveFunds(bytes32,bytes32,address,uint256)"))) {
+            (bytes32 fromBank, bytes32 toBank, address token, uint256 amount) = abi.decode(_args,(bytes32,bytes32,address,uint256));
+            _moveFunds(fromBank,toBank,token,amount);
+        } else if (_sig == bytes4(keccak256("_transferFundsFromBank(bytes32,address,address,uint256)"))) {
+            (bytes32 bank,address to, address token, uint256 amount) = abi.decode(_args,(bytes32,address,address,uint256));
+            _transferFundsFromBank(bank,to,token,amount);
+        } else {revert ERC360CorporatizableInvalidProposal(_sig);}
     }
 
 }
