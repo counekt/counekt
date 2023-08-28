@@ -5,7 +5,7 @@ import {ERC360Redeemable} from "contracts/ERC360/extensions/ERC360Redeemable.sol
 import {ERC20Holder} from "contracts/ERC360/utils/ERC20Holder.sol";
 
 
-abstract contract ERC360Liquidable is ERC360Redeemable, ERC20Holder {
+abstract contract ERC360Liquidable is ERC20Holder, ERC360Redeemable {
 
     mapping(uint256 => address) private _tokenByLiquid;
     mapping(uint256 => uint256) private _amountByLiquid;

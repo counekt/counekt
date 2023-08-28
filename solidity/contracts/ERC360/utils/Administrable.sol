@@ -45,6 +45,9 @@ abstract contract Administrable is Context {
     mapping(bytes32 => mapping(address => bool)) private _hasPermit;
     mapping(bytes32 => bytes32) private _parentByPermit;
 
+    error AdministrableUnauthorizedSet(bytes32,address);
+    error AdministrableInvalidParentSet(bytes32,bytes32);
+
     /// @notice Modifier that makes sure msg.sender has a given permit.
     /// @param permit The name of the permit to be checked for.
     modifier onlyPermit(bytes32 permit) {

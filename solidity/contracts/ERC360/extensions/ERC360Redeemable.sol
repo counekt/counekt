@@ -13,7 +13,7 @@ abstract contract ERC360Redeemable is ERC360, Redeemable {
     }
 
     function _createEvent() virtual override internal returns(uint256) {
-        uint256 eventId = super._createEvent();
+        uint256 eventId = Redeemable._createEvent();
         _clockByEventId[eventId] = currentClock();
         return eventId;
     }

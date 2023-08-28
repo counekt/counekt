@@ -55,9 +55,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         uint256 tokenId
         );
 
-    error ERC360InvalidReceiver(address);
     error ERC360InvalidTokenId(uint256, uint256);
-    error ERC360InsufficientAllowance(address,uint256,uint256);
 
     /**
      * @dev Sets the values for {name} and {symbol}.

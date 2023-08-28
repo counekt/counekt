@@ -4,8 +4,8 @@ pragma solidity ^0.8.4;
 
 import "../@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
-contract ShardableBroker {
+/*
+contract ERC360Broker {
 
     /// @notice An enum representing a Sale State of a Shard.
     /// @param notForSale The Shard is NOT for sale.
@@ -25,11 +25,11 @@ contract ShardableBroker {
 
     /// @notice Event emitted when a sale of a Shard is sold.
     /// @param status The enum stating whether the given Shard now isn't, is for sale, or has been sold.
-    /// @param shardId The shard whose sale state was updated.
+    /// @param tokenId The shard whose sale state was updated.
     /// @param sale The sale info reffering to either a listing or a purchase, depending on the status.
     event SaleStateUpdated(
         SaleState status,
-        uint256 shardId,
+        uint256 tokenId,
         ShardSale sale
         );
 
@@ -153,3 +153,4 @@ function divideUnequallyIntoTwoWithRemainder(uint256 dividend, uint256 numerator
     uint256 quotient2 = dividend*(denominator-numerator)/denominator;
     return (quotient1, quotient2, dividend - (quotient1 + quotient2));
 }
+*/

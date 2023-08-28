@@ -39,7 +39,7 @@ abstract contract Spendable is ERC20Holder, Administrable {
     }
 
     function transferFundsFromBank(bytes32 bank, address token, uint256 amount) external onlyPermit(bank) {
-        _transferFundsFromBank(bank,toBank,token,amount);
+        _transferFundsFromBank(bank,token,amount);
     }
 
     /// @notice Internally moves funds from one Bank to another.
@@ -57,16 +57,16 @@ abstract contract Spendable is ERC20Holder, Administrable {
 
     /// @notice Transfers a token bankAdmin a Bank to a recipient.
     /// @param bank The Bank from which the funds are to be transferred.
-    /// @param tokenAddress The address of the token to be transferred - address(0) if ether
+    /// @param token The address of the token to be transferred - address(0) if ether
     /// @param value The value/amount of the funds to be transferred.
     /// @param to The recipient of the funds to be transferred.
-    function _transferFundsFromBank(bytes32 bank, address to, address tokenAddress, uint256 amount) internal {
-        _registerTransferFromBank(bank,tokenAddress,amount);
-        _transferFunds(to,tokenAddress,amount);
+    function _transferFundsFromBank(bytes32 bank, address to, address token, uint256 amount) internal {
+        _registerTransferFromBank(bank,token,amount);
+        _transferFunds(to,token,amount);
     }
 
     function _registerTransferFromBank(bytes32 bank,address token, uint256 amount) internal {
-        require(amount <= bankBalanceOf(fromBank,token));
+        require(amount <= bankBalanceOf(bank,token));
         if (bank != bytes32(0)) {
             unchecked {
                 _balanceByBank[bank][token] -= amount;

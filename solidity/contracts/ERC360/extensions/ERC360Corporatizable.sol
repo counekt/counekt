@@ -5,8 +5,11 @@ import {ERC360Liquidable} from "contracts/ERC360/extensions/ERC360Liquidable.sol
 import {ERC360Votable} from "contracts/ERC360/extensions/ERC360Votable.sol";
 import {ERC360Managable} from "contracts/ERC360/extensions/ERC360Managable.sol";
 
+
 /// @author Frederik W. L. Christoffersen
-abstract contract ERC360Corporatizable is ERC360Managable, ERC360Liquidable, ERC360Votable {
+abstract contract ERC360Corporatizable is ERC360Liquidable,ERC360Votable,ERC360Managable {
+
+    constructor(uint256 amount, string memory name_, string memory symbol_) ERC360Managable(amount,name_,symbol_) {}
 
     function issueVote(bytes4[] sigs, bytes[] args, uint256 duration) external onlyPermit(keccak256("ISSUE_VOTE")) {
         _issueVote(sigs,args,duration);
