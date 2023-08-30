@@ -26,9 +26,9 @@ abstract contract Spendable is ERC20Holder, Administrable {
      */
     mapping(bytes32 => mapping(address => uint256)) private _balanceByBank;
 
-    function balanceOfToken(IERC20 token) public view returns(uint256) {
+    function balanceOfToken(address token) public view returns(uint256) {
         if (token == address(0)) {return address(this).balance;}
-        else {return token.balanceOf(address(this));}
+        else {return IERC20(token).balanceOf(address(this));}
     }
 
     function bankBalanceOf(bytes32 bank, address token) public view returns(uint256) {
@@ -60,7 +60,7 @@ abstract contract Spendable is ERC20Holder, Administrable {
     /// @notice Transfers a token bankAdmin a Bank to a recipient.
     /// @param bank The Bank from which the funds are to be transferred.
     /// @param token The address of the token to be transferred - address(0) if ether
-    /// @param value The value/amount of the funds to be transferred.
+    /// @param amount The value/amount of the funds to be transferred.
     /// @param to The recipient of the funds to be transferred.
     function _transferFundsFromBank(bytes32 bank, address to, address token, uint256 amount) internal {
         _registerTransferFromBank(bank,token,amount);

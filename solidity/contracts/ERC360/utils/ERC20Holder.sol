@@ -14,9 +14,9 @@ abstract contract ERC20Holder {
 	/// @param token The address of the token to be transferred.
     /// @param amount The amount of the token to be transferred.
     /// @param to The recipient of the transfer.
-	function _transferToken(address to, IERC20 token, uint256 amount) internal {
+	function _transferToken(address to, address token, uint256 amount) internal {
 		// IERC20 token = IERC20(token);
-		token.safeTransfer(to,amount);
+		IERC20(token).safeTransfer(to,amount);
 	}
 
 	function _transferFunds(address to, address token, uint256 amount) {

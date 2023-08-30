@@ -45,7 +45,7 @@ abstract contract Administrable is Context {
     mapping(bytes32 => mapping(address => bool)) private _hasPermit;
     mapping(bytes32 => bytes32) private _parentByPermit;
 
-    error AdministrableUnauthorizedSet(bytes32,address);
+    error AdministrableUnauthorizedSet(address,bytes32);
     error AdministrableInvalidParentSet(bytes32,bytes32);
 
     /// @notice Modifier that makes sure msg.sender has a given permit.
@@ -73,7 +73,7 @@ abstract contract Administrable is Context {
     /// @param permit The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function isPermitAdmin(address account,bytes32 permit) public view returns(bool) {
-        return hasPermit(permitParentOf(permit));
+        return hasPermit(account,permitParentOf(permit));
     }
 
     function permitParentOf(bytes32 permit) public view returns(bytes32) {
@@ -85,7 +85,7 @@ abstract contract Administrable is Context {
     /// @param permit The name of the permit, whose state is to be set.
     /// @param status The new Permit State to be applied.
     function setPermit(address account,bytes32 permit,bool status) external onlyPermitAdmin(permit) {
-        if (status == false && isPermitAdmin(permit,account)) {revert AdministrableUnauthorizedSet(permit,account);}
+        if (status == false && isPermitAdmin(account,permit)) {revert AdministrableUnauthorizedSet(account,permit);}
         _setPermit(account,permit,status);
     }
 

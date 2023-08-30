@@ -46,15 +46,6 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
 
     mapping(address => mapping(address => uint256)) private _allowances;
 
-
-    /// @notice Event emitted when a new token is minted.
-    /// @param owner The owner of the new token.
-    /// @param tokenId The id of the token.
-    event NewTokenId(
-        address owner,
-        uint256 tokenId
-        );
-
     error ERC360InvalidTokenId(uint256, uint256);
 
     /**
@@ -108,7 +99,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
 
     /// @notice Returns the clock, in which a shard will or has expired.
     function expirationOf(uint256 tokenId) public view returns(uint256) {
-        return _expirationByTokenId[tokenId] || type(uint256).max;
+        return  _expirationByTokenId[tokenId] > 0 ? _expirationByTokenId[tokenId] : type(uint256).max;
     }
 
     /// @notice Returns the supply at.
@@ -138,7 +129,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /// @param spender The spender of the approved amount.
     /// @param amount The amount to be approved to be spent by the spender.
     function approve(address spender, uint256 amount) external virtual returns(bool) {
-        _approve(spender,amount);
+        _approve(_msgSender(),spender,amount);
         emit Approval(_msgSender(), spender, amount);
     }
 
@@ -152,7 +143,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         address spender = _msgSender();
         uint256 currentAllowance = allowance(from,spender);
         if (currentAllowance < amount) {revert ERC360InsufficientAllowance(spender, currentAllowance, amount);}
-        unchecked {_approve(from, spender, currentAllowance - amount, false);}
+        unchecked {_approve(from, spender, currentAllowance - amount);}
         _transfer(from, to, amount);
         return true;
     }
@@ -161,9 +152,9 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /// @notice Approves the allowance of a certain amount of the sender to a spender
     /// @param spender The spender of the approved amount.
     /// @param amount The amount to be approved to be spent by the spender.
-    function _approve(address spender, uint256 amount) internal virtual returns(bool) {
-        require(balanceOf(_msgSender()) >= amount);
-        _allowances[_msgSender()][spender] = amount;
+    function _approve(address from, address spender, uint256 amount) internal virtual returns(bool) {
+        require(balanceOf(from) >= amount);
+        _allowances[from][spender] = amount;
         return true;
     }
 

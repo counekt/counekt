@@ -121,7 +121,7 @@ interface IERC360 {
      *
      * - `tokenId` must exist.
      */
-    function isValid(uint256 tokenId) public view returns(bool);
+    function isValid(uint256 tokenId) external view returns(bool);
 
 
     /**
@@ -131,7 +131,7 @@ interface IERC360 {
      *
      * - `tokenId` must exist.
      */
-    function wasValid(uint256 tokenId, uint256 clock) public view returns(bool);
+    function wasValid(uint256 tokenId, uint256 clock) external view returns(bool);
 
 
 
