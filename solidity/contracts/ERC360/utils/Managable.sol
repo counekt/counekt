@@ -13,7 +13,7 @@ abstract contract Managable is Spendable {
 		_permitByFunctionCall[ext][sig];
 	}
 
-	function callExternal(address ext, bytes4 sig, bytes memory args, uint256 value, bytes32 bank) onlyPermit(bank) onlyPermit(externalCallPermitOf(ext,sig))  {
+	function callExternal(address ext, bytes4 sig, bytes memory args, uint256 value, bytes32 bank) external onlyPermit(bank) onlyPermit(externalCallPermitOf(ext,sig))  {
 		_callExternal(ext,sig,args,value,bank);
 	}
 

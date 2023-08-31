@@ -62,7 +62,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return
             interfaceId == type(IERC360).interfaceId ||
             interfaceId == type(IERC360Metadata).interfaceId ||
@@ -159,7 +159,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     }
 
     /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
-    /// @param shardId The shard to be split.
+    /// @param from, The sender of the tokens.
     /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
     /// @param to The receiver of the new Shard.
     function _transfer(address from, address to, uint256 amount) internal {
@@ -175,7 +175,7 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
-    /// @param owner The owner of the Shard.
+    /// @param account The owner of the Shard.
     /// @param amount Amount of the Shard represents.
     function _update(address account,uint256 amount) internal {
         if (account == address(0)) {revert ERC360InvalidReceiver(address(0));}

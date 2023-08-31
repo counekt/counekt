@@ -96,7 +96,7 @@ abstract contract Administrable is Context {
     /// @notice Sets the state of a specified permit of a given address.
     /// @param permit The permit, whose state is to be set.
     /// @param account The address, whose permit state is to be set.
-    /// @param newState The new Permit State to be applied.
+    /// @param status The new Permit State to be applied.
     function _setPermit(address account, bytes32 permit, bool status) internal {
         _hasPermit[permit][account] = status;
     }

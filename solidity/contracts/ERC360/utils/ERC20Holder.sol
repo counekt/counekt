@@ -19,7 +19,7 @@ abstract contract ERC20Holder {
 		IERC20(token).safeTransfer(to,amount);
 	}
 
-	function _transferFunds(address to, address token, uint256 amount) {
+	function _transferFunds(address to, address token, uint256 amount) internal {
         if (token == address(0)) {
         (bool success, ) = address(to).call{value:amount}("");
         require(success);

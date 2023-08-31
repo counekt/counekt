@@ -19,7 +19,7 @@ abstract contract ERC360Corporatizable is ERC360Liquidable,ERC360Votable,ERC360M
         _issueDividend(bank,token,amount);
     }
 
-    function implementResolution(uint256 voteId) onlyPermit(keccak256("IMPLEMENT_RESOLUTION")) {
+    function implementResolution(uint256 voteId) onlyPermit(keccak256("IMPLEMENT_RESOLUTION")) external {
         _implementResolution(voteId);
     }
 

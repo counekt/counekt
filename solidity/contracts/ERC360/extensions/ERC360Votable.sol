@@ -66,11 +66,11 @@ abstract contract ERC360Votable is ERC20Holder, ERC360Redeemable {
         _setDelegate(voter,to);
     }
 
-    function _setDelegate(address voter, address delegate) {
+    function _setDelegate(address voter, address delegate) internal {
         _delegateByVoter[voter] = delegate;
     }
 
-    function _issueVote(bytes4[] memory sigs, bytes[] memory args, uint256 duration) {
+    function _issueVote(bytes4[] memory sigs, bytes[] memory args, uint256 duration) internal {
         if (duration < 86400) {revert ERC360VotableInvalidDuration(duration);}
         uint256 voteId = _createEvent();
         _infoByVoteId[voteId] = VoteInfo({
@@ -83,7 +83,7 @@ abstract contract ERC360Votable is ERC20Holder, ERC360Redeemable {
         emit VoteIssued(voteId);
     }
 
-    function _implementResolution(uint256 voteId) {
+    function _implementResolution(uint256 voteId) internal {
         if (statusOf(voteId) == false) {revert ERC360VotableVoteNotActive(voteId);}
         if (_infoByVoteId[voteId].timestamp+_infoByVoteId[voteId].duration<block.timestamp) {revert ERC360VotableVoteNotFinished(voteId);}
         if (2*_favorAmountByVoteId[voteId]/_totalAmountByVoteId[voteId]<=1) {revert ERC360VotableVoteNotInFavor(voteId);}
