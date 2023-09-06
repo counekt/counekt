@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Spendable} from "contracts/ERC360/utils/Spendable.sol";
+import {Spendable} from "./Spendable.sol";
 
 /// @title A standard for interacting with ERC20 tokens.
 /// @author Frederik W. L. Christoffersen

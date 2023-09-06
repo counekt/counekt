@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC360Liquidable} from "contracts/ERC360/extensions/ERC360Liquidable.sol";
-import {ERC360Votable} from "contracts/ERC360/extensions/ERC360Votable.sol";
-import {ERC360Managable} from "contracts/ERC360/extensions/ERC360Managable.sol";
+import {ERC360Liquidable} from "./ERC360Liquidable.sol";
+import {ERC360Votable} from "./ERC360Votable.sol";
+import {ERC360Managable} from "./ERC360Managable.sol";
 
 
 /// @author Frederik W. L. Christoffersen
-abstract contract ERC360Corporatizable is ERC360Liquidable,ERC360Votable,ERC360Managable {
+contract ERC360Corporatizable is ERC360Liquidable,ERC360Votable,ERC360Managable {
 
     error ERC360CorporatizableInvalidProposal(bytes4);
+
+    constructor(string memory name_, string memory symbol_) ERC360Managable(name_,symbol_) {}
 
     function issueVote(bytes4[] memory sigs, bytes[] memory args, uint256 duration) external onlyPermit(keccak256("ISSUE_VOTE")) {
         _issueVote(sigs,args,duration);

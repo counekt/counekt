@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Context} from "@openzeppelin/contracts/utils/Context.sol";
+import {Context} from "node_modules/@openzeppelin/contracts/utils/Context.sol";
 
 /**
  * @dev Contract module that allows decendants to implement permit-based access

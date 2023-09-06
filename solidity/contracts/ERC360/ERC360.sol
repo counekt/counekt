@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.20;
 
-import {Context} from "@openzeppelin/contracts/utils/Context.sol";
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {IERC360} from "contracts/ERC360/IERC360.sol";
-import {IERC360Metadata} from "contracts/ERC360/IERC360Metadata.sol";
-import {IERC360Errors} from "contracts/ERC360/IERC360Errors.sol";
-import {Counters} from "@openzeppelin/contracts/utils/Counters.sol";
+import {Context} from "node_modules/@openzeppelin/contracts/utils/Context.sol";
+import {ERC165} from "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC165} from "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC360} from "./IERC360.sol";
+import {IERC360Metadata} from "./IERC360Metadata.sol";
+import {IERC360Errors} from "./IERC360Errors.sol";
+import {Counters} from "node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
 /// @title A semi-fungible token that represents time-based fractional ownership.
 /// @author Frederik W. L. Christoffersen
@@ -58,6 +58,16 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         _name = name_;
         _symbol = symbol_;
     }
+
+    /**
+     * @dev Returns the name of the token.
+     */
+    function name() external view returns (string memory) {return _name;}
+
+    /**
+     * @dev Returns the symbol of the token.
+     */
+    function symbol() external view returns (string memory) {return _symbol;}
 
     /**
      * @dev See {IERC165-supportsInterface}.

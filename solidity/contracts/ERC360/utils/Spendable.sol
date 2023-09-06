@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Administrable} from "contracts/ERC360/utils/Administrable.sol";
-import {ERC20Holder} from "contracts/ERC360/utils/ERC20Holder.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Administrable} from "./Administrable.sol";
+import {ERC20Holder} from "./ERC20Holder.sol";
+import {IERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
 /**
