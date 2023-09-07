@@ -1,9 +1,9 @@
-{% for idea in user.ideas %}
-        {% with profile=idea %}
+{% for erc360 in user.erc360s %}
+        {% with profile=erc360 %}
         {% include 'profile/mini-profile.html' %}
         {% endwith %}
 {% endfor %}
       
 {% if user==current_user %}
-<div class="add-specific-button" id="create-idea-button"><span>Create Idea</span></div>
+<div class="add-specific-button" id="create-erc360-button"><span>Create ERC360</span></div>
 {% endif %}

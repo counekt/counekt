@@ -214,8 +214,8 @@ class Medium(Media,Base,db.Model):
 	downvotes = db.relationship('MediumDownvote', backref='media', lazy='dynamic',
         foreign_keys='MediumDownvote.medium_id')
 	
-	channel_id = db.Column(db.Integer, db.ForeignKey('idea.id', ondelete='CASCADE'))
-	channel = db.relationship("Idea", foreign_keys=[channel_id])
+	channel_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
+	channel = db.relationship("ERC360", foreign_keys=[channel_id])
 
 	def is_hearted(self, voter):
 		return self.is_upvoted(voter)

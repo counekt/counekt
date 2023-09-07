@@ -3,7 +3,7 @@ import app.funcs as funcs
 import math
 
 class LocationBase:
-    address = db.Column(db.String)
+    location_address = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     sin_rad_lat = db.Column(db.Float)

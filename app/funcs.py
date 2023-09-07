@@ -17,7 +17,7 @@ from eth_abi import abi
 
 def decode_event_payload(e):
     if e["args"]["func"] == "sP":
-        permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
+        permit, account, status = abi.decode_abi(["bytes32","address","bool"],e["args"]["args"])
         return {"func":e["args"]["func"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
     if e["args"]["func"] == "iS":
         amount, tokenAddress, price, to = abi.decode_abi(["uint256","address","uint256","address"],e["args"]["args"])
@@ -56,14 +56,18 @@ def decode_event_payload(e):
         return {"func":e["args"]["func"], "by":e["args"]["by"]}
 
 
+def get_deployed_bytecode():
+    with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
+        json_data = json.load(json_file)
+        return json_data["deployedBytecode"]
 
 def get_bytecode():
-    with open("solidity/build/contracts/Votable.json","r") as json_file:
+    with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
         json_data = json.load(json_file)
         return json_data["bytecode"]
 
 def get_abi():
-    with open("solidity/build/contracts/Votable.json","r") as json_file:
+    with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
         json_data = json.load(json_file)
         return json_data["abi"]
 

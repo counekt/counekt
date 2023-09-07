@@ -1,8 +1,0 @@
-{% for collaborator in idea.group.members %}
-      {% with profile=collaborator %}
-        {% include 'profile/mini-profile.html' %}
-        {% endwith %}
-      {% endfor %}
-{% if current_user in idea.group.members and 'idea.group.member_has_role(member=current_user, role_title="Master")' %}
-      <a id="members-button"><div class="add-specific-button"><span>Add member</span></div></a>
-{% endif %}

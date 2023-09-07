@@ -10,7 +10,7 @@
           <a class="subprofile-identity" {% if not without_link %}href="{% if profile %}{{profile.href}}{% else %}\\href//{% endif %}"{% endif %}>
             <span class="subprofile-name selectable"><b>{% if profile %}{% if profile.name %}{{profile.name}}{% else %}{{profile.username}}{% endif %}{% else %}\\name//{% endif %}</b></span>
             <br>
-            <span class="subprofile-username selectable">{% if profile %}{{profile.symbol}}{{profile.identifier}}{% else %}\\symbol//\\identifier//{% endif %}</span>
+            <span class="subprofile-username selectable">{% if profile %}{{profile.tick}}{{profile.identifier}}{% else %}\\tick//\\identifier//{% endif %}</span>
           </a>
           <br>
         <span class="subprofile-bio selectable" maxlenght="30">{% if profile %}{% if profile.bio %}{{profile.bio}}{% endif %}{% else %}\\bio//{% endif %}</span>

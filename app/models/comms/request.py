@@ -65,32 +65,32 @@ class UserToUserRequest(db.Model, RequestBase, Base):
         RequestBase.__init__(self, **kwargs)
 
     def _do(self):
-        if self.type == "ally":
-            self.receiver.allies.append(self.sender)
-            self.sender.allies.append(self.receiver)
+        if self.type == "associate":
+            self.receiver.associates.append(self.sender)
+            self.sender.associates.append(self.receiver)
 
     def __repr__(self):
         return "<UserToUserRequest {}>".format(self.type)
 
     def get_notification_payload_json(self):
-        return {"ally": {"type": "request",
+        return {"associate": {"type": "request",
                          "request_type":"UserToUserRequest",
-                         "request_subtype":"ally",
+                         "request_subtype":"associate",
                          "color": "#3298dc",
                          "icon": "fa fa-user-friends",
                          "sender-name": self.sender.name,
                          "sender-username": self.sender.username,
-                         "message": "wants to ally with you",
-                         "sender-photo": self.sender.profile_photo.src,
+                         "message": "wants to associate with you",
+                         "sender-photo": self.sender.photo.src,
                          "href":f"/@{self.sender.username}/"
                          }}.get(self.type)
 
 
-class UserToIdeaRequest(db.Model, RequestBase, Base):
+class UserToERC360Request(db.Model, RequestBase, Base):
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     sender = db.relationship("User", foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('idea.id', ondelete='CASCADE'))
-    receiver = db.relationship("Idea", foreign_keys=[receiver_id])
+    receiver_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
+    receiver = db.relationship("ERC360", foreign_keys=[receiver_id])
 
     def __init__(self, **kwargs):
         RequestBase.__init__(self, **kwargs)
@@ -101,28 +101,28 @@ class UserToIdeaRequest(db.Model, RequestBase, Base):
             self.receiver.add_member(self.sender)
 
     def __repr__(self):
-        return "<UserToIdeaRequest {}>".format(self.type)
+        return "<UserToERC360Request {}>".format(self.type)
 
     def get_notification_payload_json(self):
-        return {"join": {"type": "request",
+        return {"dummy": {"type": "request",
                          "request_type":"UserToIdeaRequest",
-                         "request_subtype":"join",
+                         "request_subtype":"dummy",
                          "color": "#3298dc",
                          "icon": "fa fa-user-friends",
                          "sender-name": self.sender.name,
                          "sender-username": self.sender.username,
-                         "message": "wants to join your Idea",
-                         "sender-photo": self.sender.profile_photo.src,
-                         "href":f"/£{self.sender.handle}/"
+                         "message": "some dummy text ERC360",
+                         "sender-photo": self.sender.photo.src,
+                         "href":f"/€{self.receiver.address}/"
                          }}.get(self.type)
 
 # To user
 # --------------------------------------
 
 
-class IdeaToUserRequest(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('idea.id', ondelete='CASCADE'))
-    sender = db.relationship("Idea", foreign_keys=[sender_id])
+class ERC360ToUserRequest(db.Model, RequestBase, Base):
+    sender_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
+    sender = db.relationship("ERC360", foreign_keys=[sender_id])
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     receiver = db.relationship("User", foreign_keys=[receiver_id])
 
@@ -131,22 +131,22 @@ class IdeaToUserRequest(db.Model, RequestBase, Base):
         self.sender.viewers.append(self.receiver)
 
     def _do(self):
-        if self.type == "invite":
+        if self.type == "dummy":
             self.sender.viewers.remove(self.receiver)
             self.sender.add_member(self.receiver)
 
     def __repr__(self):
-        return "<UserToIdeaRequest {}>".format(self.type)
+        return "<ERC360ToUserRequest {}>".format(self.type)
 
     def get_notification_payload_json(self):
-        return {"invite": {"type": "request",
-                           "request_type":"IdeaToUserRequest",
+        return {"dummy": {"type": "request",
+                           "request_type":"ERC360ToUserRequest",
                            "request_subtype":"invite",
                            "color": "#3298dc",
                            "icon": "fa fa-user-friends",
                            "sender-name": self.sender.name,
-                           "sender-handle": self.sender.handle,
-                           "message": "invites you to join their Idea",
-                           "sender-photo": self.sender.profile_photo.src,
-                           "href":f"/£{self.sender.handle}/"
+                           "sender-address": self.sender.address,
+                           "message": "some dummy text ERC360",
+                           "sender-photo": self.sender.photo.src,
+                           "href":f"/€{self.sender.address}/"
                            }}.get(self.type)
