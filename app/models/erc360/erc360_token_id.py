@@ -9,7 +9,6 @@ class ERC360TokenId(db.Model, Base):
 	owner_id = db.Column(db.Integer, db.ForeignKey('wallet.id', ondelete='CASCADE'))
 	owner = db.relationship("Wallet", foreign_keys=[owner_id])
 	
-	identity = db.Column(db.LargeBinary(32)) # ETH bytes32
 	amount = db.Column(db.Integer) # Amount
 
 	""" Representation as Big Integers will likely run out year 2262, Fri on Apr 11 """
@@ -19,7 +18,7 @@ class ERC360TokenId(db.Model, Base):
 	expiration_timestamp = db.Column(db.Integer, default=9223372036854775807)
 
 	# Used for representation in accordance to the contract machinery
-	creation_clock = db.Column(db.BigInteger) # Shardable Clock push time
+	creation_clock = db.Column(db.BigInteger) # Clock push time
 	expiration_clock = db.Column(db.BigInteger, default=9223372036854775807) # Token Id Clock expiration time
 
 	@property
@@ -28,5 +27,5 @@ class ERC360TokenId(db.Model, Base):
 
 
 	def __repr__(self):
-		return '<Shard {}>'.format(self.amount)
+		return '<ERC360TokenId {}>'.format(self.creation_clock)
 

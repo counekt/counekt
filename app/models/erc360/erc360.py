@@ -14,16 +14,16 @@ class ERC360(db.Model, Base, LocationBase):
     active = db.Column(db.Boolean,default=True)
     address = db.Column(db.String(42)) # ETH token address
     block = db.Column(db.Integer) # ETH block number
-    current_clock = db.Column(db.Integer) # Shardable clock
-    total_amount = db.Column(db.Integer) # Total Amount of shards
+    current_clock = db.Column(db.Integer) # Clock
+    total_amount = db.Column(db.Integer) # Total Amount of tokens
 
     events_last_updated_at = db.Column(db.Integer) # ETH block number
-    shards_last_updated_at = db.Column(db.Integer) # ETH block number
+    token_ids_last_updated_at = db.Column(db.Integer) # ETH block number
     bank_exchanges_last_updated_at = db.Column(db.Integer) # ETH block number
     dividend_claims_last_updated_at = db.Column(db.Integer) # ETH block number
     referendum_votes_last_updated_at = db.Column(db.Integer) # ETH block number
 
-    symbol = "€"
+    symbol = db.Column(db.String)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id', ondelete="cascade"))
     group = db.relationship("Group", foreign_keys=[group_id])
     handle = db.Column(db.String, index=True, unique=True)
@@ -112,7 +112,7 @@ class ERC360(db.Model, Base, LocationBase):
                         main_bank.add_value(residual,address)
                 if decoded_payload["func"] == "iR": # Issue Referendum
                     if not self.referendums.filter_by(clock=decoded_payload["clock"]).first():
-                        viable_amount = contract.functions.totalShardAmountByClock(decoded_payload["clock"]).call()
+                        viable_amount = contract.functions.totalSupplyByClock(decoded_payload["clock"]).call()
                         referendum = models.Referendum(clock=decoded_payload["clock"],viable_amount=viable_amount)
                         referendum_info = contract.functions.infoByReferendum(decoded_payload["clock"]).call()
                         for i, func in enumerate(referendum_info[1]): # add proposals if any
@@ -166,7 +166,7 @@ class ERC360(db.Model, Base, LocationBase):
                         raise Exception("fromBank or toBank does not exist...")
                     fromBank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                     toBank.add_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                if e["args"]["func"] == "iS": # Issue Shards
+                if e["args"]["func"] == "iS": # Mint
                     pass
                 if e["args"]["func"] == "uT": # Unregister Token
                     token = self.liquid.tokens.filter_by(address=decoded_payload["tokenAddress"]).first()
@@ -183,29 +183,29 @@ class ERC360(db.Model, Base, LocationBase):
 
     def update_ownership(self):
         contract = self.get_w3_contract()
-        # Register new shards
-        updated_shards = contract.events.ShardUpdated.getLogs(fromBlock=self.shards_last_updated_at or self.block)
-        for s in updated_shards:
-            if s.args.status == True: # Register new shards
-                if not self.shards.filter_by(identity=s.args.shard).first():
-                    shard_info = contract.functions.infoByShard(s.args.shard).call()
-                    shard = models.Shard(identity=s.args.shard,owner_address=shard_info[1],creation_clock=shard_info[2])
-                    shard.amount = shard_info[0]
-                    shard.creation_timestamp = w3.eth.getBlock(s.blockNumber).timestamp
-                    self.shards.append(shard)
-                    if ns.blockNumber > int(self.shards_last_updated_at or self.block):
-                        self.shards_last_updated_at = s.blockNumber
-            else: # Register expired shards
-                if not self.shards.filter_by(identity=s.args.shard).first().is_expired:
-                    expiration_clock = contract.functions.getShardExpirationClock(s.args.shard).call()
-                    shard = self.shards.filter_by(identity=es.args.shard).first()
-                    shard.expiration_clock = expiration_clock
-                    shard.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
-            if s.blockNumber > int(self.shards_last_updated_at or self.block):
-                self.shards_last_updated_at = s.blockNumber
-        # For reference to decide which shards are currently valid and which ones aren't
-        self.current_clock = contract.functions.getCurrentClock().call()
-        self.total_amount = contract.functions.totalShardAmountByClock(self.current_clock).call()
+        # Register new token id's
+        updated_token_ids = contract.events.NewToken.getLogs(fromBlock=self.token_ids_last_updated_at or self.block)
+        for s in updated_token_ids:
+            if s.args.status == True: # Register new token id's
+                if not self.token_ids.filter_by(identity=s.args.tokenId).first():
+                    token_id_info = contract.functions.infoByTokenId(s.args.tokenId).call()
+                    token_id = models.ERC360TokenId(identity=s.args.tokenId,owner_address=token_id_info[1],creation_clock=token_id_info[2])
+                    token_id.amount = token_id_info[0]
+                    token_id.creation_timestamp = w3.eth.getBlock(s.blockNumber).timestamp
+                    self.token_ids.append(token_id)
+                    if ns.blockNumber > int(self.token_ids_last_updated_at or self.block):
+                        self.token_ids_last_updated_at = s.blockNumber
+            else: # Register expired token id's
+                if not self.token_ids.filter_by(identity=s.args.tokenId).first().is_expired:
+                    expiration_clock = contract.functions.expirationOf(s.args.tokenId).call()
+                    token_id = self.token_ids.filter_by(identity=es.args.tokenId).first()
+                    token_id.expiration_clock = expiration_clock
+                    token_id.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
+            if s.blockNumber > int(self.token_ids_last_updated_at or self.block):
+                self.token_ids_last_updated_at = s.blockNumber
+        # For reference to decide which token id's are currently valid and which ones aren't
+        self.current_clock = contract.functions.currentClock().call()
+        self.total_amount = contract.functions.totalSupplyByClock(self.current_clock).call()
 
     def update_structure(self):
         contract = self.get_w3_contract()
@@ -213,14 +213,14 @@ class ERC360(db.Model, Base, LocationBase):
         new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.dividend_claims_last_updated_at or self.block)
         for nc in new_claims:
             dividend = self.dividends.filter_by(clock=nc.args.dividendClock).first()
-            shard = self.shards.filter(models.Shard.owner.has(address=nc.args.by)).first()
-            if not dividend or not shard:
-                raise Exception("Dividend or Shard does not exist...")
-            claim = models.DividendClaim.filter_by(dividend=dividend,shard=shard).first()
+            token_id = self.token_ids.filter(models.ERC360TokenId.owner.has(address=nc.args.by)).first()
+            if not dividend or not token_id:
+                raise Exception("Dividend or ERC360TokenId does not exist...")
+            claim = models.DividendClaim.filter_by(dividend=dividend,token_id=token_id).first()
             if not claim:
                 claim = models.DividendClaim(value=nc.args.value)
                 claim.value = nc.args.value
-                claim.shard = shard
+                claim.token_id = token_id
                 dividend.claims.append(claim)
             if nc.blockNumber > int(self.dividend_claims_last_updated_at or self.block):
                 self.dividend_claims_last_updated_at = ns.blockNumber
@@ -228,15 +228,15 @@ class ERC360(db.Model, Base, LocationBase):
         new_votes = contract.events.VoteCast.getLogs(fromBlock=self.referendum_votes_last_updated_at or self.block)
         for nv in new_votes:
             referendum = self.referendums.filter_by(clock=nv.args.referendumClock).first()
-            shard = self.shards.filter(models.Shard.owner.has(address=nv.args.by)).first()
-            if not referendum or not shard:
-                raise Exception("Referendum or Shard does not exist...")
-            vote = models.Vote.filter_by(referendum=referendum,shard=shard).first()
+            token_id = self.token_ids.filter(models.ERC360TokenId.owner.has(address=nv.args.by)).first()
+            if not referendum or not token_id:
+                raise Exception("Referendum or ERC360TokenId does not exist...")
+            vote = models.Vote.filter_by(referendum=referendum,token_id=token_id).first()
             if not vote:
-                vote = models.Vote(shard=shard, in_favor=nv.args.favor)
+                vote = models.Vote(token_id=token_id, in_favor=nv.args.favor)
                 referendum.votes.append(vote)
-                referendum.cast_amount += vote.shard.amount
-                referendum.in_favor_amount += vote.shard.amount if nv.args.favor else 0
+                referendum.cast_amount += vote.token_id.amount
+                referendum.in_favor_amount += vote.token_id.amount if nv.args.favor else 0
             if nv.blockNumber > int(self.referendum_votes_last_updated_at or self.block):
                 self.referendum_votes_last_updated_at = ns.blockNumber
 
@@ -244,20 +244,20 @@ class ERC360(db.Model, Base, LocationBase):
         contract = w3.eth.contract(address=self.address.hexadecimal,abi=funcs.get_abi())
         return contract
 
-    def get_shard_by_clock(self,owner_address,clock):
-        return self.shards.filter(models.Shard.owner.address.has(hexadecimal=owner_address)).filter(models.Shard.creation_clock <= self.current_clock < models.expiration_clock).first()
+    def get_token_id_by_clock(self,owner_address,clock):
+        return self.token_ids.filter(models.ERC360TokenId.owner.address.has(hexadecimal=owner_address)).filter(models.ERC360TokenId.creation_clock <= self.current_clock < models.expiration_clock).first()
 
     @hybrid_property
-    def valid_shards(self):
-        return self.shards.filter(self.current_clock < models.Shard.expiration_clock).order_by(models.Shard.amount.desc()) if self.shards.first() else []
+    def valid_token_ids(self):
+        return self.token_ids.filter(self.current_clock < models.ERC360TokenId.expiration_clock).order_by(models.ERC360TokenId.amount.desc()) if self.token_ids.first() else []
 
     @property
     def href(self):
-        return url_for("erc360.erc360", handle=self.handle)
+        return url_for("erc360.erc360", address=self.address)
 
     @hybrid_property
     def identifier(self):
-        return self.handle
+        return self.address
 
     def __repr__(self):
-        return "<ERC360 {}>".format(self.handle)
+        return "<ERC360 {}>".format(self.address)

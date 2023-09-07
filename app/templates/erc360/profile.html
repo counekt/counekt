@@ -10,7 +10,7 @@
       </div>
       <div id="profile-left-bottom">
         <p class="title is-4 selectable" style="color:black"><b>{{ erc360.name }}</b></p>
-        <p class="subtitle is-5 selectable" style="color:gray">€{{ erc360.address }}</p>
+        <p class="subtitle is-6 selectable" style="color:gray">{{ erc360.address }}</p>
       </div>
     </div>
 
@@ -35,7 +35,7 @@
       <div id="profile-right-bottom">
         {% if erc360.address %}
         <div id="profile-address">
-          <span class="icon is-small"><i class="fa fa-map-marker" aria-hidden="true"></i></span><span class="selectable">{{erc360.symbol}}</span>
+          <span class="icon is-small"><i class="fa fa-euro" aria-hidden="true"></i></span><span class="selectable">{{erc360.symbol}}</span>
         </div>
         {% endif %}
       </div>
