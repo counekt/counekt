@@ -61,7 +61,9 @@ def create():
 
             tx_hash = flask_request.form.get("tx");
 
-            erc360 = models.ERC360(symbol=symbol, name=name, public=public, members=[current_user])
+            receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            wallet = models.Wallet.register(spender=current_user,address=receipt.contractAddress)
+            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet)
 
             if show_location:
 
@@ -89,7 +91,6 @@ def create():
             current_app.logger.info("testing code")
             # Wait for transaction to be mined...
             print(tx_hash)
-            receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             original_code = funcs.get_bytecode()
             deploy_data_raw = w3.eth.getTransaction(tx_hash).input # remove 0x and constructor data
             deploy_data = deploy_data_raw[2:][:len(original_code)]
