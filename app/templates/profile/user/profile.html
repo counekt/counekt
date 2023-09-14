@@ -87,6 +87,17 @@
   {% endif %}
   </div>
 
+<div class="control has-icons-left">
+<div id="wallet-select" class="select is-centered is-fullwidth is-medium" style="color: black;margin-bottom: 5px; border-radius: 10px;">
+  <select style="color: black;" class="is-cloudy">
+    <option>0x49a71890aea5A751E30e740C504f2E9683f347bC</option>
+    <option>0x49a71890aea5A751E30e740C504f2E9683f347bC</option>
+  </select>
+</div>
+<span class="icon is-large is-left">
+    <i class="fas fa-wallet"></i>
+  </span>
+</div>
 {% include "profile/user/tabs/tabs.html" %}
 {% with vanish=True, create_bar = user == current_user, wall=user.wall, by="new" %}
 {% include 'comms/wall/wall-bit.html' %}
@@ -108,15 +119,17 @@
 
 {% endblock %}
 
-{% block scripts %}
+{% block head %}
 <link rel="stylesheet" href="/static/css/comms/medium.css">
-<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/profile/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profile/edit.css">
 <link rel="stylesheet" href="/static/css/profile/user/edit.css">
 <link rel="stylesheet" href="/static/css/profile/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
 <script src="/static/js/comms/search-filter-bar.js"></script>
 <script src="/static/js/profile/profile.js"></script>
 <script src="/static/js/profile/user/profile.js"></script>

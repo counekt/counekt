@@ -1,3 +1,8 @@
+.is-cloudy {
+	background-color: rgba(255,255,255,0.9) !important;
+	transition: 0.3s;
+}
+
 .profile-skill {
 	text-overflow: ellipsis;
 	overflow: hidden;
