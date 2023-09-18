@@ -122,10 +122,10 @@ def erc360(address):
 
 
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
-@ bp.route("/$<address>/edit/", methods=["GET", "POST"])
+@ bp.route("/€<address>/edit/", methods=["GET", "POST"])
 @login_required
 def edit(address):
-    if not handle:
+    if not address:
         abort(404)
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     if not erc360:

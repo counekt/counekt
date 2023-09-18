@@ -54,7 +54,7 @@
     <div id="location-settings">
       <div id="location">
         <h1><b>Location</b></h1>
-        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" {% if user.address %}value="{{ user.address }}"{% endif %}></input>
+        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" {% if user.location_address %}value="{{ user.location_address }}"{% endif %}></input>
         <div id="map">
         </div>
       </div>
