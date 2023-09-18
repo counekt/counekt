@@ -50,6 +50,9 @@ class User(UserMixin, db.Model, Base, LocationBase):
 
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
+    main_wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id'))
+    main_wallet = db.relationship("Wallet", foreign_keys=[main_wallet_id])
+
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
         foreign_keys='Skill.owner_id')
@@ -101,12 +104,12 @@ class User(UserMixin, db.Model, Base, LocationBase):
 
     def register_wallet(self,address):
         wallet = models.Wallet.query.filter_by(address=address).first()
-        if wallet:
-            if not self in wallet.spenders:
-                wallet.spenders.append(self)
-        else:
+        if not wallet:
             wallet = models.Wallet(address=address)
-            wallet.spenders.append(self)
+        if self.wallets.count() == 0:
+            self.main_wallet = wallet
+        if not self in wallet.spenders:
+                wallet.spenders.append(self)
 
     def add_skill(self, title):
         if not self.skills.filter_by(title=title).first():

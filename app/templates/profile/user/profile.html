@@ -90,8 +90,9 @@
 <div class="control has-icons-left">
 <div id="wallet-select" class="select is-centered is-fullwidth is-medium" style="color: black;margin-bottom: 5px; border-radius: 10px;">
   <select style="color: black;" class="is-cloudy">
-    <option>0x49a71890aea5A751E30e740C504f2E9683f347bC</option>
-    <option>0x49a71890aea5A751E30e740C504f2E9683f347bC</option>
+    {% for wallet in user.wallets %}
+    <option {% if user.main_wallet == wallet %}selected{% endif %}>{{wallet.address}}</option>
+    {% endfor %}
   </select>
 </div>
 <span class="icon is-large is-left">

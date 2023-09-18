@@ -89,7 +89,6 @@
           <option value="Unspecified" selected>Unspecified</option>
           <option {% if user.gender == "Male" %} selected {% endif %} value="Male">Male</option>
           <option {% if user.gender == "Female" %} selected {% endif %} value="Female">Female</option>
-          <option {% if user.gender == "Other" %} selected {% endif %} value="Other">Other</option>
       </select>
     </div>
     <div id="feedback-gender" class="feedback" class="feedback">
@@ -131,6 +130,17 @@
   </div>
 
   <br>
+
+
+  <div id="wallets">
+      <h1><b>Wallets</b></h1>
+    </div>
+      <div id="feedback-wallets" class="feedback">
+        <div class="message"></div>
+      </div>
+
+  <br id="wallets-anchor">
+
 
 </div>
 </section>

@@ -6,8 +6,9 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 class ERC360TokenId(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
-	owner_id = db.Column(db.Integer, db.ForeignKey('wallet.id', ondelete='CASCADE'))
-	owner = db.relationship("Wallet", foreign_keys=[owner_id])
+
+	wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id', ondelete='CASCADE'))
+	owner = db.relationship("Wallet", foreign_keys=[wallet_id], backref="erc360_token_ids")
 	
 	amount = db.Column(db.Integer) # Amount
 

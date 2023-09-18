@@ -1,4 +1,4 @@
-{% for erc360 in user.erc360s %}
+{% for erc360 in user.main_wallet.erc360s %}
         {% with profile=erc360 %}
         {% include 'profile/mini-profile.html' %}
         {% endwith %}
