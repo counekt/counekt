@@ -3,6 +3,8 @@ import app.models as models
 from app.models.base import Base
 from eth_utils import keccak
 from eth_abi import encode
+from sqlalchemy.ext.hybrid import hybrid_property
+
 
 class Permit(db.Model, Base):
 
@@ -12,8 +14,17 @@ class Permit(db.Model, Base):
 	bytes = db.Column(db.LargeBinary(length=32)) # byte name of permit
 
 	parent_id = db.Column(db.Integer, db.ForeignKey('permit.id', ondelete='CASCADE'))
-	parent = db.relationship("Permit",backref="children",remote_side=[id])
+	_parent = db.relationship("Permit",backref="children",remote_side=[id])
 	
+	@hybrid_property
+	def parent(self):
+		return self._parent or self 
+
+	@parent.setter
+	def parent(self,new_parent):
+		self._parent = new_parent if new_parent else None
+
+
 	@property
 	def title(self):
 		return {PERMITS[0]:"Master Permit",
