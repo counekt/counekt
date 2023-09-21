@@ -66,7 +66,7 @@ abstract contract Administrable is Context {
     /// @param permit The name of the permit to be checked for.
     /// @param account The address to be checked for.
     function hasPermit(address account,bytes32 permit) public view returns(bool) {
-        return _hasPermit[permit][account];
+        return permit == bytes32(0) ? _hasPermit[bytes32(0)][account] : _hasPermit[permit][account] || isPermitAdmin(account,permit);
     }
 
     /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.
