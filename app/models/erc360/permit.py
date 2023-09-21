@@ -22,8 +22,7 @@ class Permit(db.Model, Base):
 
 	@parent.setter
 	def parent(self,new_parent):
-		self._parent = new_parent if new_parent else None
-
+		self._parent = new_parent if new_parent != self else None
 
 	@property
 	def title(self):
