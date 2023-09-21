@@ -1,0 +1,22 @@
+<!-- This template can also be used with javascript. Just include it with jinja and use the method called .replace to fill in the below variables.
+ -->
+<div class="subprofile box" id="{{id}}">
+        <div class="subprofile-image-wrap">
+        <a class="subprofile-image" href="{{href or 'javascript:void(0);'}}" {% if not href %}style="pointer-events: none; cursor: none;"{% endif %}>
+            {% if photo_src %}
+            <img alt draggable="false" class="subprofile-image-content" src="{{photo_src}}">
+            {% else %}
+            <span class="icon is-large"><i class="{{icon}} fa-lg" aria-hidden="true"></i></span>
+            {% endif %}
+        </a>
+      </div>
+        <div class="subprofile-content">
+          <a class="subprofile-identity" href="{{href or 'javascript:void(0);'}}" {% if not href %}style="pointer-events: none; cursor: none;"{% endif %}>
+            <span class="subprofile-name selectable"><b>{{title}}</b></span>
+            <br>
+            <span class="subprofile-username selectable">{{subtitle}}</span>
+          </a>
+          <br>
+        <span class="subprofile-bio selectable" maxlenght="30">{{text}}</span>
+      </div>
+</div>

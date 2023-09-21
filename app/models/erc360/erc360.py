@@ -58,9 +58,8 @@ class ERC360(db.Model, Base, LocationBase):
 
     def __init__(self,creator,**kwargs):
         super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
-        admin_permit = models.Permit(bytes=b'\x00')
-        admin_permit.holders.append(creator)
         self.timeline_last_updated_at = 0
+        models.Permit.create_initial_permits(self,creator)
         # do custom initialization here
         self.photo = Photo(filename="photo", path=f"static/erc360s/{self.address}/photo/", replacement="/static/images/erc360.jpg")
 

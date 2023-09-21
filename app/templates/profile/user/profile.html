@@ -88,7 +88,7 @@
   </div>
 
 <div class="control has-icons-left">
-<div id="wallet-select" class="select is-centered is-fullwidth is-medium" style="color: black;margin-bottom: 5px; border-radius: 10px;">
+<div id="wallet-select" class="select is-centered is-fullwidth is-medium" style="color: black;margin-bottom: 5px; border-radius: 10px;" disabled>
   <select style="color: black;" class="is-cloudy">
     {% for wallet in user.wallets %}
     <option {% if user.main_wallet == wallet %}selected{% endif %}>{{wallet.address}}</option>

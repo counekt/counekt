@@ -124,6 +124,10 @@ class User(UserMixin, db.Model, Base, LocationBase):
         return all([title in [skill.title for skill in self.skills.all()] for title in titles])
 
     @property
+    def amount_of_wallets(self):
+        return len(self.wallets)
+
+    @property
     def dname(self):
         return self.name or self.username
 
