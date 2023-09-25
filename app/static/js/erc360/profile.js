@@ -13,9 +13,6 @@ $(".subprofile").on('click', function() {
     var href = $(this).find('.subprofile-identity').attr('href');
     if (href) {window.location.href = href;}
 }
-else {
-    getSelection().empty();
-}
 
 });
 

@@ -3,6 +3,7 @@ from app.models.base import Base
 import app.models as models
 from sqlalchemy import desc, TIMESTAMP, func, select
 from datetime import datetime
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
 spenders  = db.Table('spenders',
                   db.Column('spender_id', db.Integer, db.ForeignKey('user.id')),
@@ -19,18 +20,27 @@ class Wallet(db.Model, Base):
     address = db.Column(db.String(42)) # ETH token address
 
     spenders = db.relationship(
-        'User', secondary=spenders, backref="wallets", lazy='dynamic', cascade='all,delete') 
+        'User', secondary=spenders, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic', cascade='all,delete') 
 
     permits = db.relationship(
-        'Permit', secondary=_permits, backref="wallets", lazy='dynamic', cascade='all,delete') 
+        'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic', cascade='all,delete') 
 
     @classmethod
-    def register(cls,spender,address):
-        wallet = cls.query.filter(cls.address==address,cls.spenders.any(models.User.id==spender.id)).first()
+    def register(cls,address,spender):
+        query = cls.query.filter(cls.address==address).first()
         if not wallet:
             wallet = cls(address=address)
-            spender.wallets.append(wallet)
+        if spender and not spender in wallet.spenders:
+            wallet.spenders.append(spender)
         return wallet
+
+    @hybrid_method
+    def has_permit(self, erc360, hex):
+        permit = models.Permit.query.filter_by(bytes=bytes.fromhex(hex)).first()
+        return erc360.permits\
+        .join(_permits, models.Permit.id == _permits.c.permit_id)\
+        .join(models.Wallet, self.id == _permits.c.wallet_id)\
+        .filter(permit.is_self_inclusive_descendant_of(models.Permit)).first() != None if permit else False
 
     @property
     def erc360s_from_permits(self):

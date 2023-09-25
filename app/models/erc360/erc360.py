@@ -8,6 +8,7 @@ from flask import url_for
 import app.models as models
 import json
 import app.funcs as funcs
+from app.models.profile.wallet import _permits
 
 class ERC360(db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
@@ -38,7 +39,7 @@ class ERC360(db.Model, Base, LocationBase):
 
     token_ids = db.relationship(
         'ERC360TokenId', backref='erc360', lazy='dynamic',
-        foreign_keys='ERC360TokenId.erc360_id',order_by="ERC360TokenId.creation_clock",passive_deletes=True)
+        foreign_keys='ERC360TokenId.erc360_id',order_by="ERC360TokenId.token_id",passive_deletes=True)
 
     dividends = db.relationship(
         'Dividend', backref='erc360', lazy='dynamic',
@@ -166,28 +167,30 @@ class ERC360(db.Model, Base, LocationBase):
     def update_ownership(self):
         contract = self.get_w3_contract()
         # Register new token id's
-        updated_token_ids = contract.events.NewToken.getLogs(fromBlock=self.token_ids_last_updated_at or self.block)
-        for s in updated_token_ids:
-            if s.args.status == True: # Register new token id's
-                if not self.token_ids.filter_by(identity=s.args.tokenId).first():
-                    token_id_info = contract.functions.infoByTokenId(s.args.tokenId).call()
-                    token_id = models.ERC360TokenId(identity=s.args.tokenId,owner_address=token_id_info[1],creation_clock=token_id_info[2])
-                    token_id.amount = token_id_info[0]
-                    token_id.creation_timestamp = w3.eth.getBlock(s.blockNumber).timestamp
-                    self.token_ids.append(token_id)
-                    if ns.blockNumber > int(self.token_ids_last_updated_at or self.block):
-                        self.token_ids_last_updated_at = s.blockNumber
-            else: # Register expired token id's
-                if not self.token_ids.filter_by(identity=s.args.tokenId).first().is_expired:
-                    expiration_clock = contract.functions.expirationOf(s.args.tokenId).call()
-                    token_id = self.token_ids.filter_by(identity=es.args.tokenId).first()
-                    token_id.expiration_clock = expiration_clock
-                    token_id.expiration_timestamp = w3.eth.getBlock(es.blockNumber).timestamp
-            if s.blockNumber > int(self.token_ids_last_updated_at or self.block):
-                self.token_ids_last_updated_at = s.blockNumber
+        updated_token_ids = contract.events.NewTokenId.getLogs(fromBlock=self.token_ids_last_updated_at or self.block)
+        for ntid in updated_token_ids:
+            # IF NOT ALREADY THERE
+            if not self.token_ids.filter_by(token_id=ntid.args.tokenId).first():
+                timestamp = w3.eth.getBlock(ntid.blockNumber).timestamp
+                # REGISTER OLD TOKEN-IDS OF ACCOUNT AS EXPIRED
+                non_expired = models.ERC360TokenId.query.filter(not models.ERC360TokenId.is_expired)
+                for ne in non_expired:
+                    ne.expire(contract.functions.expirationOf(ne.token_id))
+                    ne.expiration_timestamp = timestamp
+                
+                # REGISTER NEW TOKEN-ID
+                amount = contract.functions.amountOf(ntid.args.tokenId).call()
+                wallet = models.Wallet.register(address=ntid.args.account)
+                token_id = models.ERC360TokenId(token_id=ntid.args.tokenId,wallet=wallet,amount=amount)
+                token_id.creation_timestamp = timestamp
+                self.token_ids.append(token_id)
+
+            if ntid.blockNumber > int(self.token_ids_last_updated_at or self.block):
+                self.token_ids_last_updated_at = ntid.blockNumber
+            
         # For reference to decide which token id's are currently valid and which ones aren't
         self.current_clock = contract.functions.currentClock().call()
-        self.total_amount = contract.functions.totalSupplyByClock(self.current_clock).call()
+        self.total_amount = contract.functions.totalSupplyAt(self.current_clock).call()
 
     def update_structure(self):
         contract = self.get_w3_contract()
@@ -223,15 +226,15 @@ class ERC360(db.Model, Base, LocationBase):
                 self.referendum_votes_last_updated_at = ns.blockNumber
 
     def get_w3_contract(self):
-        contract = w3.eth.contract(address=self.address.hexadecimal,abi=funcs.get_abi())
+        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         return contract
 
-    def get_token_id_by_clock(self,owner_address,clock):
-        return self.token_ids.filter(models.ERC360TokenId.owner.address.has(hexadecimal=owner_address)).filter(models.ERC360TokenId.creation_clock <= self.current_clock < models.expiration_clock).first()
+    def get_token_id_by_clock(self,account,clock):
+        return self.token_ids.filter(models.ERC360TokenId.wallet.has(address=account)).filter(models.ERC360TokenId.token_id <= self.current_clock < models.ERC360TokenId.expiration_clock).first() 
 
     @hybrid_property
-    def valid_token_ids(self):
-        return self.token_ids.filter(self.current_clock < models.ERC360TokenId.expiration_clock).order_by(models.ERC360TokenId.amount.desc()) if self.token_ids.first() else []
+    def current_token_ids(self):
+        return self.token_ids.filter(not models.ERC360TokenId.is_expired).order_by(models.ERC360TokenId.amount.desc()) if self.token_ids.first() else []
 
     @property
     def href(self):

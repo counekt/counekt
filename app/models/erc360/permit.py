@@ -3,7 +3,7 @@ import app.models as models
 from app.models.base import Base
 from eth_utils import keccak
 from eth_abi import encode
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 
 class Permit(db.Model, Base):
@@ -43,6 +43,12 @@ class Permit(db.Model, Base):
 			permit = Permit(bytes=p_bytes)
 			permit.parent = master_permit
 			erc360.permits.append(permit)
+
+	@hybrid_method
+	def is_self_inclusive_descendant_of(self, ancestor):
+		return True if self.id == ancestor.id \
+		else self.id == ancestor.id if self.bytes == PERMITS[0] \
+		else self.parent.is_self_inclusive_descendant_of(ancestor)
 
 
 	def __repr__(self):

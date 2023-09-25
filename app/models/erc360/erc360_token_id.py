@@ -8,24 +8,27 @@ class ERC360TokenId(db.Model, Base):
 	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
 
 	wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id', ondelete='CASCADE'))
-	owner = db.relationship("Wallet", foreign_keys=[wallet_id], backref="erc360_token_ids")
+	wallet = db.relationship("Wallet", foreign_keys=[wallet_id], backref="erc360_token_ids")
 	
 	amount = db.Column(db.Integer) # Amount
 
 	""" Representation as Big Integers will likely run out year 2262, Fri on Apr 11 """
+	MAX_INT = 9223372036854775807
 	
 	# Used for representation in accordance to reality
 	creation_timestamp = db.Column(db.Integer) # ETH Block push timestamp
-	expiration_timestamp = db.Column(db.Integer, default=9223372036854775807)
+	expiration_timestamp = db.Column(db.Integer, default=MAX_INT)
 
 	# Used for representation in accordance to the contract machinery
-	creation_clock = db.Column(db.BigInteger) # Clock push time
-	expiration_clock = db.Column(db.BigInteger, default=9223372036854775807) # Token Id Clock expiration time
+	token_id = db.Column(db.BigInteger) # Clock push time and identity
+	expiration_clock = db.Column(db.BigInteger, default=MAX_INT) # Token Id Clock expiration time
 
-	@property
+	@hybrid_property
 	def is_expired(self):
-		return self.expiration_clock != 9223372036854775807
+		return self.expiration_clock != MAX_INT
 
+	def expire(self,clock):
+		expiration_clock = min(clock,MAX_INT)
 
 	def __repr__(self):
 		return '<ERC360TokenId {}>'.format(self.creation_clock)

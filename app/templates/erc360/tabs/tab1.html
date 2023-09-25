@@ -1,3 +1,5 @@
-{% if True %}
-<p> What... </p>
-{% endif %}
+{% for token_id in erc360.current_token_ids %}
+	{% with title=token_id.wallet.address, subtitle="", icon = "fa fa-pie-chart", id="" %}
+	{% include 'extras/entity.html' %}
+	{% endwith %}
+{% endfor %}

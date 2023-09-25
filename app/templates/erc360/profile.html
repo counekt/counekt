@@ -22,7 +22,7 @@
               <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
             {% endif %}
 
-              {% if True and 'erc360.group.member_has_permission(current_user,"permissionToEditPage")' %}
+              {% if current_user.has_wallet_with_permit(erc360,"0"*64) %}
                 <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit ERC360</button>
               {% endif %}
           </div>
@@ -90,7 +90,7 @@
 <script src="/static/js/erc360/structure.js"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/erc360/erc360.css">
-
+<link rel="stylesheet" href="/static/css/extras/entity.css">
 <link rel="stylesheet" href="/static/css/profile/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profile/edit.css">
 <link rel="stylesheet" href="/static/css/profile/photo.css">
@@ -177,7 +177,7 @@ $("#join-button").hover(
 
 </script>
 <script type="text/javascript">
-  var handle = "{{erc360.handle}}";
+  var address = "{{erc360.address}}";
 
   function load_map_js() {
   var map = L.map('map').setView({% if erc360.latitude and erc360.longitude %}[{{erc360.latitude}}, {{erc360.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
@@ -345,14 +345,14 @@ function sendERC360Invites() {
 
     $.post({
       type: "POST",
-      url: "/€"+handle+"/invite/",
+      url: "/€"+address+"/invite/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
         var status = response["status"];
-        if (status === "success") { location.replace("/€"+response["handle"]+"/"); }
+        if (status === "success") { location.replace("/€"+response["address"]+"/"); }
         else{message(status, response["box_id"], true);}
         
       }});
@@ -365,22 +365,22 @@ load_add_members_js();
 <script type="text/javascript">
 
   $(document).on('click', '#profile-image a', function(e) {
-    redirect({id:"erc360-photo"},"Profile photo", "/€{{erc360.handle}}/photo/", changeToPhoto);
+    redirect({id:"erc360-photo"},"Profile photo", "/€{{erc360.address}}/photo/", changeToPhoto);
       e.preventDefault();
   });
 
   $(document).on('click', '#timeline-button', function(e) {
-      redirect({id:"erc360-timeline"},"ERC360 Timeline", "/€"+handle+"/timeline/", changeToTimeline);
+      redirect({id:"erc360-timeline"},"ERC360 Timeline", "/€"+address+"/timeline/", changeToTimeline);
       e.preventDefault();
     });
 
   $(document).on('click', '#ownership-button', function(e) {
-      redirect({id:"erc360-ownership"},"ERC360 Ownership", "/€"+handle+"/ownership/", changeToOwnership);
+      redirect({id:"erc360-ownership"},"ERC360 Ownership", "/€"+address+"/ownership/", changeToOwnership);
       e.preventDefault();
     });
 
   $(document).on('click', '#structure-button', function(e) {
-      redirect({id:"erc360-structure"},"ERC360 Structure", "/€"+handle+"/structure/", changeToStructure);
+      redirect({id:"erc360-structure"},"ERC360 Structure", "/€"+address+"/structure/", changeToStructure);
       e.preventDefault();
     });
 
@@ -390,29 +390,29 @@ load_add_members_js();
   });
 
   $(document).on('click', '#members-button', function(e) {
-    redirect({id:"erc360-members"},"ERC360 Members", "/€"+handle+"/members/", changeToMembers);
+    redirect({id:"erc360-members"},"ERC360 Members", "/€"+address+"/members/", changeToMembers);
     e.preventDefault();
   });
 
   $(document).on('click', '#roles-button', function(e) {
-    redirect({id:"erc360-roles"},"ERC360 Permits", "/€"+handle+"/roles/", changeRoles);
+    redirect({id:"erc360-roles"},"ERC360 Permits", "/€"+address+"/roles/", changeRoles);
     e.preventDefault();
   });
 
 $(document).on('click', '.close', function() {
-  redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.handle}}/", changeToProfile);
+  redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
 });
 
 $(document).on('click', '.modal-background', function() {
-    redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.handle}}/", changeToProfile);
+    redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
 });
 
 $(document).on("click", '#reload-timeline', function() {
-  update_timeline("{{erc360.handle}}");
+  update_timeline("{{erc360.address}}");
 });
 
 $(document).on("click", '#reload-ownership', function() {
-  update_ownership("{{erc360.handle}}");
+  update_ownership("{{erc360.address}}");
 });
 
 $(window).on("popstate", function() {
@@ -506,20 +506,20 @@ function changeRoles() {
 
 
 {% if request.url_rule.endpoint == 'erc360.edit' %}
-window.history.replaceState({id:"edit-erc360"},"Edit ERC360", "/€{{erc360.handle}}/edit/");
+window.history.replaceState({id:"edit-erc360"},"Edit ERC360", "/€{{erc360.address}}/edit/");
 {% elif request.url_rule.endpoint == 'erc360.timeline' %}
-window.history.replaceState({id:"erc360-timeline"},"erc360 Timeline", "/€{{erc360.handle}}/timeline/");
+window.history.replaceState({id:"erc360-timeline"},"erc360 Timeline", "/€{{erc360.address}}/timeline/");
 {% elif request.url_rule.endpoint == 'erc360.ownership' %}
-window.history.replaceState({id:"erc360-ownership"},"erc360 Ownership", "/€{{erc360.handle}}/ownership/");
+window.history.replaceState({id:"erc360-ownership"},"erc360 Ownership", "/€{{erc360.address}}/ownership/");
   loadOwnershipChart();
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
-window.history.replaceState({id:"erc360-structure"},"erc360 Structure", "/€{{erc360.handle}}/structure/");
+window.history.replaceState({id:"erc360-structure"},"erc360 Structure", "/€{{erc360.address}}/structure/");
 {% elif request.url_rule.endpoint == 'erc360.photo' %}
-window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.handle}}/");
+window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/");
 {% elif request.url_rule.endpoint == 'erc360.add_members' %}
-window.history.replaceState({id:"erc360-add-members"},"erc360 Add Members", "/€{{erc360.handle}}/add-members/");
+window.history.replaceState({id:"erc360-add-members"},"erc360 Add Members", "/€{{erc360.address}}/add-members/");
 {% elif request.url_rule.endpoint == 'erc360.roles' %}
-window.history.replaceState({id:"erc360-add-roles"},"erc360 Add Roles", "/€{{erc360.handle}}/add-roles/");
+window.history.replaceState({id:"erc360-add-roles"},"erc360 Add Roles", "/€{{erc360.address}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"erc360-profile"},"Profile", "./");
 {% endif %}

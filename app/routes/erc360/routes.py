@@ -62,7 +62,7 @@ def create():
             tx_hash = flask_request.form.get("tx");
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-            wallet = models.Wallet.register(spender=current_user,address=receipt.contractAddress)
+            wallet = models.Wallet.register(address=receipt.contractAddress,spender=current_user)
             erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet)
 
             if show_location:
@@ -189,7 +189,7 @@ def edit(address):
 @ bp.route("/erc360/<address>/photo/", methods=["GET"])
 @ bp.route("/€<address>/photo/", methods=["GET"])
 def photo(address):
-    erc360 = models.ERC360.query.filter_by(handle=handle).first()
+    erc360 = models.ERC360.query.filter_by(address=address).first()
     if not erc360:
         abort(404)
     return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
@@ -197,8 +197,8 @@ def photo(address):
 
 @ bp.route("/erc360/<address>/timeline/", methods=["GET"])
 @ bp.route("/€<address>/timeline/", methods=["GET"])
-def timeline(handle):
-    erc360 = models.ERC360.query.filter_by(handle=handle).first()
+def timeline(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first()
     if not erc360:
         abort(404)
     return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
@@ -225,7 +225,7 @@ def get_timeline(address):
 @ bp.route("/erc360/<address>/ownership/", methods=["GET"])
 @ bp.route("/€<address>/ownership/", methods=["GET"])
 def ownership(address):
-    erc360 = models.ERC360.query.filter_by(handle=handle).first()
+    erc360 = models.ERC360.query.filter_by(address=address).first()
     if not erc360:
         abort(404)
     return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
@@ -243,12 +243,12 @@ def update_ownership(address):
 @bp.route("/erc360/<address>/get/ownership/", methods=["GET"])
 @bp.route("/€<address>/get/ownership/", methods=["GET"])
 def get_ownership(address):
-    erc360 = models.ERC360.query.filter_by(handle=handle).first_or_404()
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/load-ownership-chart.html", erc360=erc360)
 
 @ bp.route("/erc360/<address>/structure/", methods=["GET"])
 @ bp.route("/€<address>/structure/", methods=["GET"])
-def structure(handle):
+def structure(address):
     erc360 = models.ERC360.query.filter_by(address=address).first()
     if not erc360:
         abort(404)

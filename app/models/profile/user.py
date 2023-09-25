@@ -123,6 +123,9 @@ class User(UserMixin, db.Model, Base, LocationBase):
     def has_skills(self, titles):
         return all([title in [skill.title for skill in self.skills.all()] for title in titles])
 
+    def has_wallet_with_permit(self, erc360, hex):
+        return self.wallets.filter(models.Wallet.has_permit(erc360,hex)).first() != None
+
     @property
     def amount_of_wallets(self):
         return len(self.wallets)

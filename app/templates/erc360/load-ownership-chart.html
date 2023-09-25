@@ -2,18 +2,18 @@
   function loadOwnershipChart() {
     console.log("{{erc360.symbol}}");
   const ctx = document.getElementById('myChart');
-  {% set valid_shards = erc360.valid_shards %}
+  {% set current_token_ids = erc360.current_token_ids %}
   new Chart(ctx, {
     type: 'pie',
     data: {
   labels: [
-    {% for s in valid_shards %}'{{s.owner.username}} ({{s.owner_address}})',{% endfor %}
+    {% for t_id in current_token_ids %}'{% if wallet.spenders.count() == 1  %}{{t_id.wallet.spenders.first().username}}{% endif %} {{t_id.wallet.address}}',{% endfor %}
   ],
   datasets: [{
     label: 'Amount',
-    data: [{% for s in valid_shards %}{{s.amount}},{% endfor %}],
+    data: [{% for t_id in current_token_ids %}{{t_id.amount}},{% endfor %}],
     backgroundColor: [
-      {% for s in valid_shards %}'rgb(255, 205, 86)',{% endfor %}
+      {% for t_id in current_token_ids %}'rgb(255, 205, 86)',{% endfor %}
     ],
     hoverOffset: 4
   }]
