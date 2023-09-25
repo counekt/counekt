@@ -12,6 +12,71 @@ from app.routes.erc360 import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import app.models as models
 
+@ bp.route("/erc360/<address>/", methods=["GET", "POST"])
+@ bp.route("/€<address>/", methods=["GET", "POST"])
+def erc360(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/profile.html", erc360=erc360, navbar=True, background=True, size="medium", models=models)
+
+@ bp.route("/erc360/<address>/timeline/", methods=["GET"])
+@ bp.route("/€<address>/timeline/", methods=["GET"])
+def timeline(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/structure/", methods=["GET"])
+@ bp.route("/€<address>/structure/", methods=["GET"])
+def structure(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/ownership/", methods=["GET"])
+@ bp.route("/€<address>/ownership/", methods=["GET"])
+def ownership(address):
+    return erc360(address)
+
+@bp.route("/erc360/<address>/mint/", methods=["GET","POST"])
+@bp.route("/€<address>/mint/", methods=["GET","POST"])
+def mint(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/photo/", methods=["GET"])
+@ bp.route("/€<address>/photo/", methods=["GET"])
+def photo(address):
+   return erc360(address)
+
+@ bp.route("/erc360/<address>/update/timeline/", methods=["POST"])
+@ bp.route("/€<address>/update/timeline/", methods=["POST"])
+def update_timeline(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first()
+    if not erc360:
+        abort(404)
+    erc360.update_timeline()
+    db.session.commit()
+    return json.dumps({'status': 'success'})
+
+
+@bp.route("/erc360/<address>/get/timeline/", methods=["GET"])
+@bp.route("/€<address>/get/timeline/", methods=["GET"])
+def get_timeline(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/timeline.html", erc360=erc360)
+
+
+@ bp.route("/erc360/<address>/update/ownership/", methods=["POST"])
+@ bp.route("/€<address>/update/ownership/", methods=["POST"])
+def update_ownership(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first()
+    if not erc360:
+        abort(404)
+    erc360.update_ownership()
+    db.session.commit()
+    return json.dumps({'status': 'success'})
+
+@bp.route("/erc360/<address>/get/ownership/", methods=["GET"])
+@bp.route("/€<address>/get/ownership/", methods=["GET"])
+def get_ownership(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/load-ownership-chart.html", erc360=erc360)
+
 @bp.route("/create/erc360/", methods=["GET", "POST"])
 @login_required
 def create():
@@ -111,16 +176,6 @@ def create():
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 
-
-@ bp.route("/erc360/<address>/", methods=["GET", "POST"])
-@ bp.route("/€<address>/", methods=["GET", "POST"])
-def erc360(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    #if not erc360 or (not erc360.public and not current_user in erc360.group.members) and not current_user in erc360.viewers:
-        #abort(404)
-    return render_template("erc360/profile.html", erc360=erc360, navbar=True, background=True, size="medium", models=models)
-
-
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
 @ bp.route("/€<address>/edit/", methods=["GET", "POST"])
 @login_required
@@ -184,73 +239,3 @@ def edit(address):
         db.session.commit()
         return json.dumps({'status': 'success', 'handle': handle})
     return render_template("erc360/profile.html", erc360=erc360, background=True, navbar=True, size="medium", noscroll=True)
-
-
-@ bp.route("/erc360/<address>/photo/", methods=["GET"])
-@ bp.route("/€<address>/photo/", methods=["GET"])
-def photo(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
-        abort(404)
-    return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
-
-
-@ bp.route("/erc360/<address>/timeline/", methods=["GET"])
-@ bp.route("/€<address>/timeline/", methods=["GET"])
-def timeline(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
-        abort(404)
-    return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
-
-
-@ bp.route("/erc360/<address>/update/timeline/", methods=["POST"])
-@ bp.route("/€<address>/update/timeline/", methods=["POST"])
-def update_timeline(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
-        abort(404)
-    erc360.update_timeline()
-    db.session.commit()
-    return json.dumps({'status': 'success'})
-
-
-@bp.route("/erc360/<address>/get/timeline/", methods=["GET"])
-@bp.route("/€<address>/get/timeline/", methods=["GET"])
-def get_timeline(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/timeline.html", erc360=erc360)
-
-
-@ bp.route("/erc360/<address>/ownership/", methods=["GET"])
-@ bp.route("/€<address>/ownership/", methods=["GET"])
-def ownership(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
-        abort(404)
-    return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
-
-@ bp.route("/erc360/<address>/update/ownership/", methods=["POST"])
-@ bp.route("/€<address>/update/ownership/", methods=["POST"])
-def update_ownership(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
-        abort(404)
-    erc360.update_ownership()
-    db.session.commit()
-    return json.dumps({'status': 'success'})
-
-@bp.route("/erc360/<address>/get/ownership/", methods=["GET"])
-@bp.route("/€<address>/get/ownership/", methods=["GET"])
-def get_ownership(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/load-ownership-chart.html", erc360=erc360)
-
-@ bp.route("/erc360/<address>/structure/", methods=["GET"])
-@ bp.route("/€<address>/structure/", methods=["GET"])
-def structure(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
-        abort(404)
-    return render_template("erc360/profile.html", erc360=erc360, noscroll=True, background=True, navbar=True, size="medium")
-

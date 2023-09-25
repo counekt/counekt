@@ -73,6 +73,8 @@
 {% include "erc360/timeline.html" %}
 {% elif request.url_rule.endpoint == 'erc360.ownership' %}
 {% include "erc360/ownership.html" %}
+{% elif request.url_rule.endpoint == 'erc360.mint' %}
+{% include "erc360/mint.html" %}
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
 {% include "erc360/structure.html" %}
 {% elif request.url_rule.endpoint == 'erc360.add_members' %}
@@ -379,6 +381,12 @@ load_add_members_js();
       e.preventDefault();
     });
 
+   $(document).on('click', '#mint-button', function(e) {
+      redirect({id:"mint-erc360"},"ERC360 Mint", "/€"+address+"/mint/", changeToMintERC360);
+      e.preventDefault();
+    });
+
+
   $(document).on('click', '#structure-button', function(e) {
       redirect({id:"erc360-structure"},"ERC360 Structure", "/€"+address+"/structure/", changeToStructure);
       e.preventDefault();
@@ -386,16 +394,6 @@ load_add_members_js();
 
   $(document).on('click', '#edit-button', function(e) {
     redirect({id:"edit-erc360"},"Edit ERC360", "/€"+address+"/edit/", changeToEdit);
-    e.preventDefault();
-  });
-
-  $(document).on('click', '#members-button', function(e) {
-    redirect({id:"erc360-members"},"ERC360 Members", "/€"+address+"/members/", changeToMembers);
-    e.preventDefault();
-  });
-
-  $(document).on('click', '#roles-button', function(e) {
-    redirect({id:"erc360-roles"},"ERC360 Permits", "/€"+address+"/roles/", changeRoles);
     e.preventDefault();
   });
 
@@ -427,12 +425,8 @@ $(window).on("popstate", function() {
     changeToPhoto();
   }
 
-  else if (window.history.state.id == "erc360-add-members") {
-    changeToMembers();
-  }
-
-  else if (window.history.state.id == "erc360-roles") {
-    changeRoles();
+  else if (window.history.state.id == "mint-erc360") {
+    changeToMintERC360();
   }
 
   else if (window.history.state.id == "erc360-timeline") {
@@ -490,36 +484,32 @@ function changeToPhoto() {
   $(document.body).addClass('noscroll');
 }
 
-function changeToMembers() {
+function changeToMintERC360() {
+  $("#modal-box").empty();
   $("#modal-box").append(`
-    {% include "profile/add-members.html" %}`);
-    load_add_members_js();
+    {% include "erc360/mint.html" %}`);
   $(document.body).addClass('noscroll');
 }
 
-function changeRoles() {
-  $("#modal-box").append(`
-    {% include "profile/add-roles.html" %}`);
-  load_add_members_js()
-  $(document.body).addClass('noscroll');
-}
 
 
 {% if request.url_rule.endpoint == 'erc360.edit' %}
 window.history.replaceState({id:"edit-erc360"},"Edit ERC360", "/€{{erc360.address}}/edit/");
 {% elif request.url_rule.endpoint == 'erc360.timeline' %}
-window.history.replaceState({id:"erc360-timeline"},"erc360 Timeline", "/€{{erc360.address}}/timeline/");
+window.history.replaceState({id:"erc360-timeline"},"ERC360 Timeline", "/€{{erc360.address}}/timeline/");
 {% elif request.url_rule.endpoint == 'erc360.ownership' %}
-window.history.replaceState({id:"erc360-ownership"},"erc360 Ownership", "/€{{erc360.address}}/ownership/");
+window.history.replaceState({id:"erc360-ownership"},"ERC360 Ownership", "/€{{erc360.address}}/ownership/");
   loadOwnershipChart();
+{% elif request.url_rule.endpoint == 'erc360.mint' %}
+window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.address}}/structure/");
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
-window.history.replaceState({id:"erc360-structure"},"erc360 Structure", "/€{{erc360.address}}/structure/");
+window.history.replaceState({id:"erc360-structure"},"ERC360 Structure", "/€{{erc360.address}}/structure/");
 {% elif request.url_rule.endpoint == 'erc360.photo' %}
 window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/");
 {% elif request.url_rule.endpoint == 'erc360.add_members' %}
-window.history.replaceState({id:"erc360-add-members"},"erc360 Add Members", "/€{{erc360.address}}/add-members/");
+window.history.replaceState({id:"erc360-add-members"},"ERC360 Add Members", "/€{{erc360.address}}/add-members/");
 {% elif request.url_rule.endpoint == 'erc360.roles' %}
-window.history.replaceState({id:"erc360-add-roles"},"erc360 Add Roles", "/€{{erc360.address}}/add-roles/");
+window.history.replaceState({id:"erc360-add-roles"},"ERC360 Add Roles", "/€{{erc360.address}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"erc360-profile"},"Profile", "./");
 {% endif %}
