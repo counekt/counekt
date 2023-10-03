@@ -8,8 +8,13 @@ $(document).on('keypress','#mint-amount-input',function(event) {
   });
 
 $(document).on('focusout','#mint-amount-input',function(event) {
-  var amount = $('#mint-amount-input').val();
-  if (amount) {$('#mint-amount-input').val(parseInt(amount));}
+  var amount = parseInt($('#mint-amount-input').val());
+  if (amount) {
+    $('#mint-amount-input').val(amount);
+    $('#mint-amount-progress-bar').val(Math.log2(amount)||0);
+    $('#mint-amount-span').text(amount);
+  }
+
   
 });
 

@@ -25,10 +25,10 @@
     </div>
     <div class="field">
       <p class="control">
-        <progress class="progress" value="20" max="{{erc360.log_max_supply}}">Ay</progress>
+        <progress id="mint-amount-progress-bar" class="progress" value="20" max="{{erc360.log_max_supply}}">Ay</progress>
       </p>
       <p class="control">
-        <span class="text" style="float:left;">{{erc360.total_supply or 0}}</span>
+        <span id="mint-amount-span" class="text" style="float:left;">{{erc360.total_supply or 0}}</span>
         <span class="text" style="float:right;">2<sup>{{erc360.log_max_supply}}</sup>-1</span>
       </p>
   </div>
