@@ -92,6 +92,8 @@
 <script src="/static/js/profile/user/profile.js"></script>
 <script src="/static/js/erc360/profile.js"></script>
 <script src="/static/js/erc360/edit.js"></script>
+<script src="/static/js/erc360/mint.js"></script>
+
 <script src="/static/js/profile/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
@@ -485,7 +487,7 @@ changeToOwnership();
 window.history.replaceState({id:"erc360-ownership"},"ERC360 Ownership", "/€{{erc360.address}}/ownership/");
 {% elif request.url_rule.endpoint == 'erc360.mint' %}
 changeToMintERC360();
-window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.address}}/structure/");
+window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.address}}/mint/");
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
 changeToStructure();
 window.history.replaceState({id:"erc360-structure"},"ERC360 Structure", "/€{{erc360.address}}/structure/");

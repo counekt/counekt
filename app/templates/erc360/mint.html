@@ -10,7 +10,46 @@
       <p class="modal-card-title" id="header">Mint {{erc360.name}}</p>
   </header>
   <section id="mint-content" class="modal-card-body has-text-centered">
-      
+      <div>
+    <div id="amount">
+      <h1><b>Amount</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <a class="button is-static">
+            {{erc360.symbol}}
+          </a>
+        </p>
+      <p class="control">
+        <input id="mint-amount-input" class="input" type="text" placeholder="Amount to mint" min="1" max="{{2**256-1}}">
+      </p>
+    </div>
+    <div class="field">
+      <p class="control">
+        <progress class="progress" value="20" max="{{erc360.log_max_supply}}">Ay</progress>
+      </p>
+      <p class="control">
+        <span class="text" style="float:left;">{{erc360.total_supply or 0}}</span>
+        <span class="text" style="float:right;">2<sup>{{erc360.log_max_supply}}</sup>-1</span>
+      </p>
+  </div>
+    </div>
+      <div id="feedback-amount" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="amount-anchor">
+    <div id="to">
+      <h1><b>To</b></h1>
+      <div class="field has-addons has-addons-centered">
+      <p class="control">
+        <input class="input has-fixed-size" placeholder="Receiver of tokens" id="to-field" maxlength="42"></input>
+      </p>
+      </div>
+    </div>
+      <div id="feedback-description" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="description-anchor">
+    </div>
   </section>
 </div>
 </div>

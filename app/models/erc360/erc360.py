@@ -9,14 +9,16 @@ import app.models as models
 import json
 import app.funcs as funcs
 from app.models.profile.wallet import _permits
+import math
+
 
 class ERC360(db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)
     address = db.Column(db.String(42)) # ETH token address
     block = db.Column(db.Integer) # ETH block number
-    current_clock = db.Column(db.Integer) # Clock
-    total_amount = db.Column(db.Integer) # Total Amount of tokens
+    current_clock = db.Column(db.Integer, default=0) # Clock
+    total_supply = db.Column(db.Integer, default=0) # Total Amount of tokens
 
     events_last_updated_at = db.Column(db.Integer) # ETH block number
     token_ids_last_updated_at = db.Column(db.Integer) # ETH block number
@@ -190,7 +192,7 @@ class ERC360(db.Model, Base, LocationBase):
             
         # For reference to decide which token id's are currently valid and which ones aren't
         self.current_clock = contract.functions.currentClock().call()
-        self.total_amount = contract.functions.totalSupplyAt(self.current_clock).call()
+        self.total_supply = contract.functions.totalSupplyAt(self.current_clock).call()
 
     def update_structure(self):
         contract = self.get_w3_contract()
@@ -243,6 +245,15 @@ class ERC360(db.Model, Base, LocationBase):
     @hybrid_property
     def identifier(self):
         return self.address
+
+    @property
+    def log_total_supply(self):
+        return round(math.log2(self.total_supply or 1),1)
+
+    @hybrid_property
+    def log_max_supply(self):
+        return 256
+
 
     def __repr__(self):
         return "<ERC360 {}>".format(self.address)
