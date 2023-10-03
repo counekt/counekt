@@ -77,6 +77,70 @@ def get_ownership(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/load-ownership-chart.html", erc360=erc360)
 
+@ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
+@ bp.route("/€<address>/edit/", methods=["GET", "POST"])
+@login_required
+def edit(address):
+    if not address:
+        abort(404)
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    if not erc360:
+        abort(404)
+    if flask_request.method == 'POST':
+        name = flask_request.form.get("name")
+
+        description = flask_request.form.get("description")
+
+        public = bool(flask_request.form.get("public"))
+
+        show_location = int(flask_request.form.get("show-location"))
+        is_visible = int(bool(flask_request.form.get("visible")))
+        lat = flask_request.form.get("lat")
+        lng = flask_request.form.get("lng")
+
+        file = flask_request.files.get("photo")
+
+        if not name:
+            return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
+
+        if len(description.strip()) > 160:
+            return json.dumps({'status': 'Your corporatizable token\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
+
+        erc360.name = name
+        erc360.description = description.strip()
+        erc360.public = public
+
+        if show_location:
+
+            if not lat or not lng:
+                return json.dumps({'status': 'Coordinates must be filled in, if you want to show the location of your corporatizable token or for it to be visible on the map', 'box_id': 'location'})
+
+            location = funcs.reverse_geocode([lat, lng])
+            if not location:
+                return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
+            erc360.set_location(location=location)
+
+            erc360.show_location = True
+            if is_visible:
+                erc360.is_visible = True
+        else:
+            erc360.latitude = None
+            erc360.longitude = None
+            erc360.sin_rad_lat = None
+            erc360.cos_rad_lat = None
+            erc360.rad_lng = None
+            erc360.location_address = None
+            erc360.is_visible = False
+            erc360.show_location = False
+
+        if file:
+            erc360.profile_photo.save(file=file)
+
+        db.session.commit()
+        return json.dumps({'status': 'success', 'address': address})
+    return render_template("erc360/profile.html", erc360=erc360, models=models, background=True, navbar=True, size="medium", noscroll=True)
+
+
 @bp.route("/create/erc360/", methods=["GET", "POST"])
 @login_required
 def create():
@@ -175,67 +239,3 @@ def create():
         return json.dumps({'status': 'success', 'address': erc360.address})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
-
-@ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
-@ bp.route("/€<address>/edit/", methods=["GET", "POST"])
-@login_required
-def edit(address):
-    if not address:
-        abort(404)
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    if not erc360:
-        abort(404)
-    if flask_request.method == 'POST':
-        description = flask_request.form.get("description")
-
-        public = bool(flask_request.form.get("public"))
-
-        show_location = int(flask_request.form.get("show-location"))
-        is_visible = int(bool(flask_request.form.get("visible")))
-        lat = flask_request.form.get("lat")
-        lng = flask_request.form.get("lng")
-
-        file = flask_request.files.get("photo")
-
-        if not name:
-            return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
-
-        if not description:
-            return json.dumps({'status': 'Description must be filled in', 'box_id': 'description'})
-
-        if len(description.strip()) > 160:
-            return json.dumps({'status': 'Your corporatizable token\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
-
-        erc360.name = name
-        erc360.description = description.strip()
-        erc360.public = public
-
-        if show_location:
-
-            if not lat or not lng:
-                return json.dumps({'status': 'Coordinates must be filled in, if you want to show the location of your corporatizable token or for it to be visible on the map', 'box_id': 'location'})
-
-            location = funcs.reverse_geocode([lat, lng])
-            if not location:
-                return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
-            erc360.set_location(location=location)
-
-            erc360.show_location = True
-            if is_visible:
-                erc360.is_visible = True
-        else:
-            erc360.latitude = None
-            erc360.longitude = None
-            erc360.sin_rad_lat = None
-            erc360.cos_rad_lat = None
-            erc360.rad_lng = None
-            erc360.location_address = None
-            erc360.is_visible = False
-            erc360.show_location = False
-
-        if file:
-            erc360.profile_photo.save(file=file)
-
-        db.session.commit()
-        return json.dumps({'status': 'success', 'handle': handle})
-    return render_template("erc360/profile.html", erc360=erc360, background=True, navbar=True, size="medium", noscroll=True)

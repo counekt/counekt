@@ -62,28 +62,6 @@
 
 {% endblock %}
 
-{% block modal %}
-{% if request.url_rule.endpoint == 'erc360.edit' %}
-{% include "erc360/edit.html" %}
-{% elif request.url_rule.endpoint == 'erc360.photo' %}
-{% with photo_src=erc360.photo.src %}
-{% include "photo.html" %}
-{% endwith %}
-{% elif request.url_rule.endpoint == 'erc360.timeline' %}
-{% include "erc360/timeline.html" %}
-{% elif request.url_rule.endpoint == 'erc360.ownership' %}
-{% include "erc360/ownership.html" %}
-{% elif request.url_rule.endpoint == 'erc360.mint' %}
-{% include "erc360/mint.html" %}
-{% elif request.url_rule.endpoint == 'erc360.structure' %}
-{% include "erc360/structure.html" %}
-{% elif request.url_rule.endpoint == 'erc360.add_members' %}
-{% include "profile/add-members.html" %}
-{% elif request.url_rule.endpoint == 'profile.add_roles' %}
-{% include "profile/add-roles.html" %}
-{% endif %}
-
-{% endblock %}
 
 {% block scripts %}
 <!-- Probably good for now to have this below-->
@@ -329,8 +307,11 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profile.edit_erc360','profile.create_erc360','profile.create_erc360']  %}
-load_map_js();
+{% if request.url_rule.endpoint in ['erc360.edit','erc360.create']  %}
+$.ready("load", function() {
+  load_map_js();
+  console.log("AY!");
+});
 {% endif %}
 </script>
 <script type="text/javascript">
@@ -494,22 +475,23 @@ function changeToMintERC360() {
 
 
 {% if request.url_rule.endpoint == 'erc360.edit' %}
+changeToEdit();
 window.history.replaceState({id:"edit-erc360"},"Edit ERC360", "/€{{erc360.address}}/edit/");
 {% elif request.url_rule.endpoint == 'erc360.timeline' %}
+changeToTimeline();
 window.history.replaceState({id:"erc360-timeline"},"ERC360 Timeline", "/€{{erc360.address}}/timeline/");
 {% elif request.url_rule.endpoint == 'erc360.ownership' %}
+changeToOwnership();
 window.history.replaceState({id:"erc360-ownership"},"ERC360 Ownership", "/€{{erc360.address}}/ownership/");
-  loadOwnershipChart();
 {% elif request.url_rule.endpoint == 'erc360.mint' %}
+changeToMintERC360();
 window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.address}}/structure/");
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
+changeToStructure();
 window.history.replaceState({id:"erc360-structure"},"ERC360 Structure", "/€{{erc360.address}}/structure/");
 {% elif request.url_rule.endpoint == 'erc360.photo' %}
+changeToPhoto();
 window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/");
-{% elif request.url_rule.endpoint == 'erc360.add_members' %}
-window.history.replaceState({id:"erc360-add-members"},"ERC360 Add Members", "/€{{erc360.address}}/add-members/");
-{% elif request.url_rule.endpoint == 'erc360.roles' %}
-window.history.replaceState({id:"erc360-add-roles"},"ERC360 Add Roles", "/€{{erc360.address}}/add-roles/");
 {% else %}
 window.history.replaceState({id:"erc360-profile"},"Profile", "./");
 {% endif %}

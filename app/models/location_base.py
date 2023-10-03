@@ -14,7 +14,7 @@ class LocationBase:
 
     def set_location(self, location):
         if location:
-            self.address = funcs.shorten_addr(location=location)
+            self.location_address = funcs.shorten_addr(location=location)
             self.latitude = location.latitude
             self.longitude = location.longitude
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)

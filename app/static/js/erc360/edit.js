@@ -6,7 +6,7 @@ $(document).on("click", '#save-button', function(e) {
    var description = $("#description-field").val();
    var show_location = $("#show-location").is(':checked') ? 1 : 0;
    var visible = $("#visible").is(':checked') ? 1 : 0;
-   var address;
+   var location_address;
 
    var formData = new FormData();
    
@@ -31,19 +31,19 @@ $(document).on("click", '#save-button', function(e) {
 
     $.post({
       type: "POST",
-      url: "/$"+handle+"/edit/",
+      url: "/€"+address+"/edit/",
       data: formData,
       processData: false,
       contentType: false,
       success(response) {
         var response = JSON.parse(response);
-        address = response["address"];
-        console.log(address);
+        location_address = response["address"];
+        console.log(location_address);
         var status = response["status"];
         if (status === "success") { 
           console.log("FLASHING");
           $("#profile-description p").text(description);
-          $("#profile-address span:not(.icon)").text(address);
+          $("#profile-address span:not(.icon)").text(location_address);
           $(".current-user-name").text(name);
           $(".current-user-photo").attr('src',photo_src);
           stopButtonLoading();
