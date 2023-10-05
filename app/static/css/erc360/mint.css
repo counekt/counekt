@@ -1,0 +1,12 @@
+/* TO BE IMPLEMENTED: COLOR-CODED AMOUNT BAR
+.progress {
+  background-color: #ccc;
+  width: 100%;
+  height: 16px;
+  background-image: linear-gradient(to right,hsl(0, 0%, 21%),hsl(0, 0%, 21%) 40%, hsl(141, 53%, 53%) 40%, hsl(171, 100%, 41%) 50%, hsl(0, 0%, 96%) 50%,hsl(0, 0%, 96%));
+}
+*/
+
+input#mint-amount-input {
+  resize: both;
+}

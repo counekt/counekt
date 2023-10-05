@@ -25,10 +25,10 @@
     </div>
     <div class="field">
       <p class="control">
-        <progress id="mint-amount-progress-bar" class="progress" value="{{erc360.log_total_supply}}" max="{{erc360.log_max_supply}}">Ay</progress>
+        <progress class="progress is-two-faced" id="mint-amount-progress-bar" class="progress" value="{{erc360.log_total_supply}}" max="{{erc360.log_max_supply}}">Ay</progress>
       </p>
       <p class="control">
-        <span id="mint-amount-span" class="text" style="float:left;" data-original-amount='{{erc360.total_supply or 0}}'>{{erc360.total_supply or 0}}</span>
+        <span id="mint-amount-span" class="text" style="float:left;" data-original-amount='{{erc360.total_supply or 0}}'>{{erc360.pretty_exponential_total_supply}}</span>
         <span class="text" style="float:right;">2<sup>{{erc360.log_max_supply}}</sup>-1</span>
       </p>
   </div>
@@ -41,14 +41,14 @@
       <h1><b>To</b></h1>
       <div class="field has-addons has-addons-centered">
       <p class="control">
-        <input class="input has-fixed-size" placeholder="Receiver of tokens" id="to-field" maxlength="42"></input>
+        <input id="mint-recipient-input" class="input has-fixed-size" placeholder="Recipient of tokens" maxlength="42"></input>
       </p>
       </div>
     </div>
-      <div id="feedback-description" class="feedback">
+      <div id="feedback-recipient" class="feedback">
         <div class="message"></div>
       </div>
-      <br id="description-anchor">
+      <br id="recipient-anchor">
     </div>
   </section>
 </div>

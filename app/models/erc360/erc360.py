@@ -10,7 +10,7 @@ import json
 import app.funcs as funcs
 from app.models.profile.wallet import _permits
 import math
-
+from markupsafe import Markup
 
 class ERC360(db.Model, Base, LocationBase):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
@@ -250,9 +250,18 @@ class ERC360(db.Model, Base, LocationBase):
     def log_total_supply(self):
         return round(math.log2(self.total_supply or 1),1)
 
-    @hybrid_property
+    @property
     def log_max_supply(self):
         return 256
+
+    @property
+    def pretty_exponential_total_supply(self):
+        total_supply = self.total_supply or 0
+        if total_supply < 10000:
+            return total_supply
+        mantissa, exponent = '{:.2e}'.format(total_supply).split('e')
+        return Markup(f"{math.floor(float(mantissa)*100)/100} x 10<sup>{int(exponent)}</sup>");
+
 
 
     def __repr__(self):
