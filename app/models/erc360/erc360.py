@@ -57,7 +57,7 @@ class ERC360(db.Model, Base, LocationBase):
 
     permits = db.relationship(
         'Permit', backref='erc360', lazy='dynamic',
-        foreign_keys='Permit.erc360_id', passive_deletes=True)
+        foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
 
     def __init__(self,creator,**kwargs):
         super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})

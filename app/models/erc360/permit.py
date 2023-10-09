@@ -14,7 +14,7 @@ class Permit(db.Model, Base):
 	bytes = db.Column(db.LargeBinary(length=32)) # byte name of permit
 
 	parent_id = db.Column(db.Integer, db.ForeignKey('permit.id', ondelete='CASCADE'))
-	_parent = db.relationship("Permit",backref="children",remote_side=[id])
+	_parent = db.relationship("Permit",backref="children",remote_side=[id], cascade="all, delete")
 	
 	@hybrid_property
 	def parent(self):
@@ -35,7 +35,7 @@ class Permit(db.Model, Base):
 
 	@classmethod
 	def create_initial_permits(cls,erc360,creator):
-		master_permit = Permit(bytes=PERMIT[0])
+		master_permit = Permit(bytes=PERMITS[0])
 		master_permit.parent = master_permit
 		master_permit.wallets.append(creator)
 		erc360.permits.append(master_permit)

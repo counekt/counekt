@@ -20,14 +20,14 @@ class Wallet(db.Model, Base):
     address = db.Column(db.String(42)) # ETH token address
 
     spenders = db.relationship(
-        'User', secondary=spenders, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic', cascade='all,delete') 
+        'User', secondary=spenders, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     permits = db.relationship(
-        'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic', cascade='all,delete') 
+        'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     @classmethod
     def register(cls,address,spender):
-        query = cls.query.filter(cls.address==address).first()
+        wallet = cls.query.filter(cls.address==address).first()
         if not wallet:
             wallet = cls(address=address)
         if spender and not spender in wallet.spenders:

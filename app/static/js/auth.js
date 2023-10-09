@@ -1,5 +1,5 @@
 function message(status, box_ids, shake=false) {
-  $(".feedback").stop(stopAll=true);
+  clearMessages();
   box_ids.forEach( function (box_id, index) {
     if (shake) {
     $("#"+box_id+"-box").effect("shake", {direction: "right", times: 2, distance: 8}, 350);
@@ -9,6 +9,10 @@ function message(status, box_ids, shake=false) {
   $("#feedback-"+box_id).text(status);
   $("#feedback-"+box_id).delay(2000).animate({ opacity: 0, queue: false });
 });
+}
+
+function clearMessages() {
+  $(".feedback").stop(stopAll=true);
 }
 
 window._step = "step-1";

@@ -51,7 +51,7 @@ class User(UserMixin, db.Model, Base, LocationBase):
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
     main_wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id'))
-    main_wallet = db.relationship("Wallet", foreign_keys=[main_wallet_id])
+    _main_wallet = db.relationship("Wallet", foreign_keys=[main_wallet_id])
 
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
@@ -82,8 +82,8 @@ class User(UserMixin, db.Model, Base, LocationBase):
         'Conversation', secondary=conversations, backref="members", lazy='dynamic', cascade='all,delete')
 
     @property
-    def ideas(self):
-        return [m.organization for m in self.memberships]
+    def main_wallet(self):
+        return self._main_wallet or self.wallets.first()
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)

@@ -8,7 +8,7 @@ function checkMintable() {
 
 function checkAmount(feedback=false) {
   
-  var string_amount = formatAmountInput($('#mint-amount-input').val()) || '0';
+  string_amount = getAmount();
   var isValid = string_amount != 0;
   if (!feedback) {return isValid;}
   const original_amount = parseInt($('#mint-amount-span').data('original-amount'));
@@ -33,7 +33,7 @@ function checkAmount(feedback=false) {
 
 function checkRecipient(feedback=false) {
   console.log("recipient");
-  var text = $('#mint-recipient-input').val();
+  var text = getRecipient();
   var isAddress = getWeb3Provider().utils.isAddress(text);
   if (!feedback) {return isAddress;}
   console.log(isAddress);
@@ -44,6 +44,14 @@ function checkRecipient(feedback=false) {
     displayInvalidRecipient();
     return false;
   }
+}
+
+function getRecipient() {
+  return $('#mint-recipient-input').val();
+}
+
+function getAmount() {
+  return formatAmountInput($('#mint-amount-input').val()) || '0';
 }
 
 function displayInvalidAmount() {
@@ -101,4 +109,59 @@ Number.prototype.toPrettyExponential = function() {
 function formatAmountInput(string) {
   const pattern = /^0+/;
   return string.replace(pattern,'');
+}
+
+$(document).on('click', '#mint', function() {
+  console.log("CLICK");
+   var abi = $.getJSON("/erc360corporatizable/abi/", function(abi) {
+        mintERC360(abi,address,getRecipient(),getAmount());
+     });
+});
+
+async function mintERC360(tokenABI,tokenAddress,account,amount) {
+  console.log(tokenABI);
+  console.log(tokenAddress);
+  console.log(account);
+  console.log(amount);
+  // Address of the original erc360 contract
+  const web3 = getWeb3Provider();
+
+    try {
+
+    console.log("contract code");
+    const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
+    if (accounts.length == 0) {
+      console.log("CHEEECK");
+      await checkIfWalletConnected();
+    }
+    console.log(accounts);
+    console.log("get accounts");
+    const ERC360 = new web3.eth.Contract(tokenABI,tokenAddress);
+    console.log("parse contract");
+    console.log(accounts[0]);
+    const mint = ERC360.methods.mint(account,amount);
+    console.log("basic mint");
+
+    const gasEstimate = await mint.estimateGas(1);
+    console.log("gas estimate");
+    console.log(gasEstimate);
+    const parameters = {
+      gas: gasEstimate,
+      from: accounts[0]
+    };
+
+    var tx;
+    const mintTransaction = await mint.send(parameters, (err, transactionHash) => {
+      tx = transactionHash;
+    console.log(err);
+    console.log('Transaction Hash :', transactionHash);
+}).on('confirmation', () => {return true});
+
+
+    console.log('Tokens minted:', mintTransaction);
+    return tx;
+  } catch (error) {
+    console.error('Error Minting Tokens:', error);
+  }
+
 }

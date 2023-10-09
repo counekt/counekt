@@ -191,9 +191,10 @@ def create():
             tx_hash = flask_request.form.get("tx");
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-            wallet = models.Wallet.register(address=receipt.contractAddress,spender=current_user)
+            wallet = models.Wallet.register(address=receipt["from"],spender=current_user)
             erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet)
-
+            erc360.address = receipt.contractAddress
+            erc360.block = receipt.blockNumber
             if show_location:
 
                 location = funcs.reverse_geocode([lat, lng])
@@ -210,7 +211,7 @@ def create():
                 erc360.sin_rad_lat = None
                 erc360.cos_rad_lat = None
                 erc360.rad_lng = None
-                erc360.address = None
+                erc360.location_address = None
                 erc360.is_visible = False
                 erc360.show_location = False
 
@@ -228,8 +229,6 @@ def create():
 
             if not receipt.contractAddress or deploy_data != original_code:
                 return json.dumps({'status': 'Deployment did not go through!'})
-            erc360.address = receipt.contractAddress
-            erc360.block = receipt.blockNumber
         current_app.logger.info("UNPUSHED ERC360 CREATED")
         db.session.add(erc360)
         current_user.register_wallet(receipt["from"])
@@ -239,3 +238,9 @@ def create():
         return json.dumps({'status': 'success', 'address': erc360.address})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
+
+@ bp.route("/erc360corporatizable/abi/", methods=["GET"])
+@login_required
+def get_abi():
+    abi = funcs.get_abi()
+    return json.dumps(abi)
