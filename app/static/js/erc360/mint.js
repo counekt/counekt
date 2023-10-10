@@ -114,9 +114,36 @@ function formatAmountInput(string) {
 $(document).on('click', '#mint', function() {
   console.log("CLICK");
    var abi = $.getJSON("/erc360corporatizable/abi/", function(abi) {
-        mintERC360(abi,address,getRecipient(),getAmount());
+        uploadMint(abi);
      });
 });
+
+function uploadMint(abi) {
+  var tx = await mintERC360(abi,address,getRecipient(),getAmount());
+
+    const tx = await deployNewERC360(abi, bytecode, name, symbol);
+    if (tx) {
+
+    console.log("continuing...");
+    var formData = new FormData();
+    formData.append('tx', tx);
+    $.post({
+      type: "POST",
+      url: "/erc360/"+address+"/mint/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      async success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") { 
+          location.replace("/€"+address+"/ownership");
+        }
+        else{stopButtonLoading();message(status, response["box_id"], true);}
+        
+      }});
+  }
+}
 
 async function mintERC360(tokenABI,tokenAddress,account,amount) {
   console.log(tokenABI);
@@ -130,9 +157,16 @@ async function mintERC360(tokenABI,tokenAddress,account,amount) {
 
     console.log("contract code");
     const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
-    if (accounts.length == 0) {
-      console.log("CHEEECK");
+    var isInstalled = await walletIsInstalled();
+    if (!isInstalled) {
+      flash("MetaMask not installed!");
+      return;
+    }
+    var isConnected = await walletIsConnected();
+    if (!isConnected) {
+      flash("Connecting wallet...");
       await checkIfWalletConnected();
+      return;
     }
     console.log(accounts);
     console.log("get accounts");
@@ -142,11 +176,7 @@ async function mintERC360(tokenABI,tokenAddress,account,amount) {
     const mint = ERC360.methods.mint(account,amount);
     console.log("basic mint");
 
-    const gasEstimate = await mint.estimateGas(1);
-    console.log("gas estimate");
-    console.log(gasEstimate);
     const parameters = {
-      gas: gasEstimate,
       from: accounts[0]
     };
 

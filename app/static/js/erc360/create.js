@@ -55,7 +55,7 @@ async function executeStep1() {
 
 async function executeStep2(formData, abi, bytecode, name, symbol) {
     var isInstalled = await walletIsInstalled();
-    if (!isConnected) {
+    if (!isInstalled) {
       flash("MetaMask not installed!");
     }
     var isConnected = await walletIsConnected();

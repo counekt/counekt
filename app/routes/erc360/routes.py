@@ -36,6 +36,14 @@ def ownership(address):
 @bp.route("/erc360/<address>/mint/", methods=["GET","POST"])
 @bp.route("/€<address>/mint/", methods=["GET","POST"])
 def mint(address):
+    if flask_request.method == 'POST':
+        tx = flask_request.form.get("tx")
+        receipt = w3.eth.waitForTransactionReceipt(tx)
+        logs = receipt.logs
+        assert(receipt.contractAddress == address)
+        print(logs)
+        return json.dumps({'status': 'success'})
+
     return erc360(address)
 
 @ bp.route("/erc360/<address>/photo/", methods=["GET"])
