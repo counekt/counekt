@@ -11,6 +11,7 @@ from requests import HTTPError
 from app.routes.erc360 import bp
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import app.models as models
+from eth_abi import abi
 
 @ bp.route("/erc360/<address>/", methods=["GET", "POST"])
 @ bp.route("/€<address>/", methods=["GET", "POST"])
@@ -39,9 +40,12 @@ def mint(address):
     if flask_request.method == 'POST':
         tx = flask_request.form.get("tx")
         receipt = w3.eth.waitForTransactionReceipt(tx)
-        logs = receipt.logs
-        assert(receipt.contractAddress == address)
-        print(logs)
+        log = receipt.logs[0]
+        print(f"Receipt: {receipt.contractAddress} != Address: {address}")
+        print(f"Log: {log}")
+        assert(log["address"] == address)
+        account, amount = abi.decode_abi(["address","bytes32"],log["data"])
+        print(account,amount)
         return json.dumps({'status': 'success'})
 
     return erc360(address)

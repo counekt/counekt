@@ -118,10 +118,9 @@ $(document).on('click', '#mint', function() {
      });
 });
 
-function uploadMint(abi) {
-  var tx = await mintERC360(abi,address,getRecipient(),getAmount());
+async function uploadMint(abi) {
+    const tx = await mintERC360(abi,address,getRecipient(),getAmount());
 
-    const tx = await deployNewERC360(abi, bytecode, name, symbol);
     if (tx) {
 
     console.log("continuing...");

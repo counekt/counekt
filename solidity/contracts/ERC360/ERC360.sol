@@ -168,10 +168,10 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         return true;
     }
 
-    /// @notice Splits a currently valid shard into two new ones. One is assigned to the receiver. The rest to the previous owner.
+    /// @notice Transfers a token 'amount' 'from' an address 'to' another.
     /// @param from, The sender of the tokens.
-    /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
-    /// @param to The receiver of the new Shard.
+    /// @param amount The amount, which is transferred.
+    /// @param to The recipient of the transfer.
     function _transfer(address from, address to, uint256 amount) internal {
         require(amount <= balanceOf(from), "IA");
         // The amounts are added and the tokens thereby updated
@@ -179,8 +179,11 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         _update(to,balanceOf(to) + amount);
     }
    
+    /// @notice Mints a specific 'amount' of new tokens at an 'account'
+    /// @param account The recipient of the newly minted tokens.
+    /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
     function _mint(address account, uint256 amount) internal {
-        _update(_msgSender(),amount);
+        _update(account,amount+balanceOf(account));
         _totalSupplyByClock[currentClock()] += amount;
     }
 
