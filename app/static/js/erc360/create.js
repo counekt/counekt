@@ -1,6 +1,19 @@
 $(document).on("click", "#create-erc360", async function() {
-    $(this).prop('disabled', true);$(this).addClass('is-loading');
+    var isInstalled = await walletIsInstalled();
+    var isConnected = await walletIsConnected();
+
+    if (!isInstalled) {
+      flash("MetaMask not installed!");
+    }
+    else if (!isConnected) {
+      flash("Connecting wallet...");
+      await checkIfWalletConnected();
+    }
+    else {
+      $(this).prop('disabled', true);$(this).addClass('is-loading');
     await executeStep1();
+  }
+    
 });
 
 async function executeStep1() {
@@ -54,15 +67,6 @@ async function executeStep1() {
 }
 
 async function executeStep2(formData, abi, bytecode, name, symbol) {
-    var isInstalled = await walletIsInstalled();
-    if (!isInstalled) {
-      flash("MetaMask not installed!");
-    }
-    var isConnected = await walletIsConnected();
-    if (!isConnected) {
-      flash("Connecting wallet...");
-      await checkIfWalletConnected();
-    }
     const tx = await deployNewERC360(abi, bytecode, name, symbol);
     console.log("continuing...");
     formData.set('step', "step-2");

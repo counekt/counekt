@@ -16,8 +16,8 @@ class ERC360TokenId(db.Model, Base):
 	MAX_INT = 9223372036854775807
 	
 	# Used for representation in accordance to reality
-	creation_timestamp = db.Column(db.Integer) # ETH Block push timestamp
-	expiration_timestamp = db.Column(db.Integer, default=MAX_INT)
+	creation_timestamp = db.Column(db.BigInteger) # ETH Block push timestamp
+	expiration_timestamp = db.Column(db.BigInteger, default=MAX_INT)
 
 	# Used for representation in accordance to the contract machinery
 	token_id = db.Column(db.BigInteger) # Clock push time and identity
@@ -25,11 +25,12 @@ class ERC360TokenId(db.Model, Base):
 
 	@hybrid_property
 	def is_expired(self):
-		return self.expiration_clock != MAX_INT
+		return self.expiration_clock != self.MAX_INT
 
 	def expire(self,clock):
-		expiration_clock = min(clock,MAX_INT)
+		self.expiration_clock = min(clock,self.MAX_INT)
+
 
 	def __repr__(self):
-		return '<ERC360TokenId {}>'.format(self.creation_clock)
+		return '<ERC360TokenId {}>'.format(self.token_id)
 

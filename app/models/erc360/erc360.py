@@ -172,20 +172,27 @@ class ERC360(db.Model, Base, LocationBase):
         updated_token_ids = contract.events.NewTokenId.getLogs(fromBlock=self.token_ids_last_updated_at or self.block)
         for ntid in updated_token_ids:
             # IF NOT ALREADY THERE
+            print(ntid)
             if not self.token_ids.filter_by(token_id=ntid.args.tokenId).first():
                 timestamp = w3.eth.getBlock(ntid.blockNumber).timestamp
                 # REGISTER OLD TOKEN-IDS OF ACCOUNT AS EXPIRED
-                non_expired = models.ERC360TokenId.query.filter(not models.ERC360TokenId.is_expired)
+                wallet = models.Wallet.register(address=ntid.args.account)
+                non_expired = self.token_ids.filter(models.ERC360TokenId.wallet_id == wallet.id, models.ERC360TokenId.is_expired != True)
                 for ne in non_expired:
-                    ne.expire(contract.functions.expirationOf(ne.token_id))
+                    print("EXPIRING...")
+                    exp = contract.functions.expirationOf(ne.token_id).call()
+                    ne.expire(exp) # FAILS TO ACCOUNT FOR MULTIPLE EXPS AT ONCE
+                    print(f"yessir... expiration: {exp}")
                     ne.expiration_timestamp = timestamp
                 
                 # REGISTER NEW TOKEN-ID
                 amount = contract.functions.amountOf(ntid.args.tokenId).call()
-                wallet = models.Wallet.register(address=ntid.args.account)
+                print(f"\nTOKEN ID: {ntid.args.tokenId}\n")
                 token_id = models.ERC360TokenId(token_id=ntid.args.tokenId,wallet=wallet,amount=amount)
+                print("OH")
                 token_id.creation_timestamp = timestamp
                 self.token_ids.append(token_id)
+                print("SI")
 
             if ntid.blockNumber > int(self.token_ids_last_updated_at or self.block):
                 self.token_ids_last_updated_at = ntid.blockNumber
@@ -236,7 +243,7 @@ class ERC360(db.Model, Base, LocationBase):
 
     @hybrid_property
     def current_token_ids(self):
-        return self.token_ids.filter(not models.ERC360TokenId.is_expired).order_by(models.ERC360TokenId.amount.desc()) if self.token_ids.first() else []
+        return self.token_ids.filter(models.ERC360TokenId.is_expired != True).order_by(models.ERC360TokenId.amount.desc()) if self.token_ids.first() else []
 
     @property
     def href(self):

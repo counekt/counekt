@@ -1,13 +1,13 @@
 <script type="text/javascript" id="loadOwnershipChart">
   function loadOwnershipChart() {
     console.log("{{erc360.symbol}}");
-  const ctx = document.getElementById('myChart');
+  const ctx = document.getElementById('erc360-ownership-chart');
   {% set current_token_ids = erc360.current_token_ids %}
   new Chart(ctx, {
     type: 'pie',
     data: {
   labels: [
-    {% for t_id in current_token_ids %}'{% if wallet.spenders.count() == 1  %}{{t_id.wallet.spenders.first().username}}{% endif %} {{t_id.wallet.address}}',{% endfor %}
+    {% for t_id in current_token_ids %}'{% if t_id.wallet.spenders.count() == 1  %}{{t_id.wallet.spenders.first().username}}{% endif %} {{t_id.wallet.address}}',{% endfor %}
   ],
   datasets: [{
     label: 'Amount',

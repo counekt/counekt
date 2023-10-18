@@ -26,7 +26,7 @@ class Wallet(db.Model, Base):
         'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     @classmethod
-    def register(cls,address,spender):
+    def register(cls,address,spender=None):
         wallet = cls.query.filter(cls.address==address).first()
         if not wallet:
             wallet = cls(address=address)
@@ -36,11 +36,8 @@ class Wallet(db.Model, Base):
 
     @hybrid_method
     def has_permit(self, erc360, hex):
-        permit = models.Permit.query.filter_by(bytes=bytes.fromhex(hex)).first()
-        return erc360.permits\
-        .join(_permits, models.Permit.id == _permits.c.permit_id)\
-        .join(models.Wallet, self.id == _permits.c.wallet_id)\
-        .filter(permit.is_self_inclusive_descendant_of(models.Permit)).first() != None if permit else False
+        permit = erc360.permits.filter_by(bytes=bytes.fromhex(hex)).first()
+        return erc360.permits.filter(permit.is_self_inclusive_descendant_of(models.Permit)).first() != None if permit else False
 
     @property
     def erc360s_from_permits(self):

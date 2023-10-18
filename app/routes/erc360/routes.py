@@ -44,7 +44,7 @@ def mint(address):
         print(f"Receipt: {receipt.contractAddress} != Address: {address}")
         print(f"Log: {log}")
         assert(log["address"] == address)
-        account, amount = abi.decode_abi(["address","bytes32"],log["data"])
+        account, amount = abi.decode_abi(["address","uint256"],bytes.fromhex(log["data"][2:]))
         print(account,amount)
         return json.dumps({'status': 'success'})
 
