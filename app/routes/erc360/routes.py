@@ -46,6 +46,8 @@ def mint(address):
         assert(log["address"] == address)
         account, amount = abi.decode_abi(["address","uint256"],bytes.fromhex(log["data"][2:]))
         print(account,amount)
+        erc360 = models.ERC360.query.filter_by(address=address).first()
+        erc360.update_ownership()
         return json.dumps({'status': 'success'})
 
     return erc360(address)

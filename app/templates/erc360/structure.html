@@ -27,12 +27,17 @@
     </div>
     <div id="structure-tabs-content">
     <div id="banks-tab" class="structure-tab-content">
+      {% if erc360.banks.count() > 0 %}
       <div class="select is-fullwidth">
         <select>
-          <option>main</option>
-          <option>second</option>
+          {% for bank in erc360.banks %}
+          <option>{{bank.representation}}</option>
+          {% endfor %}
         </select>
       </div>
+      {% else %}
+      <div style="height: 400px;"><p style="height:400px;line-height:400px;">No banks created yet...</p></div>
+      {% endif %}
     </div>
     <div id="permits-tab" class="structure-tab-content vanish">
       <div class="select is-fullwidth">

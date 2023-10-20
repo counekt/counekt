@@ -16,6 +16,11 @@ class Bank(db.Model, Base):
         'TokenAmount', lazy='dynamic',
         foreign_keys='TokenAmount.bank_id', passive_deletes=True)
 
+	def __init__(self,**kwargs):
+        super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
+        # do custom initialization here
+        self.register_token(bytes(20).hex())
+
 	def register_token(self,address):
 		token = TokenAmount(address)
 		if not self.tokens.filter_by(address=address).first():
@@ -26,6 +31,10 @@ class Bank(db.Model, Base):
 
 	def subtract_value(self,value,address):
 		self.add_value(-value,address)
+
+	@property
+	def representation(self):
+		return self.name or self.permit.bytes.hex()
 
 	def __repr__(self):
 		return '<Bank {}>'.format(self.name)

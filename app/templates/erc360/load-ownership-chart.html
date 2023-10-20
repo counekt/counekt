@@ -7,7 +7,7 @@
     type: 'pie',
     data: {
   labels: [
-    {% for t_id in current_token_ids %}'{% if t_id.wallet.spenders.count() == 1  %}{{t_id.wallet.spenders.first().username}}{% endif %} {{t_id.wallet.address}}',{% endfor %}
+    {% for t_id in current_token_ids %}'{{t_id.wallet.representation}}',{% endfor %}
   ],
   datasets: [{
     label: 'Amount',

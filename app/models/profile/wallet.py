@@ -56,5 +56,9 @@ class Wallet(db.Model, Base):
     def erc360s(self):
         return self.erc360s_from_token_ids.union(self.erc360s_from_permits)
 
+    @property
+    def representation(self):
+        return f"{self.address} {f'| {self.spenders[0].username}' if self.spenders.count() == 1 else ''}"
+    
     def __repr__(self):
         return "<Wallet {}>".format(self.address)

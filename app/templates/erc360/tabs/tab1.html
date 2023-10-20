@@ -1,5 +1,5 @@
 {% for token_id in erc360.current_token_ids %}
-	{% with title=token_id.wallet.address, subtitle="", icon = "fa fa-pie-chart", id="" %}
+	{% with title=token_id.wallet.representation, subtitle=token_id.percentage, icon = "fa fa-pie-chart", id="" %}
 	{% include 'extras/entity.html' %}
 	{% endwith %}
 {% endfor %}

@@ -24,6 +24,14 @@ class ERC360TokenId(db.Model, Base):
 	expiration_clock = db.Column(db.BigInteger, default=MAX_INT) # Token Id Clock expiration time
 
 	@hybrid_property
+	def share(self):
+		return self.amount/self.erc360.total_supply
+
+	@property
+	def percentage(self):
+		return "{:g}%".format(self.share*100)
+
+	@hybrid_property
 	def is_expired(self):
 		return self.expiration_clock != self.MAX_INT
 
