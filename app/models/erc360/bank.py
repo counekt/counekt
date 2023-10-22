@@ -2,6 +2,7 @@ from app import db
 import app.models as models
 from app.models.base import Base
 from sqlalchemy import union_all
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
 class Bank(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
@@ -12,25 +13,31 @@ class Bank(db.Model, Base):
 	permit_id = db.Column(db.Integer, db.ForeignKey('permit.id'))
 	permit = db.relationship("Permit",foreign_keys=[permit_id])
 
-	tokens = db.relationship(
+	token_amounts = db.relationship(
         'TokenAmount', lazy='dynamic',
-        foreign_keys='TokenAmount.bank_id', passive_deletes=True)
+        foreign_keys='TokenAmount.bank_id', passive_deletes=True, cascade="all, delete")
 
 	def __init__(self,**kwargs):
-        super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
-        # do custom initialization here
-        self.register_token(bytes(20).hex())
+		super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
+		# do custom initialization here
+		db.session.add(self)
+		self.register_token("0x0000000000000000000000000000000000000000")
+
+	def get_token_amount(self,address):
+		return self.token_amounts.filter(Token.address==address,Token.id==TokenAmount.token_id).first()
 
 	def register_token(self,address):
-		token = TokenAmount(address)
-		if not self.tokens.filter_by(address=address).first():
-			self.tokens.append(token)
+		TOKEN = Token.register(address=address)
+		token_amount = TokenAmount()
+		token_amount.token = TOKEN
+		if not self.token_amounts.filter(TokenAmount.token_id == TOKEN.id).first():
+			self.token_amounts.append(token_amount)
 
-	def add_value(self,value,address):
-		self.tokens.filter_by(address=address).value += value
+	def add_amount(self,amount,address):
+		get_token_amount(address).amount += amount
 
-	def subtract_value(self,value,address):
-		self.add_value(-value,address)
+	def subtract_amount(self,amount,address):
+		self.add_amount(-amount,address)
 
 	@property
 	def representation(self):
@@ -42,9 +49,49 @@ class Bank(db.Model, Base):
 class TokenAmount(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-	token_address = db.Column(db.String(42)) # ETH token address
-	value = db.Column(db.Numeric(precision=78), default=0) # value of token
-	sender_address = db.Column(db.String(42)) # ETH sender address
+	token_id = db.Column(db.Integer, db.ForeignKey('token.id', ondelete='CASCADE'))
+	token = db.relationship("Token",foreign_keys=[token_id])
+	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
+
+	@property
+	def representation(self):
+		return f"{self.amount} {self.token.symbol}" if self.token else self.amount
+
+	def __repr__(self):
+		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")
+
+class Token(db.Model,Base):
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String) # name of token
+	symbol = db.Column(db.String) # symbol of token
+	address = db.Column(db.String(42), unique=True) # ETH token address
+
+	@property
+	def etherscan_url(self):
+		if self.address == "0x0000000000000000000000000000000000000000":
+			return "https://etherscan.io/chart/etherprice"
+		else:
+			return f"https://etherscan.io/token/{self.address}"
+
+	@classmethod
+	def register(cls, address, name=None, symbol=None):
+		token = cls.query.filter(cls.address==address).first()
+		if not token:
+			token = cls(address=address,name=name,symbol=symbol)
+			db.session.add(token)
+		return token
+
+	@hybrid_property
+	def is_named(self):
+		return self.name and self.symbol
+
+	@property
+	def representation(self):
+		return f"{self.name} ({self.symbol})" if self.is_named else self.address
+	
+	def __repr__(self):
+		return '<Token: {} ({})>'.format(self.name, self.symbol)
+
 
 """
 class TokenExchange(Base):

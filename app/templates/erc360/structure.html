@@ -26,20 +26,30 @@
       </ul>
     </div>
     <div id="structure-tabs-content">
-    <div id="banks-tab" class="structure-tab-content">
+    <div id="banks-tab" class="structure-tab-content" style="height: 400px;">
       {% if erc360.banks.count() > 0 %}
-      <div class="select is-fullwidth">
+      <div class="select is-fullwidth" style="margin-bottom:10px;">
         <select>
           {% for bank in erc360.banks %}
           <option>{{bank.representation}}</option>
           {% endfor %}
         </select>
       </div>
+      <div class="table-container">
+        <table class="table is-bordered is-narrow is-hoverable is-fullwidth">
+          {% for token_amount in erc360.banks.first().token_amounts %}
+          <tr>
+            <td><a href="{{token_amount.token.etherscan_url}}" target="_blank">{{token_amount.token.representation}}</a></td>
+            <td>{{token_amount.representation}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
       {% else %}
       <div style="height: 400px;"><p style="height:400px;line-height:400px;">No banks created yet...</p></div>
       {% endif %}
     </div>
-    <div id="permits-tab" class="structure-tab-content vanish">
+    <div id="permits-tab" class="structure-tab-content vanish" style="height: 400px;">
       <div class="select is-fullwidth">
         <select>
           <option>Implement Proposals</option>
@@ -64,7 +74,7 @@
 
         </table>
     </div>
-    <div id="dividends-tab" class="structure-tab-content vanish">
+    <div id="dividends-tab" class="structure-tab-content vanish" style="height: 400px;">
       <span class="text" style="float:left;">#1</span>
       <progress class="progress is-success" value="75" max="100" style="margin-bottom:0px;">75%</progress>
       <span class="text" style="float:right;">75/100 ETH</span>

@@ -43,6 +43,9 @@ class Permit(db.Model, Base):
 			permit = Permit(bytes=p_bytes)
 			permit.parent = master_permit
 			erc360.permits.append(permit)
+		master_bank = models.Bank(name="main")
+		master_bank.permit = master_permit
+		erc360.banks.append(master_bank)
 
 	@hybrid_method
 	def is_self_inclusive_descendant_of(self, ancestor):
