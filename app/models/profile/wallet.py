@@ -39,6 +39,11 @@ class Wallet(db.Model, Base):
         permit = erc360.permits.filter_by(bytes=bytes.fromhex(hex)).first()
         return erc360.permits.filter(permit.is_self_inclusive_descendant_of(models.Permit)).first() != None if permit else False
 
+    @hybrid_method
+    def is_permit_admin(self,erc360,hex):
+        permit = erc360.permits.filter_by(bytes=bytes.fromhex(hex)).first()
+        return self.has_permit(erc360,permit.parent.bytes.hex())
+
     @property
     def erc360s_from_permits(self):
         return models.ERC360.query\
@@ -58,7 +63,7 @@ class Wallet(db.Model, Base):
 
     @property
     def representation(self):
-        return f"{self.address} {f'| {self.spenders[0].username}' if self.spenders.count() == 1 else ''}"
+        return f"{self.spenders[0].dname} ({self.address})" if self.spenders.count() == 1 else self.address
     
     def __repr__(self):
         return "<Wallet {}>".format(self.address)

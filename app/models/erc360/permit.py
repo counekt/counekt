@@ -26,12 +26,12 @@ class Permit(db.Model, Base):
 
 	@property
 	def title(self):
-		return {PERMITS[0]:"Master Permit",
-		PERMITS[1]: "Mint Permit",
-		PERMITS[2]:"Vote Permit",
-		PERMITS[3]:"Dividend Permit",
-		PERMITS[4]:"Resolution Permit"
-		}.get(self.bytes,"Permit")
+		return {PERMITS[0]:"Master",
+		PERMITS[1]: "Mint",
+		PERMITS[2]:"Vote",
+		PERMITS[3]:"Dividend",
+		PERMITS[4]:"Resolution"
+		}.get(self.bytes,"")
 
 	@classmethod
 	def create_initial_permits(cls,erc360,creator):
@@ -53,6 +53,9 @@ class Permit(db.Model, Base):
 		else self.id == ancestor.id if self.bytes == PERMITS[0] \
 		else self.parent.is_self_inclusive_descendant_of(ancestor)
 
+	@property
+	def representation(self):
+		return f"{self.title} ({self.bytes.hex()})" if self.title else self.bytes.hex()
 
 	def __repr__(self):
 		return '<Permit {}>'.format(self.bytes.hex())
