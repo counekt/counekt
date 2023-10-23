@@ -101,7 +101,6 @@ def edit(address):
     if not erc360:
         abort(404)
     if flask_request.method == 'POST':
-        name = flask_request.form.get("name")
 
         description = flask_request.form.get("description")
 
@@ -114,13 +113,9 @@ def edit(address):
 
         file = flask_request.files.get("photo")
 
-        if not name:
-            return json.dumps({'status': 'Name must be filled in', 'box_id': 'name'})
-
         if len(description.strip()) > 160:
             return json.dumps({'status': 'Your corporatizable token\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
 
-        erc360.name = name
         erc360.description = description.strip()
         erc360.public = public
 

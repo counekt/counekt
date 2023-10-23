@@ -25,14 +25,6 @@
   </div>
   <br>
   <div>
-    <div id="name">
-      <h1><b>Name</b></h1>
-      <input class="input has-fixed-size" placeholder="Add your token's name" id="name-field" value="{% if erc360.name %}{{erc360.name}}{% else %}{{erc360.handle}}{% endif %}"></input>
-    </div>
-      <div id="feedback-name" class="feedback">
-        <div class="message"></div>
-      </div>
-      <br id="name-anchor">
     <div id="description">
       <h1><b>Description</b></h1>
       <textarea class="textarea has-fixed-size" placeholder="Add your token's description if any" id="description-field" rows="3" maxlength="160">{% if erc360.description %}{{erc360.description}}{% endif %}</textarea>

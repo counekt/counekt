@@ -2,7 +2,6 @@ $(document).on("click", '#save-button', function(e) {
    $(this).prop('disabled', true);$(this).addClass('is-loading');
    var photo = $("#upload-image").prop('files')[0];
    var photo_src = $("#edit-associate-image-content").attr('src');
-   var name = $("#name-field").val();
    var description = $("#description-field").val();
    var show_location = $("#show-location").is(':checked') ? 1 : 0;
    var visible = $("#visible").is(':checked') ? 1 : 0;
@@ -12,8 +11,6 @@ $(document).on("click", '#save-button', function(e) {
    
    formData.append('photo', photo);
    
-   formData.append("name", name);
-
    formData.append("description", description);
 
    
@@ -44,7 +41,6 @@ $(document).on("click", '#save-button', function(e) {
           console.log("FLASHING");
           $("#profile-description p").text(description);
           $("#profile-address span:not(.icon)").text(location_address);
-          $(".current-user-name").text(name);
           $(".current-user-photo").attr('src',photo_src);
           stopButtonLoading();
           $("select").find("option:selected").attr('selected', 'selected');
