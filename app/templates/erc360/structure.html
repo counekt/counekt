@@ -26,7 +26,7 @@
       </ul>
     </div>
     <div id="structure-tabs-content">
-    <div id="banks-tab" class="structure-tab-content" style="height: 400px;display: flex; flex-direction: column;">
+    <div id="banks-tab" class="structure-tab-content" style="height: 320px;display: flex; flex-direction: column;">
       {% if erc360.banks.count() > 0 %}
       <div class="field has-addons" style="margin: 0px;">
         <p class="control">
@@ -44,6 +44,13 @@
       </div>
       </p>
       </div>
+      <div id="bank-tabs" class="tabs is-toggle is-centered is-fullwidth is-small">
+      <ul>
+        <li data-content="#bank-balances-tab" class="is-active"><a >Balances</a></li>
+        <li data-content="#bank-admins-tab"><a>Administrators</a></li>
+        <li data-content="#bank-activity-tab"><a>Activity</a></li>
+      </ul>
+    </div>
       <div class="table-container">
         <table class="table is-bordered is-narrow is-striped is-hoverable is-fullwidth">
           {% for token_amount in erc360.banks.first().token_amounts %}
@@ -54,22 +61,8 @@
           {% endfor %}
         </table>
       </div>
-      <div class="field is-grouped is-grouped-centered" style="margin: auto;">
-        <p class="control">
-          <a class="button is-success is-light">
-            Deposit
-          </a>
-        </p>
-        {% if current_user.has_wallet_with_permit(erc360,"0000000000000000000000000000000000000000000000000000000000000000") %}
-        <p class="control">
-          <a class="button is-link is-light">
-            Transfer
-          </a>
-        </p>
-        {% endif %}
-      </div>
       {% else %}
-      <div style="height: 400px;"><p style="height:400px;line-height:400px;">No banks created yet...</p></div>
+      <div style="height: 400px;"><p style="height:320px;line-height:320px;">No banks created yet...</p></div>
       {% endif %}
     </div>
     <div id="permits-tab" class="structure-tab-content vanish" style="height: 400px;">
@@ -137,5 +130,21 @@
     </div>
 </div>
   </section>
+   <footer class="modal-card-foot" style="background-color: white;height:80px;">
+      <div class="field is-grouped is-grouped-centered" style="margin: auto;">
+        <p class="control">
+          <a class="button is-success is-light">
+            Deposit
+          </a>
+        </p>
+        {% if current_user.has_wallet_with_permit(erc360,"0000000000000000000000000000000000000000000000000000000000000000") %}
+        <p class="control">
+          <a class="button is-link is-light">
+            Transfer
+          </a>
+        </p>
+        {% endif %}
+      </div>
+    </footer>
 </div>
 </div>
