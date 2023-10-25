@@ -10,6 +10,10 @@ abstract contract ERC20Holder {
 
 	using SafeERC20 for IERC20;
 
+	receive() external payable {
+    // This code is executed when the contract receives ether.
+	}
+
     /// @notice Transfers a token to a recipient.
 	/// @param token The address of the token to be transferred.
     /// @param amount The amount of the token to be transferred.
