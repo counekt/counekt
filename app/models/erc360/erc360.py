@@ -172,14 +172,12 @@ class ERC360(db.Model, Base, LocationBase):
         updated_token_ids = contract.events.NewTokenId.getLogs(fromBlock=self.token_ids_last_updated_at or self.block)
         for ntid in updated_token_ids:
             # IF NOT ALREADY THERE
-            print(ntid)
             if not self.token_ids.filter_by(token_id=ntid.args.tokenId).first():
                 timestamp = w3.eth.getBlock(ntid.blockNumber).timestamp
                 # REGISTER OLD TOKEN-IDS OF ACCOUNT AS EXPIRED
                 wallet = models.Wallet.register(address=ntid.args.account)
                 non_expired = self.token_ids.filter(models.ERC360TokenId.wallet_id == wallet.id, models.ERC360TokenId.is_expired != True)
                 for ne in non_expired:
-                    print("EXPIRING...")
                     exp = contract.functions.expirationOf(ne.token_id).call()
                     ne.expire(exp) # FAILS TO ACCOUNT FOR MULTIPLE EXPS AT ONCE
                     print(f"yessir... expiration: {exp}")
@@ -189,10 +187,8 @@ class ERC360(db.Model, Base, LocationBase):
                 amount = contract.functions.amountOf(ntid.args.tokenId).call()
                 print(f"\nTOKEN ID: {ntid.args.tokenId}\n")
                 token_id = models.ERC360TokenId(token_id=ntid.args.tokenId,wallet=wallet,amount=amount)
-                print("OH")
                 token_id.creation_timestamp = timestamp
                 self.token_ids.append(token_id)
-                print("SI")
 
             if ntid.blockNumber > int(self.token_ids_last_updated_at or self.block):
                 self.token_ids_last_updated_at = ntid.blockNumber
@@ -203,6 +199,13 @@ class ERC360(db.Model, Base, LocationBase):
 
     def update_structure(self):
         contract = self.get_w3_contract()
+        for bank in self.banks:
+            for token_amount in bank.token_amounts:
+                token_address = token_amount.token.address
+                amount_wei = contract.functions.bankBalanceOf(bank.permit.bytes,token_address).call()
+                token_amount.amount = amount_wei
+
+        """
         # Dividend Claims
         new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.dividend_claims_last_updated_at or self.block)
         for nc in new_claims:
@@ -233,7 +236,7 @@ class ERC360(db.Model, Base, LocationBase):
                 referendum.in_favor_amount += vote.token_id.amount if nv.args.favor else 0
             if nv.blockNumber > int(self.referendum_votes_last_updated_at or self.block):
                 self.referendum_votes_last_updated_at = ns.blockNumber
-
+        """
     def get_w3_contract(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         return contract

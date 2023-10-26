@@ -399,6 +399,10 @@ $(document).on("click", '#reload-ownership', function() {
   update_ownership("{{erc360.address}}");
 });
 
+$(document).on("click", '#reload-structure', function() {
+  update_structure("{{erc360.address}}");
+});
+
 $(window).on("popstate", function() {
   if (window.history.state.id == "edit-erc360") {
     changeToEdit()

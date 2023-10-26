@@ -91,6 +91,23 @@ def get_ownership(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/load-ownership-chart.html", erc360=erc360)
 
+@ bp.route("/erc360/<address>/update/structure/", methods=["POST"])
+@ bp.route("/€<address>/update/structure/", methods=["POST"])
+def update_structure(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first()
+    if not erc360:
+        abort(404)
+    erc360.update_structure()
+    db.session.commit()
+    return json.dumps({'status': 'success'})
+
+@bp.route("/erc360/<address>/get/structure/", methods=["GET"])
+@bp.route("/€<address>/get/structure/", methods=["GET"])
+def get_structure(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/structure.html", erc360=erc360)
+
+
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
 @ bp.route("/€<address>/edit/", methods=["GET", "POST"])
 @login_required

@@ -53,9 +53,12 @@ class TokenAmount(db.Model, Base):
 	token = db.relationship("Token",foreign_keys=[token_id])
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
 
+	def amount_in_decimals(self,decimals):
+		return self.amount/(10**decimals)
+
 	@property
 	def representation(self):
-		return f"{self.amount} {self.token.symbol}" if self.token else self.amount
+		return f"{self.amount_in_decimals(18)} {self.token.symbol}" if self.token else self.amount
 
 	def __repr__(self):
 		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")

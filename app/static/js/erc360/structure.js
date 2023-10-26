@@ -37,3 +37,17 @@ async function openDepositWindow() {
       console.error(error);
     });
 }
+
+function update_structure(address) {
+        console.log("updating...");
+        $("#reload-structure").prop('disabled', true);$("#reload-structure").addClass('is-loading');
+        $.post("/€"+address+"/update/structure/",function(response) {
+                $.get("/€"+address+"/get/structure/", function(structure, status) {
+                        $("#structure-modal").replaceWith(structure);
+                        $("#reload-structure").removeClass('is-loading').prop('disabled', false);
+                        console.log("success!");
+        });
+        });
+        
+}
+
