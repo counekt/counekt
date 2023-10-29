@@ -156,17 +156,7 @@ async function mintERC360(tokenABI,tokenAddress,account,amount) {
 
     console.log("contract code");
     const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
-    var isInstalled = await walletIsInstalled();
-    if (!isInstalled) {
-      flash("MetaMask not installed!");
-      return;
-    }
-    var isConnected = await walletIsConnected();
-    if (!isConnected) {
-      flash("Connecting wallet...");
-      await checkIfWalletConnected();
-      return;
-    }
+    if (!makeSureWalletConnected()) {return;}
     console.log(accounts);
     console.log("get accounts");
     const ERC360 = new web3.eth.Contract(tokenABI,tokenAddress);

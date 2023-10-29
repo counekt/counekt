@@ -453,6 +453,12 @@ function changeToStructure() {
   $(document.body).addClass('noscroll');
 }
 
+function changeToDeposit() {
+  $("#modal-box").append(`
+    {% include "erc360/deposit.html" %}`);
+  $(document.body).addClass('noscroll');
+}
+
 function changeToEdit() {
   $("#modal-box").append(`
     {% include "erc360/edit.html" %}`);
