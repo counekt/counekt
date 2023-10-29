@@ -43,6 +43,7 @@ function formatDepositAmountInput(string) {
 
 $(document).on('blur input','#deposit-amount-input',function(event) {
 	$('#deposit-amount-input').val(formatDepositAmountInput($('#deposit-amount-input').val()));
+	checkDepositable();
  });
 
 
@@ -55,6 +56,28 @@ $(document).on('click', '#deposit', function() {
 	openDepositWindow();
 });
 
+function getDepositValue() {
+	return parseFloat($('#deposit-amount-input').val().replace(',','.'));
+}
+
+function checkDepositAmount() {
+	if (getDepositValue()>0) {
+      	$('#deposit-amount-input').addClass('is-success').removeClass('is-danger');
+      	return true;
+	}
+	else {
+	$('#deposit-amount-input').addClass('is-danger').removeClass('is-success');
+	return false;
+	}
+}
+
+function checkDepositable() {
+  var amountCheck = checkDepositAmount();
+  if (amountCheck) {
+    $("#deposit").prop('disabled',false);
+  } else {$("#deposit").prop('disabled',true);}
+}
+
 
 async function openDepositWindow() {
 	// Replace 'recipientAddress' with the Ethereum address you want to send funds to
@@ -66,7 +89,7 @@ async function openDepositWindow() {
 	console.log(network == "main");
 	const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
 
-	let send = web3.eth.sendTransaction({from:accounts[0],to:recipientAddress, value:web3.utils.toWei("0.1", "ether")}).catch((error) => {
+	let send = web3.eth.sendTransaction({from:accounts[0],to:recipientAddress, value:web3.utils.toWei(getDepositValue().toString(), "ether")}).catch((error) => {
       console.error(error);
     });
 }
@@ -83,4 +106,3 @@ function update_structure(address) {
         });
         
 }
-
