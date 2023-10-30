@@ -306,6 +306,22 @@ $.ready("load", function() {
       e.preventDefault();
     });
 
+$(document).on('click', '#banks-tab-button', function() {
+  changeToBanks();
+});
+
+$(document).on('click', '#permits-tab-button', function() {
+  changeToPermits();
+});
+
+$(document).on('click', '#dividends-tab-button', function() {
+  changeToDividends();
+});
+
+$(document).on('click', '#referendums-tab-button', function() {
+  changeToReferendums();
+});
+
 $(document).on('click', '#deposit-button', function(e) {
    redirect({id:"erc360-deposit"},"ERC360 Deposit", "/€"+address+"/deposit/", changeToDeposit);
       e.preventDefault();
@@ -315,7 +331,6 @@ $(document).on('click', '#transfer-button', function(e) {
    redirect({id:"erc360-transfer"},"ERC360 Transfer", "/€"+address+"/transfer/", changeToTransfer);
       e.preventDefault();
 });
-
 
   $(document).on('click', '#edit-button', function(e) {
     redirect({id:"edit-erc360"},"Edit ERC360", "/€"+address+"/edit/", changeToEdit);
@@ -408,6 +423,26 @@ function changeToStructure() {
         {% include "erc360/structure.html" %}`);
       $(document.body).addClass('noscroll');
     }
+}
+
+function changeToBanks() {
+  changeToStructureTab('#banks-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/banks.html" %}`);
+}
+
+function changeToPermits() {
+  changeToStructureTab('#permits-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/permits.html" %}`);
+}
+
+function changeToDividends() {
+  changeToStructureTab('#dividends-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/dividends.html" %}`);
+}
+
+function changeToReferendums() {
+  changeToStructureTab('#referendums-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/referendums.html" %}`);
 }
 
 function changeToDeposit() {

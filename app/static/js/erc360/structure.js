@@ -1,17 +1,12 @@
 // Change tab
-$(document).on('click', '#structure-tabs ul li', function() {
-	console.log("STRUCTURE");
-	if ($(this).hasClass('is-active')) {
-		$('#structure-tabs ul li').removeClass('is-active');
-	}
 
-	else {
-	$('#structure-tabs ul li').removeClass('is-active');
-	$(this).addClass('is-active');
+function changeToStructureTab(tabSelector) {
+	const $this = $(tabSelector);
 	$(".structure-tab-content").addClass('vanish');
-	$($(this).data('content')).removeClass('vanish');
-	}
-});
+	$('#structure-tabs ul li').removeClass('is-active');
+	$this.addClass('is-active');
+	$($this.data('content')).removeClass('vanish');
+}
 
 $(document).on('keypress','#deposit-amount-input',function(event) {
     var key = event.keyCode || event.charCode;
