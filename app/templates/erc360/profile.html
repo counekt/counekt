@@ -352,6 +352,16 @@ load_add_members_js();
 </script>
 <script type="text/javascript">
 
+  function goToModal(selector) {
+    const modal = $(selector);
+    if ($('#modal-box').has(selector).length>0) {
+        $('#modal-box').children().not(selector).remove();
+        $('#modal-box').append(modal);
+        return true;
+    }
+    return false;
+  }
+
   $(document).on('click', '#profile-image a', function(e) {
     redirect({id:"erc360-photo"},"Profile photo", "/€{{erc360.address}}/photo/", changeToPhoto);
       e.preventDefault();
@@ -378,6 +388,17 @@ load_add_members_js();
       e.preventDefault();
     });
 
+$(document).on('click', '#deposit-button', function(e) {
+   redirect({id:"erc360-deposit"},"ERC360 Deposit", "/€"+address+"/deposit/", changeToDeposit);
+      e.preventDefault();
+});
+
+$(document).on('click', '#transfer-button', function(e) {
+   redirect({id:"erc360-transfer"},"ERC360 Transfer", "/€"+address+"/transfer/", changeToTransfer);
+      e.preventDefault();
+});
+
+
   $(document).on('click', '#edit-button', function(e) {
     redirect({id:"edit-erc360"},"Edit ERC360", "/€"+address+"/edit/", changeToEdit);
     e.preventDefault();
@@ -387,8 +408,12 @@ $(document).on('click', '.close', function() {
   redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
 });
 
-$(document).on('click', '.modal-background', function() {
+$(document).on('click', '.modal-background.to-profile', function() {
     redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
+});
+
+$(document).on('click', '.modal-background.to-structure', function() {
+    redirect({id:"erc360-structure  "}, "Structure", "/€{{erc360.address}}/structure/", changeToStructure);
 });
 
 $(document).on("click", '#reload-timeline', function() {
@@ -431,39 +456,65 @@ $(window).on("popstate", function() {
     changeToStructure();
   }
 
+  else if (window.history.state.id == "erc360-deposit") {
+    changeToDeposit();
+  }
+
+  else if (window.history.state.id == "erc360-transfer") {
+    changeToTransfer();
+  }
 
 });
 
 function changeToTimeline() {
-  $("#modal-box").append(`
-    {% include "erc360/timeline.html" %}`);
-  $(document.body).addClass('noscroll');
+  if (!goToModal('#timeline-modal')) {
+    $("#modal-box").append(`
+      {% include "erc360/timeline.html" %}`);
+    $(document.body).addClass('noscroll');
+    }
 }
 
 function changeToOwnership() {
-  $("#modal-box").append(`
-    {% include "erc360/ownership.html" %}`);
-  $(document.body).addClass('noscroll');
-  loadOwnershipChart();
+    if (!goToModal('#ownership-modal')) {
+     $("#modal-box").append(`
+       {% include "erc360/ownership.html" %}`);
+     $(document.body).addClass('noscroll');
+     loadOwnershipChart();
+    }
 }
 
 function changeToStructure() {
-  $("#modal-box").append(`
-    {% include "erc360/structure.html" %}`);
-  $(document.body).addClass('noscroll');
+    if (!goToModal('#structure-modal')) {
+      $("#modal-box").append(`
+        {% include "erc360/structure.html" %}`);
+      $(document.body).addClass('noscroll');
+    }
 }
 
 function changeToDeposit() {
-  $("#modal-box").append(`
-    {% include "erc360/deposit.html" %}`);
-  $(document.body).addClass('noscroll');
+    if (!goToModal('#deposit-modal')) {
+        $("#modal-box").append(`
+          {% include "erc360/deposit.html" %}`);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToTransfer() {
+    if (!goToModal('#transfer-modal')) {
+        $("#modal-box").append(`
+          {% include "erc360/transfer.html" %}`);
+        $(document.body).addClass('noscroll');
+    }
 }
 
 function changeToEdit() {
-  $("#modal-box").append(`
-    {% include "erc360/edit.html" %}`);
-  load_map_js();
-  $(document.body).addClass('noscroll');
+      if (!goToModal('#edit-modal')) {
+
+        $("#modal-box").append(`
+          {% include "erc360/edit.html" %}`);
+        load_map_js();
+        $(document.body).addClass('noscroll');
+      }
 }
 
 function changeToProfile() {
@@ -472,19 +523,23 @@ function changeToProfile() {
 }
 
 function changeToPhoto() {
-  $("#modal-box").append(`
-    {% with photo_src=erc360.photo.src %}
-    {% include "photo.html" %}
-    {% endwith %}
-    `);
-  $(document.body).addClass('noscroll');
+    if (!goToModal('#photo-modal')) {
+
+      $("#modal-box").append(`
+        {% with photo_src=erc360.photo.src %}
+        {% include "photo.html" %}
+        {% endwith %}
+        `);
+      $(document.body).addClass('noscroll');
+  }
 }
 
 function changeToMintERC360() {
-  $("#modal-box").empty();
-  $("#modal-box").append(`
-    {% include "erc360/mint.html" %}`);
-  $(document.body).addClass('noscroll');
+      if (!goToModal('#mint-modal')) {
+        $("#modal-box").append(`
+          {% include "erc360/mint.html" %}`);
+        $(document.body).addClass('noscroll');
+      }
 }
 
 
@@ -504,6 +559,12 @@ window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.addr
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
 changeToStructure();
 window.history.replaceState({id:"erc360-structure"},"ERC360 Structure", "/€{{erc360.address}}/structure/");
+{% elif request.url_rule.endpoint == 'erc360.deposit' %}
+changeToDeposit();
+window.history.replaceState({id:"erc360-deposit"},"ERC360 Deposit", "/€{{erc360.address}}/deposit/");
+{% elif request.url_rule.endpoint == 'erc360.transfer' %}
+changeToTransfer();
+window.history.replaceState({id:"erc360-transfer"},"ERC360 Transfer", "/€{{erc360.address}}/transfer/");
 {% elif request.url_rule.endpoint == 'erc360.photo' %}
 changeToPhoto();
 window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/");

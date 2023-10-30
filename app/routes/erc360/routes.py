@@ -29,6 +29,16 @@ def timeline(address):
 def structure(address):
     return erc360(address)
 
+@ bp.route("/erc360/<address>/deposit/", methods=["GET"])
+@ bp.route("/€<address>/deposit/", methods=["GET"])
+def deposit(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/transfer/", methods=["GET"])
+@ bp.route("/€<address>/transfer/", methods=["GET"])
+def transfer(address):
+    return erc360(address)
+
 @ bp.route("/erc360/<address>/ownership/", methods=["GET"])
 @ bp.route("/€<address>/ownership/", methods=["GET"])
 def ownership(address):

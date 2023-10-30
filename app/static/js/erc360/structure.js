@@ -46,12 +46,6 @@ $(document).on('blur input','#deposit-amount-input',function(event) {
 	checkDepositable();
  });
 
-
-
-$(document).on('click', '#deposit-button', function() {
-	changeToDeposit();
-});
-
 $(document).on('click', '#deposit', function() {
 	openDepositWindow();
 });

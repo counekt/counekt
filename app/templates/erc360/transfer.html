@@ -1,0 +1,77 @@
+{% with selected_bank=erc360.banks.first() %}
+<div class="modal is-active" id="#transfer-modal">
+<div class="modal-background to-structure"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Transfer {{erc360.name}}</p>
+  </header>
+  <section id="transfer-content" class="modal-card-body has-text-centered">
+    <div id="bank">
+      <h1><b>Bank</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <span class="select">
+          <select>
+            {% for bank in erc360.banks %}
+            <option {% if bank==selected_bank %}selected{% endif %}>{{bank.representation}}</option>
+            {% endfor %}
+          </select>
+      </span>
+    </p>
+    </div>
+    <br>
+    {% with selected_token_amount = selected_bank.token_amounts.first() %}
+    <div id="amount">
+      <h1><b>Amount</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <span class="select">
+          <select>
+          {% for token_amount in selected_bank.token_amounts %}
+            <option {% if token_amount==selected_token_amount %}selected{% endif %}>{{token_amount.token.symbol}}</option>
+          {% endfor %}
+          </select>
+      </span>
+      </p>
+      <p class="control">
+        <input id="transfer-amount-input" class="input" type="text" placeholder="Amount to transfer" min="1" max="{{2**256-1}}" maxlength="78">
+      </p>
+    </div>
+    <div class="field">
+      <p class="control">
+        <progress class="progress is-two-faced" id="transfer-amount-progress-bar" class="progress" value="0" max="{{selected_token_amount.amount}}">Ay</progress>
+      </p>
+      <p class="control">
+        <span id="transfer-amount-span" class="text" style="float:left;" data-original-amount='0'>0</span>
+        <span class="text" style="float:right;">{{selected_token_amount.representation}}
+        </span>
+      </p>
+  </div>
+  {% endwith %}
+    </div>
+      <div id="feedback-amount" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="amount-anchor">
+    <div id="to">
+      <h1><b>To</b></h1>
+      <div class="field has-addons has-addons-centered">
+      <p class="control">
+        <input id="transfer-recipient-input" class="input has-fixed-size" placeholder="Recipient of transfer" maxlength="42"></input>
+      </p>
+      </div>
+    </div>
+      <div id="feedback-recipient" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="recipient-anchor">
+      <button id="transfer" class="button is-success" disabled>Transfer</button>
+  </section>
+</div>
+</div>
+{% endwith %}

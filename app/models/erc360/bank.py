@@ -53,7 +53,7 @@ class TokenAmount(db.Model, Base):
 	token = db.relationship("Token",foreign_keys=[token_id])
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
 
-	def amount_in_decimals(self,decimals):
+	def amount_in_decimals(self,decimals=18):
 		return self.amount/(10**decimals)
 
 	@property
