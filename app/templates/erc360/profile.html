@@ -104,61 +104,10 @@
 <script src="/static/js/profile/add-members.js"></script>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-{% include "erc360/load-ownership-chart.html" %}
+{% include "erc360/ownership/load-ownership-chart.html" %}
 <script type="text/javascript">
 
   var address = "{{erc360.address}}";
-
-  function makeConnectButtonDefault() {
-    $('#join-button').addClass('is-info');
-    $('#join-button').removeClass('is-light').removeClass('is-link');
-    $('#join-button').html(`{% include 'profile/join-button/default.html' %}`);
-    $('#join-button').data('type', 'default');
-    $('#join-button').removeClass('is-danger');
-    
-  }
-
-  function makeConnectButtonPending() {
-    $('#join-button').toggleClass('is-info is-light');
-    $('#join-button').html(`{% include 'profile/join-button/pending.html' %}`);
-    $('#join-button').data('type', 'pending');
-    $('#join-button').addClass('calm');
-  }
-
-  function makeConnectButtonConnected() {
-    $('#join-button').toggleClass('is-success is-info');
-    $('#join-button').html(`{% include 'profile/join-button/joined.html' %}`);
-    $('#join-button').data('type', 'joined');
-    $('#join-button').addClass('calm');
-  }
-
-$("#join-button").hover(
-  function() {
-        if ($(this).data('type') == 'joined' && !$(this).hasClass('calm')) {
-          $(this).addClass('is-danger');
-          $(this).html(`{% include 'profile/join-button/leave.html' %}`);
-        }
-        else if ($(this).data('type') == 'pending' && !$(this).hasClass('calm')) {
-          $(this).addClass('is-danger');
-          $(this).html(`{% include 'profile/join-button/undo.html' %}`);
-
-    }
-  }, function() {
-        if ($(this).data('type') == 'joined') {
-          $(this).removeClass('is-danger');
-          $(this).html(`{% include 'profile/join-button/joined.html' %}`);
-          $(this).removeClass('calm');
-
-        }
-        else if ($(this).data('type') == 'pending') {
-          $(this).removeClass('is-danger');
-          $(this).removeClass('calm');
-          $(this).html(`{% include 'profile/join-button/pending.html' %}`);
-
-        }
-  }
-);
- 
 
 </script>
 <script type="text/javascript">
@@ -320,37 +269,6 @@ $.ready("load", function() {
 {% endif %}
 </script>
 <script type="text/javascript">
-  function sendInvites() {
-    sendERC360Invites();
-  }
-
-function sendERC360Invites() {
-  var formData = new FormData();
-    var usernames = JSON.stringify($("#add-members-tags-container").children().toArray().map( element => $(element).data('username')));
-    console.log(usernames);
-   formData.append("usernames", usernames);
-   formData.append("do", true)
-
-    $.post({
-      type: "POST",
-      url: "/€"+address+"/invite/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
-        var status = response["status"];
-        if (status === "success") { location.replace("/€"+response["address"]+"/"); }
-        else{message(status, response["box_id"], true);}
-        
-      }});
-}
-
-{% if request.url_rule.endpoint in ['profile.erc360_add_members']  %}
-load_add_members_js();
-{% endif %}
-</script>
-<script type="text/javascript">
 
   function goToModal(selector) {
     const modal = $(selector);
@@ -404,17 +322,18 @@ $(document).on('click', '#transfer-button', function(e) {
     e.preventDefault();
   });
 
-$(document).on('click', '.close', function() {
-  redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
-});
-
-$(document).on('click', '.modal-background.to-profile', function() {
+$(document).on('click', '.modal-background.to-profile, a.to-profile', function() {
     redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
 });
 
-$(document).on('click', '.modal-background.to-structure', function() {
-    redirect({id:"erc360-structure  "}, "Structure", "/€{{erc360.address}}/structure/", changeToStructure);
+$(document).on('click', '.modal-background.to-structure, a.to-structure', function() {
+    redirect({id:"erc360-structure"}, "Structure", "/€{{erc360.address}}/structure/", changeToStructure);
 });
+
+$(document).on('click', '.modal-background.to-ownership, a.to-ownership', function() {
+    redirect({id:"erc360-ownership"}, "Ownership", "/€{{erc360.address}}/ownership/", changeToOwnership);
+});
+
 
 $(document).on("click", '#reload-timeline', function() {
   update_timeline("{{erc360.address}}");
@@ -494,7 +413,7 @@ function changeToStructure() {
 function changeToDeposit() {
     if (!goToModal('#deposit-modal')) {
         $("#modal-box").append(`
-          {% include "erc360/deposit.html" %}`);
+          {% include "erc360/structure/deposit.html" %}`);
         $(document.body).addClass('noscroll');
     }
 }
@@ -502,7 +421,7 @@ function changeToDeposit() {
 function changeToTransfer() {
     if (!goToModal('#transfer-modal')) {
         $("#modal-box").append(`
-          {% include "erc360/transfer.html" %}`);
+          {% include "erc360/structure/transfer.html" %}`);
         $(document.body).addClass('noscroll');
     }
 }
@@ -537,7 +456,7 @@ function changeToPhoto() {
 function changeToMintERC360() {
       if (!goToModal('#mint-modal')) {
         $("#modal-box").append(`
-          {% include "erc360/mint.html" %}`);
+          {% include "erc360/ownership/mint.html" %}`);
         $(document.body).addClass('noscroll');
       }
 }
@@ -567,9 +486,9 @@ changeToTransfer();
 window.history.replaceState({id:"erc360-transfer"},"ERC360 Transfer", "/€{{erc360.address}}/transfer/");
 {% elif request.url_rule.endpoint == 'erc360.photo' %}
 changeToPhoto();
-window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/");
+window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/photo/");
 {% else %}
-window.history.replaceState({id:"erc360-profile"},"Profile", "./");
+window.history.replaceState({id:"erc360-profile"},"Profile", "/€{{erc360.address}}/photo/");
 {% endif %}
 </script>
 {% endblock %}
