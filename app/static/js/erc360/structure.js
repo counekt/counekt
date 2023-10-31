@@ -1,10 +1,9 @@
 
-$(document).on('keypress','#deposit-amount-input',function(event) {
+$(document).on('keypress','#deposit-amount-input, #transfer-amount-input',function(event) {
     var key = event.keyCode || event.charCode;
-    console.log(key);
     if (key < 48 || key > 57) {
       if (key == 44 || key == 46) {
-      	const string = $('#deposit-amount-input').val()
+      	const string = $(this).val()
       	if (string.includes(',') || string.includes('.')) {
       		return false;
       	}
@@ -18,8 +17,7 @@ $(document).on('keypress','#deposit-amount-input',function(event) {
 
   });
 
-function formatDepositAmountInput(string) {
-
+function formatAmountInput(string) {
 	if (string.startsWith(',') || string.startsWith('.')) {
 	  string = '0' + string;
 	}
@@ -27,9 +25,31 @@ function formatDepositAmountInput(string) {
   return string.replace(/^0+/,'0').replace(/^0(?=[1-9])/,'');
 }
 
+
+
+function formatTransferAmountInput() {
+	$this = $('#transfer-amount-input');
+	var amount = getTransferValue();
+	const max_amount = parseFloat($this.attr('max'));
+	if (amount>max_amount) {
+			amount = max_amount;
+		  $this.val(amount);
+	}
+	const amount_in_decimals = amount * 10**parseInt($this.data('decimals'));
+	console.log(amount_in_decimals,amount);
+	$('#transfer-amount-progress-bar').val(amount_in_decimals);
+   $('#transfer-amount-span').text(amount);
+}
+
 $(document).on('blur input','#deposit-amount-input',function(event) {
-	$('#deposit-amount-input').val(formatDepositAmountInput($('#deposit-amount-input').val()));
+	$(this).val(formatAmountInput($(this).val()));
 	checkDepositable();
+ });
+
+$(document).on('blur input','#transfer-amount-input',function(event) {
+	$(this).val(formatAmountInput($(this).val()));
+	formatTransferAmountInput();
+	checkTransferable();
  });
 
 $(document).on('click', '#deposit', function() {
@@ -38,6 +58,10 @@ $(document).on('click', '#deposit', function() {
 
 function getDepositValue() {
 	return parseFloat($('#deposit-amount-input').val().replace(',','.'));
+}
+
+function getTransferValue() {
+	return parseFloat($('#transfer-amount-input').val().replace(',','.'));
 }
 
 function checkDepositAmount() {
@@ -51,11 +75,29 @@ function checkDepositAmount() {
 	}
 }
 
+function checkTransferAmount() {
+	if (getTransferValue()>0) {
+      	$('#transfer-amount-input').addClass('is-success').removeClass('is-danger');
+      	return true;
+	}
+	else {
+	$('#transfer-amount-input').addClass('is-danger').removeClass('is-success');
+	return false;
+	}
+}
+
 function checkDepositable() {
   var amountCheck = checkDepositAmount();
   if (amountCheck) {
     $("#deposit").prop('disabled',false);
   } else {$("#deposit").prop('disabled',true);}
+}
+
+function checkTransferable() {
+  var amountCheck = checkTransferAmount();
+  if (amountCheck) {
+    $("#transfer").prop('disabled',false);
+  } else {$("#transfer").prop('disabled',true);}
 }
 
 

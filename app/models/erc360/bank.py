@@ -53,12 +53,17 @@ class TokenAmount(db.Model, Base):
 	token = db.relationship("Token",foreign_keys=[token_id])
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
 
-	def amount_in_decimals(self,decimals=18):
-		return self.amount/(10**decimals)
+	@hybrid_property
+	def decimals(self):
+		return self.token.decimals or 18
+
+	@hybrid_property
+	def amount_in_decimals(self):
+		return self.amount/(10**self.decimals)
 
 	@property
 	def representation(self):
-		return f"{self.amount_in_decimals(18)} {self.token.symbol}" if self.token else self.amount
+		return f"{self.amount_in_decimals} {self.token.symbol}" if self.token else self.amount
 
 	def __repr__(self):
 		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")
@@ -68,6 +73,7 @@ class Token(db.Model,Base):
 	name = db.Column(db.String) # name of token
 	symbol = db.Column(db.String) # symbol of token
 	address = db.Column(db.String(42), unique=True) # ETH token address
+	decimals = db.Column(db.Integer,default=18)
 
 	@property
 	def etherscan_url(self):

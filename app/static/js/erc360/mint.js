@@ -51,7 +51,7 @@ function getRecipient() {
 }
 
 function getAmount() {
-  return formatAmountInput($('#mint-amount-input').val()) || '0';
+  return formatNonZeroAmountInput($('#mint-amount-input').val()) || '0';
 }
 
 function displayInvalidAmount() {
@@ -106,7 +106,7 @@ Number.prototype.toPrettyExponential = function() {
    return Math.floor(mantissa*100)/100+" x 10"+"<sup>"+exponent+"</sup>";
 };
 
-function formatAmountInput(string) {
+function formatNonZeroAmountInput(string) {
   const pattern = /^0+/;
   return string.replace(pattern,'');
 }

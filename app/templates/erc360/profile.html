@@ -474,6 +474,7 @@ function changeToReferendums() {
 }
 
 function changeToDeposit() {
+    changeToStructureTab('#banks-tab-button');
     if (!goToModal('#deposit-modal')) {
         $("#modal-box").append(`
           {% include "erc360/structure/deposit.html" %}`);
@@ -482,6 +483,7 @@ function changeToDeposit() {
 }
 
 function changeToTransfer() {
+    changeToStructureTab('#banks-tab-button');
     if (!goToModal('#transfer-modal')) {
         $("#modal-box").append(`
           {% include "erc360/structure/transfer.html" %}`);

@@ -39,15 +39,15 @@
       </span>
       </p>
       <p class="control">
-        <input id="transfer-amount-input" class="input" type="text" placeholder="Amount to transfer" min="1" max="{{2**256-1}}" maxlength="78">
+        <input id="transfer-amount-input" class="input" type="text" placeholder="Amount to transfer" min="0" max="{{selected_token_amount.amount_in_decimals}}" maxlength="78" data-decimals="{{selected_token_amount.decimals}}">
       </p>
     </div>
     <div class="field">
       <p class="control">
-        <progress class="progress is-two-faced" id="transfer-amount-progress-bar" class="progress" value="0" max="{{selected_token_amount.amount}}">Ay</progress>
+        <progress class="progress is-two-faced" id="transfer-amount-progress-bar" class="progress" value="0" max="{{selected_token_amount.amount}}"></progress>
       </p>
       <p class="control">
-        <span id="transfer-amount-span" class="text" style="float:left;" data-original-amount='0'>0</span>
+        <span id="transfer-amount-span" class="text" style="float:left;">0</span>
         <span class="text" style="float:right;">{{selected_token_amount.representation}}
         </span>
       </p>
