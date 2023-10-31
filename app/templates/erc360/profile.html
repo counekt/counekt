@@ -274,7 +274,6 @@ $.ready("load", function() {
     const modal = $(selector);
     if ($('#modal-box').has(selector).length>0) {
         $('#modal-box').children().not(selector).remove();
-        $('#modal-box').append(modal);
         return true;
     }
     return false;
@@ -307,19 +306,19 @@ $.ready("load", function() {
     });
 
 $(document).on('click', '#banks-tab-button', function() {
-  changeToBanks();
+    redirect({id:"erc360-banks"}, "Banks", "/€{{erc360.address}}/structure/banks/", changeToBanks);
 });
 
 $(document).on('click', '#permits-tab-button', function() {
-  changeToPermits();
+      redirect({id:"erc360-permits"}, "Permits", "/€{{erc360.address}}/structure/permits/", changeToPermits);
 });
 
 $(document).on('click', '#dividends-tab-button', function() {
-  changeToDividends();
+  redirect({id:"erc360-dividends"}, "Dividends", "/€{{erc360.address}}/structure/dividends/", changeToDividends);
 });
 
 $(document).on('click', '#referendums-tab-button', function() {
-  changeToReferendums();
+  redirect({id:"erc360-referendums"}, "Referendums", "/€{{erc360.address}}/structure/referendums/", changeToReferendums);
 });
 
 $(document).on('click', '#deposit-button', function(e) {
@@ -390,6 +389,22 @@ $(window).on("popstate", function() {
     changeToStructure();
   }
 
+  else if (window.history.state.id == "erc360-banks") {
+    changeToBanks();
+  }
+
+  else if (window.history.state.id == "erc360-permits") {
+    changeToPermits();
+  }
+
+  else if (window.history.state.id == "erc360-dividends") {
+    changeToDividends();
+  }
+
+  else if (window.history.state.id == "erc360-referendums") {
+    changeToReferendums();
+  }
+
   else if (window.history.state.id == "erc360-deposit") {
     changeToDeposit();
   }
@@ -417,6 +432,8 @@ function changeToOwnership() {
     }
 }
 
+
+
 function changeToStructure() {
     if (!goToModal('#structure-modal')) {
       $("#modal-box").append(`
@@ -424,6 +441,17 @@ function changeToStructure() {
       $(document.body).addClass('noscroll');
     }
 }
+
+// Change tab
+function changeToStructureTab(tabSelector) {
+  changeToStructure();
+  const $this = $(tabSelector);
+  $(".structure-tab-content").addClass('vanish');
+  $('#structure-tabs ul li').removeClass('is-active');
+  $this.addClass('is-active');
+  $($this.data('content')).removeClass('vanish');
+}
+
 
 function changeToBanks() {
   changeToStructureTab('#banks-tab-button');
@@ -513,6 +541,18 @@ window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.addr
 {% elif request.url_rule.endpoint == 'erc360.structure' %}
 changeToStructure();
 window.history.replaceState({id:"erc360-structure"},"ERC360 Structure", "/€{{erc360.address}}/structure/");
+{% elif request.url_rule.endpoint == 'erc360.banks' %}
+changeToBanks();
+window.history.replaceState({id:"erc360-banks"},"ERC360 Banks", "/€{{erc360.address}}/structure/banks/");
+{% elif request.url_rule.endpoint == 'erc360.permits' %}
+changeToPermits();
+window.history.replaceState({id:"erc360-permits"},"ERC360 Permits", "/€{{erc360.address}}/structure/permits/");
+{% elif request.url_rule.endpoint == 'erc360.dividends' %}
+changeToDividends();
+window.history.replaceState({id:"erc360-dividends"},"ERC360 Dividends", "/€{{erc360.address}}/structure/dividends/");
+{% elif request.url_rule.endpoint == 'erc360.referendums' %}
+changeToReferendums();
+window.history.replaceState({id:"erc360-referendums"},"ERC360 Referendums", "/€{{erc360.address}}/structure/referendums/");
 {% elif request.url_rule.endpoint == 'erc360.deposit' %}
 changeToDeposit();
 window.history.replaceState({id:"erc360-deposit"},"ERC360 Deposit", "/€{{erc360.address}}/deposit/");

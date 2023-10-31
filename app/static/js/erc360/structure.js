@@ -1,12 +1,3 @@
-// Change tab
-
-function changeToStructureTab(tabSelector) {
-	const $this = $(tabSelector);
-	$(".structure-tab-content").addClass('vanish');
-	$('#structure-tabs ul li').removeClass('is-active');
-	$this.addClass('is-active');
-	$($this.data('content')).removeClass('vanish');
-}
 
 $(document).on('keypress','#deposit-amount-input',function(event) {
     var key = event.keyCode || event.charCode;

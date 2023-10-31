@@ -39,6 +39,26 @@ def deposit(address):
 def transfer(address):
     return erc360(address)
 
+@ bp.route("/erc360/<address>/structure/banks/", methods=["GET"])
+@ bp.route("/€<address>/structure/banks/", methods=["GET"])
+def banks(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/structure/permits/", methods=["GET"])
+@ bp.route("/€<address>/structure/permits/", methods=["GET"])
+def permits(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/structure/dividends/", methods=["GET"])
+@ bp.route("/€<address>/structure/dividends/", methods=["GET"])
+def dividends(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/structure/referendums/", methods=["GET"])
+@ bp.route("/€<address>/structure/referendums/", methods=["GET"])
+def referendums(address):
+    return erc360(address)
+
 @ bp.route("/erc360/<address>/ownership/", methods=["GET"])
 @ bp.route("/€<address>/ownership/", methods=["GET"])
 def ownership(address):
