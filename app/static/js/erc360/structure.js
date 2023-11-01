@@ -30,10 +30,17 @@ function formatAmountInput(string) {
 function formatTransferAmountInput() {
 	$this = $('#transfer-amount-input');
 	var amount = getTransferValue();
-	const max_amount = parseFloat($this.attr('max'));
+	const max_amount_str = $this.attr('max');
+	const max_amount = parseFloat(max_amount_str);
+	const min_amount_str = $this.attr('min');
+	const min_amount = parseFloat(min_amount_str);
+
 	if (amount>max_amount) {
 			amount = max_amount;
-		  $this.val(amount);
+		  $this.val(max_amount_str);
+	} else if (amount<min_amount && amount != 0) {
+		amount = min_amount;
+		$this.val(min_amount_str);
 	}
 	const amount_in_decimals = amount * 10**parseInt($this.data('decimals'));
 	console.log(amount_in_decimals,amount);
@@ -42,14 +49,17 @@ function formatTransferAmountInput() {
 }
 
 $(document).on('blur input','#deposit-amount-input',function(event) {
-	$(this).val(formatAmountInput($(this).val()));
 	checkDepositable();
  });
 
 $(document).on('blur input','#transfer-amount-input',function(event) {
-	$(this).val(formatAmountInput($(this).val()));
-	formatTransferAmountInput();
+	checkTransferAmount(true);
 	checkTransferable();
+ });
+
+$(document).on('blur input','#transfer-recipient-input',function(event) {
+    checkTransferRecipient(true);
+    checkTransferable();
  });
 
 $(document).on('click', '#deposit', function() {
@@ -57,45 +67,80 @@ $(document).on('click', '#deposit', function() {
 });
 
 function getDepositValue() {
-	return parseFloat($('#deposit-amount-input').val().replace(',','.'));
+	return parseFloat($('#deposit-amount-input').val().replace(',','.')) || 0;
 }
 
 function getTransferValue() {
-	return parseFloat($('#transfer-amount-input').val().replace(',','.'));
+	return parseFloat($('#transfer-amount-input').val().replace(',','.')) || 0;
 }
 
+function getTransferRecipient() {
+  return $('#transfer-recipient-input').val();
+}
+
+
 function checkDepositAmount() {
+	const $this = $('#deposit-amount-input');
+	$this.val(formatAmountInput($this.val()));
 	if (getDepositValue()>0) {
-      	$('#deposit-amount-input').addClass('is-success').removeClass('is-danger');
+      	$this.addClass('is-success').removeClass('is-danger');
       	return true;
 	}
 	else {
-	$('#deposit-amount-input').addClass('is-danger').removeClass('is-success');
+	$this.addClass('is-danger').removeClass('is-success');
 	return false;
 	}
 }
 
 function checkTransferAmount() {
+	const $this = $('#transfer-amount-input');
+	$this.val(formatAmountInput($this.val()));
+	formatTransferAmountInput();
 	if (getTransferValue()>0) {
-      	$('#transfer-amount-input').addClass('is-success').removeClass('is-danger');
+      	$this.addClass('is-success').removeClass('is-danger');
       	return true;
 	}
 	else {
-	$('#transfer-amount-input').addClass('is-danger').removeClass('is-success');
+	$this.addClass('is-danger').removeClass('is-success');
 	return false;
 	}
 }
 
+async function checkTransferRecipient(feedback=false) {
+	$this = $('#transfer-recipient-input')
+  var text = getTransferRecipient();
+  console.log("XXX");
+  console.log(text);
+  var isAddress = await getWeb3Provider().utils.isAddress(text);
+  console.log(isAddress);
+  if (!feedback) {return isAddress;}
+  console.log(isAddress);
+  if (isAddress) {
+    $this.addClass('is-success').removeClass('is-danger');
+    return true;
+  } else {
+    displayInvalidTransferRecipient();
+    return false;
+  }
+}
+
+function displayInvalidTransferRecipient() {
+  message("Invalid address", ['recipient'], true);
+  $('#transfer-recipient-input').addClass('is-danger').removeClass('is-success');
+}
+
+
 function checkDepositable() {
-  var amountCheck = checkDepositAmount();
+  const amountCheck = checkDepositAmount();
   if (amountCheck) {
     $("#deposit").prop('disabled',false);
   } else {$("#deposit").prop('disabled',true);}
 }
 
 function checkTransferable() {
-  var amountCheck = checkTransferAmount();
-  if (amountCheck) {
+  const amountCheck = checkTransferAmount();
+  const recipientCheck = checkTransferRecipient();
+  if (amountCheck && recipientCheck) {
     $("#transfer").prop('disabled',false);
   } else {$("#transfer").prop('disabled',true);}
 }

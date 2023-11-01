@@ -54,8 +54,16 @@ class TokenAmount(db.Model, Base):
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
 
 	@hybrid_property
+	def min_amount_in_decimals(self):
+		return '0.'+'0'*(self.decimals-1)+'1' if self.decimals > 0 else '1'
+
+	@hybrid_property
 	def decimals(self):
 		return self.token.decimals or 18
+
+	@hybrid_property
+	def amount_in_decimals(self):
+		return self.amount/(10**self.decimals)
 
 	@hybrid_property
 	def amount_in_decimals(self):
