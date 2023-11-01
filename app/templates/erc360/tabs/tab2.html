@@ -1,0 +1,5 @@
+{% for permit in erc360.permits %}
+	{% with title=permit.title, subtitle=permit.bytes.hex(), icon = "fa fa-id-card", id=permit.bytes.hex() %}
+	{% include 'extras/entity.html' %}
+	{% endwith %}
+{% endfor %}

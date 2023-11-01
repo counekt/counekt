@@ -1,0 +1,22 @@
+<script type="text/javascript" id="loadOwnershipChart">
+  function loadOwnershipChart() {
+    console.log("{{erc360.symbol}}");
+  const ctx = document.getElementById('erc360-ownership-chart');
+  {% set current_token_ids = erc360.current_token_ids %}
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+  labels: [
+    {% for t_id in current_token_ids %}'{{t_id.wallet.representation}}',{% endfor %}
+  ],
+  datasets: [{
+    label: 'Amount',
+    data: [{% for t_id in current_token_ids %}{{t_id.amount}},{% endfor %}],
+    backgroundColor: [
+      {% for t_id in current_token_ids %}'rgb(255, 205, 86)',{% endfor %}
+    ],
+    hoverOffset: 4
+  }]
+}});
+}
+</script>

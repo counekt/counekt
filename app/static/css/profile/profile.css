@@ -1,3 +1,8 @@
+.is-cloudy {
+	background-color: rgba(255,255,255,0.9) !important;
+	transition: 0.3s;
+}
+
 .profile-skill {
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -55,10 +60,9 @@ font-family: Universe, "Helvetica Neue",sans-serif;
 }
 
 #profile-tabs-content {
-	height: 500px;
+	min-height: 500px;
 	padding: 10px;
 	padding-top: 0px;
-	min-height: 0px;
 	transition: 0.3s;
 }
 

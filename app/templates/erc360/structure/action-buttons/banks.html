@@ -1,0 +1,12 @@
+<p class="control">
+  <a id="deposit-button" class="button is-success is-light">
+    Deposit
+  </a>
+</p>
+{% if current_user.has_wallet_with_permit(erc360,"0000000000000000000000000000000000000000000000000000000000000000") %}
+<p class="control">
+  <a id="transfer-button" class="button is-link is-light">
+      Transfer
+    </a>
+</p>
+{% endif %}

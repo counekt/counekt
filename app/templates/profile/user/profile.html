@@ -87,6 +87,18 @@
   {% endif %}
   </div>
 
+<div class="control has-icons-left">
+<div id="wallet-select" class="select is-centered is-fullwidth is-medium" style="color: black;margin-bottom: 5px; border-radius: 10px;" disabled>
+  <select style="color: black;" class="is-cloudy">
+    {% for wallet in user.wallets %}
+    <option {% if user.main_wallet == wallet %}selected{% endif %}>{{wallet.address}}</option>
+    {% endfor %}
+  </select>
+</div>
+<span class="icon is-large is-left">
+    <i class="fas fa-wallet"></i>
+  </span>
+</div>
 {% include "profile/user/tabs/tabs.html" %}
 {% with vanish=True, create_bar = user == current_user, wall=user.wall, by="new" %}
 {% include 'comms/wall/wall-bit.html' %}
@@ -100,23 +112,25 @@
 {% with photo_src = user.photo.src %}
 {% include "photo.html" %}
 {% endwith %}
-{% elif request.url_rule.endpoint == 'idea.create' %}
-{% include "idea/create.html" %}
+{% elif request.url_rule.endpoint == 'erc360.create' %}
+{% include "erc360/create.html" %}
 {% elif request.url_rule.endpoint == 'profile.create_medium' %}
 {% include "profile/user/create-medium.html" %}
 {% endif %}
 
 {% endblock %}
 
-{% block scripts %}
+{% block head %}
 <link rel="stylesheet" href="/static/css/comms/medium.css">
-<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
 <link rel="stylesheet" href="/static/css/profile/profile.css">
 <link rel="stylesheet" href="/static/css/profile/mini-profile.css">
 <link rel="stylesheet" href="/static/css/profile/edit.css">
 <link rel="stylesheet" href="/static/css/profile/user/edit.css">
 <link rel="stylesheet" href="/static/css/profile/photo.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/comms/medium.js') }}"></script>
 <script src="/static/js/comms/search-filter-bar.js"></script>
 <script src="/static/js/profile/profile.js"></script>
 <script src="/static/js/profile/user/profile.js"></script>
@@ -124,7 +138,7 @@
 <script src="{{ url_for('static', filename='js/profile/user/create-medium.js') }}"></script>
 <script src="{{ url_for('static', filename='js/profile/user/create-medium-with-quote.js') }}"></script>
 <script src="{{ url_for('static', filename='js/profile/user/delete-medium.js') }}"></script>
-<script src="/static/js/idea/create.js"></script>
+<script src="/static/js/erc360/create.js"></script>
 <script src="/static/js/profile/configure-skills.js"></script>
 <script src="/static/js/feedback.js"></script>
 <script src="/static/js/load-image.js"></script>
@@ -340,7 +354,7 @@ if(!$('#show-location').is(":checked")) {
 
 }
 
-{% if request.url_rule.endpoint in ['profile.edit_user','profile.create_idea']  %}
+{% if request.url_rule.endpoint in ['profile.edit_user','profile.create_erc360']  %}
 load_map_js();
 {% endif %}
 </script>
@@ -358,8 +372,8 @@ load_map_js();
   });
 
 
-     $(document).on('click', '#create-idea-button', function(e) {
-    redirect({id:"create-idea"},"Create idea", "/create/idea/", changeToCreateIdea);
+     $(document).on('click', '#create-erc360-button', function(e) {
+    redirect({id:"create-erc360"},"Create erc360", "/create/erc360/", changeToCreateERC360);
     e.preventDefault();
   });
 
@@ -388,8 +402,8 @@ $(window).on("popstate", function() {
   }
 
 
-  else if (window.history.state.id == "create-idea") {
-    changeToCreateIdea();
+  else if (window.history.state.id == "create-erc360") {
+    changeToCreateERC360();
   }
 
   else if (window.history.state.id == "create-medium") {
@@ -422,9 +436,9 @@ function changeToPhoto() {
 }
 
 
-function changeToCreateIdea() {
+function changeToCreateERC360() {
     $("#modal-box").append(`
-    {% include "idea/create.html" %}`);
+    {% include "erc360/create.html" %}`);
   load_map_js();
   freezeScroller();
 }
@@ -434,8 +448,8 @@ function changeToCreateIdea() {
 window.history.replaceState({id:"edit-user"},"Edit profile", "/settings/profile/");
 {% elif request.url_rule.endpoint == 'profile.user_photo' %}
 window.history.replaceState({id:"user-photo"},"Profile photo", "/user/{{user.username}}/");
-{% elif request.url_rule.endpoint == 'profile.create_idea' %}
-window.history.replaceState({id:"create-idea"},"Create idea", "/create/idea/");
+{% elif request.url_rule.endpoint == 'profile.create_erc360' %}
+window.history.replaceState({id:"create-erc360"},"Create erc360", "/create/erc360/");
 {% elif request.url_rule.endpoint == 'profile.create_medium' %}
 window.history.replaceState({id:"create-medium"},"Create Medium", "/create/medium/");
 {% else %}

@@ -53,8 +53,8 @@
     <div id="modal-box">{% block modal %}{% endblock %}</div>
     <script type="text/javascript">
 
-        function miniprofile(name="",identifier="", bio="", href="",photo_src="",symbol="") {
-            return `{% include 'profile/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\symbol//',symbol);
+        function miniprofile(name="",identifier="", bio="", href="",photo_src="",tick="") {
+            return `{% include 'profile/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\tick//',tick);
         }
 
         function media(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false) {
@@ -120,7 +120,7 @@
             return `{% include 'comms/wall/unavailable-quote.html' %}`;
         }
 
-        function medium(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_symbol="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
+        function medium(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_tick="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
             console.log(profile_photo_src);
             console.log("PROFILE PHOTO SRC");
             if (is_hearted) {
@@ -131,10 +131,10 @@
                 var heart_class = "";
                 var heart_icon_type = "far"
             }
-            return `{% with by_current_user=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
+            return `{% with by_current_user=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_tick//',author_tick).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
         }
 
-        function mediumQuote(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_symbol="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
+        function mediumQuote(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_tick="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
             if (is_hearted) {
                 var heart_class = "active";
                 var heart_icon_type = "fas";
@@ -143,10 +143,10 @@
                 var heart_class = "";
                 var heart_icon_type = "far"
             }
-            return `{% with is_quote=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
+            return `{% with is_quote=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_tick//',author_tick).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
         }
 
-        function mediumWithQuote(quote_html, id, title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_symbol="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
+        function mediumWithQuote(quote_html, id, title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_tick="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
             if (is_hearted) {
                 var heart_class = "active";
                 var heart_icon_type = "fas";
@@ -157,7 +157,7 @@
             }
             var the_content = `{% with is_template=True, by_current_user=True %}{% include 'comms/wall/medium-with-quote.html' %}{% endwith %}`;
             console.log(the_content);
-            return the_content.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_symbol//',author_symbol).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type).replaceAll('\\quote_html//',{% with is_quote=True %}quote_html{% endwith %});
+            return the_content.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_tick//',author_tick).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type).replaceAll('\\quote_html//',{% with is_quote=True %}quote_html{% endwith %});
 
         }
 

@@ -17,23 +17,26 @@ from eth_abi import abi
 
 def decode_event_payload(e):
     if e["args"]["func"] == "sP":
-        permitName, account, newState = abi.decode_abi(["string","address","uint8"],e["args"]["args"])
+        permit, account, status = abi.decode_abi(["bytes32","address","bool"],e["args"]["args"])
         return {"func":e["args"]["func"], "permitName":permitName, "account":account, "newState":newState, "by":e["args"]["by"]}
-    if e["args"]["func"] == "sB":
-        permitName, newState = abi.decode_abi(["string","uint8"],e["args"]["args"])
-        return {"func":e["args"]["func"], "permitName":permitName,"newState":newState, "by":e["args"]["by"]}
-    if e["args"]["func"] == "sNS":
-        newState = abi.decode_abi(["bool"],e["args"]["args"])
-        return {"func":e["args"]["func"], "newState":newState, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iS":
+        amount, tokenAddress, price, to = abi.decode_abi(["uint256","address","uint256","address"],e["args"]["args"])
+        return {"func":e["args"]["func"],"amount":amount,"tokenAddress":tokenAddress,"price":price,"to":to,"by":e["args"]["by"]}
+    if e["args"]["func"] in ["uTA","rTA"] :
+        tokenAddress = abi.decode_abi(["address"],e["args"]["args"])
+        return {"func":e["args"]["func"], "tokenAddress":tokenAddress, "by":e["args"]["by"]}
     if e["args"]["func"] == "iD":
-        bankName, tokenAddress, value = abi.decode_abi(["string","address","uint256"],e["args"]["args"])
-        return {"func":e["args"]["func"], "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
+        clock, bankName, tokenAddress, value = abi.decode_abi(["uint256","string","address","uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "clock":clock, "bankName":bankName,"tokenAddress":tokenAddress, "value": value, "by":e["args"]["by"]}
     if e["args"]["func"] == "dD":
-        dividend = abi.decode_abi(["uint256"],e["args"]["args"])
-        return {"func":e["args"]["func"], "dividend":dividend, "by":e["args"]["by"]}
-    if e["args"]["func"] == "cD":
-        dividend, dividendValue = abi.decode_abi(["uint256", "uint256"],e["args"]["args"])
-        return {"func":e["args"]["func"], "dividend":dividend, "dividendValue":dividendValue, "by":e["args"]["by"]}
+        dividendClock = abi.decode_abi(["uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "clock":dividendClock, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iR":
+        clock = abi.decode_abi(["uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "clock":clock, "by":e["args"]["by"]}
+    if e["args"]["func"] == "iP":
+        referendumClock, index = abi.decode_abi(["uint256", "uint256"],e["args"]["args"])
+        return {"func":e["args"]["func"], "referendumClock":referendumClock, "index":index, "by":e["args"]["by"]}
     if e["args"]["func"] in ["cB","aA","rA"]:
         bankName, bankAdmin = abi.decode_abi(["string","address"],e["args"]["args"])
         return {"func":e["args"]["func"], "bankName":bankName, "bankAdmin":bankAdmin, "by":e["args"]["by"]}
@@ -41,24 +44,35 @@ def decode_event_payload(e):
         bankName = abi.decode_abi(["string"],e["args"]["args"])
         return {"func":e["args"]["func"], "bankName":bankName, "by":e["args"]["by"]}
     if e["args"]["func"] == "tT":
-        bankName, tokenAddress, value, to = abi.decode_abi(["string","address","uint256","address"],e["args"]["args"])
-        return {"func":e["args"]["func"], "bankName":bankName, "tokenAddress":tokenAddress, "value":value, "to":to, "by":e["args"]["by"]}
+        fromBankName, tokenAddress, value, to, toBankName = abi.decode_abi(["string","address","uint256","address","string"],e["args"]["args"])
+        return {"func":e["args"]["func"], "fromBankName":fromBankName, "tokenAddress":tokenAddress, "value":value, "to":to, "toBankName":toBankName, "by":e["args"]["by"]}
+    if e["args"]["func"] == "rT":
+        tokenAddress,value,bankName = abi.decode_abi(["address","uint256","string"],e["args"]["args"])
+        return {"func":e["args"]["func"], "tokenAddress":tokenAddress, "value":value, "bankName":bankName, "by":e["args"]["by"]}
     if e["args"]["func"] == "mT":
         fromBankName, toBankName, tokenAddress, value = abi.decode_abi(["string","string","address","uint256","address"],e["args"]["args"])
         return {"func":e["args"]["func"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
+    if e["args"]["func"] == "lE":
+        return {"func":e["args"]["func"], "by":e["args"]["by"]}
+
+
+def get_deployed_bytecode():
+    with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
+        json_data = json.load(json_file)
+        return json_data["deployedBytecode"]
 
 def get_bytecode():
-    with open("solidity/build/contracts/Votable.json","r") as json_file:
+    with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
         json_data = json.load(json_file)
         return json_data["bytecode"]
 
 def get_abi():
-    with open("solidity/build/contracts/Votable.json","r") as json_file:
+    with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
         json_data = json.load(json_file)
         return json_data["abi"]
 
 def contract_has_method(bytecode, signature):
-    function_signature = w3.eth.abi.encodeFunctionSignature(signature);
+    function_signature = w3.eth.abi.encodeFunctionSignature(signature)
     # remove "0x" prefixed in 0x<4bytes-selector>
     return bytecode.index(functionSignature[2:]) > 0;
 

@@ -1,0 +1,54 @@
+<div class="modal is-active" id="#mint-modal">
+<div class="modal-background to-ownership"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-ownership" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Mint {{erc360.name}}</p>
+  </header>
+  <section id="mint-content" class="modal-card-body has-text-centered">
+    <div id="amount">
+      <h1><b>Amount</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <a class="button is-static">
+            {{erc360.symbol}}
+          </a>
+        </p>
+      <p class="control">
+        <input id="mint-amount-input" class="input" type="text" placeholder="Amount to mint" min="1" max="{{2**256-1}}" maxlength="78">
+      </p>
+    </div>
+    <div class="field">
+      <p class="control">
+        <progress class="progress is-two-faced" id="mint-amount-progress-bar" class="progress" value="{{erc360.log_total_supply}}" max="{{erc360.log_max_supply}}">Ay</progress>
+      </p>
+      <p class="control">
+        <span id="mint-amount-span" class="text" style="float:left;" data-original-amount='{{erc360.total_supply or 0}}'>{{erc360.pretty_exponential_total_supply}}</span>
+        <span class="text" style="float:right;">2<sup>{{erc360.log_max_supply}}</sup>-1</span>
+      </p>
+  </div>
+    </div>
+      <div id="feedback-amount" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="amount-anchor">
+    <div id="to">
+      <h1><b>To</b></h1>
+      <div class="field has-addons has-addons-centered">
+      <p class="control">
+        <input id="mint-recipient-input" class="input has-fixed-size" placeholder="Recipient of tokens" maxlength="42"></input>
+      </p>
+      </div>
+    </div>
+      <div id="feedback-recipient" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="recipient-anchor">
+      <button id="mint" class="button is-success" disabled>MINT</button>
+  </section>
+</div>
+</div>

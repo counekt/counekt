@@ -116,3 +116,16 @@ async function walletIsConnected() {
 	return true;
 }
 
+async function makeSureWalletConnected() {
+	var isInstalled = await walletIsInstalled();
+    if (!isInstalled) {
+      flash("MetaMask not installed!");
+      return false;
+    }
+    var isConnected = await walletIsConnected();
+    if (!isConnected) {
+      flash("Connecting wallet...");
+      await checkIfWalletConnected();
+    }
+    return isConnected;
+}

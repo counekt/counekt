@@ -58,5 +58,5 @@ $(document).on('change', '#day', function() {
 $(document).on('change', '#year', function() {
   // If Leap Year; add the 29th day of February
   if (parseInt($('#year').val()) % 4 === 0 && (parseInt($('#year').val()) % 100 !== 0 || parseInt($('#year').val()) % 400 === 0)) {
-    $('#day').children().eq(29).prop('disabled', false);;
+    $('#day').children().eq(29).prop('disabled', false);
   }});

@@ -1,0 +1,106 @@
+<div class="modal is-active" id="#create-modal">
+<div class="modal-background to-profile"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted" aria-label="close">
+        <span class="icon">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Create ERC360Corporatizable</p>
+      <button class="button loading-button is-info is-normal is-rounded" id="create-erc360">
+        <span>Save</span>
+      </button>
+  </header>
+  <section class="modal-card-body has-text-centered">
+
+  <div id="edit-associate-image">
+      <img draggable="false" id="edit-associate-image-content" src="{{ url_for('static', filename='images/erc360.jpg') }}">
+      <input type="file"  accept="image/*" name="image" id="upload" onchange="loadImage(event, '#edit-associate-image-content')" style="display: none;">
+    <button class="button is-large is-white" id="edit-associate-image-upload">
+    <span class="icon is-medium">
+      <i class="fa fa-camera-retro"></i>
+    </span>
+  </button>
+  </div>
+  <br>
+  <div>
+    <div id="symbol">
+      <h1><b>Symbol</b></h1>
+        <div class="field has-addons">
+          <p class="control">
+          <a class="button is-static">€</a>
+          </p>
+          <p class="control" style="width:100%;">
+          <input class="input has-fixed-size" placeholder="Add the symbol of your ERC360" id="symbol-field"></input>
+          </p>
+        </div>
+    </div>
+      <div id="feedback-symbol" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="symbol-anchor">
+    <div id="name">
+      <h1><b>Name</b></h1>
+      <input class="input has-fixed-size" placeholder="Add the name of your token" id="name-field"></input>
+    </div>
+      <div id="feedback-name" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="name-anchor">
+    <div id="description">
+      <h1><b>Description</b></h1>
+      <textarea class="textarea has-fixed-size" placeholder="Add the description of your token" id="description-field" rows="3" maxlength="160"></textarea>
+    </div>
+      <div id="feedback-description" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="description-anchor">
+
+    <h1><b>Public</b></h1>
+    <label class="switch">
+      <input type="checkbox" id="public">
+      <span class="slider round"></span>
+    </label>
+    <div id="feedback-public" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="public-anchor">
+
+    <h1><b>Show location</b></h1>
+    <label class="switch">
+      <input type="checkbox" id="show-location">
+      <span class="slider round"></span>
+    </label>
+    <div id="feedback-show-location" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="show-location-anchor">
+    <div id="location-settings">
+      <div id="location">
+        <h1><b>Location</b></h1>
+        <input class="input has-fixed-size" placeholder="Add the location of your token" id="location-field" rows="2"></input>
+        <div id="map">
+        </div>
+      </div>
+        <div id="feedback-location" class="feedback">
+          <div class="message"></div>
+        </div>
+        <br id="location-anchor">
+        <h1><b>Visible on the map</b></h1>
+      <label class="switch">
+        <input type="checkbox" id="visible">
+        <span class="slider round"></span>
+      </label>
+      <div id="feedback-visible" class="feedback">
+          <div class="message"></div>
+        </div>
+        <br id="visible-anchor">
+    </div>
+
+  </div>
+  <br>
+</div>
+</section>
+</div>
+</div>

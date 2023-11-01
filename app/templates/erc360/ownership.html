@@ -1,0 +1,32 @@
+<div class="modal is-active" id="ownership-modal">
+<div class="modal-background to-profile"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-profile" aria-label="close">
+        <span class="icon to-profile">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Ownership of {{erc360.name}}</p>
+      <p class="control">
+        <button class="button is-info is-normal is-rounded" id="reload-ownership">
+          <span class="icon is-small">
+            <i class="fa fa-refresh"></i>
+          </span>
+        </button>
+    </p>
+  </header>
+  <section id="ownership-content" class="modal-card-body has-text-centered">
+      {% if erc360.token_ids.count() == 0 %}
+      <div style="height: 400px;"><p style="height:400px;line-height:400px;">No tokens minted yet...</p></div>
+      <canvas id="erc360-ownership-chart" style="visibility:hidden;"></canvas>
+      {% else %}
+      <canvas id="erc360-ownership-chart"></canvas>
+      {% endif %}
+      {% if current_user.has_wallet_with_permit(erc360,"5ce8495784c6f4e78c600137ac8c674936aae3e1ffbcf8860e850a93d83c928f") %}
+      <br>
+      <button class="button is-success is-rounded" id="mint-button">MINT</button>
+      {% endif %}
+  </section>
+</div>
+</div>

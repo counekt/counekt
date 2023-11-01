@@ -1,0 +1,22 @@
+<!-- This template can also be used with javascript. Just include it with jinja and use the method called .replace to fill in the below variables.
+ -->
+<div class="entity box selectable" id="{{id}}">
+        <div class="entity-image-wrap">
+        <a class="entity-image" href="{{href or 'javascript:void(0);'}}"{% if not href %}style="pointer-events: none; cursor: none;"{% endif %}>
+            {% if photo_src %}
+            <img alt draggable="false" class="entity-image-content" src="{{photo_src}}">
+            {% else %}
+            <span class="icon is-large"><i class="{{icon}} fa-lg" aria-hidden="true"></i></span>
+            {% endif %}
+        </a>
+      </div>
+        <div class="entity-content">
+          <a class="entity-identity" href="{{href or 'javascript:void(0);'}}" {% if not href %}style="pointer-events: none; cursor: normal;"{% endif %}>
+            <span class="entity-title selectable"><b>{{title}}</b></span>
+            <br>
+            <span class="entity-subtitle selectable">{{subtitle}}</span>
+          </a>
+          <br>
+        <span class="entity-text selectable" maxlenght="30">{{text}}</span>
+      </div>
+</div>

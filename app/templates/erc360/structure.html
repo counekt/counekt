@@ -1,0 +1,139 @@
+<div id="structure-modal" class="modal is-active">
+<div class="modal-background to-profile"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-profile" aria-label="close">
+        <span class="icon to-profile">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Structure of {{erc360.name}}</p>
+      <p class="control">
+        <button class="button is-info is-normal is-rounded" id="reload-structure">
+          <span class="icon is-small">
+            <i class="fa fa-refresh"></i>
+          </span>
+        </button>
+    </p>
+  </header>
+  <section id="structure-content" class="modal-card-body has-text-centered">
+    <div id="structure-tabs" class="tabs is-centered is-fullwidth" style="width:100%;">
+      <ul>
+        <li id="banks-tab-button" data-content="#banks-tab-content" class="is-active"><a>Banks</a></li>
+        <li id="permits-tab-button" data-content="#permits-tab-content"><a>Permits</a></li>
+        <li id="dividends-tab-button" data-content="#dividends-tab-content"><a>Dividends</a></li>
+        <li id="referendums-tab-button" data-content="#referendums-tab-content"><a>Referendums</a></li>
+      </ul>
+    </div>
+    <div id="structure-tabs-content">
+    <div id="banks-tab-content" class="structure-tab-content" style="height: 320px;display: flex; flex-direction: column;">
+      {% if erc360.banks.count() > 0 %}
+      <div class="field has-addons" style="margin: 0px;">
+        <p class="control">
+          <a class="button is-static" style="border-bottom-width: 0px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;">
+            Bank
+          </a>
+        </p>
+        <p class="control">
+      <div class="select is-fullwidth">
+        <select style="border-bottom-width: 0px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;">
+          {% for bank in erc360.banks %}
+          <option>{{bank.representation}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      </p>
+      </div>
+      <div id="bank-tabs" class="tabs is-toggle is-centered is-fullwidth is-small">
+      <ul>
+        <li data-content="#bank-balances-tab" class="is-active"><a>Balances</a></li>
+        <li data-content="#bank-admins-tab"><a>Administrators</a></li>
+        <li data-content="#bank-activity-tab"><a>Activity</a></li>
+      </ul>
+    </div>
+      <div class="table-container">
+        <table id="bank-balances" class="table is-bordered is-narrow is-striped is-hoverable is-fullwidth">
+          {% for token_amount in erc360.banks.first().token_amounts %}
+          <tr>
+            <td><a href="{{token_amount.token.etherscan_url}}" target="_blank">{{token_amount.token.name}}</a></td>
+            <td>{{token_amount.representation}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% else %}
+      <div style="height: 320px;"><p style="height:320px;line-height:320px;">No banks created yet...</p></div>
+      {% endif %}
+    </div>
+    <div id="permits-tab-content" class="structure-tab-content vanish" style="height: 320px;">
+      <div class="field has-addons" style="margin: 0px;">
+        <p class="control"><a class="button is-static" style="border-bottom-width: 0px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;">Permit</a></p>
+        <p class="control">
+          <div class="select is-fullwidth">
+            <select style="border-bottom-width: 0px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;">
+              {% for permit in erc360.permits %}
+              <option>{{permit.representation}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </p>
+      </div>
+        <table class="table is-striped is-bordered is-fullwidth">
+          <tr><td>
+          <span class='icon'><i class='fa-solid fa-chess-king'></i></span>
+          <span class="text">Frederik (04x00de20d230d230)</span>
+          </td></tr>
+          <tr><td>
+          <span class='icon'><i class='fa-solid fa-chess-bishop'></i></span>
+          <span class="text">Theo (03x00fe40t2303d0)</span>
+          </td></tr>
+
+          {% with permit=erc360.permits.first() %}
+          {% for wallet in permit.wallets %}
+          <tr><td>
+            <span class='icon'>
+            {% if wallet in permit.parent.wallets %}
+            <i class='fa-solid fa-chess-king'></i>
+            {% else %}
+            <i class='fa-solid fa-chess-bishop'></i>
+            {% endif %}
+            </span>
+            <span class="text">{{wallet.representation}}</span>
+          {% endfor %}
+          </td></tr>
+          {% endwith %}
+        </table>
+    </div>
+    <div id="dividends-tab-content" class="structure-tab-content vanish" style="height: 320px;">
+      {% if erc360.dividends.count() > 0 %}
+      <span class="text" style="float:left;">#1</span>
+      <progress class="progress is-success" value="75" max="100" style="margin-bottom:0px;">75%</progress>
+      <span class="text" style="float:right;">75/100 ETH</span>
+      <span class="text" style="float:left;margin-top:15px;">#0</span>
+      <progress class="progress is-success" value="0" max="100" style="margin-bottom:0px;">0%</progress>
+      <span class="text" style="float:right;">0/100 USDC</span>
+      {% else %}
+      <div style="height: 320px;"><p style="height:320px;line-height:320px;">No dividends issued yet...</p></div>
+      {% endif %}
+    </div>
+    <div id="referendums-tab-content" class="structure-tab-content vanish" style="height: 320px;">
+      {% if erc360.dividends.count() > 0 %}
+      <span class="text" style="float:left;">#1</span>
+      <progress class="progress is-success" value="75" max="100" style="margin-bottom:0px;">75%</progress>
+      <span class="text" style="float:right;">75/100 ETH</span>
+      <span class="text" style="float:left;margin-top:15px;">#0</span>
+      <progress class="progress is-success" value="0" max="100" style="margin-bottom:0px;">0%</progress>
+      <span class="text" style="float:right;">0/100 USDC</span>
+      {% else %}
+      <div style="height: 320px;"><p style="height:320px;line-height:320px;">No referendums issued yet...</p></div>
+      {% endif %}
+    </div>
+</div>
+  </section>
+   <footer class="modal-card-foot" style="background-color: white;height:80px;">
+      <div id="structure-buttons" class="field is-grouped is-grouped-centered" style="margin: auto;">
+        {% include "erc360/structure/action-buttons/banks.html" %}
+      </div>
+    </footer>
+</div>
+</div>

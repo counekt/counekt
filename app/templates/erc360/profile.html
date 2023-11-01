@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="profile" class="container">
+  <div id="profile-top" class="floater container">
+    <div id="profile-left">
+      <div id="profile-image">
+        <a href="/erc360/{{erc360.handle}}/photo/">
+        <img alt draggable="false" id="profile-image-content" src="{{ erc360.photo.src }}">
+        </a>
+      </div>
+      <div id="profile-left-bottom">
+        <p class="title is-4 selectable" style="color:black"><b>{{ erc360.name }}</b></p>
+        <p id="erc360-address" class="subtitle is-6 selectable" style="color:gray">{{ erc360.address }}</p>
+      </div>
+    </div>
+
+    <div id="profile-right">
+      <div id="profile-right-top">
+        <div id="profile-bar" class="field">
+          <div id="profile-bar-content">
+            {% if erc360 not in current_user.erc360s %}
+              <button class="button is-info is-inverted" id="more-details-button"><span class="icon is-small"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></span></button>
+            {% endif %}
+
+              {% if current_user.has_wallet_with_permit(erc360,"0"*64) %}
+                <button class="button is-info is-inverted" id="edit-button" href="/settings/profile/">Edit ERC360</button>
+              {% endif %}
+          </div>
+          <br style="clear: both;">
+        </div>
+        <div id="profile-bio" class="selectable">
+        <p style="color:black"> {% if erc360.description %}{{erc360.description}}{% endif %} </p>
+        </div>
+      </div>
+      <div id="profile-right-bottom">
+        {% if erc360.address %}
+        <div id="profile-address">
+          <span class="icon is-small"><i class="fa fa-euro" aria-hidden="true"></i></span><span class="selectable">{{erc360.symbol}}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <br style="clear: both;">
+  </div>
+  <!-- 
+  {% raw %}
+  {% if erc360.skills.all() %}
+  <div id="profile-skills" class="container">
+    {% for skillrow in skillrows %}
+    <div class="profile-skill-row">
+    {% for skill in skillrow %}
+      <div class="profile-skill" style="color: {{skill_aspects[skill.title]['color']}}; background-color: {{skill_aspects[skill.title]['background-color']}};"><span>{{skill.title}}</span></div>
+    {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endraw  %}
+  -->
+{% include 'erc360/key-info.html' %}
+{% include "erc360/tabs/tabs.html" %}
+
+{% endblock %}
+
+
+{% block scripts %}
+<!-- Probably good for now to have this below-->
+<script src="/static/js/erc360/timeline.js"></script>
+<script src="/static/js/erc360/ownership.js"></script>
+<script src="/static/js/erc360/structure.js"></script>
+<link rel="stylesheet" href="/static/css/profile/profile.css">
+<link rel="stylesheet" href="/static/css/erc360/erc360.css">
+<link rel="stylesheet" href="/static/css/erc360/structure.css">
+<link rel="stylesheet" href="/static/css/erc360/mint.css">
+<link rel="stylesheet" href="/static/css/extras/entity.css">
+<link rel="stylesheet" href="/static/css/profile/mini-profile.css">
+
+<link rel="stylesheet" href="/static/css/profile/edit.css">
+<link rel="stylesheet" href="/static/css/profile/photo.css">
+<link rel="stylesheet" href="/static/css/profile/add-members.css">
+<link rel="stylesheet" href="/static/css/profile/add-roles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+
+<!-- For charts: -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- For tree charts: 
+<script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/Treant.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/vendor/raphael.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treant-js@1.0.1/Treant.css"></script>
+-->
+
+<!-- Probably good for now to have this below-->
+<script src="/static/js/profile/profile.js"></script>
+<script src="/static/js/profile/user/profile.js"></script>
+<script src="/static/js/erc360/profile.js"></script>
+<script src="/static/js/erc360/edit.js"></script>
+<script src="/static/js/erc360/mint.js"></script>
+
+<script src="/static/js/profile/configure-skills.js"></script>
+<script src="/static/js/feedback.js"></script>
+<script src="/static/js/load-image.js"></script>
+<script src="/static/js/datepicker.js"></script>
+<script src="/static/js/profile/add-members.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% include "erc360/ownership/load-ownership-chart.html" %}
+<script type="text/javascript">
+
+  var address = "{{erc360.address}}";
+
+</script>
+<script type="text/javascript">
+  var address = "{{erc360.address}}";
+
+  function load_map_js() {
+  var map = L.map('map').setView({% if erc360.latitude and erc360.longitude %}[{{erc360.latitude}}, {{erc360.longitude}}], 12{% else %}[55.676111, 12.568333], 2{% endif %});
+         
+         //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames
+         layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+            subdomains: 'abcd',
+            maxZoom: 13,
+            minZoom: 2
+         }).addTo(map);
+         // Create additional Control placeholders
+var markerGroup = L.layerGroup().addTo(map);
+
+map.on('click', function(e){
+    placeMarker(e.latlng);
+    getAddress(e.latlng);
+});
+
+var marker;
+
+{% if erc360.latitude and erc360.longitude %}
+  marker = new L.marker([{{erc360.latitude}}, {{erc360.longitude}}]).addTo(markerGroup);
+{% endif %}
+
+window.getLatLng = function() {
+  if (marker) {return(marker.getLatLng());}
+}
+
+window.markerIsPlaced = function() {
+  if (marker) {
+    return(true);
+  }
+  return(false);
+}
+
+function placeMarker(latlng, zoom_all_in=false) {
+  markerGroup.clearLayers();
+    marker = new L.marker(latlng).addTo(markerGroup);
+    if (zoom_all_in) {
+      map.flyTo(latlng, 13);
+    }
+    else {
+    map.flyTo(latlng, map.getZoom());
+    }
+    //map.flyTo(latlng, Math.min(13,map.getZoom()+1));
+    //map.flyTo(latlng, 13);
+    //if(map.getZoom()===2){map.flyTo(e.latlng, 13);}else{map.flyTo(e.latlng, map.getZoom());}
+    console.log(latlng);
+}
+
+  function addControlPlaceholders(map) {
+    var corners = map._controlCorners,
+        l = 'leaflet-',
+        container = map._controlContainer;
+
+    function createCorner(vSide, hSide) {
+        var className = l + vSide + ' ' + l + hSide;
+
+        corners[vSide + hSide] = L.DomUtil.create('div', className, container);
+    }
+
+    createCorner('verticalcenter', 'left');
+    createCorner('verticalcenter', 'right');
+}
+
+addControlPlaceholders(map);
+
+// Change the position of the Zoom Control to a newly created placeholder.
+map.zoomControl.setPosition('bottomright');
+
+// You can also put other controls in the same placeholder.
+
+var proIcon = L.icon({
+    iconUrl: 'static/images/pro-pic.png',
+
+    iconSize:     [25, 25], // size of the icon
+    iconAnchor:   [12.5, 12.5], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-2, 0] // point from which the popup should open relative to the iconAnchor
+});
+
+function getAddress(latlng) {
+  console.log(latlng);
+  var formData = new FormData();
+  formData.append('lat', latlng.lat);
+  formData.append('lng', latlng.lng);
+  $.post({
+      type: "POST",
+      url: "/get/address/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {stopErrorAlert("location-field");
+  stopErrorAlert("map");$("#location-field").val(response["address"])}
+        else{console.log("WUUUT"); $("#location-field").val(""); alertError("map");}
+        
+      }});
+}
+
+function getCoordinates() {
+  var formData = new FormData();
+  formData.append('address', $("#location-field").val());
+  $.post({
+      type: "POST",
+      url: "/get/coordinates/",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success(response) {
+        var response = JSON.parse(response);
+        var status = response["status"];
+        if (status === "success") {stopErrorAlert("location-field");
+  stopErrorAlert("map");placeMarker([response["lat"],response["lng"]]);}
+        else{console.log("WWW");alertError("location-field");}
+      }});
+}
+
+$(document).on('focusout', '#location-field', function() {
+  console.log("coord");
+  getCoordinates();
+});
+
+$('#location-field').keypress(function(event){
+  if(event.keyCode == 13){
+    console.log("coord");
+    getCoordinates();
+  }
+});
+
+$('#show-location').change(function() {
+        if($(this).is(":checked")) {
+            console.log("checked");
+          $('#location-settings').removeClass("vanish");
+        }
+        else {
+           console.log("unchecked");
+          $('#location-settings').addClass("vanish");
+        }
+       });
+
+if(!$('#show-location').is(":checked")) {
+  $('#location-settings').addClass("vanish");
+  }
+
+}
+
+{% if request.url_rule.endpoint in ['erc360.edit','erc360.create']  %}
+$.ready("load", function() {
+  load_map_js();
+  console.log("AY!");
+});
+{% endif %}
+</script>
+<script type="text/javascript">
+
+  function goToModal(selector) {
+    const modal = $(selector);
+    if ($('#modal-box').has(selector).length>0) {
+        $('#modal-box').children().not(selector).remove();
+        return true;
+    }
+    return false;
+  }
+
+  $(document).on('click', '#profile-image a', function(e) {
+    redirect({id:"erc360-photo"},"Profile photo", "/€{{erc360.address}}/photo/", changeToPhoto);
+      e.preventDefault();
+  });
+
+  $(document).on('click', '#timeline-button', function(e) {
+      redirect({id:"erc360-timeline"},"ERC360 Timeline", "/€"+address+"/timeline/", changeToTimeline);
+      e.preventDefault();
+    });
+
+  $(document).on('click', '#ownership-button', function(e) {
+      redirect({id:"erc360-ownership"},"ERC360 Ownership", "/€"+address+"/ownership/", changeToOwnership);
+      e.preventDefault();
+    });
+
+   $(document).on('click', '#mint-button', function(e) {
+      redirect({id:"mint-erc360"},"ERC360 Mint", "/€"+address+"/mint/", changeToMintERC360);
+      e.preventDefault();
+    });
+
+
+  $(document).on('click', '#structure-button', function(e) {
+      redirect({id:"erc360-structure"},"ERC360 Structure", "/€"+address+"/structure/", changeToStructure);
+      e.preventDefault();
+    });
+
+$(document).on('click', '#banks-tab-button', function() {
+    redirect({id:"erc360-banks"}, "Banks", "/€{{erc360.address}}/structure/banks/", changeToBanks);
+});
+
+$(document).on('click', '#permits-tab-button', function() {
+      redirect({id:"erc360-permits"}, "Permits", "/€{{erc360.address}}/structure/permits/", changeToPermits);
+});
+
+$(document).on('click', '#dividends-tab-button', function() {
+  redirect({id:"erc360-dividends"}, "Dividends", "/€{{erc360.address}}/structure/dividends/", changeToDividends);
+});
+
+$(document).on('click', '#referendums-tab-button', function() {
+  redirect({id:"erc360-referendums"}, "Referendums", "/€{{erc360.address}}/structure/referendums/", changeToReferendums);
+});
+
+$(document).on('click', '#deposit-button', function(e) {
+   redirect({id:"erc360-deposit"},"ERC360 Deposit", "/€"+address+"/deposit/", changeToDeposit);
+      e.preventDefault();
+});
+
+$(document).on('click', '#transfer-button', function(e) {
+   redirect({id:"erc360-transfer"},"ERC360 Transfer", "/€"+address+"/transfer/", changeToTransfer);
+      e.preventDefault();
+});
+
+  $(document).on('click', '#edit-button', function(e) {
+    redirect({id:"edit-erc360"},"Edit ERC360", "/€"+address+"/edit/", changeToEdit);
+    e.preventDefault();
+  });
+
+$(document).on('click', '.modal-background.to-profile, a.to-profile', function() {
+    redirect({id:"erc360-profile"}, "Profile", "/€{{erc360.address}}/", changeToProfile);
+});
+
+$(document).on('click', '.modal-background.to-structure, a.to-structure', function() {
+    redirect({id:"erc360-structure"}, "Structure", "/€{{erc360.address}}/structure/", changeToStructure);
+});
+
+$(document).on('click', '.modal-background.to-ownership, a.to-ownership', function() {
+    redirect({id:"erc360-ownership"}, "Ownership", "/€{{erc360.address}}/ownership/", changeToOwnership);
+});
+
+
+$(document).on("click", '#reload-timeline', function() {
+  update_timeline("{{erc360.address}}");
+});
+
+$(document).on("click", '#reload-ownership', function() {
+  update_ownership("{{erc360.address}}");
+});
+
+$(document).on("click", '#reload-structure', function() {
+  update_structure("{{erc360.address}}");
+});
+
+$(window).on("popstate", function() {
+  if (window.history.state.id == "edit-erc360") {
+    changeToEdit()
+  }
+  else if (window.history.state.id == "erc360-profile") {
+    changeToProfile();
+  }
+
+  else if (window.history.state.id == "erc360-photo") {
+    changeToPhoto();
+  }
+
+  else if (window.history.state.id == "mint-erc360") {
+    changeToMintERC360();
+  }
+
+  else if (window.history.state.id == "erc360-timeline") {
+    changeToTimeline();
+  }
+
+  else if (window.history.state.id == "erc360-ownership") {
+    changeToOwnership();
+  }
+
+  else if (window.history.state.id == "erc360-structure") {
+    changeToStructure();
+  }
+
+  else if (window.history.state.id == "erc360-banks") {
+    changeToBanks();
+  }
+
+  else if (window.history.state.id == "erc360-permits") {
+    changeToPermits();
+  }
+
+  else if (window.history.state.id == "erc360-dividends") {
+    changeToDividends();
+  }
+
+  else if (window.history.state.id == "erc360-referendums") {
+    changeToReferendums();
+  }
+
+  else if (window.history.state.id == "erc360-deposit") {
+    changeToDeposit();
+  }
+
+  else if (window.history.state.id == "erc360-transfer") {
+    changeToTransfer();
+  }
+
+});
+
+function changeToTimeline() {
+  if (!goToModal('#timeline-modal')) {
+    $("#modal-box").append(`
+      {% include "erc360/timeline.html" %}`);
+    $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToOwnership() {
+    if (!goToModal('#ownership-modal')) {
+     $("#modal-box").append(`
+       {% include "erc360/ownership.html" %}`);
+     $(document.body).addClass('noscroll');
+     loadOwnershipChart();
+    }
+}
+
+
+
+function changeToStructure() {
+    if (!goToModal('#structure-modal')) {
+      $("#modal-box").append(`
+        {% include "erc360/structure.html" %}`);
+      $(document.body).addClass('noscroll');
+    }
+}
+
+// Change tab
+function changeToStructureTab(tabSelector) {
+  changeToStructure();
+  const $this = $(tabSelector);
+  $(".structure-tab-content").addClass('vanish');
+  $('#structure-tabs ul li').removeClass('is-active');
+  $this.addClass('is-active');
+  $($this.data('content')).removeClass('vanish');
+}
+
+
+function changeToBanks() {
+  changeToStructureTab('#banks-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/banks.html" %}`);
+}
+
+function changeToPermits() {
+  changeToStructureTab('#permits-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/permits.html" %}`);
+}
+
+function changeToDividends() {
+  changeToStructureTab('#dividends-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/dividends.html" %}`);
+}
+
+function changeToReferendums() {
+  changeToStructureTab('#referendums-tab-button');
+  $('#structure-buttons').html(`{% include "erc360/structure/action-buttons/referendums.html" %}`);
+}
+
+function changeToDeposit() {
+    changeToStructureTab('#banks-tab-button');
+    if (!goToModal('#deposit-modal')) {
+        $("#modal-box").append(`
+          {% include "erc360/structure/deposit.html" %}`);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToTransfer() {
+    changeToStructureTab('#banks-tab-button');
+    if (!goToModal('#transfer-modal')) {
+        $("#modal-box").append(`
+          {% include "erc360/structure/transfer.html" %}`);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToEdit() {
+      if (!goToModal('#edit-modal')) {
+
+        $("#modal-box").append(`
+          {% include "erc360/edit.html" %}`);
+        load_map_js();
+        $(document.body).addClass('noscroll');
+      }
+}
+
+function changeToProfile() {
+  $("#modal-box").empty();
+  unfreezeScroller();
+}
+
+function changeToPhoto() {
+    if (!goToModal('#photo-modal')) {
+
+      $("#modal-box").append(`
+        {% with photo_src=erc360.photo.src %}
+        {% include "photo.html" %}
+        {% endwith %}
+        `);
+      $(document.body).addClass('noscroll');
+  }
+}
+
+function changeToMintERC360() {
+      if (!goToModal('#mint-modal')) {
+        $("#modal-box").append(`
+          {% include "erc360/ownership/mint.html" %}`);
+        $(document.body).addClass('noscroll');
+      }
+}
+
+
+
+{% if request.url_rule.endpoint == 'erc360.edit' %}
+changeToEdit();
+window.history.replaceState({id:"edit-erc360"},"Edit ERC360", "/€{{erc360.address}}/edit/");
+{% elif request.url_rule.endpoint == 'erc360.timeline' %}
+changeToTimeline();
+window.history.replaceState({id:"erc360-timeline"},"ERC360 Timeline", "/€{{erc360.address}}/timeline/");
+{% elif request.url_rule.endpoint == 'erc360.ownership' %}
+changeToOwnership();
+window.history.replaceState({id:"erc360-ownership"},"ERC360 Ownership", "/€{{erc360.address}}/ownership/");
+{% elif request.url_rule.endpoint == 'erc360.mint' %}
+changeToMintERC360();
+window.history.replaceState({id:"mint-erc360"},"ERC360 Mint", "/€{{erc360.address}}/mint/");
+{% elif request.url_rule.endpoint == 'erc360.structure' %}
+changeToStructure();
+window.history.replaceState({id:"erc360-structure"},"ERC360 Structure", "/€{{erc360.address}}/structure/");
+{% elif request.url_rule.endpoint == 'erc360.banks' %}
+changeToBanks();
+window.history.replaceState({id:"erc360-banks"},"ERC360 Banks", "/€{{erc360.address}}/structure/banks/");
+{% elif request.url_rule.endpoint == 'erc360.permits' %}
+changeToPermits();
+window.history.replaceState({id:"erc360-permits"},"ERC360 Permits", "/€{{erc360.address}}/structure/permits/");
+{% elif request.url_rule.endpoint == 'erc360.dividends' %}
+changeToDividends();
+window.history.replaceState({id:"erc360-dividends"},"ERC360 Dividends", "/€{{erc360.address}}/structure/dividends/");
+{% elif request.url_rule.endpoint == 'erc360.referendums' %}
+changeToReferendums();
+window.history.replaceState({id:"erc360-referendums"},"ERC360 Referendums", "/€{{erc360.address}}/structure/referendums/");
+{% elif request.url_rule.endpoint == 'erc360.deposit' %}
+changeToDeposit();
+window.history.replaceState({id:"erc360-deposit"},"ERC360 Deposit", "/€{{erc360.address}}/deposit/");
+{% elif request.url_rule.endpoint == 'erc360.transfer' %}
+changeToTransfer();
+window.history.replaceState({id:"erc360-transfer"},"ERC360 Transfer", "/€{{erc360.address}}/transfer/");
+{% elif request.url_rule.endpoint == 'erc360.photo' %}
+changeToPhoto();
+window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/photo/");
+{% else %}
+window.history.replaceState({id:"erc360-profile"},"Profile", "/€{{erc360.address}}/photo/");
+{% endif %}
+</script>
+{% endblock %}

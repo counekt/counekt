@@ -44,7 +44,7 @@ def create_app(config_class=Config):
     from app.routes.errors import bp as errors_bp
     from app.routes.profile import bp as profile_bp
     from app.routes.comms import bp as comms_bp
-    from app.routes.idea import bp as idea_bp
+    from app.routes.erc360 import bp as erc360_bp
 
     app.register_blueprint(index_bp)
     app.register_blueprint(map_bp)
@@ -53,7 +53,7 @@ def create_app(config_class=Config):
     app.register_blueprint(errors_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(comms_bp)
-    app.register_blueprint(idea_bp)
+    app.register_blueprint(erc360_bp)
 
     # ... no changes to blueprint registration
     if not app.debug and not app.testing:
