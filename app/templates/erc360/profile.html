@@ -415,6 +415,11 @@ $(window).on("popstate", function() {
 
 });
 
+var STRUCTURE_HTML = `{% include "erc360/structure.html" %}`;
+
+var TRANSFER_HTML = `{% include "erc360/structure/transfer.html" %}`;
+
+
 function changeToTimeline() {
   if (!goToModal('#timeline-modal')) {
     $("#modal-box").append(`
@@ -436,8 +441,7 @@ function changeToOwnership() {
 
 function changeToStructure() {
     if (!goToModal('#structure-modal')) {
-      $("#modal-box").append(`
-        {% include "erc360/structure.html" %}`);
+      $("#modal-box").append(STRUCTURE_HTML);
       $(document.body).addClass('noscroll');
     }
 }
@@ -485,8 +489,7 @@ function changeToDeposit() {
 function changeToTransfer() {
     changeToStructureTab('#banks-tab-button');
     if (!goToModal('#transfer-modal')) {
-        $("#modal-box").append(`
-          {% include "erc360/structure/transfer.html" %}`);
+        $("#modal-box").append(TRANSFER_HTML);
         $(document.body).addClass('noscroll');
     }
 }

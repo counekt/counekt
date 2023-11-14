@@ -25,6 +25,28 @@ function formatAmountInput(string) {
   return string.replace(/^0+/,'0').replace(/^0(?=[1-9])/,'');
 }
 
+async function formatDepositAmountInput() {
+  $this = $('#deposit-amount-input');
+  var amount = getDepositAmount();
+  const balanceWei = await getWalletBalance();
+  const balanceETH = balanceWei*10**(-18);
+  const min_amount = 10**(-18);
+  if (amount>balanceETH) {
+      amount = balanceETH;
+      $this.val(balanceETH);
+  } else if (amount<min_amount && amount != 0) {
+    amount = min_amount;
+    $this.val(min_amount);
+  }
+  /*
+  const amount_in_decimals = amount * 10**parseInt($this.data('decimals'));
+  console.log(amount_in_decimals,amount);
+  $('#transfer-amount-progress-bar').val(amount_in_decimals);
+   $('#transfer-amount-span').text(amount);*/
+
+}
+
+
 
 
 function formatTransferAmountInput() {
@@ -49,7 +71,7 @@ function formatTransferAmountInput() {
 }
 
 $(document).on('blur input','#deposit-amount-input',function(event) {
-	checkDepositable();
+	 checkDepositable();
  });
 
 $(document).on('blur input','#transfer-amount-input',function(event) {
@@ -66,15 +88,16 @@ $(document).on('click', '#deposit', function() {
 	openDepositWindow();
 });
 
-function getDepositValue() {
+function getDepositAmount() {
 	return parseFloat($('#deposit-amount-input').val().replace(',','.')) || 0;
 }
 
 
-function checkDepositAmount() {
+async function checkDepositAmount() {
 	const $this = $('#deposit-amount-input');
 	$this.val(formatAmountInput($this.val()));
-	if (getDepositValue()>0) {
+  await formatDepositAmountInput();
+  if (getDepositAmount()>0) {
       	$this.addClass('is-success').removeClass('is-danger');
       	return true;
 	}
@@ -118,8 +141,8 @@ function displayInvalidTransferRecipient() {
 }
 
 
-function checkDepositable() {
-  const amountCheck = checkDepositAmount();
+async function checkDepositable() {
+  const amountCheck = await checkDepositAmount();
   if (amountCheck) {
     $("#deposit").prop('disabled',false);
   } else {$("#deposit").prop('disabled',true);}
@@ -156,7 +179,7 @@ async function uploadTransfer(abi) {
 }
 
 async function transferFundsFromBank(abi,contractAddress,bank,token,account,amount) {
-
+  $("#transfer").prop('disabled', true).addClass('is-loading');
   // Address of the original erc360 contract
   const web3 = getWeb3Provider();
 
@@ -181,7 +204,9 @@ async function transferFundsFromBank(abi,contractAddress,bank,token,account,amou
       tx = transactionHash;
     console.log(err);
     console.log('Transaction Hash :', transactionHash);
-}).on('confirmation', () => {return true});
+}).on('confirmation', () => {return true}).catch(()=>{
+
+   })
 
 
     console.log('Transfer completed:', transferTransaction);
@@ -189,11 +214,13 @@ async function transferFundsFromBank(abi,contractAddress,bank,token,account,amou
   } catch (error) {
     console.error('Error Approving Transfer:', error);
   }
-
+  $("#transfer").prop('disabled', false).removeClass('is-loading');
 }
 
 
 async function openDepositWindow() {
+  $("#deposit").prop('disabled', true).addClass('is-loading');
+
 	// Replace 'recipientAddress' with the Ethereum address you want to send funds to
 	if (!makeSureWalletConnected()) {return;}
 
@@ -202,36 +229,42 @@ async function openDepositWindow() {
 	const network = await web3.eth.net.getNetworkType();
 	console.log(network == "main");
 	const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
+  const parameters = {from:accounts[0],to:recipientAddress, value:web3.utils.toWei(getDepositAmount().toString(), "ether")};
+	
+  let send = await web3.eth.sendTransaction(parameters, (err,transactionHash) => {
+    tx = transactionHash;
+    console.log(err);
+    console.log('Transaction Hash :', transactionHash);
+  }).on('confirmation', () => {return true}).catch(()=>{
+   //action to perform when user clicks "reject"
+    return false;
+   });
 
-	let send = web3.eth.sendTransaction({from:accounts[0],to:recipientAddress, value:web3.utils.toWei(getDepositValue().toString(), "ether")}).catch((error) => {
-      console.error(error);
-    });
+  if (send) {
+  update_structure(recipientAddress);
+  changeToStructureTab('#banks-tab-button');
+  }
+  $("#deposit").prop('disabled', false).removeClass('is-loading');
+
 }
 
-async function openTransferWindow() {
-	// Replace 'recipientAddress' with the Ethereum address you want to send funds to
-	if (!makeSureWalletConnected()) {return;}
-
-	const recipientAddress = $("#erc360-address").text();
-	const web3 = getWeb3Provider();
-	const network = await web3.eth.net.getNetworkType();
-	console.log(network == "main");
-	const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
-
-	let send = web3.eth.sendTransaction({from:accounts[0],to:recipientAddress, value:web3.utils.toWei(getDepositValue().toString(), "ether")}).catch((error) => {
-      console.error(error);
-    });
-}
 
 function update_structure(address) {
         console.log("updating...");
         $("#reload-structure").prop('disabled', true);$("#reload-structure").addClass('is-loading');
         $.post("/€"+address+"/update/structure/",function(response) {
+                // update structure tab
                 $.get("/€"+address+"/get/structure/", function(structure, status) {
+                        STRUCTURE_HTML = structure;
                         $("#structure-modal").replaceWith(structure);
                         $("#reload-structure").removeClass('is-loading').prop('disabled', false);
                         console.log("success!");
+                  });
+                // update transfer tab (so it registers new max amount of eth to be transferred)
+                $.get("/€"+address+"/get/structure/bank/transfer/", function(transfer, status) {
+                        TRANSFER_HTML = transfer;
+                        $("#transfer-modal").replaceWith(transfer);
+                        console.log("TRANSFER IS CONVERTED");
+                });
         });
-        });
-        
 }
