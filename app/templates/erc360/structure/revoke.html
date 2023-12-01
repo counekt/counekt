@@ -1,0 +1,30 @@
+<div class="modal is-active" id="#revoke-modal">
+<div class="modal-background to-structure"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-structure" aria-label="close">
+        <span class="icon to-structure">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Revoke Permit for {{erc360.name}}</p>
+  </header>
+  <section id="revoke-content" class="modal-card-body has-text-centered">
+    <div id="permit">
+      <h1><b>Permit</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <span class="select">
+          <select id="revoke-permit-select">
+            {% for permit in erc360.permits %}
+            <option value="{{permit.bytes.hex()}}" {% if permit==selected_permit %}selected{% endif %}>{{permit.representation}}</option>
+            {% endfor %}
+          </select>
+      </span>
+    </p>
+    </div>
+    <br>
+      <button id="revoke" class="button is-success" disabled>Revoke</button>
+  </section>
+</div>
+</div>

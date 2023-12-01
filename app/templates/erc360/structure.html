@@ -79,15 +79,6 @@
         </p>
       </div>
         <table class="table is-striped is-bordered is-fullwidth">
-          <tr><td>
-          <span class='icon'><i class='fa-solid fa-chess-king'></i></span>
-          <span class="text">Frederik (04x00de20d230d230)</span>
-          </td></tr>
-          <tr><td>
-          <span class='icon'><i class='fa-solid fa-chess-bishop'></i></span>
-          <span class="text">Theo (03x00fe40t2303d0)</span>
-          </td></tr>
-
           {% with permit=erc360.permits.first() %}
           {% for wallet in permit.wallets %}
           <tr><td>

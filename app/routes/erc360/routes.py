@@ -39,6 +39,36 @@ def deposit(address):
 def transfer(address):
     return erc360(address)
 
+@ bp.route("/erc360/<address>/assign/", methods=["GET"])
+@ bp.route("/€<address>/assign/", methods=["GET"])
+def assign(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/revoke/", methods=["GET"])
+@ bp.route("/€<address>/revoke/", methods=["GET"])
+def revoke(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/claim/", methods=["GET"])
+@ bp.route("/€<address>/claim/", methods=["GET"])
+def claim(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/distribute/", methods=["GET"])
+@ bp.route("/€<address>/distribute/", methods=["GET"])
+def distribute(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/vote/", methods=["GET"])
+@ bp.route("/€<address>/vote/", methods=["GET"])
+def vote(address):
+    return erc360(address)
+
+@ bp.route("/erc360/<address>/propose/", methods=["GET"])
+@ bp.route("/€<address>/propose/", methods=["GET"])
+def propose(address):
+    return erc360(address)
+
 @ bp.route("/erc360/<address>/structure/banks/", methods=["GET"])
 @ bp.route("/€<address>/structure/banks/", methods=["GET"])
 def banks(address):

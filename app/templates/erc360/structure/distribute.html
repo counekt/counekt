@@ -1,0 +1,34 @@
+<div class="modal is-active" id="#distribute-modal">
+<div class="modal-background to-structure"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-structure" aria-label="close">
+        <span class="icon to-structure">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Distribute Dividend for {{erc360.name}}</p>
+  </header>
+  <section id="distribute-content" class="modal-card-body has-text-centered">
+  <div id="amount">
+      <h1><b>Amount</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <span class="select">
+          <select>
+            <option>ETH</option>
+          </select>
+          </span>
+      </p>
+      <p class="control">
+        <input id="distibute-amount-input" class="input" type="text" placeholder="Amount to distibute" min="1" max="{{2**256-1}}" maxlength="78">
+      </p>
+    </div>
+    </div>
+      <div id="feedback-amount" class="feedback">
+        <div class="message"></div>
+      </div>    
+      <button id="distribute" class="button is-success" disabled>Issue</button>
+  </section>
+</div>
+</div>
