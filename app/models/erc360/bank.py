@@ -3,6 +3,7 @@ import app.models as models
 from app.models.base import Base
 from sqlalchemy import union_all
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.ext.declarative import declared_attr
 
 class Bank(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
@@ -14,8 +15,8 @@ class Bank(db.Model, Base):
 	permit = db.relationship("Permit",foreign_keys=[permit_id])
 
 	token_amounts = db.relationship(
-        'TokenAmount', lazy='dynamic',
-        foreign_keys='TokenAmount.bank_id', passive_deletes=True, cascade="all, delete")
+        'BankTokenAmount', lazy='dynamic',
+        foreign_keys='BankTokenAmount.bank_id', passive_deletes=True, cascade="all, delete")
 
 	def __init__(self,**kwargs):
 		super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
@@ -46,13 +47,20 @@ class Bank(db.Model, Base):
 	def __repr__(self):
 		return '<Bank {}>'.format(self.name)
 
-class TokenAmount(db.Model, Base):
+class TokenAmount(Base):
 	id = db.Column(db.Integer, primary_key=True)
-	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-	token_id = db.Column(db.Integer, db.ForeignKey('token.id', ondelete='CASCADE'))
-	token = db.relationship("Token",foreign_keys=[token_id])
+
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
 
+	@declared_attr
+	def token_id(self):
+		return db.Column(db.Integer, db.ForeignKey('token.id', ondelete='CASCADE'))
+
+	@declared_attr
+	def token(self):
+		return db.relationship("Token",foreign_keys=[self.token_id])
+
+	
 	@hybrid_property
 	def min_amount_in_decimals(self):
 		return '0.'+'0'*(self.decimals-1)+'1' if self.decimals > 0 else '1'
@@ -76,6 +84,10 @@ class TokenAmount(db.Model, Base):
 	def __repr__(self):
 		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")
 
+
+class BankTokenAmount(db.Model, TokenAmount):
+	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
+	
 class Token(db.Model,Base):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String) # name of token
@@ -108,35 +120,3 @@ class Token(db.Model,Base):
 	
 	def __repr__(self):
 		return '<Token: {} ({})>'.format(self.name, self.symbol)
-
-
-"""
-class TokenExchange(Base):
-	id = db.Column(db.Integer, primary_key=True)
-	token_address = db.Column(db.String(42)) # ETH token address
-	value = db.Column(db.Integer, default=0) # value exchanged
-	timestamp = db.Column(db.BigInteger) # ETH Block push timestamp
-
-class ExternalTokenReceipt(db.Model, TokenExchange): # when entity receives a token
-	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-
-class ExternalTokenTransfer(db.Model,TokenExchange): # when entity transfers a token
-	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-	recipient_address = db.Column(db.String(42)) # ETH recipient address
-	recipient_bank_name = db.Column(db.String) # name of bank
-
-class InternalTokenExchange(db.Model,TokenExchange): # when entity moves a token internally
-	recipient_bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-	sender_bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-	by_address = db.Column(db.String(42)) # ETH sender address
-
-internal_receipts = db.relationship("InternalTokenExchange", lazy="dynamic", foreign_keys="InternalTokenExchange.recipient_bank_id", order_by="InternalTokenExchange.timestamp", cascade="all, delete-orphan", backref="recipient_bank", passive_deletes=True)
-internal_transfers = db.relationship("InternalTokenExchange", lazy="dynamic", foreign_keys="InternalTokenExchange.sender_bank_id", order_by="InternalTokenExchange.timestamp", cascade="all, delete-orphan", backref="sender_bank", passive_deletes=True)
-external_receipts = db.relationship("ExternalTokenReceipt", lazy="dynamic", foreign_keys="ExternalTokenReceipt.bank_id", order_by="ExternalTokenReceipt.timestamp", cascade="all, delete-orphan", backref="bank", passive_deletes=True)
-external_transfers = db.relationship("ExternalTokenTransfer", lazy="dynamic", foreign_keys="ExternalTokenTransfer.bank_id", order_by="ExternalTokenTransfer.timestamp", cascade="all, delete-orphan", backref="bank", passive_deletes=True)
-
-@property
-def transactions(self):
-	return union_all(self.internal_receipts,self.internal_transfers,self.external_receipts,self.external_transfers).subquery()
-		
-"""

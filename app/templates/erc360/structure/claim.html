@@ -16,8 +16,8 @@
        <p class="control">
           <span class="select">
           <select id="claim-dividend-select">
-            {% for permit in erc360.permits %}
-            <option value="{{permit.bytes.hex()}}" {% if permit==selected_permit %}selected{% endif %}>{{permit.representation}}</option>
+            {% for dividend in erc360.dividends %}
+            <option value="{{dividend.clock}}" {% if permit==selected_permit %}selected{% endif %}>{{dividend.representation}}</option>
             {% endfor %}
           </select>
       </span>

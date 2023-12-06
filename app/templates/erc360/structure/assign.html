@@ -15,7 +15,7 @@
       <div class="field has-addons has-addons-centered">
        <p class="control">
           <span class="select">
-          <select id="assign-permit-select">
+          <select id="assign-permit-select" style="max-width:500px;">
             {% for permit in erc360.permits %}
             <option value="{{permit.bytes.hex()}}" {% if permit==selected_permit %}selected{% endif %}>{{permit.representation}}</option>
             {% endfor %}
