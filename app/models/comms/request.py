@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 class RequestBase:
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String, index=True)
+    _type = db.Column(db.String, index=True)
 
     @declared_attr
     def notification_id(self):
@@ -45,11 +45,11 @@ class RequestBase:
         pass
 
     def __repr__(self):
-        return "<Request {}>".format(self.type)
+        return "<Request {}>".format(self._type)
 
     def get_notification_payload_json(self):
         # Define this
-        return {}.get(self.type)
+        return {}.get(self._type)
 
 
 # From user
@@ -65,12 +65,12 @@ class UserToUserRequest(db.Model, RequestBase, Base):
         RequestBase.__init__(self, **kwargs)
 
     def _do(self):
-        if self.type == "associate":
+        if self._type == "associate":
             self.receiver.associates.append(self.sender)
             self.sender.associates.append(self.receiver)
 
     def __repr__(self):
-        return "<UserToUserRequest {}>".format(self.type)
+        return "<UserToUserRequest {}>".format(self._type)
 
     def get_notification_payload_json(self):
         return {"associate": {"type": "request",
@@ -83,7 +83,7 @@ class UserToUserRequest(db.Model, RequestBase, Base):
                          "message": "wants to associate with you",
                          "sender-photo": self.sender.photo.src,
                          "href":f"/@{self.sender.username}/"
-                         }}.get(self.type)
+                         }}.get(self._type)
 
 
 class UserToERC360Request(db.Model, RequestBase, Base):
@@ -96,12 +96,12 @@ class UserToERC360Request(db.Model, RequestBase, Base):
         RequestBase.__init__(self, **kwargs)
 
     def _do(self):
-        if self.type == "join":
+        if self._type == "join":
             self.receiver.viewers.remove(self.sender)
             self.receiver.add_member(self.sender)
 
     def __repr__(self):
-        return "<UserToERC360Request {}>".format(self.type)
+        return "<UserToERC360Request {}>".format(self._type)
 
     def get_notification_payload_json(self):
         return {"dummy": {"type": "request",
@@ -114,7 +114,7 @@ class UserToERC360Request(db.Model, RequestBase, Base):
                          "message": "some dummy text ERC360",
                          "sender-photo": self.sender.photo.src,
                          "href":f"/€{self.receiver.address}/"
-                         }}.get(self.type)
+                         }}.get(self._type)
 
 # To user
 # --------------------------------------
@@ -131,12 +131,12 @@ class ERC360ToUserRequest(db.Model, RequestBase, Base):
         self.sender.viewers.append(self.receiver)
 
     def _do(self):
-        if self.type == "dummy":
+        if self._type == "dummy":
             self.sender.viewers.remove(self.receiver)
             self.sender.add_member(self.receiver)
 
     def __repr__(self):
-        return "<ERC360ToUserRequest {}>".format(self.type)
+        return "<ERC360ToUserRequest {}>".format(self._type)
 
     def get_notification_payload_json(self):
         return {"dummy": {"type": "request",
@@ -149,4 +149,4 @@ class ERC360ToUserRequest(db.Model, RequestBase, Base):
                            "message": "some dummy text ERC360",
                            "sender-photo": self.sender.photo.src,
                            "href":f"/€{self.sender.address}/"
-                           }}.get(self.type)
+                           }}.get(self._type)

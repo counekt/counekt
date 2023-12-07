@@ -22,16 +22,16 @@ class Bank(db.Model, Base):
 		super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
 		# do custom initialization here
 		db.session.add(self)
-		self.register_token("0x0000000000000000000000000000000000000000")
+		self.register_token(address="0x0000000000000000000000000000000000000000",symbol="ETH",name="Ether")
 
 	def get_token_amount(self,address):
 		return self.token_amounts.filter(Token.address==address,Token.id==TokenAmount.token_id).first()
 
-	def register_token(self,address):
-		TOKEN = Token.register(address=address)
-		token_amount = TokenAmount()
+	def register_token(self,address,symbol=None,name=None):
+		TOKEN = Token.register(address=address,symbol=symbol,name=name)
+		token_amount = BankTokenAmount()
 		token_amount.token = TOKEN
-		if not self.token_amounts.filter(TokenAmount.token_id == TOKEN.id).first():
+		if not self.token_amounts.filter(BankTokenAmount.token_id == TOKEN.id).first():
 			self.token_amounts.append(token_amount)
 
 	def add_amount(self,amount,address):
@@ -48,19 +48,19 @@ class Bank(db.Model, Base):
 		return '<Bank {}>'.format(self.name)
 
 class TokenAmount(Base):
+
 	id = db.Column(db.Integer, primary_key=True)
 
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
-
+	
 	@declared_attr
 	def token_id(self):
 		return db.Column(db.Integer, db.ForeignKey('token.id', ondelete='CASCADE'))
-
+	
 	@declared_attr
 	def token(self):
 		return db.relationship("Token",foreign_keys=[self.token_id])
 
-	
 	@hybrid_property
 	def min_amount_in_decimals(self):
 		return '0.'+'0'*(self.decimals-1)+'1' if self.decimals > 0 else '1'
@@ -87,7 +87,7 @@ class TokenAmount(Base):
 
 class BankTokenAmount(db.Model, TokenAmount):
 	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
-	
+
 class Token(db.Model,Base):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String) # name of token

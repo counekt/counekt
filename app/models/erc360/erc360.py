@@ -13,6 +13,14 @@ import math
 from markupsafe import Markup
 
 class ERC360(db.Model, Base, LocationBase):
+
+    def __init__(self,creator,**kwargs):
+        super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
+        self.timeline_last_updated_at = 0
+        models.Permit.create_initial_permits(self,creator)
+        # do custom initialization here
+        self.photo = Photo(filename="photo", path=f"static/erc360s/{self.address}/photo/", replacement="/static/images/erc360.jpg")
+
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)
     address = db.Column(db.String(42)) # ETH token address
@@ -58,13 +66,6 @@ class ERC360(db.Model, Base, LocationBase):
     permits = db.relationship(
         'Permit', backref='erc360', lazy='dynamic',
         foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
-
-    def __init__(self,creator,**kwargs):
-        super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
-        self.timeline_last_updated_at = 0
-        models.Permit.create_initial_permits(self,creator)
-        # do custom initialization here
-        self.photo = Photo(filename="photo", path=f"static/erc360s/{self.address}/photo/", replacement="/static/images/erc360.jpg")
 
     def get_timeline(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
