@@ -1,0 +1,33 @@
+<div class="modal is-active" id="#vote-modal">
+<div class="modal-background to-structure"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-structure" aria-label="close">
+        <span class="icon to-structure">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Vote on Proposal in {{erc360.name}}</p>
+  </header>
+  <section id="assign-content" class="modal-card-body has-text-centered">
+    <div id="permit">
+      <h1><b>Permit</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <span class="select">
+          <select id="assign-permit-select" style="max-width:500px;">
+            {% for permit in erc360.permits %}
+            <option value="{{permit.bytes.hex()}}" {% if permit==selected_permit %}selected{% endif %}>{{permit.representation}}</option>
+            {% endfor %}
+          </select>
+      </span>
+    </p>
+    </div>
+    <br>
+    <p class="control">
+      <button id="approve" class="button is-success" disabled>Approve</button>
+      <button id="reject" class="button is-danger" disabled>Reject</button> 
+    </p>
+  </section>
+</div>
+</div>
