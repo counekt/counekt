@@ -12,13 +12,14 @@ import boto3
 from app.query import CustomQuery
 import eth_abi
 from web3 import Web3
+from app.etherscan import Etherscan
 
 w3 = Web3(Web3.HTTPProvider(Config.WEB3_NETWORK+Config.ALCHEMY_KEY))
+etherscan = Etherscan(Config.ETHERSCAN_API_KEY,server=Config.ETHEREUM_SERVER)
 geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
 db = SQLAlchemy(query_class=CustomQuery)
 migrate = Migrate()
 mail = Mail()
-
 login = LoginManager()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
