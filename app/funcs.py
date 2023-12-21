@@ -15,6 +15,40 @@ import os
 import json
 from eth_abi import abi
 
+def decode_transaction_payload(t):
+    data = t["input"][8:] # we don't include the function selector
+    if t["methodId"] == "0x8ab73cf9": # setPermit(address,bytes32,bool)
+        account,permit,status = abi.decode_abi(["address","bytes32","bool"],data)
+        return t | {"payload": {"account":account,"permit":permit,"status":status}}
+    if t["methodId"] == '0x9a9abf85': # setPermitParent(bytes32,bytes32)
+        permit, parent = abi.decode_abi(["bytes32","bytes32"],data)
+        return t | {"payload": {"permit":permit,"parent":parent}}
+    if t["methodId"] == '0x40c10f19': # mint(address,uint256)'
+        account, amount = abi.decode_abi(["address","uint256"],data)
+        return t | {"payload": {"account":account,"amount":amount}}
+    if t["methodId"] == '0x873fdde7': # issueDividend(bytes32,address,uint256)
+        bank, token, amount = abi.decode_abi(["bytes32","address","uint256"],data)
+        return t | {"payload": {"bank":bank,"token":token,"amount":amount}}
+    if t["methodId"] == '0x3598f3f3': # issueVote(bytes4[],bytes[],uint256)
+        sigs, args, duration = abi.decode_abi(["bytes4[]","bytes[]","uint256"],data)
+        return t | {"payload": {"sigs":sigs,"args":args,"duration":duration}}
+    if t["methodId"] == '0x74c8df12': # implementResolution(uint256)
+        voteId = abi.decode_abi(["uint256"],data)
+        return t | {"payload": {"voteId":voteId}}
+    if t["methodId"] == '0x3b51634f': # callExternal(address,bytes4,bytes,uint256,bytes32)
+        ext,sig,args,value,bank = abi.decode_abi(["address","bytes4","bytes","uint256","bytes32"],data)
+        return t | {"payload": {"ext":ext,"sig":sig,"args":args,"value":value,"bank":bank}}
+    if t["methodId"] == '0x23a7c49b': # setExternalCallPermit(address,bytes4,bytes32)
+        ext,sig,permit = abi.decode_abi(["address","bytes4","bytes32"],data)
+        return t | {"payload": {"ext":ext,"sig":sig,"permit":permit}}
+    if t["methodId"] == "0x7ab1f504": # transferFundsFromBank(bytes32,address,address,uint256)
+        fromBank, token, amount, to = abi.decode_abi(["bytes32","address","address","uint256"],data)
+        return t | {"payload": {"fromBank":fromBank,"token":token,"amount":amount,"to":to}}
+    if t["methodId"] == '0x3fb3a2d7': # moveFunds(bytes32,bytes32,address,uint256)
+        fromBank,toBank,token,amount = abi.decode_abi(["bytes32","bytes32","address","uint256"],data)
+        return t | {"payload": {"fromBank":fromBank,"toBank":toBank,"token":token,"amount":amount,"to":to}}
+
+"""
 def decode_event_payload(e):
     if e["args"]["func"] == "sP":
         permit, account, status = abi.decode_abi(["bytes32","address","bool"],e["args"]["args"])
@@ -54,7 +88,7 @@ def decode_event_payload(e):
         return {"func":e["args"]["func"], "fromBankName":fromBankName, "toBankName":toBankName, "tokenAddress":tokenAddress, "value":value, "by":e["args"]["by"]}
     if e["args"]["func"] == "lE":
         return {"func":e["args"]["func"], "by":e["args"]["by"]}
-
+"""
 
 def get_deployed_bytecode():
     with open("solidity/build/contracts/ERC360Corporatizable.json","r") as json_file:
