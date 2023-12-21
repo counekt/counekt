@@ -321,6 +321,37 @@ $(document).on('click', '#referendums-tab-button', function() {
   redirect({id:"erc360-referendums"}, "Referendums", "/€{{erc360.address}}/structure/referendums/", changeToReferendums);
 });
 
+$(document).on('click', '#propose-button', function(e) {
+   redirect({id:"erc360-propose"},"ERC360 Propose", "/€"+address+"/propose/", changeToPropose);
+      e.preventDefault();
+});
+
+$(document).on('click', '#vote-button', function(e) {
+   redirect({id:"erc360-vote"},"ERC360 Vote", "/€"+address+"/vote/", changeToVote);
+      e.preventDefault();
+});
+
+$(document).on('click', '#claim-button', function(e) {
+   redirect({id:"erc360-claim"},"ERC360 Claim", "/€"+address+"/claim/", changeToClaim);
+      e.preventDefault();
+});
+
+$(document).on('click', '#distribute-button', function(e) {
+   redirect({id:"erc360-distribute"},"ERC360 Distribute", "/€"+address+"/distribute/", changeToDistribute);
+      e.preventDefault();
+});
+
+$(document).on('click', '#revoke-button', function(e) {
+   redirect({id:"erc360-revoke"},"ERC360 Revoke", "/€"+address+"/revoke/", changeToRevoke);
+      e.preventDefault();
+});
+
+$(document).on('click', '#assign-button', function(e) {
+  console.log("ASSIGN");
+   redirect({id:"erc360-assign"},"ERC360 Assign", "/€"+address+"/assign/", changeToAssign);
+      e.preventDefault();
+});
+
 $(document).on('click', '#deposit-button', function(e) {
    redirect({id:"erc360-deposit"},"ERC360 Deposit", "/€"+address+"/deposit/", changeToDeposit);
       e.preventDefault();
@@ -409,11 +440,51 @@ $(window).on("popstate", function() {
     changeToDeposit();
   }
 
-  else if (window.history.state.id == "erc360-transfer") {
+  else if (window.history.state.id == "erc360-transfer"){
     changeToTransfer();
   }
 
+  else if (window.history.state.id == "erc360-assign") {
+    changeToAssign();
+  }
+
+  else if (window.history.state.id == "erc360-revoke") {
+    changeToRevoke();
+  }
+
+  else if (window.history.state.id == "erc360-claim") {
+    changeToClaim();
+  }
+
+  else if (window.history.state.id == "erc360-distribute") {
+    changeToDistribute();
+  }
+
+  else if (window.history.state.id == "erc360-vote") {
+    changeToVote();
+  }
+
+  else if (window.history.state.id == "erc360-propose"){
+    changeToPropose();
+  }
+
 });
+
+var STRUCTURE_HTML = `{% include "erc360/structure.html" %}`;
+
+var TRANSFER_HTML = `{% include "erc360/structure/transfer.html" %}`;
+
+var ASSIGN_HTML = `{% include "erc360/structure/assign.html" %}`;
+
+var REVOKE_HTML = `{% include "erc360/structure/revoke.html" %}`;
+
+var CLAIM_HTML = `{% include "erc360/structure/claim.html" %}`;
+
+var DISTRIBUTE_HTML = `{% include "erc360/structure/distribute.html" %}`;
+
+var VOTE_HTML = `{% include "erc360/structure/vote.html" %}`;
+
+var PROPOSE_HTML = `{% include "erc360/structure/propose.html" %}`;
 
 function changeToTimeline() {
   if (!goToModal('#timeline-modal')) {
@@ -436,8 +507,7 @@ function changeToOwnership() {
 
 function changeToStructure() {
     if (!goToModal('#structure-modal')) {
-      $("#modal-box").append(`
-        {% include "erc360/structure.html" %}`);
+      $("#modal-box").append(STRUCTURE_HTML);
       $(document.body).addClass('noscroll');
     }
 }
@@ -485,8 +555,55 @@ function changeToDeposit() {
 function changeToTransfer() {
     changeToStructureTab('#banks-tab-button');
     if (!goToModal('#transfer-modal')) {
-        $("#modal-box").append(`
-          {% include "erc360/structure/transfer.html" %}`);
+        $("#modal-box").append(TRANSFER_HTML);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToAssign() {
+    changeToStructureTab('#permits-tab-button');
+    if (!goToModal('#assign-modal')) {
+        $("#modal-box").append(ASSIGN_HTML);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToRevoke() {
+    changeToStructureTab('#permits-tab-button');
+    if (!goToModal('#revoke-modal')) {
+        $("#modal-box").append(REVOKE_HTML);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToClaim() {
+    changeToStructureTab('#dividends-tab-button');
+    if (!goToModal('#claim-modal')) {
+        $("#modal-box").append(CLAIM_HTML);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToDistribute() {
+    changeToStructureTab('#dividends-tab-button');
+    if (!goToModal('#distribute-modal')) {
+        $("#modal-box").append(DISTRIBUTE_HTML);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToVote() {
+    changeToStructureTab('#referendums-tab-button');
+    if (!goToModal('#vote-modal')) {
+        $("#modal-box").append(VOTE_HTML);
+        $(document.body).addClass('noscroll');
+    }
+}
+
+function changeToPropose() {
+    changeToStructureTab('#referendums-tab-button');
+    if (!goToModal('#propose-modal')) {
+        $("#modal-box").append(PROPOSE_HTML);
         $(document.body).addClass('noscroll');
     }
 }
@@ -561,6 +678,24 @@ window.history.replaceState({id:"erc360-deposit"},"ERC360 Deposit", "/€{{erc36
 {% elif request.url_rule.endpoint == 'erc360.transfer' %}
 changeToTransfer();
 window.history.replaceState({id:"erc360-transfer"},"ERC360 Transfer", "/€{{erc360.address}}/transfer/");
+{% elif request.url_rule.endpoint == 'erc360.assign' %}
+changeToAssign();
+window.history.replaceState({id:"erc360-assign"},"ERC360 Assign", "/€{{erc360.address}}/assign/");
+{% elif request.url_rule.endpoint == 'erc360.revoke' %}
+changeToRevoke();
+window.history.replaceState({id:"erc360-revoke"},"ERC360 Revoke", "/€{{erc360.address}}/revoke/");
+{% elif request.url_rule.endpoint == 'erc360.claim' %}
+changeToClaim();
+window.history.replaceState({id:"erc360-claim"},"ERC360 Claim", "/€{{erc360.address}}/claim/");
+{% elif request.url_rule.endpoint == 'erc360.distribute' %}
+changeToDistribute();
+window.history.replaceState({id:"erc360-distribute"},"ERC360 Vote", "/€{{erc360.address}}/distribute/");
+{% elif request.url_rule.endpoint == 'erc360.vote' %}
+changeToVote();
+window.history.replaceState({id:"erc360-vote"},"ERC360 Vote", "/€{{erc360.address}}/vote/");
+{% elif request.url_rule.endpoint == 'erc360.propose' %}
+changeToPropose();
+window.history.replaceState({id:"erc360-propose"},"ERC360 Propose", "/€{{erc360.address}}/propose/");
 {% elif request.url_rule.endpoint == 'erc360.photo' %}
 changeToPhoto();
 window.history.replaceState({id:"erc360-photo"},"Profile Photo", "/€{{erc360.address}}/photo/");

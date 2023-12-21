@@ -90,6 +90,12 @@ function getWeb3Provider() {
 	return web3Provider;
 }
 
+async function getAddressBalance(address) {
+	const web3 = getWeb3Provider();
+	const balanceWei = await web3.eth.getBalance(address);
+	return balanceWei;
+}
+
 async function getWalletBalance() {
 	const web3 = getWeb3Provider();
 	const accounts = await web3.eth.getAccounts().catch((e) => flash(e.message));

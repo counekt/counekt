@@ -40,3 +40,5 @@ class Config(object):
     SQLALCHEMY_POOL_SIZE=25
     ALCHEMY_KEY = getenv("ALCHEMY_KEY")
     WEB3_NETWORK = "https://eth-sepolia.g.alchemy.com/v2/"
+    ETHERSCAN_API_KEY = "6DEHSP7NWYFR93NM8X3D456M1FCV3362YK"
+    ETHEREUM_SERVER = "sepolia"

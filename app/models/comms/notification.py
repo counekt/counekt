@@ -19,7 +19,7 @@ class Notification(db.Model, Base):
 
     @property
     def request(self):
-        assert self.type == "request"
+        assert self._type == "request"
         return Request.query.filter_by(notification=self).first_or_404()
 
     def __init__(self, **kwargs):
@@ -29,7 +29,7 @@ class Notification(db.Model, Base):
             receiver.notifications.append(self)
 
     def __repr__(self):
-        return "<Notification {}>".format(self.type)
+        return "<Notification {}>".format(self._type)
 
     def get_data(self):
         return json.loads(str(self.payload_json))

@@ -1,4 +1,4 @@
-from app import db, w3
+from app import db, w3, etherscan
 import app.funcs as funcs
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from app.models.static.photo import Photo
@@ -13,6 +13,14 @@ import math
 from markupsafe import Markup
 
 class ERC360(db.Model, Base, LocationBase):
+
+    def __init__(self,creator,**kwargs):
+        super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
+        self.timeline_last_updated_at = 0
+        models.Permit.create_initial_permits(self,creator)
+        # do custom initialization here
+        self.photo = Photo(filename="photo", path=f"static/erc360s/{self.address}/photo/", replacement="/static/images/erc360.jpg")
+
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)
     address = db.Column(db.String(42)) # ETH token address
@@ -59,13 +67,6 @@ class ERC360(db.Model, Base, LocationBase):
         'Permit', backref='erc360', lazy='dynamic',
         foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
 
-    def __init__(self,creator,**kwargs):
-        super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
-        self.timeline_last_updated_at = 0
-        models.Permit.create_initial_permits(self,creator)
-        # do custom initialization here
-        self.photo = Photo(filename="photo", path=f"static/erc360s/{self.address}/photo/", replacement="/static/images/erc360.jpg")
-
     def get_timeline(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         events = contract.events.ActionTaken.getLogs(fromBlock=self.block)
@@ -73,14 +74,14 @@ class ERC360(db.Model, Base, LocationBase):
 
     def update_timeline(self):
         contract = self.get_w3_contract()
-        events = contract.events.ActionTaken.getLogs(fromBlock=self.timeline_last_updated_at or self.block)
-        for e in events:
-            if not self.events.filter_by(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex).first():
-                timestamp = w3.eth.getBlock(e.blockNumber).timestamp
-                payload_json = json.dumps(funcs.decode_event_payload(e))
-                event = models.Event(block_hash=e.blockHash.hex(), transaction_hash=e.transactionHash.hex(),log_index=e.logIndex,timestamp=timestamp,payload_json=payload_json)
+        transacts = etherscan.get_transactions_of(address=contract.address,startblock=self.events_last_updated_at)
+        for t in transacts:
+            if not self.events.filter_by(block_hash=t.blockHash, transaction_hash=t.hash,log_index=t.transactionIndex).first():
+                timestamp = w3.eth.getBlock(t.blockNumber).timestamp
+                payload_json = json.dumps(funcs.decode_event_payload(t))
+                event = models.Event(block_hash=t.blockHash, transaction_hash=t.transactionHash,log_index=t.transactionIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
-                decoded_payload = funcs.decode_event_payload(e)
+                decoded_payload = funcs.decode_event_payload(t)
                 if decoded_payload["func"] == "iD": # Issue Dividend
                     if not self.dividends.filter_by(clock=decoded_payload["clock"]).first():
                         dividend = models.Dividend(clock=decoded_payload["clock"],value=decoded_payload["value"],token_address=decoded_payload["tokenAddress"])
@@ -163,8 +164,8 @@ class ERC360(db.Model, Base, LocationBase):
                         self.liquid.tokens.append(token)
                 if e["args"]["func"] == "lE": # Liquidize Entity
                     self.active = False
-                if e.blockNumber > int(self.timeline_last_updated_at or self.block):
-                    self.timeline_last_updated_at = e.blockNumber
+                if t.blockNumber > int(self.timeline_last_updated_at or self.block):
+                    self.timeline_last_updated_at = t.blockNumber
 
     def update_ownership(self):
         contract = self.get_w3_contract()

@@ -9,7 +9,7 @@ import {IERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.so
 /**
  * @dev Contract with spendable access-controlled encapsulated funds via Administrable.
  *
- * Useful for scenarios such as preventing fraud and
+ * Useful for scenarios such as preventing fraud by
  * making sure that spenders won't have access to all funds at once, 
  * which is fx. specifically appreciated within a corporation.
  *

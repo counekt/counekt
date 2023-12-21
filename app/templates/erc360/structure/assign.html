@@ -1,0 +1,43 @@
+<div class="modal is-active" id="#assign-modal">
+<div class="modal-background to-structure"></div>
+<div class="modal-card noselect">
+  <header class="modal-card-head">
+      <a class="close button is-info is-inverted to-structure" aria-label="close">
+        <span class="icon to-structure">
+          <i class="fa fa-times"></i>
+        </span>
+      </a>
+      <p class="modal-card-title" id="header">Assign Permit for {{erc360.name}}</p>
+  </header>
+  <section id="assign-content" class="modal-card-body has-text-centered">
+    <div id="permit">
+      <h1><b>Permit</b></h1>
+      <div class="field has-addons has-addons-centered">
+       <p class="control">
+          <span class="select">
+          <select id="assign-permit-select" style="max-width:500px;">
+            {% for permit in erc360.permits %}
+            <option value="{{permit.bytes.hex()}}" {% if permit==selected_permit %}selected{% endif %}>{{permit.representation}}</option>
+            {% endfor %}
+          </select>
+      </span>
+    </p>
+    </div>
+    <br>
+    
+    <div id="to">
+      <h1><b>To</b></h1>
+      <div class="field has-addons has-addons-centered">
+      <p class="control">
+        <input id="assign-recipient-input" class="input has-fixed-size" placeholder="Recipient of permit assignment" maxlength="42"></input>
+      </p>
+      </div>
+    </div>
+      <div id="feedback-recipient" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="recipient-anchor">
+      <button id="assign" class="button is-success" disabled>Assign</button>
+  </section>
+</div>
+</div>
