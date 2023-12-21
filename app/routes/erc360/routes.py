@@ -282,7 +282,7 @@ def create():
             tx_hash = flask_request.form.get("tx");
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-            wallet = models.Wallet.register(address=receipt["from"],spender=current_user)
+            wallet = models.Wallet.get_or_register(address=receipt["from"],spender=current_user)
             erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet)
             erc360.address = receipt.contractAddress
             erc360.block = receipt.blockNumber

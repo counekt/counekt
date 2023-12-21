@@ -78,92 +78,67 @@ class ERC360(db.Model, Base, LocationBase):
         for t in transacts:
             if not self.events.filter_by(block_hash=t.blockHash, transaction_hash=t.hash,log_index=t.transactionIndex).first():
                 timestamp = w3.eth.getBlock(t.blockNumber).timestamp
-                payload_json = json.dumps(funcs.decode_event_payload(t))
+                decoded_payload = funcs.decode_event_payload(t)
+                payload_json = json.dumps(decoded_payload)
                 event = models.Event(block_hash=t.blockHash, transaction_hash=t.transactionHash,log_index=t.transactionIndex,timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
-                decoded_payload = funcs.decode_event_payload(t)
-                if decoded_payload["func"] == "iD": # Issue Dividend
-                    if not self.dividends.filter_by(clock=decoded_payload["clock"]).first():
-                        dividend = models.Dividend(clock=decoded_payload["clock"],value=decoded_payload["value"],token_address=decoded_payload["tokenAddress"])
-                        bank = self.banks.filter_by(name=decoded_payload["bankName"])
+                if decoded_payload["txreceipt_status"] == "1":
+                    if decoded_payload["methodID"] == '0x8ab73cf9': # Set Permit
+                        wallet = models.Wallet.get_or_register(address=decoded_payload["args"]["account"])
+                        permit = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["permit"])
+                        if decoded_payload["args"]["status"] == True:
+                            wallet.permits.append(permit)
+                        else:
+                            wallet.permits.remove(permit)
+                     if decoded_payload["methodID"] == '0x9a9abf85': # Set Permit Parent
+                        permit = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["permit"])
+                        parent = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["parent"])
+                        permit.parent = parent
+                    if decoded_payload["methodID"] == '0x40c10f19' # Mint
+                        # Just register the event, update_ownership takes care of the rest
+                        pass
+                    if decoded_payload["methodID"] == '0x8ab73cf9': # Issue Dividend
+                        if not self.dividends.filter_by(clock=decoded_payload).first():
+                            dividend = models.Dividend(clock=decoded_payload["clock"],value=decoded_payload["value"],token_address=decoded_payload["tokenAddress"])
+                            bank = self.banks.filter_by(name=decoded_payload["bankName"])
+                            bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                    if decoded_payload["methodID"] == '0x3598f3f3': # Issue Vote
+                        if not self.referendums.filter_by(clock=decoded_payload["args"]["clock"]).first():
+                            viable_amount = contract.functions.totalSupplyByClock(decoded_payload["clock"]).call()
+                            referendum = models.Referendum(clock=decoded_payload["clock"],viable_amount=viable_amount)
+                            referendum_info = contract.functions.infoByReferendum(decoded_payload["clock"]).call()
+                            for i, func in enumerate(referendum_info[1]): # add proposals if any
+                                proposal = models.Proposal(func=func,args=referendum_info[2][i])
+                                referendum.proposals.add(proposal)
+                    if decoded_payload["func"] == "cB": # Create Bank
+                        if not self.banks.filter_by(name=decoded_payload["name"]).first():
+                            bank = models.Bank(name=decoded_payload["name"])
+                            admin = models.Wallet.get_or_register(address=decoded_payload["admin"])
+                            bank.admins.add(admin)
+                    if decoded_payload["func"] == "dB": # Delete Bank
+                        bank = self.banks.filter_by(name=decoded_payload["name"]).first()
+                        if bank:
+                            db.session.delete(bank)
+                    if e["args"]["func"] == "iP": # Implement Resolution
+                        referendum = self.referendums.filter_by(clock=decoded_payload["clock"]).first()
+                        proposal = referendum.proposals.filter_by(index=decoded_payload["index"]).first()
+                        if not proposal:
+                            raise Exception("Proposal does not exist...")
+                        proposal.implemented = True
+                    if e["args"]["func"] == "tT": # Transfer Funds From Bank
+                        bank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
+                        if not bank:
+                            raise Exception("Bank does not exist...")
+                        bank.external_transfers.append(models.ExternalTokenTransfer(recipient_address=decoded_payload["to"]))
                         bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                if decoded_payload["func"] == "dD": # Dissolve Dividend
-                    dividend = self.dividends.filter_by(clock=decoded_payload["clock"]).first()
-                    if dividend:
-                        address = contract.functions.getDividendToken(decoded_payload["clock"]).call()
-                        residual = contract.functions.getDividendResidual(decoded_payload["clock"]).call()
-                        dividend.dissolved = True
-                        main_bank = self.banks.filter_by(name="main")
-                        main_bank.register_token(address)
-                        main_bank.add_value(residual,address)
-                if decoded_payload["func"] == "iR": # Issue Referendum
-                    if not self.referendums.filter_by(clock=decoded_payload["clock"]).first():
-                        viable_amount = contract.functions.totalSupplyByClock(decoded_payload["clock"]).call()
-                        referendum = models.Referendum(clock=decoded_payload["clock"],viable_amount=viable_amount)
-                        referendum_info = contract.functions.infoByReferendum(decoded_payload["clock"]).call()
-                        for i, func in enumerate(referendum_info[1]): # add proposals if any
-                            proposal = models.Proposal(func=func,args=referendum_info[2][i])
-                            referendum.proposals.add(proposal)
-                if decoded_payload["func"] == "cB": # Create Bank
-                    if not self.banks.filter_by(name=decoded_payload["name"]).first():
-                        bank = models.Bank(name=decoded_payload["name"])
-                        admin = models.Wallet.get_or_register(address=decoded_payload["admin"])
-                        bank.admins.add(admin)
-                if decoded_payload["func"] == "dB": # Delete Bank
-                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
-                    if bank:
-                        db.session.delete(bank)
-                if decoded_payload["func"] == "sP": # Set Permit
-                    wallet = models.Wallet.get_or_register(address=decoded_payload["account"])
-                    permit = self.permits.filter_by(name=decoded_payload["name"],wallet=wallet).first()
-                    if not permit:
-                        permit = models.Permit(wallet=wallet,name=decoded_payload["name"])
-                        self.permits.append(permit)
-                    permit.state = decoded_payload["state"]
-                if e["args"]["func"] == "iP": # Implement Proposal
-                    referendum = self.referendums.filter_by(clock=decoded_payload["clock"]).first()
-                    proposal = referendum.proposals.filter_by(index=decoded_payload["index"]).first()
-                    if not proposal:
-                        raise Exception("Proposal does not exist...")
-                    proposal.implemented = True
-                if e["args"]["func"] == "aA": # Add Admin
-                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
-                    admin = models.Wallet.get_or_register(address=decoded_payload["admin"])
-                    if not bank:
-                        raise Exception("Bank does not exist...")
-                    bank.admins.append(admin)
-                if e["args"]["func"] == "rA": # Remove Admin
-                    bank = self.banks.filter_by(name=decoded_payload["name"]).first()
-                    admin = bank.admins.filter_by(address=decoded_payload["tokenAddress"]).first()
-                    if not bank:
-                        raise Exception("Bank does not exist...")
-                    banks.admins.remove(admin)
-                if e["args"]["func"] == "tT": # Transfer Token
-                    bank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
-                    if not bank:
-                        raise Exception("Bank does not exist...")
-                    bank.external_transfers.append(models.ExternalTokenTransfer(recipient_address=decoded_payload["to"]))
-                    bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                    self.liquid.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                if e["args"]["func"] == "mT": # Transfer Token
-                    fromBank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
-                    toBank = self.banks.filter_by(name=decoded_payload["toBankName"]).first()
-                    if not frombank or toBank:
-                        raise Exception("fromBank or toBank does not exist...")
-                    fromBank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                    toBank.add_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                if e["args"]["func"] == "iS": # Mint
-                    pass
-                if e["args"]["func"] == "uT": # Unregister Token
-                    token = self.liquid.tokens.filter_by(address=decoded_payload["tokenAddress"]).first()
-                    self.liquid.tokens.remove(token)
-                if e["args"]["func"] == "rT": # Register Token
-                    token = self.liquid.tokens.filter_by(address=decoded_payload["tokenAddress"]).first()
-                    if not token:
-                        token = models.TokenAmount(address=decoded_payload["tokenAddress"])
-                        self.liquid.tokens.append(token)
-                if e["args"]["func"] == "lE": # Liquidize Entity
-                    self.active = False
+                        self.liquid.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                    if e["args"]["func"] == "mT": # Move Funds
+                        fromBank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
+                        toBank = self.banks.filter_by(name=decoded_payload["toBankName"]).first()
+                        if not frombank or toBank:
+                            raise Exception("fromBank or toBank does not exist...")
+                        fromBank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                        toBank.add_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                 if t.blockNumber > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = t.blockNumber
 
@@ -176,7 +151,7 @@ class ERC360(db.Model, Base, LocationBase):
             if not self.token_ids.filter_by(token_id=ntid.args.tokenId).first():
                 timestamp = w3.eth.getBlock(ntid.blockNumber).timestamp
                 # REGISTER OLD TOKEN-IDS OF ACCOUNT AS EXPIRED
-                wallet = models.Wallet.register(address=ntid.args.account)
+                wallet = models.Wallet.get_or_register(address=ntid.args.account)
                 non_expired = self.token_ids.filter(models.ERC360TokenId.wallet_id == wallet.id, models.ERC360TokenId.is_expired != True)
                 for ne in non_expired:
                     exp = contract.functions.expirationOf(ne.token_id).call()

@@ -26,7 +26,7 @@ class Wallet(db.Model, Base):
         'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     @classmethod
-    def register(cls,address,spender=None):
+    def get_or_register(cls,address,spender=None):
         wallet = cls.query.filter(cls.address==address).first()
         if not wallet:
             wallet = cls(address=address)
