@@ -34,12 +34,12 @@ class Permit(db.Model, Base):
 		}.get(self.bytes,"")
 
 	@classmethod
-    def get_or_register(cls,erc360,bytes,spender=None):
-        permit = cls.query.filter(cls.erc360==erc360,cls.bytes==bytes).first()
-        if not permit:
-            permit = cls(bytes=bytes)
-            erc360.permits.append(permit)
-        return permit
+	def get_or_register(cls,erc360,bytes,spender=None):
+		permit = cls.query.filter(cls.erc360==erc360,cls.bytes==bytes).first()
+		if not permit:
+		    permit = cls(bytes=bytes)
+		    erc360.permits.append(permit)
+		return permit
 
 	@classmethod
 	def create_initial_permits(cls,erc360,creator):

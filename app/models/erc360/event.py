@@ -2,7 +2,7 @@ from app import db
 from app.models.base import Base
 import json
 
-class Action(db.Model, Base):
+class Event(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
     erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
     timestamp = db.Column(db.Integer)

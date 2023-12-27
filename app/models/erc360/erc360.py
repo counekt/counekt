@@ -28,7 +28,7 @@ class ERC360(db.Model, Base, LocationBase):
     current_clock = db.Column(db.Integer, default=0) # Clock
     total_supply = db.Column(db.Integer, default=0) # Total Amount of tokens
 
-    events_last_updated_at = db.Column(db.Integer) # ETH block number
+    timeline_last_updated_at = db.Column(db.Integer) # ETH block number
     token_ids_last_updated_at = db.Column(db.Integer) # ETH block number
     bank_exchanges_last_updated_at = db.Column(db.Integer) # ETH block number
     dividend_claims_last_updated_at = db.Column(db.Integer) # ETH block number
@@ -43,9 +43,9 @@ class ERC360(db.Model, Base, LocationBase):
     photo_id = db.Column(db.Integer, db.ForeignKey('photo.id', ondelete="cascade"))
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
-    actions = db.relationship(
-        'Action', backref='erc360', lazy='dynamic',
-        foreign_keys='Action.erc360_id', order_by="Action.timestamp", passive_deletes=True)
+    events = db.relationship(
+        'Event', backref='erc360', lazy='dynamic',
+        foreign_keys='Event.erc360_id', order_by="Event.timestamp", passive_deletes=True)
 
     token_ids = db.relationship(
         'ERC360TokenId', backref='erc360', lazy='dynamic',
@@ -68,19 +68,17 @@ class ERC360(db.Model, Base, LocationBase):
         foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
 
     def get_timeline(self):
-        contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
-        events = contract.events.ActionTaken.getLogs(fromBlock=self.block)
-        return [funcs.decode_event_payload(e) for e in events]
+        return [e.payload for e in self.events]
 
     def update_timeline(self):
         contract = self.get_w3_contract()
-        transacts = etherscan.get_transactions_of(address=contract.address,startblock=self.events_last_updated_at)
+        transacts = etherscan.get_transactions_of(address=contract.address,startblock=self.timeline_last_updated_at)
         for t in transacts:
-            if not self.events.filter_by(block_hash=t.blockHash, transaction_hash=t.hash,log_index=t.transactionIndex).first():
-                timestamp = w3.eth.getBlock(t.blockNumber).timestamp
+            if not self.events.filter_by(block_hash=t["blockHash"], transaction_hash=t["hash"],log_index=t["transactionIndex"]).first():
+                timestamp = w3.eth.getBlock(t["blockNumber"]).timestamp
                 decoded_payload = funcs.decode_event_payload(t)
                 payload_json = json.dumps(decoded_payload)
-                event = models.Event(block_hash=t.blockHash, transaction_hash=t.transactionHash,log_index=t.transactionIndex,timestamp=timestamp,payload_json=payload_json)
+                event = models.Event(block_hash=t["blockHash"], transaction_hash=t["transactionHash"],log_index=t["transactionIndex"],timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
                 if decoded_payload["txreceipt_status"] == "1":
                     if decoded_payload["methodID"] == '0x8ab73cf9': # Set Permit
@@ -90,11 +88,11 @@ class ERC360(db.Model, Base, LocationBase):
                             wallet.permits.append(permit)
                         else:
                             wallet.permits.remove(permit)
-                     if decoded_payload["methodID"] == '0x9a9abf85': # Set Permit Parent
+                    if decoded_payload["methodID"] == '0x9a9abf85': # Set Permit Parent
                         permit = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["permit"])
                         parent = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["parent"])
                         permit.parent = parent
-                    if decoded_payload["methodID"] == '0x40c10f19' # Mint
+                    if decoded_payload["methodID"] == '0x40c10f19': # Mint
                         # Just register the event, update_ownership takes care of the rest
                         pass
                     if decoded_payload["methodID"] == '0x8ab73cf9': # Issue Dividend
@@ -139,8 +137,8 @@ class ERC360(db.Model, Base, LocationBase):
                             raise Exception("fromBank or toBank does not exist...")
                         fromBank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
                         toBank.add_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                if t.blockNumber > int(self.timeline_last_updated_at or self.block):
-                    self.timeline_last_updated_at = t.blockNumber
+                if t["blockNumber"] > int(self.timeline_last_updated_at or self.block):
+                    self.timeline_last_updated_at = t["blockNumber"]
 
     def update_ownership(self):
         contract = self.get_w3_contract()
