@@ -19,38 +19,40 @@ def decode_transaction_payload(t):
     data = bytearray.fromhex(t["input"][2:])[4:] # we don't include the function selector
     if t["methodId"] ==  '0x60806040': # on creation
         return t
-    if t["methodId"] ==  '0x': # on simple receipt
+    elif t["methodId"] ==  '0x': # on simple receipt
         return t
-    if t["methodId"] == '0x8ab73cf9': # setPermit(address,bytes32,bool)
+    elif t["methodId"] == '0x8ab73cf9': # setPermit(address,bytes32,bool)
         account,permit,status = abi.decode_abi(["address","bytes32","bool"],data)
-        return t | {"args": {"account":account,"permit":permit,"status":status}}
-    if t["methodId"] == '0x9a9abf85': # setPermitParent(bytes32,bytes32)
+        return t | {"args": {"account":account,"permit":permit.hex(),"status":status}}
+    elif t["methodId"] == '0x9a9abf85': # setPermitParent(bytes32,bytes32)
         permit, parent = abi.decode_abi(["bytes32","bytes32"],data)
-        return t | {"args": {"permit":permit,"parent":parent}}
-    if t["methodId"] == '0x40c10f19': # mint(address,uint256)'
+        return t | {"args": {"permit":permit.hex(),"parent":parent.hex()}}
+    elif t["methodId"] == '0x40c10f19': # mint(address,uint256)'
         account, amount = abi.decode_abi(["address","uint256"],data)
         return t | {"args": {"account":account,"amount":amount}}
-    if t["methodId"] == '0x873fdde7': # issueDividend(bytes32,address,uint256)
+    elif t["methodId"] == '0x873fdde7': # issueDividend(bytes32,address,uint256)
         bank, token, amount = abi.decode_abi(["bytes32","address","uint256"],data)
-        return t | {"args": {"bank":bank,"token":token,"amount":amount}}
-    if t["methodId"] == '0x3598f3f3': # issueVote(bytes4[],bytes[],uint256)
+        return t | {"args": {"bank":bank.hex(),"token":token,"amount":amount}}
+    elif t["methodId"] == '0x3598f3f3': # issueVote(bytes4[],bytes[],uint256)
         sigs, args, duration = abi.decode_abi(["bytes4[]","bytes[]","uint256"],data)
-        return t | {"args": {"sigs":sigs,"args":args,"duration":duration}}
-    if t["methodId"] == '0x74c8df12': # implementResolution(uint256)
+        return t | {"args": {"sigs":[s.hex() for s in sigs],"args":[a.hex() for a in args],"duration":duration}}
+    elif t["methodId"] == '0x74c8df12': # implementResolution(uint256)
         voteId = abi.decode_abi(["uint256"],data)
         return t | {"args": {"voteId":voteId}}
-    if t["methodId"] == '0x3b51634f': # callExternal(address,bytes4,bytes,uint256,bytes32)
+    elif t["methodId"] == '0x3b51634f': # callExternal(address,bytes4,bytes,uint256,bytes32)
         ext,sig,args,value,bank = abi.decode_abi(["address","bytes4","bytes","uint256","bytes32"],data)
-        return t | {"args": {"ext":ext,"sig":sig,"args":args,"value":value,"bank":bank}}
-    if t["methodId"] == '0x23a7c49b': # setExternalCallPermit(address,bytes4,bytes32)
+        return t | {"args": {"ext":ext,"sig":sig.hex(),"args":args.hex(),"value":value,"bank":bank.hex()}}
+    elif t["methodId"] == '0x23a7c49b': # setExternalCallPermit(address,bytes4,bytes32)
         ext,sig,permit = abi.decode_abi(["address","bytes4","bytes32"],data)
-        return t | {"args": {"ext":ext,"sig":sig,"permit":permit}}
-    if t["methodId"] == "0x7ab1f504": # transferFundsFromBank(bytes32,address,address,uint256)
+        return t | {"args": {"ext":ext,"sig":sig.hex(),"permit":permit.hex()}}
+    elif t["methodId"] == "0x7ab1f504": # transferFundsFromBank(bytes32,address,address,uint256)
         fromBank, token, to, amount = abi.decode_abi(["bytes32","address","address","uint256"],data)
-        return t | {"args": {"fromBank":fromBank,"token":token,"amount":amount,"to":to}}
-    if t["methodId"] == '0x3fb3a2d7': # moveFunds(bytes32,bytes32,address,uint256)
+        return t | {"args": {"fromBank":fromBank.hex(),"token":token,"amount":amount,"to":to}}
+    elif t["methodId"] == '0x3fb3a2d7': # moveFunds(bytes32,bytes32,address,uint256)
         fromBank,toBank,token,amount = abi.decode_abi(["bytes32","bytes32","address","uint256"],data)
-        return t | {"args": {"fromBank":fromBank,"toBank":toBank,"token":token,"amount":amount,"to":to}}
+        return t | {"args": {"fromBank":fromBank.hex(),"toBank":toBank.hex(),"token":token,"amount":amount,"to":to}}
+    else:
+        return t
 
 
 def get_deployed_bytecode():
