@@ -83,53 +83,50 @@ class ERC360(db.Model, Base, LocationBase):
                 self.events.append(event)
                 print(f"\n{decoded_payload}\n")
                 if decoded_payload["txreceipt_status"] == "1":
+                    if decoded_payload["methodId"] == '0x': # on simple receipt
+                        main_bank = models.Bank.get_or_register(erc360=self,bytes=bytes(32))
+                        main_bank.add_amount(int(t["value"]),"0x0000000000000000000000000000000000000000")
                     if decoded_payload["methodId"] == '0x8ab73cf9': # Set Permit
                         wallet = models.Wallet.get_or_register(address=decoded_payload["args"]["account"])
-                        permit = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["permit"])
+                        permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
                         if decoded_payload["args"]["status"] == True:
                             wallet.permits.append(permit)
                         else:
                             wallet.permits.remove(permit)
                     if decoded_payload["methodId"] == '0x9a9abf85': # Set Permit Parent
-                        permit = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["permit"])
-                        parent = models.Permit.get_or_register(erc360=self,bytes=decoded_payload["args"]["parent"])
+                        permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
+                        parent = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["parent"]))
                         permit.parent = parent
                     if decoded_payload["methodId"] == '0x40c10f19': # Mint
                         # Just register the event, update_ownership takes care of the rest
                         pass
                     if decoded_payload["methodId"] == '0x8ab73cf9': # Issue Dividend
                         if not self.dividends.filter_by(clock=decoded_payload).first():
-                            dividend = models.Dividend(clock=decoded_payload["clock"],value=decoded_payload["value"],token_address=decoded_payload["tokenAddress"])
-                            bank = self.banks.filter_by(name=decoded_payload["bankName"])
-                            bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                            dividend = models.Dividend(clock=decoded_payload["args"]["clock"],amount=int(decoded_payload["args"]["amount"]),token=decoded_payload["args"]["token"])
+                            bank = models.Bank.get_or_register(erc360=self,permit=decoded_payload["args"]["bank"])
+                            bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                     if decoded_payload["methodId"] == '0x3598f3f3': # Issue Vote
                         if not self.referendums.filter_by(clock=decoded_payload["args"]["clock"]).first():
-                            viable_amount = contract.functions.totalSupplyByClock(decoded_payload["clock"]).call()
-                            referendum = models.Referendum(clock=decoded_payload["clock"],viable_amount=viable_amount)
-                            referendum_info = contract.functions.infoByReferendum(decoded_payload["clock"]).call()
+                            viable_amount = contract.functions.totalSupplyByClock(decoded_payload["args"]["clock"]).call()
+                            referendum = models.Referendum(clock=decoded_payload["args"]["clock"],viable_amount=viable_amount)
+                            referendum_info = contract.functions.infoByReferendum(decoded_payload["args"]["clock"]).call()
                             for i, func in enumerate(referendum_info[1]): # add proposals if any
                                 proposal = models.Proposal(func=func,args=referendum_info[2][i])
                                 referendum.proposals.add(proposal)
                     if decoded_payload["methodId"] == "0x74c8df12": # Implement Resolution
-                        referendum = self.referendums.filter_by(clock=decoded_payload["clock"]).first()
-                        proposal = referendum.proposals.filter_by(index=decoded_payload["index"]).first()
+                        referendum = self.referendums.filter_by(clock=decoded_payload["args"]["clock"]).first()
+                        proposal = referendum.proposals.filter_by(index=decoded_payload["args"]["index"]).first()
                         if not proposal:
                             raise Exception("Proposal does not exist...")
                         proposal.implemented = True
                     if decoded_payload["methodId"] == "0x7ab1f504": # Transfer Funds From Bank
-                        bank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
-                        if not bank:
-                            raise Exception("Bank does not exist...")
-                        bank.external_transfers.append(models.ExternalTokenTransfer(recipient_address=decoded_payload["to"]))
-                        bank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                        self.liquid.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                        bank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
+                        bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                     if decoded_payload["methodId"] == "0x3fb3a2d7": # Move Funds
-                        fromBank = self.banks.filter_by(name=decoded_payload["fromBankName"]).first()
-                        toBank = self.banks.filter_by(name=decoded_payload["toBankName"]).first()
-                        if not frombank or toBank:
-                            raise Exception("fromBank or toBank does not exist...")
-                        fromBank.subtract_value(decoded_payload["value"],decoded_payload["tokenAddress"])
-                        toBank.add_value(decoded_payload["value"],decoded_payload["tokenAddress"])
+                        fromBank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
+                        toBank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["toBank"]))
+                        fromBank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
+                        toBank.add_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                 if int(t["blockNumber"]) > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = int(t["blockNumber"])
 
