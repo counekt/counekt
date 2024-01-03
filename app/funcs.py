@@ -17,7 +17,7 @@ from eth_abi import abi
 
 def decode_transaction_payload(t):
     data = bytearray.fromhex(t["input"][2:])[4:] # we don't include the function selector
-    if t["methodId"] ==  '0x60806040': # on creation
+    if t["methodId"] == '0x60806040': # on creation
         return t
     elif t["methodId"] ==  '0x': # on simple receipt
         return t

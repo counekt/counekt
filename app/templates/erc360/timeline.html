@@ -21,58 +21,49 @@
   {% for e in erc360.events[::-1] %}
   <tr><td>
   {% set payload = e.payload %}
-    {% if payload["func"] == "sP" %}
+    {% if payload["methodId"] == '0x60806040' %} <!-- on creation -->
+    <span class='icon'><i class='fa-solid fa-star'></i></span>
+      <span class='text'>Created</span>
+      <p>Time: {{payload["blockNumber"]}}</p>
+    {% elif payload["methodId"] == '0x' %} <!-- on simple receipt -->
+    <span class='icon'><i class="fa-solid fa-money-bill-transfer"></i></span>
+      <span class='text'>Receipt</span>
+      <p>Amount: {{payload["value"]}}</p>
+    {% elif payload["methodId"] == "sP" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
-      <p>permit: {{payload["permitName"]}}</p>
+      <p>permit: {{payload["permit"]}}</p>
       <p>affected: {{payload["account"]}}</p>
       <p>new state: {{payload["newState"]}}</p>
-    {% elif payload["func"] == "sB" %}
+    {% elif payload["methodId"] == "sB" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Base Permit Set</span>
       <p>permit: {{payload["permitName"]}}</p>
       <p>new state: {{payload["newState"]}}</p>
-    {% elif payload["func"] == "iD" %}
+    {% elif payload["methodId"] == "iD" %}
       <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
       <span class='text'>Dividend Issued</span>
       <p>from: {{payload["bankName"]}}</p>
       <p>token address: {{payload["tokenAddress"]}}</p>
       <p>value: {{payload["value"]}}</p>
-    {% elif payload["func"] == "dD" %}
+    {% elif payload["methodId"] == "dD" %}
       <span class='icon'><i class='fa-solid fa-coins'></i></span>
       <span class='text'>Dividend Dissolved</span>
       <p>dividend id: {{payload["dividend"]}}</p>
       <p>value dissolved: {{payload["dividendValue"]}}</p>
-    {% elif payload["func"] == "cD" %}
+    {% elif payload["methodId"] == "cD" %}
       <span class='icon'><i class='fa-solid fa-cake-slice'></i></span>
       <span class='text'>Dividend Claimed</span>
       <p>dividend id: {{payload["dividend"]}}</p>
       <p>claimed value: {{payload["dividendValue"]}}</p>
-    {% elif payload["func"] in ["cB","aA","rA"] %}
-      {% if payload["func"] == "cB" %}
-        <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
-        <span class='text'>Bank Created</span>
-      {% elif payload["func"] == "aA" %}
-        <span class='icon'><i class='fa-solid fa-chess-king'></i></span>
-        <span class='text'>Bank Admin Added</span>
-      {% elif payload["func"] == "rA" %}
-        <span class='icon'><i class='fa-solid fa-person-circle-xmark'></i></span>
-        <span class='text'>Bank Admin Removed</span>
-      {% endif %}
-      <p>bank: {{payload["bankName"]}}</p>
-      <p>affected: {{payload["bankAdmin"]}}</p>
-    {% elif payload["func"] == "dB" %}
-      <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
-      <span class='text'>Bank Deleted</span>
-      <p>name: {{payload["bankName"]}}</p>
-    {% elif payload["func"] == "tT" %}
+    {% elif payload["methodId"] == "tT" %}
     <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
     <span class='text'>Token Transferred</span>
     <p>bank: {{payload["bankName"]}}</p>
     <p>token address: {{payload["tokenAddress"]}}</p>
     <p>value: {{payload["value"]}}</p>
     <p>to: {{payload["to"]}}</p>
-  {% elif payload["func"] == "mT" %}
+  {% elif payload["methodId"] == "mT" %}
     <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
     <span class='text'>Token Moved</span>
     <p>from: {{payload["fromBankName"]}}</p>
@@ -80,7 +71,6 @@
     <p>token address: {{payload["tokenAddress"]}}</p>
     <p>value: {{payload["value"]}}</p>
   {% endif %}
-  <p>by: {{payload["by"]}}</p>
 </td></tr>
 {% endfor %}
 </table>
