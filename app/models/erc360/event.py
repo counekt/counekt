@@ -15,3 +15,7 @@ class Event(db.Model, Base):
     @property
     def payload(self):
         return json.loads(self.payload_json)
+
+    @property
+    def int(self):
+        return int

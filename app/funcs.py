@@ -19,7 +19,7 @@ def decode_transaction_payload(t):
     data = bytearray.fromhex(t["input"][2:])[4:] # we don't include the function selector
     if t["methodId"] == '0x60806040': # on creation
         return t
-    elif t["methodId"] ==  '0x': # on simple receipt
+    elif t["methodId"] == '0x': # on simple receipt
         return t
     elif t["methodId"] == '0x8ab73cf9': # setPermit(address,bytes32,bool)
         account,permit,status = abi.decode_abi(["address","bytes32","bool"],data)
@@ -27,7 +27,7 @@ def decode_transaction_payload(t):
     elif t["methodId"] == '0x9a9abf85': # setPermitParent(bytes32,bytes32)
         permit, parent = abi.decode_abi(["bytes32","bytes32"],data)
         return t | {"args": {"permit":permit.hex(),"parent":parent.hex()}}
-    elif t["methodId"] == '0x40c10f19': # mint(address,uint256)'
+    elif t["methodId"] == '0x40c10f19': # mint(address,uint256)
         account, amount = abi.decode_abi(["address","uint256"],data)
         return t | {"args": {"account":account,"amount":amount}}
     elif t["methodId"] == '0x873fdde7': # issueDividend(bytes32,address,uint256)
