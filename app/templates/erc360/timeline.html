@@ -36,7 +36,7 @@
       <p>affected: {{payload["args"]["account"]}}</p>
       <p>new state: {{payload["args"]["status"]}}</p>
     {% elif payload["methodId"] == "0x9a9abf85" %} <!-- setPermitParent(bytes32,bytes32) -->
-      <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
+      <span class='icon'><i class="fa-solid fa-sitemap"></i></span>
       <span class='text'>Parent Permit Set</span>
       <p>permit: {{payload["args"]["permit"]}}</p>
       <p>parent: {{payload["args"]["parent"]}}</p>
@@ -62,7 +62,7 @@
       <span class='text'>Implemented Resolution</span>
       <p>voteId: {{payload["args"]["voteId"]}}</p>
     {% elif payload["methodId"] == "0x3b51634f" %} <!-- callExternal(address,bytes4,bytes,uint256,bytes32) -->
-      <span class='icon'><i class="fa-solid fa-check-to-slot"></i></span>
+      <span class='icon'><i class="fa-solid fa-phone"></i></span>
       <span class='text'>External Call</span>
       <p>ext: {{payload["args"]["ext"]}}</p>
       <p>sig: {{payload["args"]["sig"]}}</p>
@@ -70,7 +70,7 @@
       <p>value: {{payload["args"]["value"]}}</p>
       <p>bank: {{payload["args"]["bank"]}}</p>
     {% elif payload["methodId"] == "0x23a7c49b" %} <!-- setExternalCallPermit(address,bytes4,bytes32) -->
-      <span class='icon'><i class="fa-solid fa-check-to-slot"></i></span>
+      <span class='icon'><i class="fa-solid fa-id-card"></i></span>
       <span class='text'>External Call Permit Set</span>
       <p>ext: {{payload["args"]["ext"]}}</p>
       <p>sig: {{payload["args"]["sig"]}}</p>
