@@ -84,8 +84,11 @@ class ERC360(db.Model, Base, LocationBase):
                 print(f"\n{decoded_payload}\n")
                 if decoded_payload["txreceipt_status"] == "1":
                     if decoded_payload["methodId"] == '0x': # on simple receipt
+                        # Just register the event, update_ownership takes care of the rest
+                        """
                         main_bank = models.Bank.get_or_register(erc360=self,bytes=bytes(32))
                         main_bank.add_amount(int(t["value"]),"0x0000000000000000000000000000000000000000")
+                        """
                     if decoded_payload["methodId"] == '0x8ab73cf9': # Set Permit
                         wallet = models.Wallet.get_or_register(address=decoded_payload["args"]["account"])
                         permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
@@ -114,19 +117,19 @@ class ERC360(db.Model, Base, LocationBase):
                                 proposal = models.Proposal(func=func,args=referendum_info[2][i])
                                 referendum.proposals.add(proposal)
                     if decoded_payload["methodId"] == "0x74c8df12": # Implement Resolution
-                        referendum = self.referendums.filter_by(clock=decoded_payload["args"]["clock"]).first()
-                        proposal = referendum.proposals.filter_by(index=decoded_payload["args"]["index"]).first()
-                        if not proposal:
-                            raise Exception("Proposal does not exist...")
+                        referendum = models.Referendum.get_or_register(erc360=self,event_id=decoded_payload["args"]["event_id"])
+                        proposal = models.Proposal.get_or_register(referendum=referendum,index=decoded_payload["args"]["index"])
                         proposal.implemented = True
                     if decoded_payload["methodId"] == "0x7ab1f504": # Transfer Funds From Bank
                         bank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
-                        bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
+                        #bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                     if decoded_payload["methodId"] == "0x3fb3a2d7": # Move Funds
                         fromBank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
                         toBank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["toBank"]))
+                        """
                         fromBank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                         toBank.add_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
+                        """
                 if int(t["blockNumber"]) > int(self.timeline_last_updated_at or self.block):
                     self.timeline_last_updated_at = int(t["blockNumber"])
 

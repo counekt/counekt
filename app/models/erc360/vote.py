@@ -23,6 +23,14 @@ class Referendum(db.Model, Base):
         'ReferendumProposal', lazy='dynamic',
         foreign_keys='ReferendumProposal.referendum_id', passive_deletes=True)
 
+	@classmethod
+	def get_or_register(cls,erc360,event_id):
+		referendum = cls.query.filter(cls.event_id==event_id).first()
+		if not referendum:
+		    referendum = cls()
+		    erc360.referendums.append(referendum)
+		return referendum
+
 	@hybrid_property
 	def proposal_amount(self):
 		return self.proposals.count()
@@ -40,6 +48,15 @@ class ReferendumProposal(db.Model, Base):
 	index = db.Column(db.Integer) # Index as part of Referendum proposals
 	sig = db.Column(db.LargeBinary(4)) # Name of func to be called during implementation.
 	args = db.Column(db.LargeBinary) # The encoded args passed to func call during implementation.
+	
+	@classmethod
+	def get_or_register(cls,referendum,index):
+		proposal = cls.query.filter(cls.referendum_id==referendum.id,cls.index==index).first()
+		if not proposal	:
+		    proposal = cls()
+		    referendum.proposals.append(proposal)
+		return proposal
+
 	def __repr__(self):
 		return '<Proposal {}>'.format(self.func)
 
