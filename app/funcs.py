@@ -46,7 +46,7 @@ def decode_transaction_payload(t):
         ext,sig,permit = abi.decode_abi(["address","bytes4","bytes32"],data)
         return t | {"args": {"ext":ext,"sig":sig.hex(),"permit":permit.hex()}}
     elif t["methodId"] == "0x7ab1f504": # transferFundsFromBank(bytes32,address,address,uint256)
-        fromBank, token, to, amount = abi.decode_abi(["bytes32","address","address","uint256"],data)
+        fromBank, to, token, amount = abi.decode_abi(["bytes32","address","address","uint256"],data)
         return t | {"args": {"fromBank":fromBank.hex(),"token":token,"amount":amount,"to":to}}
     elif t["methodId"] == '0x3fb3a2d7': # moveFunds(bytes32,bytes32,address,uint256)
         fromBank,toBank,token,amount = abi.decode_abi(["bytes32","bytes32","address","uint256"],data)

@@ -149,7 +149,7 @@ def update_ownership(address):
 @bp.route("/€<address>/get/ownership/", methods=["GET"])
 def get_ownership(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/load-ownership-chart.html", erc360=erc360)
+    return render_template("erc360/ownership/load-ownership-chart.html", erc360=erc360)
 
 @ bp.route("/erc360/<address>/update/structure/", methods=["POST"])
 @ bp.route("/€<address>/update/structure/", methods=["POST"])

@@ -44,7 +44,7 @@
       <span class='icon'><i class="fa-solid fa-money-bill-trend-up"></i></span>
       <span class='text'>Mint</span>
       <p>account: {{payload["args"]["account"]}}</p>
-      <p>amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      <p>amount: {{e.int(payload["args"]["amount"])}}</p>
     {% elif payload["methodId"] == "0x873fdde7" %} <!-- issueDividend(bytes32,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
       <span class='text'>Dividend Issued</span>
