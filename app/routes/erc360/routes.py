@@ -149,7 +149,7 @@ def update_ownership(address):
 @bp.route("/€<address>/get/ownership/", methods=["GET"])
 def get_ownership(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/load-ownership-chart.html", erc360=erc360)
+    return render_template("erc360/ownership/load-ownership-chart.html", erc360=erc360)
 
 @ bp.route("/erc360/<address>/update/structure/", methods=["POST"])
 @ bp.route("/€<address>/update/structure/", methods=["POST"])
@@ -282,7 +282,7 @@ def create():
             tx_hash = flask_request.form.get("tx");
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-            wallet = models.Wallet.register(address=receipt["from"],spender=current_user)
+            wallet = models.Wallet.get_or_register(address=receipt["from"],spender=current_user)
             erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet)
             erc360.address = receipt.contractAddress
             erc360.block = receipt.blockNumber

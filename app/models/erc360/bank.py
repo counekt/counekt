@@ -16,7 +16,7 @@ class Bank(db.Model, Base):
 
 	token_amounts = db.relationship(
         'BankTokenAmount', lazy='dynamic',
-        foreign_keys='BankTokenAmount.bank_id', passive_deletes=True, cascade="all, delete")
+        foreign_keys='BankTokenAmount.bank_id', backref="bank", passive_deletes=True, cascade="all, delete")
 
 	def __init__(self,**kwargs):
 		super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
@@ -24,21 +24,30 @@ class Bank(db.Model, Base):
 		db.session.add(self)
 		self.register_token(address="0x0000000000000000000000000000000000000000",symbol="ETH",name="Ether")
 
-	def get_token_amount(self,address):
-		return self.token_amounts.filter(Token.address==address,Token.id==TokenAmount.token_id).first()
+	@classmethod
+	def get_or_register(cls,erc360,bytes):
+		permit = models.Permit.get_or_register(erc360=erc360,bytes=bytes)
+		bank = cls.query.filter(cls.erc360==erc360,cls.permit==permit).first()
+		if not bank:
+		    bank = cls()
+		    bank.permit = permit
+		    erc360.banks.append(bank)
+		return bank
 
-	def register_token(self,address,symbol=None,name=None):
-		TOKEN = Token.register(address=address,symbol=symbol,name=name)
-		token_amount = BankTokenAmount()
-		token_amount.token = TOKEN
-		if not self.token_amounts.filter(BankTokenAmount.token_id == TOKEN.id).first():
+	def get_or_register_token_amount(self,token,symbol=None,name=None):
+		token_amount = self.token_amounts.filter(Token.address==token,Token.id==BankTokenAmount.token_id).first()
+		if not token_amount:
+			token = Token.get_or_register(address=token,symbol=symbol,name=name)
+			token_amount = BankTokenAmount()
+			token_amount.token = token
 			self.token_amounts.append(token_amount)
+		return token_amount		
 
-	def add_amount(self,amount,address):
-		get_token_amount(address).amount += amount
+	def add_amount(self,amount,token):
+		BankTokenAmount.get_or_register(self,token).amount += amount
 
-	def subtract_amount(self,amount,address):
-		self.add_amount(-amount,address)
+	def subtract_amount(self,amount,token):
+		self.add_amount(-amount,token)
 
 	@property
 	def representation(self):
@@ -49,10 +58,11 @@ class Bank(db.Model, Base):
 
 class TokenAmount(Base):
 
+
 	id = db.Column(db.Integer, primary_key=True)
 
 	amount = db.Column(db.Numeric(precision=78), default=0) # value of token
-	
+
 	@declared_attr
 	def token_id(self):
 		return db.Column(db.Integer, db.ForeignKey('token.id', ondelete='CASCADE'))
@@ -86,6 +96,24 @@ class TokenAmount(Base):
 
 
 class BankTokenAmount(db.Model, TokenAmount):
+
+	def __init__(self,**kwargs):
+		super(BankTokenAmount, self).__init__(**{k: kwargs[k] for k in kwargs})
+		# do custom initialization here
+		db.session.add(self)
+		self.amount = 0
+
+	@classmethod
+	def get_or_register(cls,bank,token,symbol=None,name=None):
+		token_amount = cls.query.filter(cls.bank==bank,Token.address==token,Token.id==cls.token_id).first()
+		if not token_amount:
+			token = Token.get_or_register(address=token,symbol=symbol,name=name)
+			token_amount = cls()
+			token_amount.token = token
+			bank.token_amounts.append(token_amount)
+			print(token_amount)
+		return token_amount
+
 	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
 
 class Token(db.Model,Base):
@@ -103,7 +131,7 @@ class Token(db.Model,Base):
 			return f"https://etherscan.io/token/{self.address}"
 
 	@classmethod
-	def register(cls, address, name=None, symbol=None):
+	def get_or_register(cls, address, name=None, symbol=None):
 		token = cls.query.filter(cls.address==address).first()
 		if not token:
 			token = cls(address=address,name=name,symbol=symbol)

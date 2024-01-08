@@ -18,69 +18,78 @@
   </header>
   <section id="timeline-content" class="modal-card-body has-text-centered">
   <table class="table is-striped is-bordered is-fullwidth">
-  {% for e in erc360.actions[::-1] %}
+  {% for e in erc360.events[::-1] %}
   <tr><td>
   {% set payload = e.payload %}
-    {% if payload["func"] == "sP" %}
+    {% if payload["methodId"] == '0x60806040' %} <!-- on creation -->
+    <span class='icon'><i class='fa-solid fa-star'></i></span>
+      <span class='text'>Created</span>
+      <p>Time: {{payload["blockNumber"]}}</p>
+    {% elif payload["methodId"] == '0x' %} <!-- on simple receipt -->
+    <span class='icon'><i class="fa-solid fa-money-bill-transfer"></i></span>
+      <span class='text'>Received</span>
+      <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> <!-- setPermit(address,bytes32,bool) -->
+    {% elif payload["methodId"] == "0x8ab73cf9" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
-      <p>permit: {{payload["permitName"]}}</p>
-      <p>affected: {{payload["account"]}}</p>
-      <p>new state: {{payload["newState"]}}</p>
-    {% elif payload["func"] == "sB" %}
-      <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
-      <span class='text'>Base Permit Set</span>
-      <p>permit: {{payload["permitName"]}}</p>
-      <p>new state: {{payload["newState"]}}</p>
-    {% elif payload["func"] == "iD" %}
+      <p>permit: {{payload["args"]["permit"]}}</p>
+      <p>affected: {{payload["args"]["account"]}}</p>
+      <p>new state: {{payload["args"]["status"]}}</p>
+    {% elif payload["methodId"] == "0x9a9abf85" %} <!-- setPermitParent(bytes32,bytes32) -->
+      <span class='icon'><i class="fa-solid fa-sitemap"></i></span>
+      <span class='text'>Parent Permit Set</span>
+      <p>permit: {{payload["args"]["permit"]}}</p>
+      <p>parent: {{payload["args"]["parent"]}}</p>
+    {% elif payload["methodId"] == "0x40c10f19" %} <!-- mint(address,uint256) -->
+      <span class='icon'><i class="fa-solid fa-money-bill-trend-up"></i></span>
+      <span class='text'>Mint</span>
+      <p>account: {{payload["args"]["account"]}}</p>
+      <p>amount: {{e.int(payload["args"]["amount"])}}</p>
+    {% elif payload["methodId"] == "0x873fdde7" %} <!-- issueDividend(bytes32,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
       <span class='text'>Dividend Issued</span>
-      <p>from: {{payload["bankName"]}}</p>
-      <p>token address: {{payload["tokenAddress"]}}</p>
-      <p>value: {{payload["value"]}}</p>
-    {% elif payload["func"] == "dD" %}
-      <span class='icon'><i class='fa-solid fa-coins'></i></span>
-      <span class='text'>Dividend Dissolved</span>
-      <p>dividend id: {{payload["dividend"]}}</p>
-      <p>value dissolved: {{payload["dividendValue"]}}</p>
-    {% elif payload["func"] == "cD" %}
-      <span class='icon'><i class='fa-solid fa-cake-slice'></i></span>
-      <span class='text'>Dividend Claimed</span>
-      <p>dividend id: {{payload["dividend"]}}</p>
-      <p>claimed value: {{payload["dividendValue"]}}</p>
-    {% elif payload["func"] in ["cB","aA","rA"] %}
-      {% if payload["func"] == "cB" %}
-        <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
-        <span class='text'>Bank Created</span>
-      {% elif payload["func"] == "aA" %}
-        <span class='icon'><i class='fa-solid fa-chess-king'></i></span>
-        <span class='text'>Bank Admin Added</span>
-      {% elif payload["func"] == "rA" %}
-        <span class='icon'><i class='fa-solid fa-person-circle-xmark'></i></span>
-        <span class='text'>Bank Admin Removed</span>
-      {% endif %}
-      <p>bank: {{payload["bankName"]}}</p>
-      <p>affected: {{payload["bankAdmin"]}}</p>
-    {% elif payload["func"] == "dB" %}
+      <p>bank: {{payload["args"]["bank"]}}</p>
+      <p>token: {{payload["args"]["token"]}}</p>
+      <p>amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+     {% elif payload["methodId"] == "0x3598f3f3" %} <!-- issueVote(bytes4[],bytes[],uint256) -->
+      <span class='icon'><i class="fa-solid fa-square-poll-vertical"></i></span>
+      <span class='text'>Vote Issued</span>
+      <p>sigs: {{payload["args"]["sigs"]}}</p>
+      <p>args: {{payload["args"]["args"]}}</p>
+      <p>duration: {{payload["args"]["duration"]}}</p>
+     {% elif payload["methodId"] == "0x74c8df12" %} <!-- implementResolution(uint256) -->
+      <span class='icon'><i class="fa-solid fa-check-to-slot"></i></span>
+      <span class='text'>Implemented Resolution</span>
+      <p>voteId: {{payload["args"]["voteId"]}}</p>
+    {% elif payload["methodId"] == "0x3b51634f" %} <!-- callExternal(address,bytes4,bytes,uint256,bytes32) -->
+      <span class='icon'><i class="fa-solid fa-phone"></i></span>
+      <span class='text'>External Call</span>
+      <p>ext: {{payload["args"]["ext"]}}</p>
+      <p>sig: {{payload["args"]["sig"]}}</p>
+      <p>args: {{payload["args"]["args"]}}</p>
+      <p>value: {{payload["args"]["value"]}}</p>
+      <p>bank: {{payload["args"]["bank"]}}</p>
+    {% elif payload["methodId"] == "0x23a7c49b" %} <!-- setExternalCallPermit(address,bytes4,bytes32) -->
+      <span class='icon'><i class="fa-solid fa-id-card"></i></span>
+      <span class='text'>External Call Permit Set</span>
+      <p>ext: {{payload["args"]["ext"]}}</p>
+      <p>sig: {{payload["args"]["sig"]}}</p>
+      <p>permit: {{payload["args"]["permit"]}}</p>
+    {% elif payload["methodId"] == "0x7ab1f504" %} <!-- transferFundsFromBank(bytes32,address,address,uint256) -->
+      <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
+      <span class='text'>Funds Transferred</span>
+      <p>fromBank: {{payload["args"]["fromBank"]}}</p>
+      <p>token: {{payload["args"]["token"]}}</p>
+      <p>to: {{payload["args"]["to"]}}</p>
+      <p>amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+    {% elif payload["methodId"] == "0x3fb3a2d7" %} <!-- moveFunds(bytes32,bytes32,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
-      <span class='text'>Bank Deleted</span>
-      <p>name: {{payload["bankName"]}}</p>
-    {% elif payload["func"] == "tT" %}
-    <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
-    <span class='text'>Token Transferred</span>
-    <p>bank: {{payload["bankName"]}}</p>
-    <p>token address: {{payload["tokenAddress"]}}</p>
-    <p>value: {{payload["value"]}}</p>
-    <p>to: {{payload["to"]}}</p>
-  {% elif payload["func"] == "mT" %}
-    <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
-    <span class='text'>Token Moved</span>
-    <p>from: {{payload["fromBankName"]}}</p>
-    <p>to: {{payload["toBankName"]}}</p>
-    <p>token address: {{payload["tokenAddress"]}}</p>
-    <p>value: {{payload["value"]}}</p>
+      <span class='text'>Funds Moved</span>
+      <p>fromBank: {{payload["args"]["fromBank"]}}</p>
+      <p>toBank: {{payload["args"]["toBank"]}}</p>
+      <p>token: {{payload["args"]["token"]}}</p>
+      <p>amount: {{payload["args"]["amount"]}}</p>
   {% endif %}
-  <p>by: {{payload["by"]}}</p>
 </td></tr>
 {% endfor %}
 </table>
