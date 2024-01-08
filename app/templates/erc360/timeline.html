@@ -26,11 +26,13 @@
       <span class='text'>Created</span>
       <p>Time: {{payload["blockNumber"]}}</p>
     {% elif payload["methodId"] == '0x' %} <!-- on simple receipt -->
+    {% with from=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["from"])) %}
     <span class='icon'><i class="fa-solid fa-money-bill-transfer"></i></span>
       <span class='text'>Received</span>
       <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> 
-      <p>From: {{payload["from"]}}</p> <!-- setPermit(address,bytes32,bool) -->
-    {% elif payload["methodId"] == "0x8ab73cf9" %}
+      <p>From: <a href="{{from.etherscan_url}}" target="_blank">{{from.representation}}</a></p> 
+    {% endwith %}
+    {% elif payload["methodId"] == "0x8ab73cf9" %} <!-- setPermit(address,bytes32,bool) -->
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
       <p>permit: {{payload["args"]["permit"]}}</p>
@@ -79,8 +81,8 @@
     {% elif payload["methodId"] == "0x7ab1f504" %} <!-- transferFundsFromBank(bytes32,address,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
       <span class='text'>Funds Transferred</span>
-      {% with token=models.Token.query.filter_by(address=payload["args"]["token"]).first(),bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=e.Address.get_entity(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
-      <p>Token: <a href="{{token.etherscan_url}}" target="_blank">{{token.representation}}</a>
+      {% with token=models.Token.query.filter_by(address=payload["args"]["token"]).first(),bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
+      <p>Token: <a href="{{token.etherscan_url}}" target="_blank">{{token.representation}}</a></p>
       <p>Amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
       </p>
       <p>Bank: {{bank.representation}}</p>
