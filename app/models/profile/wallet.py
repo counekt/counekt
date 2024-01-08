@@ -1,4 +1,4 @@
-from app import db
+from app import db, etherscan
 from app.models.base import Base
 import app.models as models
 from sqlalchemy import desc, TIMESTAMP, func, select
@@ -62,8 +62,17 @@ class Wallet(db.Model, Base):
         return self.erc360s_from_token_ids.union(self.erc360s_from_permits)
 
     @property
+    def etherscan_url(self):
+        return etherscan.get_address_link(self.address)
+
+    @property
     def representation(self):
+        return f"{self.spenders[0].dname}" if self.spenders.count() == 1 else self.address
+
+    @property
+    def representation_with_addr(self):
         return f"{self.spenders[0].dname} ({self.address})" if self.spenders.count() == 1 else self.address
-    
+
+
     def __repr__(self):
         return "<Wallet {}>".format(self.address)

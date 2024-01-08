@@ -16,7 +16,7 @@
         </button>
     </p>
   </header>
-  <section id="timeline-content" class="modal-card-body has-text-centered">
+  <section id="timeline-content" class="modal-card-body has-text-centered selectable">
   <table class="table is-striped is-bordered is-fullwidth">
   {% for e in erc360.events[::-1] %}
   <tr><td>
@@ -28,7 +28,8 @@
     {% elif payload["methodId"] == '0x' %} <!-- on simple receipt -->
     <span class='icon'><i class="fa-solid fa-money-bill-transfer"></i></span>
       <span class='text'>Received</span>
-      <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> <!-- setPermit(address,bytes32,bool) -->
+      <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> 
+      <p>From: {{payload["from"]}}</p> <!-- setPermit(address,bytes32,bool) -->
     {% elif payload["methodId"] == "0x8ab73cf9" %}
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
@@ -78,10 +79,13 @@
     {% elif payload["methodId"] == "0x7ab1f504" %} <!-- transferFundsFromBank(bytes32,address,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
       <span class='text'>Funds Transferred</span>
-      <p>fromBank: {{payload["args"]["fromBank"]}}</p>
-      <p>token: {{payload["args"]["token"]}}</p>
-      <p>to: {{payload["args"]["to"]}}</p>
-      <p>amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      {% with token=models.Token.query.filter_by(address=payload["args"]["token"]).first(),bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=e.Address.get_entity(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
+      <p>Token: <a href="{{token.etherscan_url}}" target="_blank">{{token.representation}}</a>
+      <p>Amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      </p>
+      <p>Bank: {{bank.representation}}</p>
+      <p>To: <a href="{{to.etherscan_url}}" target="_blank">{{to.representation}}</a></p>
+    {% endwith %}
     {% elif payload["methodId"] == "0x3fb3a2d7" %} <!-- moveFunds(bytes32,bytes32,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
       <span class='text'>Funds Moved</span>

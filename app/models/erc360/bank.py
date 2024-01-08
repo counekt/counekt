@@ -43,6 +43,7 @@ class Bank(db.Model, Base):
 			self.token_amounts.append(token_amount)
 		return token_amount		
 
+
 	def add_amount(self,amount,token):
 		BankTokenAmount.get_or_register(self,token).amount += amount
 

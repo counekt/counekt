@@ -283,8 +283,7 @@ def create():
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             wallet = models.Wallet.get_or_register(address=receipt["from"],spender=current_user)
-            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet)
-            erc360.address = receipt.contractAddress
+            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress)
             erc360.block = receipt.blockNumber
             if show_location:
 
