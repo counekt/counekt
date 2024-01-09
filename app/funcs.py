@@ -23,16 +23,16 @@ def decode_transaction_payload(t):
         return t
     elif t["methodId"] == '0x8ab73cf9': # setPermit(address,bytes32,bool)
         account,permit,status = abi.decode_abi(["address","bytes32","bool"],data)
-        return t | {"args": {"account":account,"permit":permit.hex(),"status":status}}
+        return t | {"args": {"account":w3.toChecksumAddress(account),"permit":permit.hex(),"status":status}}
     elif t["methodId"] == '0x9a9abf85': # setPermitParent(bytes32,bytes32)
         permit, parent = abi.decode_abi(["bytes32","bytes32"],data)
         return t | {"args": {"permit":permit.hex(),"parent":parent.hex()}}
     elif t["methodId"] == '0x40c10f19': # mint(address,uint256)
         account, amount = abi.decode_abi(["address","uint256"],data)
-        return t | {"args": {"account":account,"amount":amount}}
+        return t | {"args": {"account":w3.toChecksumAddress(account),"amount":amount}}
     elif t["methodId"] == '0x873fdde7': # issueDividend(bytes32,address,uint256)
         bank, token, amount = abi.decode_abi(["bytes32","address","uint256"],data)
-        return t | {"args": {"bank":bank.hex(),"token":token,"amount":amount}}
+        return t | {"args": {"bank":bank.hex(),"token":w3.toChecksumAddress(token),"amount":amount}}
     elif t["methodId"] == '0x3598f3f3': # issueVote(bytes4[],bytes[],uint256)
         sigs, args, duration = abi.decode_abi(["bytes4[]","bytes[]","uint256"],data)
         return t | {"args": {"sigs":[s.hex() for s in sigs],"args":[a.hex() for a in args],"duration":duration}}
@@ -41,16 +41,16 @@ def decode_transaction_payload(t):
         return t | {"args": {"voteId":voteId}}
     elif t["methodId"] == '0x3b51634f': # callExternal(address,bytes4,bytes,uint256,bytes32)
         ext,sig,args,value,bank = abi.decode_abi(["address","bytes4","bytes","uint256","bytes32"],data)
-        return t | {"args": {"ext":ext,"sig":sig.hex(),"args":args.hex(),"value":value,"bank":bank.hex()}}
+        return t | {"args": {"ext":w3.toChecksumAddress(ext),"sig":sig.hex(),"args":args.hex(),"value":value,"bank":bank.hex()}}
     elif t["methodId"] == '0x23a7c49b': # setExternalCallPermit(address,bytes4,bytes32)
         ext,sig,permit = abi.decode_abi(["address","bytes4","bytes32"],data)
-        return t | {"args": {"ext":ext,"sig":sig.hex(),"permit":permit.hex()}}
+        return t | {"args": {"ext":w3.toChecksumAddress(ext),"sig":sig.hex(),"permit":permit.hex()}}
     elif t["methodId"] == "0x7ab1f504": # transferFundsFromBank(bytes32,address,address,uint256)
         fromBank, to, token, amount = abi.decode_abi(["bytes32","address","address","uint256"],data)
-        return t | {"args": {"fromBank":fromBank.hex(),"token":token,"amount":amount,"to":to}}
+        return t | {"args": {"fromBank":fromBank.hex(),"token":w3.toChecksumAddress(token),"amount":amount,"to":w3.toChecksumAddress(to)}}
     elif t["methodId"] == '0x3fb3a2d7': # moveFunds(bytes32,bytes32,address,uint256)
         fromBank,toBank,token,amount = abi.decode_abi(["bytes32","bytes32","address","uint256"],data)
-        return t | {"args": {"fromBank":fromBank.hex(),"toBank":toBank.hex(),"token":token,"amount":amount,"to":to}}
+        return t | {"args": {"fromBank":fromBank.hex(),"toBank":toBank.hex(),"token":w3.toChecksumAddress(token),"amount":amount,"to":w3.toChecksumAddress(to)}}
     else:
         return t
 

@@ -14,12 +14,13 @@ from markupsafe import Markup
 
 class ERC360(db.Model, Base, LocationBase):
 
-    def __init__(self,creator,**kwargs):
+    def __init__(self,creator,address,**kwargs):
         super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
+        self.address = address
         self.timeline_last_updated_at = 0
         models.Permit.create_initial_permits(self,creator)
         # do custom initialization here
-        self.photo = Photo(filename="photo", path=f"static/erc360s/{self.address}/photo/", replacement="/static/images/erc360.jpg")
+        self.photo = Photo(filename="photo", path=f"static/erc360s/{address}/photo/", replacement="/static/images/erc360.jpg")
 
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)

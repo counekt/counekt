@@ -16,7 +16,7 @@
         </button>
     </p>
   </header>
-  <section id="timeline-content" class="modal-card-body has-text-centered">
+  <section id="timeline-content" class="modal-card-body has-text-centered selectable">
   <table class="table is-striped is-bordered is-fullwidth">
   {% for e in erc360.events[::-1] %}
   <tr><td>
@@ -26,69 +26,77 @@
       <span class='text'>Created</span>
       <p>Time: {{payload["blockNumber"]}}</p>
     {% elif payload["methodId"] == '0x' %} <!-- on simple receipt -->
+    {% with from=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["from"])) %}
     <span class='icon'><i class="fa-solid fa-money-bill-transfer"></i></span>
       <span class='text'>Received</span>
-      <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> <!-- setPermit(address,bytes32,bool) -->
-    {% elif payload["methodId"] == "0x8ab73cf9" %}
+      <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> 
+      <p>From: <a href="{{from.etherscan_url}}" target="_blank">{{from.representation}}</a></p> 
+    {% endwith %}
+    {% elif payload["methodId"] == "0x8ab73cf9" %} <!-- setPermit(address,bytes32,bool) -->
       <span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span>
-      <p>permit: {{payload["args"]["permit"]}}</p>
-      <p>affected: {{payload["args"]["account"]}}</p>
-      <p>new state: {{payload["args"]["status"]}}</p>
+      <p>Permit: {{payload["args"]["permit"]}}</p>
+      <p>Affected: {{payload["args"]["account"]}}</p>
+      <p>New state: {{payload["args"]["status"]}}</p>
     {% elif payload["methodId"] == "0x9a9abf85" %} <!-- setPermitParent(bytes32,bytes32) -->
       <span class='icon'><i class="fa-solid fa-sitemap"></i></span>
       <span class='text'>Parent Permit Set</span>
-      <p>permit: {{payload["args"]["permit"]}}</p>
-      <p>parent: {{payload["args"]["parent"]}}</p>
+      <p>Permit: {{payload["args"]["permit"]}}</p>
+      <p>Parent: {{payload["args"]["parent"]}}</p>
     {% elif payload["methodId"] == "0x40c10f19" %} <!-- mint(address,uint256) -->
+      {% with account=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["account"])) %}
       <span class='icon'><i class="fa-solid fa-money-bill-trend-up"></i></span>
       <span class='text'>Mint</span>
-      <p>account: {{payload["args"]["account"]}}</p>
-      <p>amount: {{e.int(payload["args"]["amount"])}}</p>
+      <p>Account: <a href="{{account.etherscan_url}}" target="_blank">{{account.representation}}</a></p>
+      <p>Amount: {{e.int(payload["args"]["amount"])}}</p>
+      {% endwith %}
     {% elif payload["methodId"] == "0x873fdde7" %} <!-- issueDividend(bytes32,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span>
       <span class='text'>Dividend Issued</span>
-      <p>bank: {{payload["args"]["bank"]}}</p>
-      <p>token: {{payload["args"]["token"]}}</p>
-      <p>amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      <p>Bank: {{payload["args"]["bank"]}}</p>
+      <p>Token: {{payload["args"]["token"]}}</p>
+      <p>Amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
      {% elif payload["methodId"] == "0x3598f3f3" %} <!-- issueVote(bytes4[],bytes[],uint256) -->
       <span class='icon'><i class="fa-solid fa-square-poll-vertical"></i></span>
       <span class='text'>Vote Issued</span>
-      <p>sigs: {{payload["args"]["sigs"]}}</p>
-      <p>args: {{payload["args"]["args"]}}</p>
-      <p>duration: {{payload["args"]["duration"]}}</p>
+      <p>Sigs: {{payload["args"]["sigs"]}}</p>
+      <p>Args: {{payload["args"]["args"]}}</p>
+      <p>Duration: {{payload["args"]["duration"]}}</p>
      {% elif payload["methodId"] == "0x74c8df12" %} <!-- implementResolution(uint256) -->
       <span class='icon'><i class="fa-solid fa-check-to-slot"></i></span>
       <span class='text'>Implemented Resolution</span>
-      <p>voteId: {{payload["args"]["voteId"]}}</p>
+      <p>Vote Id: {{payload["args"]["voteId"]}}</p>
     {% elif payload["methodId"] == "0x3b51634f" %} <!-- callExternal(address,bytes4,bytes,uint256,bytes32) -->
       <span class='icon'><i class="fa-solid fa-phone"></i></span>
       <span class='text'>External Call</span>
-      <p>ext: {{payload["args"]["ext"]}}</p>
-      <p>sig: {{payload["args"]["sig"]}}</p>
-      <p>args: {{payload["args"]["args"]}}</p>
-      <p>value: {{payload["args"]["value"]}}</p>
-      <p>bank: {{payload["args"]["bank"]}}</p>
+      <p>Ext: {{payload["args"]["ext"]}}</p>
+      <p>Sig: {{payload["args"]["sig"]}}</p>
+      <p>Args: {{payload["args"]["args"]}}</p>
+      <p>Value: {{payload["args"]["value"]}}</p>
+      <p>Bank: {{payload["args"]["bank"]}}</p>
     {% elif payload["methodId"] == "0x23a7c49b" %} <!-- setExternalCallPermit(address,bytes4,bytes32) -->
       <span class='icon'><i class="fa-solid fa-id-card"></i></span>
       <span class='text'>External Call Permit Set</span>
-      <p>ext: {{payload["args"]["ext"]}}</p>
-      <p>sig: {{payload["args"]["sig"]}}</p>
-      <p>permit: {{payload["args"]["permit"]}}</p>
+      <p>Ext: {{payload["args"]["ext"]}}</p>
+      <p>Sig: {{payload["args"]["sig"]}}</p>
+      <p>Permit: {{payload["args"]["permit"]}}</p>
     {% elif payload["methodId"] == "0x7ab1f504" %} <!-- transferFundsFromBank(bytes32,address,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span>
       <span class='text'>Funds Transferred</span>
-      <p>fromBank: {{payload["args"]["fromBank"]}}</p>
-      <p>token: {{payload["args"]["token"]}}</p>
-      <p>to: {{payload["args"]["to"]}}</p>
-      <p>amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      {% with token=models.Token.query.filter_by(address=payload["args"]["token"]).first(),bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
+      <p>Token: <a href="{{token.etherscan_url}}" target="_blank">{{token.representation}}</a></p>
+      <p>Amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      </p>
+      <p>Bank: {{bank.representation}}</p>
+      <p>To: <a href="{{to.etherscan_url}}" target="_blank">{{to.representation}}</a></p>
+    {% endwith %}
     {% elif payload["methodId"] == "0x3fb3a2d7" %} <!-- moveFunds(bytes32,bytes32,address,uint256) -->
       <span class='icon'><i class='fa-solid fa-building-columns'></i></span>
       <span class='text'>Funds Moved</span>
-      <p>fromBank: {{payload["args"]["fromBank"]}}</p>
-      <p>toBank: {{payload["args"]["toBank"]}}</p>
-      <p>token: {{payload["args"]["token"]}}</p>
-      <p>amount: {{payload["args"]["amount"]}}</p>
+      <p>From bank: {{payload["args"]["fromBank"]}}</p>
+      <p>To bank: {{payload["args"]["toBank"]}}</p>
+      <p>Token: {{payload["args"]["token"]}}</p>
+      <p>Amount: {{payload["args"]["amount"]}}</p>
   {% endif %}
 </td></tr>
 {% endfor %}
