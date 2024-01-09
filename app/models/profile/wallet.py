@@ -73,6 +73,5 @@ class Wallet(db.Model, Base):
     def representation_with_addr(self):
         return f"{self.spenders[0].dname} ({self.address})" if self.spenders.count() == 1 else self.address
 
-
     def __repr__(self):
         return "<Wallet {}>".format(self.address)

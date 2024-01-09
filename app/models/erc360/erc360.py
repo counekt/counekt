@@ -21,8 +21,6 @@ class ERC360(db.Model, Base, LocationBase):
         models.Permit.create_initial_permits(self,creator)
         # do custom initialization here
         self.photo = Photo(filename="photo", path=f"static/erc360s/{address}/photo/", replacement="/static/images/erc360.jpg")
-        # register wallet with name
-        models.Wallet.get_or_register(address=address,name=kwargs["name"])
 
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)
