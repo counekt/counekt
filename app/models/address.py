@@ -10,9 +10,12 @@ class Address:
 	@classmethod
 	def get_or_register_entity(cls,address):
 		entity = cls.get_entity()
-		return entity if entity else cls.is_contract(address)
+		return entity if entity else models.Contract.get_or_register() if cls.is_contract(address) else models.Wallet.get_or_register()
 
 
 	@classmethod
 	def is_contract(self,address):
 		return w3.eth.getCode(address) != "0x"
+
+class Contract:
+	pass
