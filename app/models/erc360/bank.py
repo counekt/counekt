@@ -146,6 +146,10 @@ class Token(db.Model,Base):
 	@property
 	def representation(self):
 		return f"{self.name} ({self.symbol})" if self.is_named else self.address
-	
+
+	@property
+	def pretty_html_representation(self):
+		return Markup(f'<a href="{self.etherscan_url}" target="_blank">{self.representation}</a>')
+		
 	def __repr__(self):
 		return '<Token: {} ({})>'.format(self.name, self.symbol)

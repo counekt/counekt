@@ -4,6 +4,7 @@ import app.models as models
 from sqlalchemy import desc, TIMESTAMP, func, select
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from markupsafe import Markup
 
 spenders  = db.Table('spenders',
                   db.Column('spender_id', db.Integer, db.ForeignKey('user.id')),
@@ -72,6 +73,10 @@ class Wallet(db.Model, Base):
     @property
     def representation_with_addr(self):
         return f"{self.spenders[0].dname} ({self.address})" if self.spenders.count() == 1 else self.address
+
+    @property
+    def pretty_html_representation(self):
+        return Markup(f'<a href="{self.etherscan_url}" target="_blank">{self.representation}</a>')
 
     def __repr__(self):
         return "<Wallet {}>".format(self.address)
