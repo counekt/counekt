@@ -21,6 +21,8 @@
   {% for e in erc360.events[::-1] %}
   <tr><td>
   {% set payload = e.payload %}
+    <div>
+    <p style="position: relative;float:left;">{{payload["blockNumber"]}}</p>
     {% if payload["methodId"] == '0x60806040' %} <!-- on creation -->
     <span class='icon'><i class='fa-solid fa-star'></i></span>
       <span class='text'>Created</span>
@@ -112,7 +114,9 @@
     {% endwith %}
   {% endif %}
 </td></tr>
+</div>
 {% endfor %}
+
 </table>
 </section>
 </div>
