@@ -68,7 +68,7 @@ def edit_user():
             current_user.sin_rad_lat = None
             current_user.cos_rad_lat = None
             current_user.rad_lng = None
-            current_user.address = None
+            current_user.location_address = None
             current_user.is_visible = False
             current_user.show_location = False
 
@@ -105,7 +105,7 @@ def edit_user():
                 db.session.delete(skill)
 
         db.session.commit()
-        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.address, 'skill-bar':render_template("profile/skill-bar.html", skillrows=current_user.skillrows)})
+        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.location_address, 'skill-bar':render_template("profile/skill-bar.html", skillrows=current_user.skillrows)})
     return render_template("profile/user/profile.html", user=current_user, background=True, navbar=True, size="medium", noscroll=True)
 
 

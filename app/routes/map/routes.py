@@ -67,7 +67,7 @@ def map():
         profiles = query.all()
         print(profiles)
         loc = {"lat": location.latitude, "lng": location.longitude, "zoom": funcs.get_zoom_from_rad(radius)}
-        info = [{"username": p.username, "profile_photo": p.profile_photo.src, "name": p.name if p.name else p.username, "lat": p.latitude, "lng": p.longitude} for p in profiles]
+        info = [{"username": p.username, "profile_photo": p.photo.src, "name": p.name if p.name else p.username, "lat": p.latitude, "lng": p.longitude} for p in profiles]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
 
     return render_template("map.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)
