@@ -27,7 +27,7 @@ $(document).on("click", '#save-button', function(e) {
    formData.append("show-location", show_location);
    if (show_location) {
    formData.append("visible", visible);
-   if (marker) {
+   if (window.markerIsPlaced()) {
    formData.append("lat", window.getLatLng().lat);
    formData.append("lng", window.getLatLng().lng);
    }
