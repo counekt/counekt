@@ -146,18 +146,6 @@ class User(UserMixin, db.Model, Base, LocationBase):
     def is_younger_than(self, age):
         return funcs.is_younger_than(self.birthdate, age)
 
-    @ hybrid_method
-    def is_nearby(self, latitude, longitude, radius):
-        sin_rad_lat = math.sin(math.pi * latitude / 180)
-        cos_rad_lat = math.cos(math.pi * latitude / 180)
-        rad_lng = math.pi * longitude / 180
-        return func.acos(self.cos_rad_lat
-                         * cos_rad_lat
-                         * func.cos(self.rad_lng - rad_lng)
-                         + self.sin_rad_lat
-                         * sin_rad_lat
-                         ) * 6371 <= radius
-
     def get_token(self, expires_in=600):
         now = datetime.utcnow()
         if self.token and self.token_expiration > now + timedelta(seconds=60):
@@ -194,8 +182,8 @@ class User(UserMixin, db.Model, Base, LocationBase):
 
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
-        query = cls.query.filter(cls.is_nearby(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
-        query = query.filter(cls.show_location == True, cls.is_visible == True)
+        query = super().get_explore_query(latitude,longitude,radius)
+
         if skill:
             query = query.filter(cls.skills.any(Skill.title == skill))
 
@@ -207,6 +195,7 @@ class User(UserMixin, db.Model, Base, LocationBase):
 
         if max_age:
             query = query.filter(cls.is_younger_than(int(max_age)))
+            
         return query
 
     @property
