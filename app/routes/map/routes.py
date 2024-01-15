@@ -25,6 +25,7 @@ def map():
     q_gender = request.args.get('gen')
     q_min_age = request.args.get('min')
     q_max_age = request.args.get('max')
+    q_include_erc360s = True # Remember to add on/off tick front end
 
     q_strings = {"selected_address": q_address, "selected_radius": q_radius, "selected_skill": q_skill, "selected_gender": q_gender, "selected_min_age": q_min_age, "selected_max_age": q_max_age}
 
@@ -63,12 +64,19 @@ def map():
             url += f'&max={max_age}'
 
         query = models.User.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
+        
+        if q_include_erc360s:
+            erc360_query = models.ERC360.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius)
+            erc360s = erc360_query.all()
+        else:
+            erc360s = []
 
-        profiles = query.all()
-        print(profiles)
+        users = query.all()
+
         loc = {"lat": location.latitude, "lng": location.longitude, "zoom": funcs.get_zoom_from_rad(radius)}
-        info = [{"username": p.username, "profile_photo": p.photo.src, "name": p.name if p.name else p.username, "lat": p.latitude, "lng": p.longitude} for p in profiles]
-        return json.dumps({'status': 'Successfully explored', 'url': url, 'info': info, 'loc': loc})
+        users_info = [{"username": u.username, "photo": u.photo.src, "name": u.name if u.name else u.username, "lat": u.latitude, "lng": u.longitude} for u in users]
+        erc360s_info = [{"address": e.address, "photo": e.photo.src, "name": e.name, "symbol": e.symbol, "lat": e.latitude, "lng": e.longitude} for e in erc360s]
+        return json.dumps({'status': 'Successfully explored', 'url': url, 'users_info': users_info, 'erc360s_info':erc360s_info, 'loc': loc})
 
     return render_template("map.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)
 

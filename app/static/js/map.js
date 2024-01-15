@@ -155,6 +155,8 @@ function explore(do_redirect=true) {
 
  }
 
+    var includeERC360s = true;
+
     $.post({
       type: "POST",
       url: "/map/",
@@ -173,17 +175,31 @@ function explore(do_redirect=true) {
               map.setView([loc.lat, convertToNearest(map.getCenter().lng),map.getZoom()]);
           }
           if (do_redirect) {redirect(searchObject, "Explore", response["url"], function(){});} else { window.history.replaceState(searchObject,"Explore", response["url"]);}
-          var info = response["info"];
-          console.log(info);
+          var users_info = response["users_info"];
+          console.log(users_info);
           markers.clearLayers();
-          info.forEach(function(marker) {
-          L.marker([marker.lat,marker.lng], {icon: proIcon}).addTo(markers).bindPopup(`
+          users_info.forEach(function(user) {
+          L.marker([user.lat,user.lng], {icon: proIcon}).addTo(markers).bindPopup(`
       <div class="profile-image">
-        <a href="user/`+marker.username+`">
-        <img alt draggable="false" class="profile-image-content" src="`+marker.profile_photo+`">
+        <a href="user/`+user.username+`">
+        <img alt draggable="false" class="profile-image-content" src="`+user.photo+`">
         </a>
-      </div><a class="title is-4 profile-name" href="user/`+marker.username+`" style="color:black"><b>`+marker.name+`</b></a>`);
+      </div><a class="title is-4 profile-name" href="user/`+user.username+`" style="color:black"><b>`+user.name+`</b></a>`);
           });
+
+          if (includeERC360s) {
+            console.log(erc360s_info);
+            var erc360s_info = response["erc360s_info"];
+            erc360s_info.forEach(function(erc360) {
+          L.marker([erc360.lat,erc360.lng], {icon: erc360Icon}).addTo(markers).bindPopup(`
+      <div class="profile-image">
+        <a href="erc360/`+erc360.address+`">
+        <img alt draggable="false" class="profile-image-content" src="`+erc360.photo+`">
+        </a>
+      </div><a class="title is-4 profile-name" href="user/`+erc360.address+`" style="color:black"><b>`+erc360.name+` (`+erc360.symbol+`)`+`</b></a>`);
+          });
+          }
+
           if (do_redirect) {
           map.flyTo([loc.lat, loc.lng], loc.zoom);
           }
