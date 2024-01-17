@@ -2,6 +2,7 @@ from app import db, etherscan, w3
 from app.models.base import Base
 import json
 from app.models.address import Address
+from datetime import datetime
 
 class Event(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,4 +37,8 @@ class Event(db.Model, Base):
     @property
     def Address(self):
         return Address
+
+    @property
+    def time(self):
+        return datetime.fromtimestamp(self.timestamp).strftime("%d. %b %Y %H:%M").lower()
 

@@ -22,7 +22,7 @@
   <tr><td>
   {% set payload = e.payload %}
     <div style="">
-    <span style="position: absolute;left:30px;float:left;overflow:hidden;">{{payload["blockNumber"]}}</span>
+    <span style="position: absolute;left:30px;float:left;overflow:hidden;">{{e.time}}</span>
     {% if payload["methodId"] == '0x60806040' %} <!-- on creation -->
     <div class="event-top"><span class='icon'><i class='fa-solid fa-star'></i></span><span class='text'>Created</span></div>
       <p>Time: {{payload["blockNumber"]}}</p>
