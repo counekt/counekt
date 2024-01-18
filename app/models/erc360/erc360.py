@@ -68,6 +68,10 @@ class ERC360(db.Model, Base, LocationBase):
         'Permit', backref='erc360', lazy='dynamic',
         foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
 
+    @hybrid_property
+    def bank_events(self):
+        return self.events.filter(models.Event.is_bank_event())
+
     def get_timeline(self):
         return [e.payload for e in self.events]
 

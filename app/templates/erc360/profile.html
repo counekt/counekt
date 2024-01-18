@@ -309,6 +309,7 @@ $(document).on('click', '#banks-tab-button', function() {
     redirect({id:"erc360-banks"}, "Banks", "/€{{erc360.address}}/structure/banks/", changeToBanks);
 });
 
+
 $(document).on('click', '#permits-tab-button', function() {
       redirect({id:"erc360-permits"}, "Permits", "/€{{erc360.address}}/structure/permits/", changeToPermits);
 });
@@ -503,8 +504,6 @@ function changeToOwnership() {
     }
 }
 
-
-
 function changeToStructure() {
     if (!goToModal('#structure-modal')) {
       $("#modal-box").append(STRUCTURE_HTML);
@@ -521,7 +520,6 @@ function changeToStructureTab(tabSelector) {
   $this.addClass('is-active');
   $($this.data('content')).removeClass('vanish');
 }
-
 
 function changeToBanks() {
   changeToStructureTab('#banks-tab-button');

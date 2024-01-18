@@ -46,11 +46,12 @@
       </div>
       <div id="bank-tabs" class="tabs is-toggle is-centered is-fullwidth is-small">
       <ul>
-        <li data-content="#bank-balances-tab" class="is-active"><a>Balances</a></li>
-        <li data-content="#bank-admins-tab"><a>Administrators</a></li>
-        <li data-content="#bank-activity-tab"><a>Activity</a></li>
+        <li id="bank-balances-button" data-content="#bank-balances-content" class="is-active" data-><a>Balances</a></li>
+        <li id="bank-admins-button" data-content="#bank-admins-content"><a>Administrators</a></li>
+        <li id="bank-activity-button" data-content="#bank-activity-content"><a>Activity</a></li>
       </ul>
     </div>
+    <div class="bank-tab-content" id="bank-balances-content">
       <div class="table-container">
         <table id="bank-balances" class="table is-bordered is-narrow is-striped is-hoverable is-fullwidth">
           {% for token_amount in erc360.banks.first().token_amounts %}
@@ -58,9 +59,35 @@
             <td><a href="{{token_amount.token.etherscan_url}}" target="_blank">{{token_amount.token.name}}</a></td>
             <td>{{token_amount.representation}}</td>
           </tr>
-          {% endfor %}
+          {% endfor %} 
         </table>
       </div>
+    </div>
+    <div class="bank-tab-content vanish" id="bank-admins-content">
+          <table class="table is-striped is-bordered is-fullwidth">
+          {% with permit=erc360.permits.first() %}
+          {% for wallet in permit.wallets %}
+          <tr><td>
+            <span class='icon'>
+            {% if wallet in permit.parent.wallets %}
+            <i class='fa-solid fa-chess-king'></i>
+            {% else %}
+            <i class='fa-solid fa-chess-bishop'></i>
+            {% endif %}
+            </span>
+            <span class="text">{{wallet.pretty_html_representation}}</span>
+          {% endfor %}
+          </td></tr>
+          {% endwith %}
+        </table>
+        </div>
+        <div class="bank-tab-content vanish" id="bank-activity-content">
+          <table class="table is-striped is-bordered is-fullwidth">
+            {% for e in erc360.bank_events[::-1] %}
+              {% include 'erc360/event.html' %}
+            {% endfor %}
+          </table>
+        </div>
       {% else %}
       <div style="height: 320px;"><p style="height:320px;line-height:320px;">No banks created yet...</p></div>
       {% endif %}
