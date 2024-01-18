@@ -132,7 +132,7 @@ def update_timeline(address):
 @bp.route("/€<address>/get/timeline/", methods=["GET"])
 def get_timeline(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/timeline.html", erc360=erc360)
+    return render_template("erc360/timeline.html", erc360=erc360, models=models)
 
 
 @ bp.route("/erc360/<address>/update/ownership/", methods=["POST"])
