@@ -1,4 +1,13 @@
 
+$(document).on('click', '#bank-tabs ul li', function() {
+  const $this = $(this);
+  $(".bank-tab-content").addClass('vanish');
+  $('#bank-tabs ul li').removeClass('is-active');
+  $this.addClass('is-active');
+  $($this.data('content')).removeClass('vanish');
+});
+
+
 $(document).on('keypress','#deposit-amount-input, #transfer-amount-input',function(event) {
     var key = event.keyCode || event.charCode;
     if (key < 48 || key > 57) {

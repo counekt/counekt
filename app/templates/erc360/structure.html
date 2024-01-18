@@ -46,11 +46,12 @@
       </div>
       <div id="bank-tabs" class="tabs is-toggle is-centered is-fullwidth is-small">
       <ul>
-        <li data-content="#bank-balances-tab" class="is-active"><a>Balances</a></li>
-        <li data-content="#bank-admins-tab"><a>Administrators</a></li>
-        <li data-content="#bank-activity-tab"><a>Activity</a></li>
+        <li id="bank-balances-button" data-content="#bank-balances-content" class="is-active" data-><a>Balances</a></li>
+        <li id="bank-admins-button" data-content="#bank-admins-content"><a>Administrators</a></li>
+        <li id="bank-activity-button" data-content="#bank-activity-content"><a>Activity</a></li>
       </ul>
     </div>
+    <div class="bank-tab-content" id="bank-balances-content">
       <div class="table-container">
         <table id="bank-balances" class="table is-bordered is-narrow is-striped is-hoverable is-fullwidth">
           {% for token_amount in erc360.banks.first().token_amounts %}
@@ -61,6 +62,7 @@
           {% endfor %}
         </table>
       </div>
+    </div>
       {% else %}
       <div style="height: 320px;"><p style="height:320px;line-height:320px;">No banks created yet...</p></div>
       {% endif %}
