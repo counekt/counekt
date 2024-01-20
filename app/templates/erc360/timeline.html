@@ -18,7 +18,7 @@
   </header>
   <section id="timeline-content" class="modal-card-body has-text-centered selectable">
   <table class="table is-striped is-bordered is-fullwidth">
-  {% for e in erc360.events[::-1] %}
+  {% for e in erc360.events[::-1]+erc360.events[::-1] %}
     {% include 'erc360/event.html' %}
   {% endfor %}
 </table>
