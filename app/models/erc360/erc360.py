@@ -70,7 +70,7 @@ class ERC360(db.Model, Base, LocationBase):
 
     @hybrid_property
     def bank_events(self):
-        return self.events.filter(models.Event.is_bank_event())
+        return self.events.filter(models.Event.is_bank_event() == True)
 
     def get_timeline(self):
         return [e.payload for e in self.events]
