@@ -48,6 +48,6 @@ class Event(db.Model, Base):
 
     @hybrid_method
     def is_bank_event(self):        
-        #                           receipt, dividend, callExternal, transferFunds, moveFunds
-        return db.cast(self.payload_json,JSONB)['methodId'].astext in ['0x','0x873fdde7','0x3b51634f','0x7ab1f504','0x3fb3a2d7']
+        #                                                            receipt, dividend, callExternal, transferFunds, moveFunds
+        return db.cast(self.payload_json,JSONB)['methodId'].astext.in_(['0x','0x873fdde7','0x3b51634f','0x7ab1f504','0x3fb3a2d7'])
         
