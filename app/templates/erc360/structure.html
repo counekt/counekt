@@ -82,9 +82,9 @@
         </table>
         </div>
         <div class="bank-tab-content vanish" id="bank-activity-content">
-          <table class="table is-striped is-bordered is-fullwidth">
-            {% for e in erc360.bank_events[::-1] %}
-              {% include 'erc360/event.html' %}
+          <table class="table is-striped is-bordered is-fullwidth" style="margin-bottom:24px;">
+            {% for e in erc360.events[::-1] %}
+            {% include 'erc360/event.html' %}
             {% endfor %}
           </table>
         </div>

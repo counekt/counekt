@@ -1,8 +1,8 @@
 <div style="">
-<tr><td>
+<tr><td style="padding-left:9px;padding-right:9px;">
   {% set payload = e.payload %}
   <div class="event-top">
-    <span class="time-tick" style="">{{e.time}}</span>
+    <span class="time-tick">{{e.time}}</span>
     {% if payload["methodId"] == '0x60806040' %} <!-- on creation -->
     <span class="event-type"><span class='icon'><i class='fa-solid fa-star'></i></span><span class='text'>Created</span></span></div>
       <p>Time: {{payload["blockNumber"]}}</p>
