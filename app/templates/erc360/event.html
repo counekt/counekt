@@ -10,7 +10,7 @@
     {% with from=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["from"])) %}
     <span class="event-type"><span class='icon'><i class="fa-solid fa-money-bill-transfer"></i></span>
       <span class='text'>Received</span></span></div>
-      <p>Amount: {{e.int(payload["value"])/(10**18)}}</p> 
+      <p>Amount: <span style="color:rgb(53, 172, 94);">{{e.int(payload["value"])/(10**18)}}</span></p> 
       <p>From: <a href="{{from.etherscan_url}}" target="_blank">{{from.representation}}</a></p> 
     {% endwith %}
     {% elif payload["methodId"] == "0x8ab73cf9" %} <!-- setPermit(address,bytes32,bool) -->
@@ -55,7 +55,7 @@
       <p>Ext: {{payload["args"]["ext"]}}</p>
       <p>Sig: {{payload["args"]["sig"]}}</p>
       <p>Args: {{payload["args"]["args"]}}</p>
-      <p>Value: {{payload["args"]["value"]}}</p>
+      <p>Value: <span style="color:rgb(255, 56, 96);">{{payload["args"]["value"]}}</span></p>
       <p>Bank: {{bank.representation}}</p>
       {% endwith %}
     {% elif payload["methodId"] == "0x23a7c49b" %} <!-- setExternalCallPermit(address,bytes4,bytes32) -->
@@ -69,7 +69,7 @@
       <span class="event-type"><span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span><span class='text'>Funds Transferred</span></span></div>
       {% with token=models.Token.get_or_register(address=payload["args"]["token"]),bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
       <p>Token: <a href="{{token.etherscan_url}}" target="_blank">{{token.representation}}</a></p>
-      <p>Amount: {{e.int(payload["args"]["amount"])/(10**18)}}</p>
+      <p>Amount: <span style="color:rgb(255, 56, 96);">{{e.int(payload["args"]["amount"])/(10**18)}}</span></p>
       </p>
       <p>Bank: {{bank.representation}}</p>
       <p>To: {{to.pretty_html_representation}}</p>
