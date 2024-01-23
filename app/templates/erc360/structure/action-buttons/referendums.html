@@ -1,8 +1,3 @@
-<p class="control">
-  <a id="vote-button" class="button is-link is-light">
-    Vote
-  </a>
-</p>
 {% if current_user.has_wallet_with_permit(erc360,"0000000000000000000000000000000000000000000000000000000000000000") %}
 <p class="control">
   <a id="propose-button" class="button is-info is-light">
@@ -10,3 +5,8 @@
   </a>
 </p>
 {% endif %}
+<p class="control">
+  <a id="vote-button" class="button is-link is-light">
+    Vote
+  </a>
+</p>
