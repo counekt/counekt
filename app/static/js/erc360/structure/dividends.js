@@ -38,7 +38,7 @@ async function distributeDividend(abi,contractAddress,bank,token,amount) {
    })
 
 
-    console.log('Dividend Distribution completed:', transferTransaction);
+    console.log('Dividend Distribution completed:', distributionTransaction);
     return tx;
   } catch (error) {
     console.error('Error Approving Dividend Distribution:', error);

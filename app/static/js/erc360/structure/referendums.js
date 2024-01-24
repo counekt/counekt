@@ -38,7 +38,7 @@ async function issueVote(abi,contractAddress,proposals) {
    })
 
 
-    console.log('Vote Issuance completed:', transferTransaction);
+    console.log('Vote Issuance completed:', issuanceTransaction);
     return tx;
   } catch (error) {
     console.error('Error Approving Vote Issuance:', error);

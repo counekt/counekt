@@ -78,7 +78,9 @@ class ERC360(db.Model, Base, LocationBase):
     def update_timeline(self):
         contract = self.get_w3_contract()
         transacts = etherscan.get_transactions_of(address=contract.address,startblock=self.timeline_last_updated_at)
+        print(transacts)
         for t in transacts:
+            print(t,type(t))
             if not self.events.filter_by(block_hash=t["blockHash"], transaction_hash=t["hash"],log_index=t["transactionIndex"]).first():
                 print(t)
                 timestamp = w3.eth.getBlock(int(t["blockNumber"])).timestamp

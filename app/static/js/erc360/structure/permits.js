@@ -1,5 +1,5 @@
 async function uploadPermitAssignment(abi) {
-    const tx = await assignPermit(abi,address,getAssignedPermit(),getAssignmentRecipient());
+    const tx = await assignPermit(abi,address,getAssignmentRecipient(),getAssignedPermit());
 
     if (tx) {
       update_structure(address);
@@ -8,7 +8,7 @@ async function uploadPermitAssignment(abi) {
 }
 
 async function uploadPermitRevocation(abi) {
-    const tx = await revokePermit(abi,address,getRevokedPermit(),getRevocationRecipient());
+    const tx = await revokePermit(abi,address,getRevocationRecipient(),getRevokedPermit());
 
     if (tx) {
       update_structure(address);
@@ -60,9 +60,9 @@ async function setPermit(abi,contractAddress,account,permit,status) {
    })
 
       if (status) {
-        console.log('Permit assignment completed:', transferTransaction);
+        console.log('Permit assignment completed:', settingTransaction);
       }
-      else{console.log('Permit revocation completed:', transferTransaction);}
+      else{console.log('Permit revocation completed:', settingTransaction);}
 
     return tx;
   } catch (error) {
@@ -78,3 +78,83 @@ async function setPermit(abi,contractAddress,account,permit,status) {
     $("#revoke").prop('disabled', false).removeClass('is-loading');
   }
 }
+
+async function checkAssignmentRecipient(feedback=false) {
+  $this = $('#assignment-recipient-input')
+  var text = getAssignmentRecipient();
+  var isAddress = await getWeb3Provider().utils.isAddress(text);
+  if (!feedback) {return isAddress;}
+  if (isAddress) {
+    $this.addClass('is-success').removeClass('is-danger');
+    return true;
+  } else {
+    displayInvalidAssignmentRecipient();
+    return false;
+  }
+}
+
+
+function displayInvalidAssignmentRecipient() {
+  message("Invalid address", ['recipient'], true);
+  $('#assignment-recipient-input').addClass('is-danger').removeClass('is-success');
+}
+
+async function checkRevocationRecipient(feedback=false) {
+  $this = $('#revocation-recipient-input')
+  var text = getRevocationRecipient();
+  var isAddress = await getWeb3Provider().utils.isAddress(text);
+  if (!feedback) {return isAddress;}
+  if (isAddress) {
+    $this.addClass('is-success').removeClass('is-danger');
+    return true;
+  } else {
+    displayInvalidRevocationRecipient();
+    return false;
+  }
+}
+
+function displayInvalidRevocationRecipient() {
+  message("Invalid address", ['recipient'], true);
+  $('#revocation-recipient-input').addClass('is-danger').removeClass('is-success');
+}
+
+function checkAssignable() {
+  const recipientCheck = checkAssignmentRecipient(true);
+  if (recipientCheck) {
+    $("#assign").prop('disabled',false);
+  } else {$("#assign").prop('disabled',true);}
+}
+
+function checkRevokable() {
+  const recipientCheck = checkRevocationRecipient(true);
+  if (recipientCheck) {
+    $("#assign").prop('disabled',false);
+  } else {$("#assign").prop('disabled',true);}
+}
+
+$(document).on('click', '#assign', function() {
+  console.log("assign");
+   var abi = $.getJSON("/erc360corporatizable/abi/", function(abi) {
+        uploadPermitAssignment(abi);
+     });
+});
+
+$(document).on('click', '#revoke', function() {
+  console.log("revoke");
+   var abi = $.getJSON("/erc360corporatizable/abi/", function(abi) {
+        uploadPermitRevocation(abi);
+     });
+});
+
+$(document).on('blur input','#assignment-recipient-input',function(event) {
+    checkAssignable();
+ });
+
+$(document).on('blur input','#revocation-recipient-input',function(event) {
+    checkRevokable();
+ });
+
+function getAssignmentRecipient() {return $('#assignment-recipient-input').val();}
+function getRevocationRecipient() {return $('#revocation-recipient-input').val();}
+function getAssignedPermit() {return "0x"+$('#assignment-permit-select').find('option:selected').val();}
+function getRevokedPermit() {return "0x"+$('#revocation-permit-select').find('option:selected').val();}
