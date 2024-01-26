@@ -90,6 +90,8 @@ class ERC360(db.Model, Base, LocationBase):
                 self.events.append(event)
                 print(f"\n{decoded_payload}\n")
                 if decoded_payload["txreceipt_status"] == "1":
+                    print("HERE IS VALID METHOD")
+
                     if decoded_payload["methodId"] == '0x': # on simple receipt
                         # Just register the event, update_ownership takes care of the rest
                         """
@@ -100,18 +102,19 @@ class ERC360(db.Model, Base, LocationBase):
                         wallet = models.Wallet.get_or_register(address=decoded_payload["args"]["account"])
                         permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
                         if decoded_payload["args"]["status"] == True:
-                            wallet.permits.append(permit)
+                            permit.wallets.append(wallet)
                         else:
-                            wallet.permits.remove(permit)
+                            permit.wallets.remove(wallet)
+                        print("HERE IS SETPERMIT METHOD HANDLING")
                     if decoded_payload["methodId"] == '0x9a9abf85': # Set Permit Parent
                         permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
                         parent = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["parent"]))
                         permit.parent = parent
                     if decoded_payload["methodId"] == '0x40c10f19': # Mint
-                        # Just register the event, update_ownership takes care of the rest
+                        # Just register the event, update_ownership takes care of the rest 
                         pass
-                    if decoded_payload["methodId"] == '0x8ab73cf9': # Issue Dividend
-                        if not self.dividends.filter_by(clock=decoded_payload).first():
+                    if decoded_payload["methodId"] == '0x873fdde7': # Issue Dividend 
+                        if not self.dividends.filter_by(clock=0).first():
                             dividend = models.Dividend(clock=decoded_payload["args"]["clock"],amount=int(decoded_payload["args"]["amount"]),token=decoded_payload["args"]["token"])
                             bank = models.Bank.get_or_register(erc360=self,permit=decoded_payload["args"]["bank"])
                             bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])

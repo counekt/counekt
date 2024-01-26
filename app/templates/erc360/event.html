@@ -15,7 +15,6 @@
     {% endwith %}
     {% elif payload["methodId"] == "0x8ab73cf9" %} <!-- setPermit(address,bytes32,bool) -->
     {% with account=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["account"])), permit=models.Permit.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["permit"])) %}
- %}
       <span class="event-type"><span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span></span></div>
       <p>Permit: {{permit.representation}}</p>
