@@ -1,4 +1,3 @@
-
 $(document).on('click', '#bank-tabs ul li', function() {
   const $this = $(this);
   $(".bank-tab-content").addClass('vanish');
@@ -6,33 +5,6 @@ $(document).on('click', '#bank-tabs ul li', function() {
   $this.addClass('is-active');
   $($this.data('content')).removeClass('vanish');
 });
-
-
-$(document).on('keypress','#deposit-amount-input, #transfer-amount-input',function(event) {
-    var key = event.keyCode || event.charCode;
-    if (key < 48 || key > 57) {
-      if (key == 44 || key == 46) {
-      	const string = $(this).val()
-      	if (string.includes(',') || string.includes('.')) {
-      		return false;
-      	}
-      	return true;
-      }
-      if (key == 13) {
-        $(this).blur();
-      }
-      return false;
-    }
-
-  });
-
-function formatAmountInput(string) {
-	if (string.startsWith(',') || string.startsWith('.')) {
-	  string = '0' + string;
-	}
-
-  return string.replace(/^0+/,'0').replace(/^0(?=[1-9])/,'');
-}
 
 async function formatDepositAmountInput() {
   $this = $('#deposit-amount-input');
@@ -59,33 +31,33 @@ async function formatDepositAmountInput() {
 
 
 function formatTransferAmountInput() {
-	$this = $('#transfer-amount-input');
-	var amount = getTransferAmount();
-	const max_amount_str = $this.attr('max');
-	const max_amount = parseFloat(max_amount_str);
-	const min_amount_str = $this.attr('min');
-	const min_amount = parseFloat(min_amount_str);
+  $this = $('#transfer-amount-input');
+  var amount = getTransferAmount();
+  const max_amount_str = $this.attr('max');
+  const max_amount = parseFloat(max_amount_str);
+  const min_amount_str = $this.attr('min');
+  const min_amount = parseFloat(min_amount_str);
 
-	if (amount>max_amount) {
-			amount = max_amount;
-		  $this.val(max_amount_str);
-	} else if (amount<min_amount && amount != 0) {
-		amount = min_amount;
-		$this.val(min_amount_str);
-	}
-	const amount_in_decimals = amount * 10**parseInt($this.data('decimals'));
-	console.log(amount_in_decimals,amount);
-	$('#transfer-amount-progress-bar').val(amount_in_decimals);
+  if (amount>max_amount) {
+      amount = max_amount;
+      $this.val(max_amount_str);
+  } else if (amount<min_amount && amount != 0) {
+    amount = min_amount;
+    $this.val(min_amount_str);
+  }
+  const amount_in_decimals = amount * 10**parseInt($this.data('decimals'));
+  console.log(amount_in_decimals,amount);
+  $('#transfer-amount-progress-bar').val(amount_in_decimals);
    $('#transfer-amount-span').text(amount);
 }
 
 $(document).on('blur input','#deposit-amount-input',function(event) {
-	 checkDepositable();
+   checkDepositable();
  });
 
 $(document).on('blur input','#transfer-amount-input',function(event) {
-	checkTransferAmount(true);
-	checkTransferable();
+  checkTransferAmount(true);
+  checkTransferable();
  });
 
 $(document).on('blur input','#transfer-recipient-input',function(event) {
@@ -94,44 +66,44 @@ $(document).on('blur input','#transfer-recipient-input',function(event) {
  });
 
 $(document).on('click', '#deposit', function() {
-	openDepositWindow();
+  openDepositWindow();
 });
 
 function getDepositAmount() {
-	return parseFloat($('#deposit-amount-input').val().replace(',','.')) || 0;
+  return parseFloat($('#deposit-amount-input').val().replace(',','.')) || 0;
 }
 
 
 async function checkDepositAmount() {
-	const $this = $('#deposit-amount-input');
-	$this.val(formatAmountInput($this.val()));
+  const $this = $('#deposit-amount-input');
+  $this.val(formatAmountInput($this.val()));
   await formatDepositAmountInput();
   if (getDepositAmount()>0) {
-      	$this.addClass('is-success').removeClass('is-danger');
-      	return true;
-	}
-	else {
-	$this.addClass('is-danger').removeClass('is-success');
-	return false;
-	}
+        $this.addClass('is-success').removeClass('is-danger');
+        return true;
+  }
+  else {
+  $this.addClass('is-danger').removeClass('is-success');
+  return false;
+  }
 }
 
 function checkTransferAmount() {
-	const $this = $('#transfer-amount-input');
-	$this.val(formatAmountInput($this.val()));
-	formatTransferAmountInput();
-	if (getTransferAmount()>0) {
-      	$this.addClass('is-success').removeClass('is-danger');
-      	return true;
-	}
-	else {
-	$this.addClass('is-danger').removeClass('is-success');
-	return false;
-	}
+  const $this = $('#transfer-amount-input');
+  $this.val(formatAmountInput($this.val()));
+  formatTransferAmountInput();
+  if (getTransferAmount()>0) {
+        $this.addClass('is-success').removeClass('is-danger');
+        return true;
+  }
+  else {
+  $this.addClass('is-danger').removeClass('is-success');
+  return false;
+  }
 }
 
 async function checkTransferRecipient(feedback=false) {
-	$this = $('#transfer-recipient-input')
+  $this = $('#transfer-recipient-input')
   var text = getTransferRecipient();
   var isAddress = await getWeb3Provider().utils.isAddress(text);
   if (!feedback) {return isAddress;}
@@ -182,8 +154,8 @@ async function uploadTransfer(abi) {
     const tx = await transferFundsFromBank(abi,address,getTransferBank(),getTransferToken(),getTransferRecipient(),getTransferDecimalAmount().toString());
 
     if (tx) {
-    	update_structure(address);
-    	changeToStructureTab('#banks-tab-button');
+      update_structure(address);
+      changeToStructureTab('#banks-tab-button');
     }
 }
 
@@ -230,16 +202,16 @@ async function transferFundsFromBank(abi,contractAddress,bank,token,account,amou
 async function openDepositWindow() {
   $("#deposit").prop('disabled', true).addClass('is-loading');
 
-	// Replace 'recipientAddress' with the Ethereum address you want to send funds to
-	if (!makeSureWalletConnected()) {return;}
+  // Replace 'recipientAddress' with the Ethereum address you want to send funds to
+  if (!makeSureWalletConnected()) {return;}
 
-	const recipientAddress = $("#erc360-address").text();
-	const web3 = getWeb3Provider();
-	const network = await web3.eth.net.getNetworkType();
-	console.log(network == "main");
-	const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
+  const recipientAddress = $("#erc360-address").text();
+  const web3 = getWeb3Provider();
+  const network = await web3.eth.net.getNetworkType();
+  console.log(network == "main");
+  const accounts = await web3.eth.getAccounts().catch((e) => console.log(e.message));
   const parameters = {from:accounts[0],to:recipientAddress, value:web3.utils.toWei(getDepositAmount().toString(), "ether")};
-	
+  
   let send = await web3.eth.sendTransaction(parameters, (err,transactionHash) => {
     tx = transactionHash;
     console.log(err);
@@ -255,25 +227,4 @@ async function openDepositWindow() {
   }
   $("#deposit").prop('disabled', false).removeClass('is-loading');
 
-}
-
-
-function update_structure(address) {
-        console.log("updating...");
-        $("#reload-structure").prop('disabled', true);$("#reload-structure").addClass('is-loading');
-        $.post("/€"+address+"/update/structure/",function(response) {
-                // update structure tab
-                $.get("/€"+address+"/get/structure/", function(structure, status) {
-                        STRUCTURE_HTML = structure;
-                        $("#structure-modal").replaceWith(structure);
-                        $("#reload-structure").removeClass('is-loading').prop('disabled', false);
-                        console.log("success!");
-                  });
-                // update transfer tab (so it registers new max amount of eth to be transferred)
-                $.get("/€"+address+"/get/structure/bank/transfer/", function(transfer, status) {
-                        TRANSFER_HTML = transfer;
-                        $("#transfer-modal").replaceWith(transfer);
-                        console.log("TRANSFER IS CONVERTED");
-                });
-        });
 }

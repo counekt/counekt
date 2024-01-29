@@ -14,8 +14,7 @@
       <p>From: <a href="{{from.etherscan_url}}" target="_blank">{{from.representation}}</a></p> 
     {% endwith %}
     {% elif payload["methodId"] == "0x8ab73cf9" %} <!-- setPermit(address,bytes32,bool) -->
-    {% with account=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["account"])), permit=models.Permit.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["permit"])) %}
- %}
+    {% with account=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["account"])), permit=models.Permit.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["permit"])) %}
       <span class="event-type"><span class='icon'><i class='fa-solid fa-user-tie'></i></span>
       <span class='text'>Permit Set</span></span></div>
       <p>Permit: {{permit.representation}}</p>
@@ -23,7 +22,7 @@
       <p>New state: {{payload["args"]["status"]}}</p>
     {% endwith %}
     {% elif payload["methodId"] == "0x9a9abf85" %} <!-- setPermitParent(bytes32,bytes32) -->
-    {% with permit=models.Permit.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["permit"])),parent=models.Permit.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["parent"])) %}
+    {% with permit=models.Permit.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["permit"])),parent=models.Permit.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["parent"])) %}
       <span class="event-type"><span class='icon'><i class="fa-solid fa-sitemap"></i></span><span class='text'>Parent Permit Set</span></span></div>
       <p>Permit: {{permit.representation}}</p>
       <p>Parent: {{parent.representation}}</p>
@@ -35,7 +34,7 @@
       <p>Amount: {{e.int(payload["args"]["amount"])}}</p>
       {% endwith %}
     {% elif payload["methodId"] == "0x873fdde7" %} <!-- issueDividend(bytes32,address,uint256) -->
-    {% with bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["bank"])) %}
+    {% with bank=models.Bank.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["bank"])) %}
       <span class="event-type"><span class='icon'><i class='fa-solid fa-money-check-dollar'></i></span><span class='text'>Dividend Issued</span></span></div>
       <p>Bank: {{bank.representation}}</p>
       <p>Token: {{payload["args"]["token"]}}</p>
@@ -50,7 +49,7 @@
       <span class="event-type"><span class='icon'><i class="fa-solid fa-check-to-slot"></i></span><span class='text'>Implemented Resolution</span></span></div>
       <p>Vote Id: {{payload["args"]["voteId"]}}</p>
     {% elif payload["methodId"] == "0x3b51634f" %} <!-- callExternal(address,bytes4,bytes,uint256,bytes32) -->
-      {% with bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["bank"])) %}
+      {% with bank=models.Bank.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["bank"])) %}
       <span class="event-type"><span class='icon'><i class="fa-solid fa-phone"></i></span><span class='text'>External Call</span></span></div>
       <p>Ext: {{payload["args"]["ext"]}}</p>
       <p>Sig: {{payload["args"]["sig"]}}</p>
@@ -59,7 +58,7 @@
       <p>Bank: {{bank.representation}}</p>
       {% endwith %}
     {% elif payload["methodId"] == "0x23a7c49b" %} <!-- setExternalCallPermit(address,bytes4,bytes32) -->
-    {% with permit=models.Permit.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["permit"])) %}
+    {% with permit=models.Permit.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["permit"])) %}
       <span class="event-type"><span class='icon'><i class="fa-solid fa-id-card"></i></span><span class='text'>External Call Permit Set</span></span></div>
       <p>Ext: {{payload["args"]["ext"]}}</p>
       <p>Sig: {{payload["args"]["sig"]}}</p>
@@ -67,7 +66,7 @@
     {% endwith %}
     {% elif payload["methodId"] == "0x7ab1f504" %} <!-- transferFundsFromBank(bytes32,address,address,uint256) -->
       <span class="event-type"><span class='icon'><i class='fa-solid fa-money-bill-transfer'></i></span><span class='text'>Funds Transferred</span></span></div>
-      {% with token=models.Token.get_or_register(address=payload["args"]["token"]),bank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
+      {% with token=models.Token.get_or_register(address=payload["args"]["token"]),bank=models.Bank.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),to=models.Wallet.get_or_register(address=e.w3.toChecksumAddress(payload["args"]["to"])) %}
       <p>Token: <a href="{{token.etherscan_url}}" target="_blank">{{token.representation}}</a></p>
       <p>Amount: <span style="color:rgb(255, 56, 96);">{{e.int(payload["args"]["amount"])/(10**18)}}</span></p>
       </p>
@@ -75,7 +74,7 @@
       <p>To: {{to.pretty_html_representation}}</p>
     {% endwith %}
     {% elif payload["methodId"] == "0x3fb3a2d7" %} <!-- moveFunds(bytes32,bytes32,address,uint256) -->
-    {% with token=models.Token.get_or_register(address=payload["args"]["token"]),fromBank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),toBank=models.Bank.get_or_register(erc360=erc360,bytes=e.bytearray.fromhex(payload["args"]["toBank"])) %}
+    {% with token=models.Token.get_or_register(address=payload["args"]["token"]),fromBank=models.Bank.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["fromBank"])),toBank=models.Bank.get_or_register(erc360=erc360,permit_bytes=e.bytearray.fromhex(payload["args"]["toBank"])) %}
      <span class="event-type"><span class='icon'><i class='fa-solid fa-building-columns'></i></span><span class='text'>Funds Moved</span></span></div>
       <p>From bank: {{fromBank.representation}}</p>
       <p>To bank: {{toBank.representation}}</p>

@@ -1,12 +1,12 @@
 {% if current_user.has_wallet_with_permit(erc360,"0000000000000000000000000000000000000000000000000000000000000000") %}
 <p class="control">
-  <a id="assign-button" class="button is-link is-light">
-    Assign
+  <a id="revoke-button" class="button is-danger is-light">
+      Revoke
   </a>
 </p>
 <p class="control">
-  <a id="revoke-button" class="button is-danger is-light">
-      Revoke
+  <a id="assign-button" class="button is-link is-light">
+    Assign
   </a>
 </p>
 {% endif %}

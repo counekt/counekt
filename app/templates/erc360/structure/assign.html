@@ -9,13 +9,13 @@
       </a>
       <p class="modal-card-title" id="header">Assign Permit for {{erc360.name}}</p>
   </header>
-  <section id="assign-content" class="modal-card-body has-text-centered">
+  <section id="assignment-content" class="modal-card-body has-text-centered">
     <div id="permit">
       <h1><b>Permit</b></h1>
       <div class="field has-addons has-addons-centered">
        <p class="control">
           <span class="select">
-          <select id="assign-permit-select" style="max-width:500px;">
+          <select id="assignment-permit-select" style="max-width:500px;">
             {% for permit in erc360.permits %}
             <option value="{{permit.bytes.hex()}}" {% if permit==selected_permit %}selected{% endif %}>{{permit.representation}}</option>
             {% endfor %}
@@ -29,7 +29,7 @@
       <h1><b>To</b></h1>
       <div class="field has-addons has-addons-centered">
       <p class="control">
-        <input id="assign-recipient-input" class="input has-fixed-size" placeholder="Recipient of permit assignment" maxlength="42"></input>
+        <input id="assignment-recipient-input" class="input has-fixed-size" placeholder="Recipient of permit assignment" maxlength="42"></input>
       </p>
       </div>
     </div>

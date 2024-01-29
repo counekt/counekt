@@ -165,13 +165,13 @@ def update_structure(address):
 @bp.route("/€<address>/get/structure/", methods=["GET"])
 def get_structure(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/structure.html", erc360=erc360)
+    return render_template("erc360/structure.html", erc360=erc360,models=models)
 
 @bp.route("/erc360/<address>/get/structure/bank/transfer/", methods=["GET"])
 @bp.route("/€<address>/get/structure/bank/transfer/", methods=["GET"])
 def get_transfer(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/structure/transfer.html", erc360=erc360)
+    return render_template("erc360/structure/transfer.html", erc360=erc360,models=models)
 
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
 @ bp.route("/€<address>/edit/", methods=["GET", "POST"])
@@ -283,10 +283,8 @@ def create():
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             wallet = models.Wallet.get_or_register(address=receipt["from"],spender=current_user)
-            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress)
-            erc360.block = receipt.blockNumber
+            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress,block=receipt.blockNumber)
             if show_location:
-
                 location = funcs.reverse_geocode([lat, lng])
                 if not location:
                     return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})

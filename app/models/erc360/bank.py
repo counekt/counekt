@@ -25,8 +25,8 @@ class Bank(db.Model, Base):
 		self.register_token(address="0x0000000000000000000000000000000000000000",symbol="ETH",name="Ether")
 
 	@classmethod
-	def get_or_register(cls,erc360,bytes):
-		permit = models.Permit.get_or_register(erc360=erc360,bytes=bytes)
+	def get_or_register(cls,erc360,permit_bytes):
+		permit = models.Permit.get_or_register(erc360=erc360,permit_bytes=permit_bytes)
 		bank = cls.query.filter(cls.erc360==erc360,cls.permit==permit).first()
 		if not bank:
 		    bank = cls()
