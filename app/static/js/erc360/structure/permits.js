@@ -158,3 +158,12 @@ function getAssignmentRecipient() {return $('#assignment-recipient-input').val()
 function getRevocationRecipient() {return $('#revocation-recipient-input').val();}
 function getAssignedPermit() {return "0x"+$('#assignment-permit-select').find('option:selected').val();}
 function getRevokedPermit() {return "0x"+$('#revocation-permit-select').find('option:selected').val();}
+
+$(document).on('change', '#permits-select', function (e) {
+    var optionSelected = $(this).find("option:selected");
+      console.log(optionSelected);
+    console.log(optionSelected.val());
+    $(".permit-table").addClass('vanish');
+    $(optionSelected.val()).removeClass('vanish');
+    console.log("dwed");
+});

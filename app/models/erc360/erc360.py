@@ -14,10 +14,10 @@ from markupsafe import Markup
 
 class ERC360(db.Model, Base, LocationBase):
 
-    def __init__(self,creator,address,**kwargs):
+    def __init__(self,creator,address,block,**kwargs):
         super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
         self.address = address
-        self.timeline_last_updated_at = 0
+        self.timeline_last_updated_at = block
         models.Permit.create_initial_permits(self,creator)
         # do custom initialization here
         self.photo = Photo(filename="photo", path=f"static/erc360s/{address}/photo/", replacement="/static/images/erc360.jpg")
@@ -95,20 +95,19 @@ class ERC360(db.Model, Base, LocationBase):
                     if decoded_payload["methodId"] == '0x': # on simple receipt
                         # Just register the event, update_ownership takes care of the rest
                         """
-                        main_bank = models.Bank.get_or_register(erc360=self,bytes=bytes(32))
+                        main_bank = models.Bank.get_or_register(erc360=self,permit_bytes=bytes(32))
                         main_bank.add_amount(int(t["value"]),"0x0000000000000000000000000000000000000000")
                         """
                     if decoded_payload["methodId"] == '0x8ab73cf9': # Set Permit
                         wallet = models.Wallet.get_or_register(address=decoded_payload["args"]["account"])
-                        permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
+                        permit = models.Permit.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
                         if decoded_payload["args"]["status"] == True:
                             permit.wallets.append(wallet)
                         else:
                             permit.wallets.remove(wallet)
-                        print("HERE IS SETPERMIT METHOD HANDLING")
                     if decoded_payload["methodId"] == '0x9a9abf85': # Set Permit Parent
-                        permit = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
-                        parent = models.Permit.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["parent"]))
+                        permit = models.Permit.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
+                        parent = models.Permit.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["parent"]))
                         permit.parent = parent
                     if decoded_payload["methodId"] == '0x40c10f19': # Mint
                         # Just register the event, update_ownership takes care of the rest 
@@ -116,7 +115,7 @@ class ERC360(db.Model, Base, LocationBase):
                     if decoded_payload["methodId"] == '0x873fdde7': # Issue Dividend 
                         if not self.dividends.filter_by(clock=0).first():
                             dividend = models.Dividend(clock=decoded_payload["args"]["clock"],amount=int(decoded_payload["args"]["amount"]),token=decoded_payload["args"]["token"])
-                            bank = models.Bank.get_or_register(erc360=self,permit=decoded_payload["args"]["bank"])
+                            bank = models.Bank.get_or_register(erc360=self,permit_bytes=decoded_payload["args"]["bank"])
                             bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                     if decoded_payload["methodId"] == '0x3598f3f3': # Issue Vote
                         if not self.referendums.filter_by(clock=decoded_payload["args"]["clock"]).first():
@@ -131,16 +130,16 @@ class ERC360(db.Model, Base, LocationBase):
                         proposal = models.Proposal.get_or_register(referendum=referendum,index=decoded_payload["args"]["index"])
                         proposal.implemented = True
                     if decoded_payload["methodId"] == "0x7ab1f504": # Transfer Funds From Bank
-                        bank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
+                        bank = models.Bank.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
                         #bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                     if decoded_payload["methodId"] == "0x3fb3a2d7": # Move Funds
-                        fromBank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
-                        toBank = models.Bank.get_or_register(erc360=self,bytes=bytearray.fromhex(decoded_payload["args"]["toBank"]))
+                        fromBank = models.Bank.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
+                        toBank = models.Bank.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["toBank"]))
                         """
                         fromBank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                         toBank.add_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                         """
-                if int(t["blockNumber"]) > int(self.timeline_last_updated_at or self.block):
+                if int(t["blockNumber"]) > int(self.timeline_last_updated_at):
                     self.timeline_last_updated_at = int(t["blockNumber"])
 
     def update_ownership(self):

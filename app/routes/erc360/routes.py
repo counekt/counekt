@@ -283,10 +283,8 @@ def create():
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             wallet = models.Wallet.get_or_register(address=receipt["from"],spender=current_user)
-            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress)
-            erc360.block = receipt.blockNumber
+            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress,block=receipt.blockNumber)
             if show_location:
-
                 location = funcs.reverse_geocode([lat, lng])
                 if not location:
                     return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})

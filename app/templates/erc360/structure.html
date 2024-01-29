@@ -65,19 +65,21 @@
     </div>
     <div class="bank-tab-content vanish" id="bank-admins-content">
           <table class="table is-striped is-bordered is-fullwidth">
-          {% with permit=erc360.permits.first() %}
-          {% for wallet in permit.wallets %}
-          <tr><td>
-            <span class='icon'>
-            {% if wallet in permit.parent.wallets %}
-            <i class='fa-solid fa-chess-king'></i>
-            {% else %}
-            <i class='fa-solid fa-chess-bishop'></i>
-            {% endif %}
-            </span>
-            <span class="text">{{wallet.pretty_html_representation}}</span>
-          {% endfor %}
-          </td></tr>
+          {% with permit = erc360.permits.first() %}
+            <div id="bank-permit-{{permit.bytes.hex()}}">
+            {% for wallet in permit.holders %}
+            <tr><td>
+              <span class='icon'>
+              {% if wallet in permit.parent.wallets %}
+              <i class='fa-solid fa-chess-king'></i>
+              {% else %}
+              <i class='fa-solid fa-chess-bishop'></i>
+              {% endif %}
+              </span>
+              <span class="text">{{wallet.pretty_html_representation}}</span>
+            </td></tr>
+            {% endfor %}
+            </div>
           {% endwith %}
         </table>
         </div>
@@ -96,31 +98,33 @@
       <div class="field has-addons" style="margin: 0px;">
         <p class="control"><a class="button is-static" style="border-bottom-width: 0px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;">Permit</a></p>
         <p class="control">
-          <div class="select is-fullwidth">
+          <div class="select is-fullwidth" id="permits-select">
             <select style="border-bottom-width: 0px;border-bottom-left-radius: 0px;border-bottom-right-radius: 0px;">
               {% for permit in erc360.permits %}
-              <option>{{permit.representation}}</option>
+              <option value="#permit-{{permit.bytes.hex()}}">{{permit.representation}}</option>
               {% endfor %}
             </select>
           </div>
         </p>
       </div>
-        <table class="table is-striped is-bordered is-fullwidth">
-          {% with permit=erc360.permits.first() %}
-          {% for wallet in permit.wallets %}
-          <tr><td>
-            <span class='icon'>
-            {% if wallet in permit.parent.wallets %}
-            <i class='fa-solid fa-chess-king'></i>
-            {% else %}
-            <i class='fa-solid fa-chess-bishop'></i>
-            {% endif %}
-            </span>
-            <span class="text">{{wallet.pretty_html_representation}}</span>
+        
+          {% for permit in erc360.permits %}
+          <table class="table permit-table is-striped is-bordered is-fullwidth {% if permit.id != erc360.permits.first().id %} vanish {% endif %}" id="permit-{{permit.bytes.hex()}}">
+            {% for wallet in permit.holders %}
+            <tr><td>
+              <span class='icon'>
+              {% if wallet in permit.parent.wallets %}
+              <i class='fa-solid fa-chess-king'></i>
+              {% else %}
+              <i class='fa-solid fa-chess-bishop'></i>
+              {% endif %}
+              </span>
+              <span class="text">{{wallet.pretty_html_representation}}</span>
+            </td></tr>
+            {% endfor %}
+            </div>
+          </table>
           {% endfor %}
-          </td></tr>
-          {% endwith %}
-        </table>
     </div>
     <div id="dividends-tab-content" class="structure-tab-content vanish" style="height: 320px;">
       {% if erc360.dividends.count() > 0 %}

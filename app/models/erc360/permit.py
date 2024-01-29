@@ -34,10 +34,10 @@ class Permit(db.Model, Base):
 		}.get(self.bytes,"")
 
 	@classmethod
-	def get_or_register(cls,erc360,bytes,spender=None):
-		permit = cls.query.filter(cls.erc360==erc360,cls.bytes==bytes).first()
+	def get_or_register(cls,erc360,permit_bytes):
+		permit = cls.query.filter(cls.erc360==erc360,cls.bytes==permit_bytes).first()
 		if not permit:
-		    permit = cls(bytes=bytes)
+		    permit = cls(bytes=permit_bytes)
 		    erc360.permits.append(permit)
 		return permit
 
@@ -60,6 +60,11 @@ class Permit(db.Model, Base):
 		return True if self.id == ancestor.id \
 		else self.id == ancestor.id if self.bytes == PERMITS[0] \
 		else self.parent.is_self_inclusive_descendant_of(ancestor)
+
+	@hybrid_property
+	def holders(self):
+		return self.wallets if self.parent.id == self.id \
+		else self.wallets.union(self.parent.holders)
 
 	@property
 	def representation(self):
