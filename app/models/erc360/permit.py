@@ -4,7 +4,7 @@ from app.models.base import Base
 from eth_utils import keccak
 from eth_abi import encode
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-
+from app.funcs import keccak_256
 
 class Permit(db.Model, Base):
 
@@ -72,8 +72,5 @@ class Permit(db.Model, Base):
 
 	def __repr__(self):
 		return '<Permit {}>'.format(self.bytes.hex())
-
-def keccak_256(string: str):	
-	return keccak(encode(['string'],[string]))
 
 PERMITS = [bytes(32),keccak_256("MINT"),keccak_256("ISSUE_VOTE"),keccak_256("ISSUE_DIVIDEND"),keccak_256("IMPLEMENT_RESOLUTION")]

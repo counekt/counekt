@@ -24,7 +24,7 @@ class Wallet(db.Model, Base):
         'User', secondary=spenders, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     permits = db.relationship(
-        'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
+        'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic',cascade="all, delete") 
 
     @classmethod
     def get_or_register(cls,address,spender=None):
