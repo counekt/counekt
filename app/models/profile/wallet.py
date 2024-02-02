@@ -6,12 +6,12 @@ from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from markupsafe import Markup
 
-spenders  = db.Table('spenders',
+spenders = db.Table('spenders',
                   db.Column('spender_id', db.Integer, db.ForeignKey('user.id')),
                   db.Column('wallet_id', db.Integer, db.ForeignKey('wallet.id'))
                   )
 
-_permits  = db.Table('permits',
+_permits = db.Table('permits',
                   db.Column('permit_id', db.Integer, db.ForeignKey('permit.id')),
                   db.Column('wallet_id', db.Integer, db.ForeignKey('wallet.id'))
                   )
@@ -24,7 +24,7 @@ class Wallet(db.Model, Base):
         'User', secondary=spenders, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     permits = db.relationship(
-        'Permit', secondary=_permits, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic',cascade="all, delete") 
+        'Permit', secondary=_permits, back_populates="wallets", lazy='dynamic') 
 
     @classmethod
     def get_or_register(cls,address,spender=None):

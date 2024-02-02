@@ -34,10 +34,10 @@ class Bank(db.Model, Base):
 		    erc360.banks.append(bank)
 		return bank
 
-	def get_or_register_token_amount(self,token,symbol=None,name=None):
-		token_amount = self.token_amounts.filter(Token.address==token,Token.id==BankTokenAmount.token_id).first()
+	def register_token(self,address,symbol=None,name=None):
+		token_amount = self.token_amounts.filter(Token.address==address,Token.id==BankTokenAmount.token_id).first()
 		if not token_amount:
-			token = Token.get_or_register(address=token,symbol=symbol,name=name)
+			token = Token.get_or_register(address=address,symbol=symbol,name=name)
 			token_amount = BankTokenAmount()
 			token_amount.token = token
 			self.token_amounts.append(token_amount)

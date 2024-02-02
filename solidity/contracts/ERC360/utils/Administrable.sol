@@ -85,7 +85,7 @@ abstract contract Administrable is Context {
     /// @param permit The name of the permit, whose state is to be set.
     /// @param status The new Permit State to be applied.
     function setPermit(address account,bytes32 permit,bool status) external onlyPermitAdmin(permit) {
-        if (status == false && isPermitAdmin(account,permit) && account != _msgSender()) {revert AdministrableUnauthorizedSet(account,permit);}
+        if (status == false && isPermitAdmin(account,permit)) {revert AdministrableUnauthorizedSet(account,permit);}
         _setPermit(account,permit,status);
     }
 

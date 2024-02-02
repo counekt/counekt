@@ -66,7 +66,7 @@ class ERC360(db.Model, Base, LocationBase):
 
     permits = db.relationship(
         'Permit', backref='erc360', lazy='dynamic',
-        foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
+        foreign_keys='Permit.erc360_id', passive_deletes=True)
 
     @hybrid_property
     def bank_events(self):

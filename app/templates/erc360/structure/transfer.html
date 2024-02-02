@@ -25,6 +25,7 @@
     </p>
     </div>
     <br>
+    {% if selected_bank %}
     {% with selected_token_amount = selected_bank.token_amounts.first() %}
     <div id="amount">
       <h1><b>Amount</b></h1>
@@ -53,6 +54,7 @@
       </p>
   </div>
   {% endwith %}
+  {% endif %}
     </div>
       <div id="feedback-amount" class="feedback">
         <div class="message"></div>
