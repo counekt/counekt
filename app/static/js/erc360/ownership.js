@@ -3,6 +3,8 @@ function update_ownership(address) {
         $("#reload-ownership").prop('disabled', true);$("#reload-ownership").addClass('is-loading');
         $.post("/€"+address+"/update/ownership/",function(response) {
                 $.get("/€"+address+"/get/ownership/", function(ownership, status) {
+                        OWNERSHIP_HTML = ownership;
+                        $("#ownership-modal").replaceWith(ownership);
                         var chartStatus = Chart.getChart("erc360-ownership-chart");
                         if (chartStatus != undefined) {chartStatus.destroy();}
                         $('#erc360-ownership-chart').show();

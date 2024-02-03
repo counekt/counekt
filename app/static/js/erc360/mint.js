@@ -113,10 +113,14 @@ function formatNonZeroAmountInput(string) {
 
 $(document).on('click', '#mint', function() {
   console.log("CLICK");
+  $(this).prop('disabled', true).addClass('is-loading');
+
    var abi = $.getJSON("/erc360corporatizable/abi/", function(abi) {
         uploadMint(abi);
      });
 });
+
+
 
 async function uploadMint(abi) {
     const tx = await mintERC360(abi,address,getRecipient(),getAmount());
