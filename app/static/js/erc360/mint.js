@@ -113,10 +113,14 @@ function formatNonZeroAmountInput(string) {
 
 $(document).on('click', '#mint', function() {
   console.log("CLICK");
+  $(this).prop('disabled', true).addClass('is-loading');
+
    var abi = $.getJSON("/erc360corporatizable/abi/", function(abi) {
         uploadMint(abi);
      });
 });
+
+
 
 async function uploadMint(abi) {
     const tx = await mintERC360(abi,address,getRecipient(),getAmount());
@@ -136,7 +140,8 @@ async function uploadMint(abi) {
         var response = JSON.parse(response);
         var status = response["status"];
         if (status === "success") { 
-          location.replace("/€"+address+"/ownership");
+            update_ownership(address);
+            changeToOwnership();
         }
         else{stopButtonLoading();message(status, response["box_id"], true);}
         

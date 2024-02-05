@@ -4,6 +4,8 @@ from app.models.base import Base
 from eth_utils import keccak
 from eth_abi import encode
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from app.funcs import keccak_256
+from app.models.profile.wallet import _permits
 
 
 class Permit(db.Model, Base):
@@ -13,8 +15,11 @@ class Permit(db.Model, Base):
 
 	bytes = db.Column(db.LargeBinary(length=32)) # byte name of permit
 
-	parent_id = db.Column(db.Integer, db.ForeignKey('permit.id', ondelete='CASCADE'))
-	_parent = db.relationship("Permit",backref="children",remote_side=[id], cascade="all, delete")
+	parent_id = db.Column(db.Integer, db.ForeignKey('permit.id'))
+	_parent = db.relationship("Permit",backref="children",remote_side=[id])
+
+	wallets = db.relationship(
+        'Wallet', secondary=_permits, back_populates="permits", lazy='dynamic') 
 	
 	@hybrid_property
 	def parent(self):
@@ -70,10 +75,13 @@ class Permit(db.Model, Base):
 	def representation(self):
 		return f"{self.title} ({self.bytes.hex()})" if self.title else self.bytes.hex()
 
+	def delete(self):
+		for w in self.wallets:
+			db.session.execute(_permits.delete().where((_permits.c.permit_id == self.id) and (_permits.c.wallet_id == w.id) ))
+		db.session.delete(self)
+
 	def __repr__(self):
 		return '<Permit {}>'.format(self.bytes.hex())
 
-def keccak_256(string: str):	
-	return keccak(encode(['string'],[string]))
 
 PERMITS = [bytes(32),keccak_256("MINT"),keccak_256("ISSUE_VOTE"),keccak_256("ISSUE_DIVIDEND"),keccak_256("IMPLEMENT_RESOLUTION")]

@@ -13,11 +13,14 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 import app.models as models
 from eth_abi import abi
 
+global erc360
+
 @ bp.route("/erc360/<address>/", methods=["GET", "POST"])
 @ bp.route("/€<address>/", methods=["GET", "POST"])
 def erc360(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/profile.html", erc360=erc360, navbar=True, background=True, size="medium", models=models)
+
 
 @ bp.route("/erc360/<address>/timeline/", methods=["GET"])
 @ bp.route("/€<address>/timeline/", methods=["GET"])
@@ -115,7 +118,7 @@ def mint(address):
 @ bp.route("/erc360/<address>/photo/", methods=["GET"])
 @ bp.route("/€<address>/photo/", methods=["GET"])
 def photo(address):
-   return erc360(address)
+    return erc360(address)
 
 @ bp.route("/erc360/<address>/update/timeline/", methods=["POST"])
 @ bp.route("/€<address>/update/timeline/", methods=["POST"])
@@ -172,6 +175,12 @@ def get_structure(address):
 def get_transfer(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/structure/transfer.html", erc360=erc360,models=models)
+
+@bp.route("/erc360/<address>/get/edit/", methods=["GET"])
+@bp.route("/€<address>/get/edit/", methods=["GET"])
+def get_edit(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/edit.html", erc360=erc360,models=models)
 
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
 @ bp.route("/€<address>/edit/", methods=["GET", "POST"])

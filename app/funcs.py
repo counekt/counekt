@@ -13,7 +13,11 @@ from botocore.exceptions import EndpointConnectionError
 from pathlib import Path
 import os
 import json
+from web3 import Web3
 from eth_abi import abi
+
+def keccak_256(string: str):    
+    return Web3.soliditySha3(["string"],[string])
 
 def decode_transaction_payload(t):
     data = bytearray.fromhex(t["input"][2:])[4:] # we don't include the function selector

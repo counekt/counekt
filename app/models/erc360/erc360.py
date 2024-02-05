@@ -66,7 +66,7 @@ class ERC360(db.Model, Base, LocationBase):
 
     permits = db.relationship(
         'Permit', backref='erc360', lazy='dynamic',
-        foreign_keys='Permit.erc360_id', passive_deletes=True, cascade="all, delete")
+        foreign_keys='Permit.erc360_id', passive_deletes=True)
 
     @hybrid_property
     def bank_events(self):
@@ -78,26 +78,24 @@ class ERC360(db.Model, Base, LocationBase):
     def update_timeline(self):
         contract = self.get_w3_contract()
         transacts = etherscan.get_transactions_of(address=contract.address,startblock=self.timeline_last_updated_at)
-        print(transacts)
+        print("\n"*10+f"TRANSACTS"+"\n"*10)
         for t in transacts:
-            print(t,type(t))
             if not self.events.filter_by(block_hash=t["blockHash"], transaction_hash=t["hash"],log_index=t["transactionIndex"]).first():
-                print(t)
                 timestamp = w3.eth.getBlock(int(t["blockNumber"])).timestamp
                 decoded_payload = funcs.decode_transaction_payload(t)
                 payload_json = json.dumps(decoded_payload)
                 event = models.Event(block_hash=t["blockHash"], transaction_hash=t["hash"],log_index=t["transactionIndex"],timestamp=timestamp,payload_json=payload_json)
                 self.events.append(event)
-                print(f"\n{decoded_payload}\n")
+                print("\n"*10+f"TX STATUS: {decoded_payload['txreceipt_status']}"+"\n"*10)
                 if decoded_payload["txreceipt_status"] == "1":
-                    print("HERE IS VALID METHOD")
+                    print("\n"*10+"HERE IS VALID METHOD"+"\n"*10)
 
                     if decoded_payload["methodId"] == '0x': # on simple receipt
                         # Just register the event, update_ownership takes care of the rest
-                        """
+
                         main_bank = models.Bank.get_or_register(erc360=self,permit_bytes=bytes(32))
                         main_bank.add_amount(int(t["value"]),"0x0000000000000000000000000000000000000000")
-                        """
+                        print("\n"*10+f"AMOUNT ADDED: {t['value']}"+"\n"*10)
                     if decoded_payload["methodId"] == '0x8ab73cf9': # Set Permit
                         wallet = models.Wallet.get_or_register(address=decoded_payload["args"]["account"])
                         permit = models.Permit.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["permit"]))
@@ -131,14 +129,13 @@ class ERC360(db.Model, Base, LocationBase):
                         proposal.implemented = True
                     if decoded_payload["methodId"] == "0x7ab1f504": # Transfer Funds From Bank
                         bank = models.Bank.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
-                        #bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
+                        bank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
+                        print("\n"*10+f"AMOUNT SUBTRACTED: {t['value']}"+"\n"*10)
                     if decoded_payload["methodId"] == "0x3fb3a2d7": # Move Funds
                         fromBank = models.Bank.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["fromBank"]))
                         toBank = models.Bank.get_or_register(erc360=self,permit_bytes=bytearray.fromhex(decoded_payload["args"]["toBank"]))
-                        """
                         fromBank.subtract_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
                         toBank.add_amount(int(decoded_payload["args"]["amount"]),decoded_payload["args"]["token"])
-                        """
                 if int(t["blockNumber"]) > int(self.timeline_last_updated_at):
                     self.timeline_last_updated_at = int(t["blockNumber"])
 
@@ -180,7 +177,6 @@ class ERC360(db.Model, Base, LocationBase):
                 token_address = token_amount.token.address
                 amount_wei = contract.functions.bankBalanceOf(bank.permit.bytes,token_address).call()
                 token_amount.amount = amount_wei
-
         """
         # Dividend Claims
         new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.dividend_claims_last_updated_at or self.block)
@@ -213,6 +209,13 @@ class ERC360(db.Model, Base, LocationBase):
             if nv.blockNumber > int(self.referendum_votes_last_updated_at or self.block):
                 self.referendum_votes_last_updated_at = ns.blockNumber
         """
+
+
+    def clear_events(self,timestamp):
+        for event in self.events.filter(models.Event.timestamp >= timestamp).all():
+            db.session.delete(event)
+
+
     def get_w3_contract(self):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         return contract

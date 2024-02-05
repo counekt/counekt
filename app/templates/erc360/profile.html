@@ -28,13 +28,13 @@
           </div>
           <br style="clear: both;">
         </div>
-        <div id="profile-bio" class="selectable">
+        <div id="profile-description" class="selectable">
         <p style="color:black"> {% if erc360.description %}{{erc360.description}}{% endif %} </p>
         </div>
       </div>
       <div id="profile-right-bottom">
-        {% if erc360.address %}
-        <div id="profile-address">
+        {% if erc360.symbol %}
+        <div id="profile-symbol">
           <span class="icon is-small"><i class="fa fa-euro" aria-hidden="true"></i></span><span class="selectable">{{erc360.symbol}}</span>
         </div>
         {% endif %}
@@ -477,7 +477,14 @@ $(window).on("popstate", function() {
 
 });
 
+var EDIT_HTML = `{% include "erc360/edit.html" %}`
+
 var STRUCTURE_HTML = `{% include "erc360/structure.html" %}`;
+
+var OWNERSHIP_HTML = `{% include "erc360/ownership.html" %}`;
+
+var TIMELINE_HTML = `{% include "erc360/timeline.html" %}`;
+
 
 var TRANSFER_HTML = `{% include "erc360/structure/transfer.html" %}`;
 
@@ -495,16 +502,14 @@ var PROPOSE_HTML = `{% include "erc360/structure/propose.html" %}`;
 
 function changeToTimeline() {
   if (!goToModal('#timeline-modal')) {
-    $("#modal-box").append(`
-      {% include "erc360/timeline.html" %}`);
+    $("#modal-box").append(TIMELINE_HTML);
     $(document.body).addClass('noscroll');
     }
 }
 
 function changeToOwnership() {
     if (!goToModal('#ownership-modal')) {
-     $("#modal-box").append(`
-       {% include "erc360/ownership.html" %}`);
+     $("#modal-box").append(OWNERSHIP_HTML);
      $(document.body).addClass('noscroll');
      loadOwnershipChart();
     }
@@ -615,8 +620,7 @@ function changeToPropose() {
 function changeToEdit() {
       if (!goToModal('#edit-modal')) {
 
-        $("#modal-box").append(`
-          {% include "erc360/edit.html" %}`);
+        $("#modal-box").append(EDIT_HTML);
         load_map_js();
         $(document.body).addClass('noscroll');
       }
