@@ -502,16 +502,14 @@ var PROPOSE_HTML = `{% include "erc360/structure/propose.html" %}`;
 
 function changeToTimeline() {
   if (!goToModal('#timeline-modal')) {
-    $("#modal-box").append(`
-      {% include "erc360/timeline.html" %}`);
+    $("#modal-box").append(TIMELINE_HTML);
     $(document.body).addClass('noscroll');
     }
 }
 
 function changeToOwnership() {
     if (!goToModal('#ownership-modal')) {
-     $("#modal-box").append(`
-       {% include "erc360/ownership.html" %}`);
+     $("#modal-box").append(OWNERSHIP_HTML);
      $(document.body).addClass('noscroll');
      loadOwnershipChart();
     }

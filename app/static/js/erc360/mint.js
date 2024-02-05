@@ -140,7 +140,8 @@ async function uploadMint(abi) {
         var response = JSON.parse(response);
         var status = response["status"];
         if (status === "success") { 
-          location.replace("/€"+address+"/ownership");
+            update_ownership(address);
+            changeToOwnership();
         }
         else{stopButtonLoading();message(status, response["box_id"], true);}
         

@@ -13,106 +13,93 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 import app.models as models
 from eth_abi import abi
 
+global erc360
+
 @ bp.route("/erc360/<address>/", methods=["GET", "POST"])
 @ bp.route("/€<address>/", methods=["GET", "POST"])
 def erc360(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/profile.html", erc360=erc360, navbar=True, background=True, size="medium", models=models)
 
+
 @ bp.route("/erc360/<address>/timeline/", methods=["GET"])
 @ bp.route("/€<address>/timeline/", methods=["GET"])
 def timeline(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/structure/", methods=["GET"])
 @ bp.route("/€<address>/structure/", methods=["GET"])
 def structure(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/deposit/", methods=["GET"])
 @ bp.route("/€<address>/deposit/", methods=["GET"])
 def deposit(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/transfer/", methods=["GET"])
 @ bp.route("/€<address>/transfer/", methods=["GET"])
 def transfer(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/assign/", methods=["GET"])
 @ bp.route("/€<address>/assign/", methods=["GET"])
 def assign(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/revoke/", methods=["GET"])
 @ bp.route("/€<address>/revoke/", methods=["GET"])
 def revoke(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/claim/", methods=["GET"])
 @ bp.route("/€<address>/claim/", methods=["GET"])
 def claim(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/distribute/", methods=["GET"])
 @ bp.route("/€<address>/distribute/", methods=["GET"])
 def distribute(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/vote/", methods=["GET"])
 @ bp.route("/€<address>/vote/", methods=["GET"])
 def vote(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/propose/", methods=["GET"])
 @ bp.route("/€<address>/propose/", methods=["GET"])
 def propose(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/structure/banks/", methods=["GET"])
 @ bp.route("/€<address>/structure/banks/", methods=["GET"])
 def banks(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/structure/permits/", methods=["GET"])
 @ bp.route("/€<address>/structure/permits/", methods=["GET"])
 def permits(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/structure/dividends/", methods=["GET"])
 @ bp.route("/€<address>/structure/dividends/", methods=["GET"])
 def dividends(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/structure/referendums/", methods=["GET"])
 @ bp.route("/€<address>/structure/referendums/", methods=["GET"])
 def referendums(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/ownership/", methods=["GET"])
 @ bp.route("/€<address>/ownership/", methods=["GET"])
 def ownership(address):
-    global erc360
     return erc360(address)
 
 @bp.route("/erc360/<address>/mint/", methods=["GET","POST"])
 @bp.route("/€<address>/mint/", methods=["GET","POST"])
 def mint(address):
-    global erc360
     if flask_request.method == 'POST':
         tx = flask_request.form.get("tx")
         receipt = w3.eth.waitForTransactionReceipt(tx)
@@ -131,7 +118,6 @@ def mint(address):
 @ bp.route("/erc360/<address>/photo/", methods=["GET"])
 @ bp.route("/€<address>/photo/", methods=["GET"])
 def photo(address):
-    global erc360
     return erc360(address)
 
 @ bp.route("/erc360/<address>/update/timeline/", methods=["POST"])
