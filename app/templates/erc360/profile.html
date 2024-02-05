@@ -28,13 +28,13 @@
           </div>
           <br style="clear: both;">
         </div>
-        <div id="profile-bio" class="selectable">
+        <div id="profile-description" class="selectable">
         <p style="color:black"> {% if erc360.description %}{{erc360.description}}{% endif %} </p>
         </div>
       </div>
       <div id="profile-right-bottom">
-        {% if erc360.address %}
-        <div id="profile-address">
+        {% if erc360.symbol %}
+        <div id="profile-symbol">
           <span class="icon is-small"><i class="fa fa-euro" aria-hidden="true"></i></span><span class="selectable">{{erc360.symbol}}</span>
         </div>
         {% endif %}
@@ -477,6 +477,8 @@ $(window).on("popstate", function() {
 
 });
 
+var EDIT_HTML = `{% include "erc360/edit.html" %}`
+
 var STRUCTURE_HTML = `{% include "erc360/structure.html" %}`;
 
 var OWNERSHIP_HTML = `{% include "erc360/ownership.html" %}`;
@@ -620,8 +622,7 @@ function changeToPropose() {
 function changeToEdit() {
       if (!goToModal('#edit-modal')) {
 
-        $("#modal-box").append(`
-          {% include "erc360/edit.html" %}`);
+        $("#modal-box").append(EDIT_HTML);
         load_map_js();
         $(document.body).addClass('noscroll');
       }

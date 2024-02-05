@@ -40,14 +40,16 @@ $(document).on("click", '#save-button', function(e) {
         if (status === "success") { 
           console.log("FLASHING");
           $("#profile-description p").text(description);
-          $("#profile-address span:not(.icon)").text(location_address);
+          //$("#profile-address span:not(.icon)").text(location_address);
           $(".current-user-photo").attr('src',photo_src);
           stopButtonLoading();
           $("select").find("option:selected").attr('selected', 'selected');
           $("select").find("option:not(:selected)").removeAttr('selected');
-          edit_modal = $("#modal-box").clone();
           mapLatLng =  window.getLatLng();
           mapZoom = 12;
+          $.get("/€"+address+"/get/edit/", function(edit, status) {
+                        EDIT_HTML = edit;
+          });
           changeToProfile();
           flash("Your changes were saved"); }
         else{message(status, response["box_id"], true);}

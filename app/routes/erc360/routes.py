@@ -190,6 +190,12 @@ def get_transfer(address):
     erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
     return render_template("erc360/structure/transfer.html", erc360=erc360,models=models)
 
+@bp.route("/erc360/<address>/get/edit/", methods=["GET"])
+@bp.route("/€<address>/get/edit/", methods=["GET"])
+def get_edit(address):
+    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/edit.html", erc360=erc360,models=models)
+
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
 @ bp.route("/€<address>/edit/", methods=["GET", "POST"])
 @login_required
