@@ -7,7 +7,7 @@
           <i class="fa fa-times"></i>
         </span>
       </a>
-      <p class="modal-card-title" id="header">Revoke Permit for {{erc360.name}}</p>
+      <p class="modal-card-title" id="header">Revoke Permit from {{erc360.name}}</p>
   </header>
   <section id="revoke-content" class="modal-card-body has-text-centered">
     <div id="permit">
@@ -24,6 +24,19 @@
     </p>
     </div>
     <br>
+    
+    <div id="to">
+      <h1><b>To</b></h1>
+      <div class="field has-addons has-addons-centered">
+      <p class="control">
+        <input id="revoke-recipient-input" class="input has-fixed-size" placeholder="Address to be revoked" maxlength="42"></input>
+      </p>
+      </div>
+    </div>
+      <div id="feedback-recipient" class="feedback">
+        <div class="message"></div>
+      </div>
+      <br id="recipient-anchor">
       <button id="revoke" class="button is-success" disabled>Revoke</button>
   </section>
 </div>
