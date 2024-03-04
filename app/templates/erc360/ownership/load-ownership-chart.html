@@ -1,6 +1,8 @@
 <script type="text/javascript" id="loadOwnershipChart">
   function loadOwnershipChart() {
     console.log("{{erc360.symbol}}");
+    console.log("Loading chart");
+
   const ctx = document.getElementById('erc360-ownership-chart');
   {% set current_token_ids = erc360.current_token_ids %}
   new Chart(ctx, {
