@@ -58,20 +58,19 @@ def decode_transaction_payload(t):
     else:
         return t
 
-ERC360CorporatizablePATH = os.path.join(os.path.dirname(__file__), '..', 'solidity', 'build/contracts/ERC360Corporatizable.json')
 
 def get_deployed_bytecode():
-    with open(ERC360CorporatizablePATH,"r") as json_file:
+    with open(current_app.config["ERC360_PATH"],"r") as json_file:
         json_data = json.load(json_file)
         return json_data["deployedBytecode"]
 
 def get_bytecode():
-    with open(ERC360CorporatizablePATH,"r") as json_file:
+    with open(current_app.config["ERC360_PATH"],"r") as json_file:
         json_data = json.load(json_file)
         return json_data["bytecode"]
 
 def get_abi():
-    with open(ERC360CorporatizablePATH,"r") as json_file:
+    with open(current_app.config["ERC360_PATH"],"r") as json_file:
         json_data = json.load(json_file)
         return json_data["abi"]
 
