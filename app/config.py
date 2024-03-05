@@ -2,9 +2,11 @@ from os import getenv, path
 from dotenv import load_dotenv
 import boto3
 
-basedir = path.abspath(path.dirname(__file__))
+appdir = path.abspath(path.dirname(__file__))
 
-load_dotenv(path.join(basedir, '.env'))
+basedir = path.abspath(path.dirname(path.dirname(__file__)))
+
+load_dotenv(path.join(appdir, '.env'))
 
 class Config(object):
     SECRET_KEY = getenv("SECRET_KEY") or "you-will-never-guess"
@@ -42,4 +44,4 @@ class Config(object):
     WEB3_NETWORK = "https://eth-sepolia.g.alchemy.com/v2/"
     ETHERSCAN_API_KEY = "6DEHSP7NWYFR93NM8X3D456M1FCV3362YK"
     ETHEREUM_SERVER = "sepolia"
-    ERC360_PATH = path.join(basedir, '..', 'solidity', 'build', 'contracts', 'ERC360Corporatizable.json')
+    ERC360_PATH = path.join(basedir, 'solidity', 'build', 'contracts', 'ERC360Corporatizable.json')
