@@ -4,10 +4,7 @@ __pycache__/
 *$py.class
 
 # profile specific static files
-app/static/profiles/users/*
-app/static/profiles/clubs/*
-app/static/profiles/projects/*
-
+app/static/profile
 # C extensions
 *.so
 
@@ -16,7 +13,6 @@ logs/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -156,7 +152,6 @@ Temporary Items
 env/
 env*
 dist/
-build/
 *.egg
 *.egg-info/
 _mailinglist

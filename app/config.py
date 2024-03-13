@@ -1,6 +1,7 @@
 from os import getenv, path
 from dotenv import load_dotenv
 import boto3
+from flask import url_for
 
 appdir = path.abspath(path.dirname(__file__))
 
@@ -42,4 +43,4 @@ class Config(object):
     WEB3_NETWORK = "https://eth-sepolia.g.alchemy.com/v2/"
     ETHERSCAN_API_KEY = "6DEHSP7NWYFR93NM8X3D456M1FCV3362YK"
     ETHEREUM_SERVER = "sepolia"
-    ERC360_PATH = path.join(appdir, 'solidity', 'build', 'contracts', 'ERC360Corporatizable.json')
+    ERC360_PATH = path.join(appdir,'static','solidity','build','contracts','ERC360Corporatizable.json')
