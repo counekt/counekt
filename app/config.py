@@ -4,8 +4,6 @@ import boto3
 
 appdir = path.abspath(path.dirname(__file__))
 
-basedir = path.abspath(path.dirname(path.dirname(__file__)))
-
 load_dotenv(path.join(appdir, '.env'))
 
 class Config(object):
@@ -44,4 +42,4 @@ class Config(object):
     WEB3_NETWORK = "https://eth-sepolia.g.alchemy.com/v2/"
     ETHERSCAN_API_KEY = "6DEHSP7NWYFR93NM8X3D456M1FCV3362YK"
     ETHEREUM_SERVER = "sepolia"
-    ERC360_PATH = path.join(basedir, 'solidity', 'build', 'contracts', 'ERC360Corporatizable.json')
+    ERC360_PATH = path.join(appdir, 'solidity', 'build', 'contracts', 'ERC360Corporatizable.json')
