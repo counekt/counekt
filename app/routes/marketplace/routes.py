@@ -16,5 +16,5 @@ from app.routes.marketplace import bp
 @bp.route("/market/")
 @bp.route("/marketplace/", methods=['GET', 'POST'])
 def marketplace():
-    return render_template("marketplace.html", background=False, footer=False, exonavbar=True)
+    return render_template("marketplace.html", background=True, navbar=True)
 
