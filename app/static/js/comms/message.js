@@ -10,6 +10,7 @@ function sendMessage(text) {
       success(response) {
         var response = JSON.parse(response);
         sleep = false;
+        console.log("SUCCESS");
         getMessages();
     }});
 }
@@ -30,17 +31,13 @@ function getMessages() {
 	var formData = new FormData();
 	var latest_msg_id = $('#messages').children().last().data('id');
 	formData.append("latest_id", latest_msg_id);
-	$.post({
-      type: "POST",
-      url: "/get/messages/"+username+"/",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success(response) {
-        var response = JSON.parse(response);
+  $.get("/get/messages/"+username+"/"+latest_msg_id+"/", function(JSONresponse, status) {
+        var response = JSON.parse(JSONresponse);
         var messages = response["latest_messages"];
         console.log(messages);
+        if (messages) {
         messages.forEach(function(msg, index) {
+          latest_msg_id += 1;
           console.log("this msg");
           console.log(msg.id);
           var displayed_messages = [];
@@ -52,7 +49,8 @@ function getMessages() {
           $("#messages").append(msg_template(msg.dname,msg.href,msg.sender,'unread',msg.id,msg.text));
           }
         });
-    }});
+      }
+    });
 }
 
 function checkForDuplicates() {

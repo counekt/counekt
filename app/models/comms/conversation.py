@@ -22,9 +22,12 @@ class Conversation(db.Model, Base):
 
     def get_latest_messages_by_latest_id(self, latest_id):
         if latest_id:
-            latest_message = Message.query.get(latest_id)
-            return self.messages.filter(Message.creation_datetime > latest_message.creation_datetime).order_by(Message.creation_datetime.asc()).all()
+            return self.messages.filter(Message.id > latest_id).order_by(Message.creation_datetime.asc())
         return self.messages
+
+    def user_has_been_active(self,user):
+        return self.messages.filter_by(sender=user).count() > 0
+
 
     def __repr__(self):
         return "<Conversation>"
@@ -52,4 +55,4 @@ class Message(db.Model, Base):
           "dname":self.sender.dname,\
           'href':self.sender.href, 'sender':sender}
     def __repr__(self):
-        return "<Message {}>".format(self.convo)
+        return "<Message {}>".format(self.id)

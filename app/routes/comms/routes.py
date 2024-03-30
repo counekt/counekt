@@ -1,4 +1,4 @@
-from flask import redirect, url_for, render_template, abort, current_app
+from flask import redirect, url_for, render_template, abort, current_app, jsonify
 from flask import request as flask_request
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import json
@@ -11,77 +11,63 @@ from datetime import datetime
 @login_required
 @ bp.route("/messages/", methods=["GET", "POST"])
 def messages():
-    convos = current_user.convos
-    return render_template("comms/messages/messages.html", navbar=True, background=True, size="medium", models=models, convos = convos)
+    conversations = current_user.conversations
+    return render_template("comms/messages/messages.html", navbar=True, background=True, size="medium", models=models, conversations = conversations)
 
 @login_required
 @ bp.route("/message/<username>/", methods=["GET", "POST"])
 def message(username):
     user = models.User.query.filter_by(username=username).first_or_404()
-    # Get the dialogue between current_user and user if it exists
-    convo = models.Convo.get_dialogue(user, current_user)
+    # Get the conversation between current_user and user if it exists
+    conversation = models.Conversation.get_dialogue(user, current_user)
     if flask_request.method == "POST":
         text = flask_request.form.get("text")
         if not text:
             return json.dumps({'status': 'error'})
-        if convo:
-            if convo.activated:
-                new_msg = models.Message(text=text, sender=current_user)
-                convo.messages.append(new_msg)
-                db.session.commit()
-                return json.dumps({'status': 'success'})
-            else:
-                if convo.messages.has(sender=user):
-                    convo.activated = True
-                    new_msg = models.Message(text=text, sender=current_user)
-                    convo.messages.append(new_msg)
-                    db.session.commit()
-                    return json.dumps({'status': 'success'})
-
-                else:
-                    new_msg = models.Message(text=text, sender=current_user)
-                    convo.messages.append(new_msg)
-                    db.session.commit()
-                    return json.dumps({'status': 'success'})
-
-        elif user in current_user.allies:
-            print("allies")
-            convo = models.Convo(activated=True)
-            convo.members.append(current_user)
-            convo.members.append(user)
+        if conversation:
+            if conversation.user_has_been_active(user): # If the other user already sent msg
+                conversation.activated = True # Mark conversation as active
             new_msg = models.Message(text=text, sender=current_user)
-            convo.messages.append(new_msg)
+            conversation.messages.append(new_msg)
+            db.session.commit()
+            return json.dumps({'status': 'success'})
+
+        elif user in current_user.associates: # If they are associates
+            print("associates")
+            conversation = models.Conversation(activated=True) # Mark new conversation as active
+            conversation.members.append(current_user)
+            conversation.members.append(user)
+            new_msg = models.Message(text=text, sender=current_user)
+            conversation.messages.append(new_msg)
             db.session.commit()
             return json.dumps({'status': 'success'})
         else:
-            convo = models.Convo()
-            convo.members.append(current_user)
-            convo.members.append(user)
+            conversation = models.Conversation()
+            conversation.members.append(current_user)
+            conversation.members.append(user)
             db.session.commit()
             return json.dumps({'status': 'success'})
-    return render_template("comms/messages/message.html", user=user, convo=convo, navbar=True, background=True, size="medium", models=models)
+    return render_template("comms/messages/message.html", user=user, conversation=conversation, latest_msg_id=conversation.messages.count(), navbar=True, background=True, size="medium", models=models)
 
 
-@ bp.route("/get/messages/<username>/", methods=["POST"])
-def get_messages(username):
+@ bp.route("/get/messages/<username>/", methods=["GET"])
+@ bp.route("/get/messages/<username>/<latest_msg_id>/", methods=["GET"])
+def get_messages(username,latest_msg_id=0):
     user = models.User.query.filter_by(username=username).first_or_404()
     # Get the dialogue between current_user and user if it exists
-    convo = models.Convo.get_dialogue(user, current_user)
-    if flask_request.method == 'POST':
-        if convo:
-            latest_id = flask_request.form.get("latest_id")
-            latest_messages = convo.get_latest_messages_by_latest_id(latest_id)
-            print(latest_messages)
-            formatted_messages = [msg.get_json_info() for msg in latest_messages]
-            print(formatted_messages)
-            return json.dumps({'status': 'success', 'latest_messages': formatted_messages})
-        return json.dumps({'status': 'error'})
+    conversation = models.Conversation.get_dialogue(user, current_user)
+    if conversation:
+        latest_messages = conversation.get_latest_messages_by_latest_id(latest_msg_id)
+        formatted_messages = [msg.get_json_info() for msg in latest_messages]
+        return json.dumps({"messages":formatted_messages})
+    return json.dumps({"status":"404"})
+
 
 @login_required
-@ bp.route("/convo/<id>/", methods=["GET", "POST"])
+@ bp.route("/conversation/<id>/", methods=["GET", "POST"])
 def conversation(id):
-    convo = models.Convo.query.filter_by(id=id).first_or_404()
-    return render_template("comms/message.html", convo=convo, navbar=True, background=True, size="medium", models=models)
+    conversation = models.Conversation.query.filter_by(id=id).first_or_404()
+    return render_template("comms/message.html", conversation=conversation, navbar=True, background=True, size="medium", models=models)
 
 @ bp.route("/feedback/", methods=["GET", "POST"])
 def feedback():

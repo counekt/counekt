@@ -43,7 +43,7 @@
                 </div>
               </div>
 
-              {% with request_sent = models.UserToUserRequest.query.filter_by(type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
+              {% with request_sent = models.UserToUserRequest.query.filter_by(_type='ally', sender=current_user, receiver=user).first(), request_received = models.UserToUserRequest.query.filter_by(_type='ally', sender=user, receiver=current_user).first(), is_allied = user in current_user.allies %}
               <button id="connect-button" class="button {% if is_allied %}is-info{% elif request_sent %} is-light {% elif request_received  %}is-success{% else %}is-link{% endif %}" data-type="{% if is_allied %}connected{% elif request_sent %}pending{% elif request_received %}accept{% else %}default{% endif %}">
                 {% if is_allied %}
                   {% include 'profile/user/connect-button/connected.html' %}

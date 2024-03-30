@@ -8,8 +8,8 @@
   </div>
   <hr id="sep-line" style="background-color:darkgray;">
   <div id="messages">
-    {% if convo %}
-    	{% for msg in convo.messages %}
+    {% if conversation %}
+    	{% for msg in conversation.messages %}
         {% include 'comms/messages/msg.html' %}
       {% endfor %}
     {% endif %}
@@ -34,13 +34,17 @@
 {% block scripts %}
 <link rel="stylesheet" href="/static/css/messages.css">
 <script type="text/javascript">
+
   var username = "{{user.username}}";
+
+  var latest_msg_id = {{latest_msg_id or 0}};
+
   function msg_template(dname="", href="",sender="",unread="", id="", text="") {
             if (sender == "current_user") {
-              var photo_src = '{{current_user.profile_photo.src}}';
+              var photo_src = '{{current_user.photo.src}}';
             }
             else if (sender == "user") {
-              var photo_src = '{{user.profile_photo.src}}';
+              var photo_src = '{{user.photo.src}}';
             }
             return `{% include 'comms/messages/msg.html' %}`.replaceAll('\\dname//', dname).replaceAll('\\href//', href).replaceAll('\\photo_src//',photo_src).replaceAll('\\unread//',unread).replaceAll('\\id//',id).replaceAll('\\text//',text);
         }
