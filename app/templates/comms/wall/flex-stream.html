@@ -1,9 +1,0 @@
-<div style="margin-top: 5px;" class="wall">
-	{% if wall %}
-	{% for medium in media %}
-			{% with by_current_user = medium.author == current_user %}
-				{% include 'comms/wall/medium.html' %}
-			{% endwith %}
-	{% endfor %}
-	{% endif %}
-</div>

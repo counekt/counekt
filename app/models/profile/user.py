@@ -16,10 +16,6 @@ import app.models as models
 from app.models.base import Base
 from app.models.location_base import LocationBase
 
-conversations = db.Table('conversations',
-                  db.Column('conversation_id', db.Integer, db.ForeignKey('conversation.id')),
-                  db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
-                  )
 
 associates = db.Table('associates',
                   db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
@@ -71,16 +67,10 @@ class User(UserMixin, db.Model, Base, LocationBase):
     notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
 
-    wall_id = db.Column(db.Integer, db.ForeignKey('wall.id'))
-    wall = db.relationship("Wall", foreign_keys=[wall_id])
-
     memberships = db.relationship(
         'Membership', lazy='dynamic',
         foreign_keys='Membership.owner_id', backref="owner", cascade='all,delete')
     
-    conversations = db.relationship(
-        'Conversation', secondary=conversations, backref="members", lazy='dynamic', cascade='all,delete')
-
     @property
     def main_wallet(self):
         return self._main_wallet or self.wallets.first()
@@ -90,7 +80,6 @@ class User(UserMixin, db.Model, Base, LocationBase):
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
         self.photo = models.Photo(path=f"static/profile/{self.username}/photo/", replacement=self.gravatar)
-        self.wall = models.Wall()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

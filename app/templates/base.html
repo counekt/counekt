@@ -58,38 +58,6 @@
             return `{% include 'profile/mini-profile.html' %}`.replaceAll('\\name//', name).replaceAll('\\identifier//', identifier).replaceAll('\\bio//',bio).replaceAll('\\href//',href).replaceAll('\\photo_src//',photo_src).replaceAll('\\tick//',tick);
         }
 
-        function media(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false) {
-            var upvote_button_class = "";
-            var upvote_button_active = "false";
-            var downvote_button_class = "";
-            var downvote_button_active = "false";
-            if (is_upvoted) {
-                var upvote_button_class = "is-info";
-                var upvote_button_active = "true";
-            }
-            if (is_downvoted) {
-                var downvote_button_class = "is-danger";
-                var downvote_button_active = "true";
-            }
-            return `{% include 'comms/feedback/post.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active);
-        }
-
-        function minimedia(id, title="",content="",upvotes=0,downvotes=0,is_upvoted=false, is_downvoted=false,href="") {
-            var upvote_button_class = "";
-            var upvote_button_active = "false";
-            var downvote_button_class = "";
-            var downvote_button_active = "false";
-            if (is_upvoted) {
-                var upvote_button_class = "is-info";
-                var upvote_button_active = "true";
-            }
-            if (is_downvoted) {
-                var downvote_button_class = "is-danger";
-                var downvote_button_active = "true";
-            }
-            return `{% include 'comms/feedback/fb.html' %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\votes//',upvotes-downvotes).replaceAll('\\upvote_button_class//',upvote_button_class).replaceAll('\\upvote_button_active//',upvote_button_active).replaceAll('\\downvote_button_class//',downvote_button_class).replaceAll('\\downvote_button_active//',downvote_button_active).replaceAll('\\href//',href);
-        }
-
         function freezeScroller() {
             var scrollPosition = window.pageYOffset;
             console.log(scroll);
@@ -110,90 +78,10 @@
             }
         }
 
-        function makeSureDeleteMedium(id) {
-            console.log(id);
-            $("#modal-box").append(`{% include 'comms/wall/makesure-delete-medium.html' %}`);
-            $("#modal-box").find('#delete-medium-button').attr("data-id",id);
-            freezeScroller();
-        }
-
-        function unavailableQuote(id) {
-            return `{% include 'comms/wall/unavailable-quote.html' %}`;
-        }
-
-        function medium(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_tick="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
-            console.log(profile_photo_src);
-            console.log("PROFILE PHOTO SRC");
-            if (is_hearted) {
-                var heart_class = "active";
-                var heart_icon_type = "fas";
-            }
-            else {
-                var heart_class = "";
-                var heart_icon_type = "far"
-            }
-            return `{% with by_current_user=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_tick//',author_tick).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
-        }
-
-        function mediumQuote(id,title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_tick="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
-            if (is_hearted) {
-                var heart_class = "active";
-                var heart_icon_type = "fas";
-            }
-            else {
-                var heart_class = "";
-                var heart_icon_type = "far"
-            }
-            return `{% with is_quote=True %}{% include 'comms/wall/plain-medium.html' %}{% endwith %}`.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_tick//',author_tick).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type);
-        }
-
-        function mediumWithQuote(quote_html, id, title="",content="",creation_datetime="",author_dname="",author_username="",author_href="", profile_photo_src="", author_tick="@", reply_count=0, quote_count=0, heart_count=0, is_hearted=false) {
-            if (is_hearted) {
-                var heart_class = "active";
-                var heart_icon_type = "fas";
-            }
-            else {
-                var heart_class = "";
-                var heart_icon_type = "far"
-            }
-            var the_content = `{% with is_template=True, by_current_user=True %}{% include 'comms/wall/medium-with-quote.html' %}{% endwith %}`;
-            console.log(the_content);
-            return the_content.replaceAll('\\id//', id).replaceAll('\\title//', title).replaceAll('\\content//', content).replaceAll('\\author_dname//',author_dname).replaceAll('\\author_tick//',author_tick).replaceAll('\\author_username//',author_username).replaceAll('\\creation_datetime//',creation_datetime).replaceAll('\\author_href//',author_href).replaceAll('\\profile_photo_src//',profile_photo_src).replaceAll('\\reply_count//',reply_count).replaceAll('\\quote_count//',quote_count).replaceAll('\\heart_count//',heart_count).replaceAll('\\heart_class//',heart_class).replaceAll('\\heart_icon_type//',heart_icon_type).replaceAll('\\quote_html//',{% with is_quote=True %}quote_html{% endwith %});
-
-        }
-
-        function infoLoader() {
-            return `{% include 'info-loader.html' %}`;
-        }
-
         function noResults() {
             return `{% include 'no-results.html' %}`;
         }
-        // fix this below function!
-        {% if request.url_rule.endpoint in ['comms.feedback', 'comms.feedback_post']  %}
-        function paginationBar() {
-             return `{% include 'comms/feedback/basic-pagination.html' %}`;
-        }
-        {% endif %}
         
-            function changeToQuoteMedium(quote_identity, quote_profile_pic, quote_content, quote_id) {
-          $("#modal-box").append(`
-            {% with is_filler = True %}
-            {% include "profile/user/create-quote.html" %}
-            {% endwith %}
-            `.replaceAll('\\identity//', quote_identity).replaceAll('\\profile_photo//', quote_profile_pic).replaceAll('\\text-content//', quote_content).replaceAll('\\id//',quote_id));
-          freezeScroller();
-    }
-
-        function changeToCreateMedium() {
-          $("#modal-box").append(`
-            {% with what='Medium' %}
-            {% include "profile/user/create-medium.html" %}
-            {% endwith %}
-            `);
-          $('#title-create').focus();
-          freezeScroller();
-        }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>

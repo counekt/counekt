@@ -134,7 +134,6 @@ def logout():
 
 @bp.route('/activate/<token>/', methods=['GET', 'POST'])
 def activate(token):
-    print("wawawawaw")
     if current_user.is_authenticated:
         return redirect(url_for('index.index'))
     user = models.User.check_token(token=token)
