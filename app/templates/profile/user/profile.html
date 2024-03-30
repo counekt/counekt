@@ -100,9 +100,6 @@
   </span>
 </div>
 {% include "profile/user/tabs/tabs.html" %}
-{% with vanish=True, create_bar = user == current_user, wall=user.wall, by="new" %}
-{% include 'comms/wall/wall-bit.html' %}
-{% endwith %}
 {% endblock %}
 
 {% block modal %}

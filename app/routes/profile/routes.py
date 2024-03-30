@@ -34,10 +34,10 @@ def get_associates():
 def connect(username):
     user = models.User.query.filter_by(username=username).first()
     if user and flask_request.method == 'POST':
-        sent_request = models.UserToUserRequest.query.filter_by(type="associate", sender=current_user, receiver=user).first()
-        received_request = models.UserToUserRequest.query.filter_by(type="associate", receiver=current_user, sender=user).first()
+        sent_request = models.UserToUserRequest.query.filter_by(_type="associate", sender=current_user, receiver=user).first()
+        received_request = models.UserToUserRequest.query.filter_by(_type="associate", receiver=current_user, sender=user).first()
         if flask_request.form.get("do") and not sent_request and not received_request:
-            request = models.UserToUserRequest(type="associate", sender=current_user, receiver=user)
+            request = models.UserToUserRequest(_type="associate", sender=current_user, receiver=user)
             db.session.add(request)
             db.session.commit()
             return json.dumps({'status': 'success'})
