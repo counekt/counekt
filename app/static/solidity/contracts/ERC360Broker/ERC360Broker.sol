@@ -1,26 +1,28 @@
-import {IERC360} from "././ERC360/IERC360.sol";
-import {ERC360} from "././ERC360/ERC360.sol";
+pragma solidity ^0.8.20;
+import {IERC360} from "../ERC360/IERC360.sol";
+import {ERC360} from "../ERC360/ERC360.sol";
 import {IERC360Broker} from "./IERC360Broker.sol";
 import {IERC360BrokerErrors} from "./IERC360BrokerErrors.sol";
 import {ERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Context} from "node_modules/@openzeppelin/contracts/utils/Context.sol";
+import {Ownable} from "node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title A broker of ERC360 tokens.
 /// @author Frederik W. L. Christoffersen
 abstract contract ERC360Broker is Context, Ownable, IERC360Broker, IERC360BrokerErrors {
 
-    /// @notice Mapping taking ERC360 token address and token id, pointing to a corresponding sale status
-    mapping(address => mapping(uint256 => Status)) _statusByToken;
+    /// @notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale status
+    mapping(ERC360 => mapping(uint256 => Status)) _statusByToken;
 
-    /// @notice Mapping taking ERC360 token address and token id, pointing to a corresponding sale 
-    mapping(address => mapping(uint256 => Sale)) _saleByToken;
+    /// @notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale 
+    mapping(ERC360 => mapping(uint256 => Sale)) _saleByToken;
 
     function statusOf(ERC360 token, uint256 tokenId) public view virtual returns(Status) {
     	return _statusByToken[token][tokenId];
     }
 
-    function saleOf(ERC360 token, uint256 tokenId) public view virtual returns(Sale) {
+    function saleOf(ERC360 token, uint256 tokenId) public view virtual returns(Sale memory) {
     	return _saleByToken[token][tokenId];
     }
 
@@ -29,14 +31,13 @@ abstract contract ERC360Broker is Context, Ownable, IERC360Broker, IERC360Broker
     /// @param amount Amount of the ERC360 token to be put for sale.
     /// @param paymentToken The address of the token of payment that is accepted when purchasing. A value of 0x0 represents ether.
     /// @param price The amount which the token is for sale as. The token address being the valuta.
-    /// @param to The specifically set buyer of the sale. Open to anyone, if address(0).
     function putForSale(IERC360 token, uint256 amount, IERC20 paymentToken, uint256 price) external {
-        _putForSale(shard,amount,tokenAddress,price,to);
+        _putForSale(token,amount,paymentToken,price);
     }
 
     function _putForSale(IERC360 token, uint256 amount, IERC20 paymentToken, uint256 price) internal {
-    	uint256 memory tokenId = token.tokenIdOf(_msgSender());
-    	require(token.balanceOf(tokenId) >= amount);
+    	uint256 shardId = token.shardIdOf(_msgSender());
+    	require(token.amountOf(shardId) >= amount);
     	// ...
     }
 

@@ -87,10 +87,12 @@ class UserToUserRequest(db.Model, RequestBase, Base):
 
 
 class UserToERC360Request(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    sender = db.relationship("User", foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
-    receiver = db.relationship("ERC360", foreign_keys=[receiver_id])
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user = db.relationship("User", foreign_keys=[user_id])
+    erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
+    erc360 = db.relationship("ERC360", foreign_keys=[erc360_id])
+    user_is_sender = db.Column(db.Boolean, index=True)
+
 
     def __init__(self, **kwargs):
         RequestBase.__init__(self, **kwargs)
@@ -115,38 +117,3 @@ class UserToERC360Request(db.Model, RequestBase, Base):
                          "sender-photo": self.sender.photo.src,
                          "href":f"/€{self.receiver.address}/"
                          }}.get(self._type)
-
-# To user
-# --------------------------------------
-
-
-class ERC360ToUserRequest(db.Model, RequestBase, Base):
-    sender_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
-    sender = db.relationship("ERC360", foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    receiver = db.relationship("User", foreign_keys=[receiver_id])
-
-    def __init__(self, **kwargs):
-        RequestBase.__init__(self, **kwargs)
-        self.sender.viewers.append(self.receiver)
-
-    def _do(self):
-        if self._type == "dummy":
-            self.sender.viewers.remove(self.receiver)
-            self.sender.add_member(self.receiver)
-
-    def __repr__(self):
-        return "<ERC360ToUserRequest {}>".format(self._type)
-
-    def get_notification_payload_json(self):
-        return {"dummy": {"type": "request",
-                           "request_type":"ERC360ToUserRequest",
-                           "request_subtype":"invite",
-                           "color": "#3298dc",
-                           "icon": "fa fa-user-friends",
-                           "sender-name": self.sender.name,
-                           "sender-address": self.sender.address,
-                           "message": "some dummy text ERC360",
-                           "sender-photo": self.sender.photo.src,
-                           "href":f"/€{self.sender.address}/"
-                           }}.get(self._type)

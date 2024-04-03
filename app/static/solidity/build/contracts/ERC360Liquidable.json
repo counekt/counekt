@@ -78,39 +78,28 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "shardId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "clock",
+          "type": "uint256"
+        }
+      ],
+      "name": "ERC360InvalidShard",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "spender",
           "type": "address"
         }
       ],
       "name": "ERC360InvalidSpender",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "ERC360InvalidTokenId",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        }
-      ],
-      "name": "ERC360NonexistentTokenId",
       "type": "error"
     },
     {
@@ -166,7 +155,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         },
         {
@@ -204,11 +193,11 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
-      "name": "NewTokenId",
+      "name": "NewShard",
       "type": "event"
     },
     {
@@ -264,7 +253,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -326,7 +315,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         },
         {
@@ -376,7 +365,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -395,7 +384,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         },
         {
@@ -419,7 +408,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -451,7 +440,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -461,6 +450,25 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "shardIdOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -493,25 +501,6 @@
           "internalType": "string",
           "name": "",
           "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "tokenIdOf",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -606,7 +595,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         },
         {
@@ -636,10 +625,10 @@
     "1": "contracts/ERC360/IERC360.sol",
     "10": "contracts/ERC360/utils/ERC20Holder.sol",
     "12": "contracts/ERC360/utils/Redeemable.sol",
-    "18": "node_modules/@openzeppelin/contracts/utils/Context.sol",
     "2": "contracts/ERC360/IERC360Errors.sol",
-    "20": "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol",
-    "21": "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol",
+    "24": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+    "26": "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol",
+    "27": "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol",
     "3": "contracts/ERC360/IERC360Metadata.sol",
     "5": "contracts/ERC360/extensions/ERC360Liquidable.sol",
     "7": "contracts/ERC360/extensions/ERC360Redeemable.sol"
@@ -648,21 +637,20 @@
     "absolutePath": "contracts/ERC360/extensions/ERC360Liquidable.sol",
     "exportedSymbols": {
       "ERC20Holder": [
-        1141
+        2222
       ],
       "ERC360Liquidable": [
-        563
+        1370
       ],
       "ERC360Redeemable": [
-        1609
+        1474
       ]
     },
-    "id": 564,
-    "license": "MIT",
+    "id": 1371,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 452,
+        "id": 1259,
         "literals": [
           "solidity",
           "^",
@@ -670,26 +658,26 @@
           ".20"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:24:5"
+        "src": "0:24:5"
       },
       {
         "absolutePath": "contracts/ERC360/extensions/ERC360Redeemable.sol",
         "file": "./ERC360Redeemable.sol",
-        "id": 454,
+        "id": 1261,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 564,
-        "sourceUnit": 1610,
-        "src": "58:56:5",
+        "scope": 1371,
+        "sourceUnit": 1475,
+        "src": "26:56:5",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 453,
+              "id": 1260,
               "name": "ERC360Redeemable",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 1609,
-              "src": "66:16:5",
+              "referencedDeclaration": 1474,
+              "src": "34:16:5",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -700,21 +688,21 @@
       {
         "absolutePath": "contracts/ERC360/utils/ERC20Holder.sol",
         "file": "../utils/ERC20Holder.sol",
-        "id": 456,
+        "id": 1263,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 564,
-        "sourceUnit": 1142,
-        "src": "115:53:5",
+        "scope": 1371,
+        "sourceUnit": 2223,
+        "src": "83:53:5",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 455,
+              "id": 1262,
               "name": "ERC20Holder",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 1141,
-              "src": "123:11:5",
+              "referencedDeclaration": 2222,
+              "src": "91:11:5",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -727,66 +715,66 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 457,
+              "id": 1264,
               "name": "ERC20Holder",
               "nameLocations": [
-                "209:11:5"
+                "177:11:5"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 1141,
-              "src": "209:11:5"
+              "referencedDeclaration": 2222,
+              "src": "177:11:5"
             },
-            "id": 458,
+            "id": 1265,
             "nodeType": "InheritanceSpecifier",
-            "src": "209:11:5"
+            "src": "177:11:5"
           },
           {
             "baseName": {
-              "id": 459,
+              "id": 1266,
               "name": "ERC360Redeemable",
               "nameLocations": [
-                "222:16:5"
+                "190:16:5"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 1609,
-              "src": "222:16:5"
+              "referencedDeclaration": 1474,
+              "src": "190:16:5"
             },
-            "id": 460,
+            "id": 1267,
             "nodeType": "InheritanceSpecifier",
-            "src": "222:16:5"
+            "src": "190:16:5"
           }
         ],
         "canonicalName": "ERC360Liquidable",
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 563,
+        "id": 1370,
         "linearizedBaseContracts": [
-          563,
-          1609,
-          2973,
-          2204,
-          3169,
-          3189,
-          3122,
-          3309,
-          3321,
-          3211,
-          1141
+          1370,
+          1474,
+          2454,
+          588,
+          786,
+          806,
+          737,
+          3010,
+          3022,
+          2912,
+          2222
         ],
         "name": "ERC360Liquidable",
-        "nameLocation": "189:16:5",
+        "nameLocation": "157:16:5",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 464,
+            "id": 1271,
             "mutability": "mutable",
             "name": "_tokenByLiquid",
-            "nameLocation": "282:14:5",
+            "nameLocation": "250:14:5",
             "nodeType": "VariableDeclaration",
-            "scope": 563,
-            "src": "246:50:5",
+            "scope": 1370,
+            "src": "214:50:5",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -794,21 +782,21 @@
               "typeString": "mapping(uint256 => address)"
             },
             "typeName": {
-              "id": 463,
+              "id": 1270,
               "keyName": "",
               "keyNameLocation": "-1:-1:-1",
               "keyType": {
-                "id": 461,
+                "id": 1268,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "254:7:5",
+                "src": "222:7:5",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
               "nodeType": "Mapping",
-              "src": "246:27:5",
+              "src": "214:27:5",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                 "typeString": "mapping(uint256 => address)"
@@ -816,10 +804,10 @@
               "valueName": "",
               "valueNameLocation": "-1:-1:-1",
               "valueType": {
-                "id": 462,
+                "id": 1269,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
-                "src": "265:7:5",
+                "src": "233:7:5",
                 "stateMutability": "nonpayable",
                 "typeDescriptions": {
                   "typeIdentifier": "t_address",
@@ -831,13 +819,13 @@
           },
           {
             "constant": false,
-            "id": 468,
+            "id": 1275,
             "mutability": "mutable",
             "name": "_amountByLiquid",
-            "nameLocation": "338:15:5",
+            "nameLocation": "306:15:5",
             "nodeType": "VariableDeclaration",
-            "scope": 563,
-            "src": "302:51:5",
+            "scope": 1370,
+            "src": "270:51:5",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -845,21 +833,21 @@
               "typeString": "mapping(uint256 => uint256)"
             },
             "typeName": {
-              "id": 467,
+              "id": 1274,
               "keyName": "",
               "keyNameLocation": "-1:-1:-1",
               "keyType": {
-                "id": 465,
+                "id": 1272,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "310:7:5",
+                "src": "278:7:5",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
               "nodeType": "Mapping",
-              "src": "302:27:5",
+              "src": "270:27:5",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
                 "typeString": "mapping(uint256 => uint256)"
@@ -867,10 +855,10 @@
               "valueName": "",
               "valueNameLocation": "-1:-1:-1",
               "valueType": {
-                "id": 466,
+                "id": 1273,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "321:7:5",
+                "src": "289:7:5",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
@@ -882,24 +870,24 @@
           {
             "anonymous": false,
             "eventSelector": "22c20b45c5927ecfac45380380349de846b3c8b517bbd4e6ebe5b6f908ac5911",
-            "id": 472,
+            "id": 1279,
             "name": "LiquidIssued",
-            "nameLocation": "366:12:5",
+            "nameLocation": "334:12:5",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 471,
+              "id": 1278,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 470,
+                  "id": 1277,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "liquidId",
-                  "nameLocation": "387:8:5",
+                  "nameLocation": "355:8:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 472,
-                  "src": "379:16:5",
+                  "scope": 1279,
+                  "src": "347:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -907,10 +895,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 469,
+                    "id": 1276,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "379:7:5",
+                    "src": "347:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -919,31 +907,31 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "378:18:5"
+              "src": "346:18:5"
             },
-            "src": "360:37:5"
+            "src": "328:37:5"
           },
           {
             "anonymous": false,
             "eventSelector": "ef2832d7a6e182238db6bee5d6a402888bc24f576e63c97d0cabadbace41226f",
-            "id": 480,
+            "id": 1287,
             "name": "LiquidClaimed",
-            "nameLocation": "408:13:5",
+            "nameLocation": "376:13:5",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 479,
+              "id": 1286,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 474,
+                  "id": 1281,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "claimant",
-                  "nameLocation": "430:8:5",
+                  "nameLocation": "398:8:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 480,
-                  "src": "422:16:5",
+                  "scope": 1287,
+                  "src": "390:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -951,10 +939,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 473,
+                    "id": 1280,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "422:7:5",
+                    "src": "390:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -965,14 +953,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 476,
+                  "id": 1283,
                   "indexed": false,
                   "mutability": "mutable",
-                  "name": "tokenId",
-                  "nameLocation": "448:7:5",
+                  "name": "shardId",
+                  "nameLocation": "416:7:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 480,
-                  "src": "440:15:5",
+                  "scope": 1287,
+                  "src": "408:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -980,10 +968,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 475,
+                    "id": 1282,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "440:7:5",
+                    "src": "408:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -993,14 +981,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 478,
+                  "id": 1285,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "liquidId",
-                  "nameLocation": "465:8:5",
+                  "nameLocation": "433:8:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 480,
-                  "src": "457:16:5",
+                  "scope": 1287,
+                  "src": "425:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1008,10 +996,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 477,
+                    "id": 1284,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "457:7:5",
+                    "src": "425:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1020,38 +1008,38 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "421:53:5"
+              "src": "389:53:5"
             },
-            "src": "402:73:5"
+            "src": "370:73:5"
           },
           {
             "body": {
-              "id": 532,
+              "id": 1339,
               "nodeType": "Block",
-              "src": "546:344:5",
+              "src": "514:344:5",
               "statements": [
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 488,
-                        "name": "tokenId",
+                        "id": 1295,
+                        "name": "shardId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 482,
-                        "src": "575:7:5",
+                        "referencedDeclaration": 1289,
+                        "src": "543:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         }
                       },
                       {
-                        "id": 489,
+                        "id": 1296,
                         "name": "liquidId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 484,
-                        "src": "583:8:5",
+                        "referencedDeclaration": 1291,
+                        "src": "551:8:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1069,18 +1057,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 487,
+                      "id": 1294,
                       "name": "_requireUnredeemed",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2941,
-                      "src": "556:18:5",
+                      "referencedDeclaration": 2422,
+                      "src": "524:18:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_uint256_$_t_uint256_$returns$__$",
                         "typeString": "function (uint256,uint256)"
                       }
                     },
-                    "id": 490,
+                    "id": 1297,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1089,27 +1077,27 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "556:36:5",
+                    "src": "524:36:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 491,
+                  "id": 1298,
                   "nodeType": "ExpressionStatement",
-                  "src": "556:36:5"
+                  "src": "524:36:5"
                 },
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 493,
-                        "name": "tokenId",
+                        "id": 1300,
+                        "name": "shardId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 482,
-                        "src": "618:7:5",
+                        "referencedDeclaration": 1289,
+                        "src": "586:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1118,12 +1106,12 @@
                       {
                         "arguments": [
                           {
-                            "id": 495,
+                            "id": 1302,
                             "name": "liquidId",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 484,
-                            "src": "634:8:5",
+                            "referencedDeclaration": 1291,
+                            "src": "602:8:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
                               "typeString": "uint256"
@@ -1137,18 +1125,18 @@
                               "typeString": "uint256"
                             }
                           ],
-                          "id": 494,
+                          "id": 1301,
                           "name": "clockOf",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1586,
-                          "src": "626:7:5",
+                          "referencedDeclaration": 1451,
+                          "src": "594:7:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_uint256_$returns$_t_uint256_$",
                             "typeString": "function (uint256) view returns (uint256)"
                           }
                         },
-                        "id": 496,
+                        "id": 1303,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1157,7 +1145,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "626:17:5",
+                        "src": "594:17:5",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1176,18 +1164,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 492,
+                      "id": 1299,
                       "name": "_requireValidAt",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2203,
-                      "src": "602:15:5",
+                      "referencedDeclaration": 587,
+                      "src": "570:15:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_view$_t_uint256_$_t_uint256_$returns$__$",
                         "typeString": "function (uint256,uint256) view"
                       }
                     },
-                    "id": 497,
+                    "id": 1304,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1196,39 +1184,39 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "602:42:5",
+                    "src": "570:42:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 498,
+                  "id": 1305,
                   "nodeType": "ExpressionStatement",
-                  "src": "602:42:5"
+                  "src": "570:42:5"
                 },
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 500,
-                        "name": "tokenId",
+                        "id": 1307,
+                        "name": "shardId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 482,
-                        "src": "667:7:5",
+                        "referencedDeclaration": 1289,
+                        "src": "635:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         }
                       },
                       {
-                        "id": 501,
+                        "id": 1308,
                         "name": "liquidId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 484,
-                        "src": "675:8:5",
+                        "referencedDeclaration": 1291,
+                        "src": "643:8:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1246,18 +1234,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 499,
+                      "id": 1306,
                       "name": "_redeemEvent",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2957,
-                      "src": "654:12:5",
+                      "referencedDeclaration": 2438,
+                      "src": "622:12:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_uint256_$_t_uint256_$returns$__$",
                         "typeString": "function (uint256,uint256)"
                       }
                     },
-                    "id": 502,
+                    "id": 1309,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1266,16 +1254,16 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "654:30:5",
+                    "src": "622:30:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 503,
+                  "id": 1310,
                   "nodeType": "ExpressionStatement",
-                  "src": "654:30:5"
+                  "src": "622:30:5"
                 },
                 {
                   "expression": {
@@ -1284,18 +1272,18 @@
                         "arguments": [],
                         "expression": {
                           "argumentTypes": [],
-                          "id": 505,
+                          "id": 1312,
                           "name": "_msgSender",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 3201,
-                          "src": "709:10:5",
+                          "referencedDeclaration": 2902,
+                          "src": "677:10:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
                             "typeString": "function () view returns (address)"
                           }
                         },
-                        "id": 506,
+                        "id": 1313,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1304,7 +1292,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "709:12:5",
+                        "src": "677:12:5",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -1313,25 +1301,25 @@
                       },
                       {
                         "baseExpression": {
-                          "id": 507,
+                          "id": 1314,
                           "name": "_tokenByLiquid",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 464,
-                          "src": "722:14:5",
+                          "referencedDeclaration": 1271,
+                          "src": "690:14:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                             "typeString": "mapping(uint256 => address)"
                           }
                         },
-                        "id": 509,
+                        "id": 1316,
                         "indexExpression": {
-                          "id": 508,
+                          "id": 1315,
                           "name": "liquidId",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 484,
-                          "src": "737:8:5",
+                          "referencedDeclaration": 1291,
+                          "src": "705:8:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -1342,7 +1330,7 @@
                         "isPure": false,
                         "lValueRequested": false,
                         "nodeType": "IndexAccess",
-                        "src": "722:24:5",
+                        "src": "690:24:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -1353,7 +1341,7 @@
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         },
-                        "id": 522,
+                        "id": 1329,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1363,32 +1351,32 @@
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           },
-                          "id": 518,
+                          "id": 1325,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
                           "lValueRequested": false,
                           "leftExpression": {
                             "baseExpression": {
-                              "id": 510,
+                              "id": 1317,
                               "name": "_amountByLiquid",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 468,
-                              "src": "747:15:5",
+                              "referencedDeclaration": 1275,
+                              "src": "715:15:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
                                 "typeString": "mapping(uint256 => uint256)"
                               }
                             },
-                            "id": 512,
+                            "id": 1319,
                             "indexExpression": {
-                              "id": 511,
+                              "id": 1318,
                               "name": "liquidId",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 484,
-                              "src": "763:8:5",
+                              "referencedDeclaration": 1291,
+                              "src": "731:8:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -1399,7 +1387,7 @@
                             "isPure": false,
                             "lValueRequested": false,
                             "nodeType": "IndexAccess",
-                            "src": "747:25:5",
+                            "src": "715:25:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
                               "typeString": "uint256"
@@ -1412,12 +1400,12 @@
                               {
                                 "arguments": [
                                   {
-                                    "id": 515,
+                                    "id": 1322,
                                     "name": "liquidId",
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
-                                    "referencedDeclaration": 484,
-                                    "src": "795:8:5",
+                                    "referencedDeclaration": 1291,
+                                    "src": "763:8:5",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_uint256",
                                       "typeString": "uint256"
@@ -1431,18 +1419,18 @@
                                       "typeString": "uint256"
                                     }
                                   ],
-                                  "id": 514,
+                                  "id": 1321,
                                   "name": "clockOf",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 1586,
-                                  "src": "787:7:5",
+                                  "referencedDeclaration": 1451,
+                                  "src": "755:7:5",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_function_internal_view$_t_uint256_$returns$_t_uint256_$",
                                     "typeString": "function (uint256) view returns (uint256)"
                                   }
                                 },
-                                "id": 516,
+                                "id": 1323,
                                 "isConstant": false,
                                 "isLValue": false,
                                 "isPure": false,
@@ -1451,7 +1439,7 @@
                                 "nameLocations": [],
                                 "names": [],
                                 "nodeType": "FunctionCall",
-                                "src": "787:17:5",
+                                "src": "755:17:5",
                                 "tryCall": false,
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_uint256",
@@ -1466,18 +1454,18 @@
                                   "typeString": "uint256"
                                 }
                               ],
-                              "id": 513,
+                              "id": 1320,
                               "name": "totalSupplyAt",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 1867,
-                              "src": "773:13:5",
+                              "referencedDeclaration": 251,
+                              "src": "741:13:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_function_internal_view$_t_uint256_$returns$_t_uint256_$",
                                 "typeString": "function (uint256) view returns (uint256)"
                               }
                             },
-                            "id": 517,
+                            "id": 1324,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -1486,14 +1474,14 @@
                             "nameLocations": [],
                             "names": [],
                             "nodeType": "FunctionCall",
-                            "src": "773:32:5",
+                            "src": "741:32:5",
                             "tryCall": false,
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
                               "typeString": "uint256"
                             }
                           },
-                          "src": "747:58:5",
+                          "src": "715:58:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -1504,12 +1492,12 @@
                         "rightExpression": {
                           "arguments": [
                             {
-                              "id": 520,
-                              "name": "tokenId",
+                              "id": 1327,
+                              "name": "shardId",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 482,
-                              "src": "815:7:5",
+                              "referencedDeclaration": 1289,
+                              "src": "783:7:5",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -1523,18 +1511,18 @@
                                 "typeString": "uint256"
                               }
                             ],
-                            "id": 519,
+                            "id": 1326,
                             "name": "amountOf",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 1793,
-                            "src": "806:8:5",
+                            "referencedDeclaration": 177,
+                            "src": "774:8:5",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_view$_t_uint256_$returns$_t_uint256_$",
                               "typeString": "function (uint256) view returns (uint256)"
                             }
                           },
-                          "id": 521,
+                          "id": 1328,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1543,14 +1531,14 @@
                           "nameLocations": [],
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "806:17:5",
+                          "src": "774:17:5",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "src": "747:76:5",
+                        "src": "715:76:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1572,18 +1560,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 504,
+                      "id": 1311,
                       "name": "_transferFunds",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1140,
-                      "src": "694:14:5",
+                      "referencedDeclaration": 2221,
+                      "src": "662:14:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
                         "typeString": "function (address,address,uint256)"
                       }
                     },
-                    "id": 523,
+                    "id": 1330,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1592,16 +1580,16 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "694:130:5",
+                    "src": "662:130:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 524,
+                  "id": 1331,
                   "nodeType": "ExpressionStatement",
-                  "src": "694:130:5"
+                  "src": "662:130:5"
                 },
                 {
                   "eventCall": {
@@ -1610,18 +1598,18 @@
                         "arguments": [],
                         "expression": {
                           "argumentTypes": [],
-                          "id": 526,
+                          "id": 1333,
                           "name": "_msgSender",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 3201,
-                          "src": "853:10:5",
+                          "referencedDeclaration": 2902,
+                          "src": "821:10:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
                             "typeString": "function () view returns (address)"
                           }
                         },
-                        "id": 527,
+                        "id": 1334,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1630,7 +1618,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "853:12:5",
+                        "src": "821:12:5",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -1638,24 +1626,24 @@
                         }
                       },
                       {
-                        "id": 528,
-                        "name": "tokenId",
+                        "id": 1335,
+                        "name": "shardId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 482,
-                        "src": "866:7:5",
+                        "referencedDeclaration": 1289,
+                        "src": "834:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         }
                       },
                       {
-                        "id": 529,
+                        "id": 1336,
                         "name": "liquidId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 484,
-                        "src": "874:8:5",
+                        "referencedDeclaration": 1291,
+                        "src": "842:8:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1677,18 +1665,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 525,
+                      "id": 1332,
                       "name": "LiquidClaimed",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 480,
-                      "src": "839:13:5",
+                      "referencedDeclaration": 1287,
+                      "src": "807:13:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_uint256_$_t_uint256_$returns$__$",
                         "typeString": "function (address,uint256,uint256)"
                       }
                     },
-                    "id": 530,
+                    "id": 1337,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1697,40 +1685,40 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "839:44:5",
+                    "src": "807:44:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 531,
+                  "id": 1338,
                   "nodeType": "EmitStatement",
-                  "src": "834:49:5"
+                  "src": "802:49:5"
                 }
               ]
             },
             "functionSelector": "eb5f7214",
-            "id": 533,
+            "id": 1340,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "claimLiquid",
-            "nameLocation": "490:11:5",
+            "nameLocation": "458:11:5",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 485,
+              "id": 1292,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 482,
+                  "id": 1289,
                   "mutability": "mutable",
-                  "name": "tokenId",
-                  "nameLocation": "510:7:5",
+                  "name": "shardId",
+                  "nameLocation": "478:7:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 533,
-                  "src": "502:15:5",
+                  "scope": 1340,
+                  "src": "470:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1738,10 +1726,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 481,
+                    "id": 1288,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "502:7:5",
+                    "src": "470:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1751,13 +1739,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 484,
+                  "id": 1291,
                   "mutability": "mutable",
                   "name": "liquidId",
-                  "nameLocation": "527:8:5",
+                  "nameLocation": "495:8:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 533,
-                  "src": "519:16:5",
+                  "scope": 1340,
+                  "src": "487:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1765,10 +1753,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 483,
+                    "id": 1290,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "519:7:5",
+                    "src": "487:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1777,40 +1765,40 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "501:35:5"
+              "src": "469:35:5"
             },
             "returnParameters": {
-              "id": 486,
+              "id": 1293,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "546:0:5"
+              "src": "514:0:5"
             },
-            "scope": 563,
-            "src": "481:409:5",
+            "scope": 1370,
+            "src": "449:409:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
             "body": {
-              "id": 561,
+              "id": 1368,
               "nodeType": "Block",
-              "src": "958:173:5",
+              "src": "926:173:5",
               "statements": [
                 {
                   "assignments": [
-                    541
+                    1348
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 541,
+                      "id": 1348,
                       "mutability": "mutable",
                       "name": "liquidId",
-                      "nameLocation": "976:8:5",
+                      "nameLocation": "944:8:5",
                       "nodeType": "VariableDeclaration",
-                      "scope": 561,
-                      "src": "968:16:5",
+                      "scope": 1368,
+                      "src": "936:16:5",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
@@ -1818,10 +1806,10 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 540,
+                        "id": 1347,
                         "name": "uint256",
                         "nodeType": "ElementaryTypeName",
-                        "src": "968:7:5",
+                        "src": "936:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1830,25 +1818,25 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 544,
+                  "id": 1351,
                   "initialValue": {
                     "arguments": [],
                     "expression": {
                       "argumentTypes": [],
-                      "id": 542,
+                      "id": 1349,
                       "name": "_createEvent",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        1608
+                        1473
                       ],
-                      "referencedDeclaration": 1608,
-                      "src": "987:12:5",
+                      "referencedDeclaration": 1473,
+                      "src": "955:12:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$__$returns$_t_uint256_$",
                         "typeString": "function () returns (uint256)"
                       }
                     },
-                    "id": 543,
+                    "id": 1350,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1857,7 +1845,7 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "987:14:5",
+                    "src": "955:14:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
@@ -1865,36 +1853,36 @@
                     }
                   },
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "968:33:5"
+                  "src": "936:33:5"
                 },
                 {
                   "expression": {
-                    "id": 549,
+                    "id": 1356,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "baseExpression": {
-                        "id": 545,
+                        "id": 1352,
                         "name": "_tokenByLiquid",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 464,
-                        "src": "1011:14:5",
+                        "referencedDeclaration": 1271,
+                        "src": "979:14:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_uint256_$_t_address_$",
                           "typeString": "mapping(uint256 => address)"
                         }
                       },
-                      "id": 547,
+                      "id": 1354,
                       "indexExpression": {
-                        "id": 546,
+                        "id": 1353,
                         "name": "liquidId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 541,
-                        "src": "1026:8:5",
+                        "referencedDeclaration": 1348,
+                        "src": "994:8:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1905,7 +1893,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "1011:24:5",
+                      "src": "979:24:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1914,55 +1902,55 @@
                     "nodeType": "Assignment",
                     "operator": "=",
                     "rightHandSide": {
-                      "id": 548,
+                      "id": 1355,
                       "name": "token",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 535,
-                      "src": "1038:5:5",
+                      "referencedDeclaration": 1342,
+                      "src": "1006:5:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "1011:32:5",
+                    "src": "979:32:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 550,
+                  "id": 1357,
                   "nodeType": "ExpressionStatement",
-                  "src": "1011:32:5"
+                  "src": "979:32:5"
                 },
                 {
                   "expression": {
-                    "id": 555,
+                    "id": 1362,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "baseExpression": {
-                        "id": 551,
+                        "id": 1358,
                         "name": "_amountByLiquid",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 468,
-                        "src": "1053:15:5",
+                        "referencedDeclaration": 1275,
+                        "src": "1021:15:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
                           "typeString": "mapping(uint256 => uint256)"
                         }
                       },
-                      "id": 553,
+                      "id": 1360,
                       "indexExpression": {
-                        "id": 552,
+                        "id": 1359,
                         "name": "liquidId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 541,
-                        "src": "1069:8:5",
+                        "referencedDeclaration": 1348,
+                        "src": "1037:8:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1973,7 +1961,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "1053:25:5",
+                      "src": "1021:25:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -1982,37 +1970,37 @@
                     "nodeType": "Assignment",
                     "operator": "=",
                     "rightHandSide": {
-                      "id": 554,
+                      "id": 1361,
                       "name": "amount",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 537,
-                      "src": "1081:6:5",
+                      "referencedDeclaration": 1344,
+                      "src": "1049:6:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1053:34:5",
+                    "src": "1021:34:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 556,
+                  "id": 1363,
                   "nodeType": "ExpressionStatement",
-                  "src": "1053:34:5"
+                  "src": "1021:34:5"
                 },
                 {
                   "eventCall": {
                     "arguments": [
                       {
-                        "id": 558,
+                        "id": 1365,
                         "name": "liquidId",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 541,
-                        "src": "1115:8:5",
+                        "referencedDeclaration": 1348,
+                        "src": "1083:8:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -2026,18 +2014,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 557,
+                      "id": 1364,
                       "name": "LiquidIssued",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 472,
-                      "src": "1102:12:5",
+                      "referencedDeclaration": 1279,
+                      "src": "1070:12:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256)"
                       }
                     },
-                    "id": 559,
+                    "id": 1366,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2046,39 +2034,39 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "1102:22:5",
+                    "src": "1070:22:5",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 560,
+                  "id": 1367,
                   "nodeType": "EmitStatement",
-                  "src": "1097:27:5"
+                  "src": "1065:27:5"
                 }
               ]
             },
-            "id": 562,
+            "id": 1369,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "_issueLiquid",
-            "nameLocation": "905:12:5",
+            "nameLocation": "873:12:5",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 538,
+              "id": 1345,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 535,
+                  "id": 1342,
                   "mutability": "mutable",
                   "name": "token",
-                  "nameLocation": "926:5:5",
+                  "nameLocation": "894:5:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 562,
-                  "src": "918:13:5",
+                  "scope": 1369,
+                  "src": "886:13:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2086,10 +2074,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 534,
+                    "id": 1341,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "918:7:5",
+                    "src": "886:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2100,13 +2088,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 537,
+                  "id": 1344,
                   "mutability": "mutable",
                   "name": "amount",
-                  "nameLocation": "941:6:5",
+                  "nameLocation": "909:6:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 562,
-                  "src": "933:14:5",
+                  "scope": 1369,
+                  "src": "901:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2114,10 +2102,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 536,
+                    "id": 1343,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "933:7:5",
+                    "src": "901:7:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2126,44 +2114,43 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "917:31:5"
+              "src": "885:31:5"
             },
             "returnParameters": {
-              "id": 539,
+              "id": 1346,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "958:0:5"
+              "src": "926:0:5"
             },
-            "scope": 563,
-            "src": "896:235:5",
+            "scope": 1370,
+            "src": "864:235:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 564,
-        "src": "171:963:5",
+        "scope": 1371,
+        "src": "139:963:5",
         "usedErrors": [
-          1686,
-          2906,
-          3130,
-          3139,
-          3144,
-          3149,
-          3158,
-          3163,
-          3168
+          747,
+          756,
+          761,
+          766,
+          775,
+          780,
+          785,
+          2387
         ],
         "usedEvents": [
-          472,
-          480,
-          2985,
-          2994,
-          3001
+          600,
+          609,
+          616,
+          1279,
+          1287
         ]
       }
     ],
-    "src": "32:1102:5"
+    "src": "0:1102:5"
   },
   "bytecode": "",
   "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
@@ -2199,7 +2186,7 @@
     "errors": {
       "ERC360InsufficientAllowance(address,uint256,uint256)": [
         {
-          "details": "Indicates a failure with the `spender`\u2019s `allowance`. Used in transfers.",
+          "details": "Indicates a failure with the `spender`\u00e2\u20ac\u2122s `allowance`. Used in transfers.",
           "params": {
             "allowance": "Amount of tokens a `spender` is allowed to operate with.",
             "needed": "Minimum amount required to perform a transfer.",
@@ -2241,19 +2228,20 @@
           }
         }
       ],
+      "ERC360InvalidShard(uint256,uint256)": [
+        {
+          "details": "Indicates an error concerning the validity of a shard.",
+          "params": {
+            "clock": "The clock at which the shard was invalid.",
+            "shardId": "Identifier number of a shard."
+          }
+        }
+      ],
       "ERC360InvalidSpender(address)": [
         {
           "details": "Indicates a failure with the `spender` to be approved. Used in approvals.",
           "params": {
             "spender": "Address that may be allowed to operate on tokens without being their owner."
-          }
-        }
-      ],
-      "ERC360NonexistentTokenId(uint256)": [
-        {
-          "details": "Indicates a `tokenId` whose `owner` is the zero address.",
-          "params": {
-            "tokenId": "Identifier number of a token."
           }
         }
       ]
@@ -2262,8 +2250,8 @@
       "Approval(address,address,uint256)": {
         "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `amount` is the new allowance."
       },
-      "NewTokenId(address,uint256)": {
-        "details": "Emitted when the current balance of an `account` is tied to a new `tokenId`."
+      "NewShard(address,uint256)": {
+        "details": "Emitted when the current balance of an `account` is tied to a new `shardId`."
       },
       "Transfer(address,address,uint256)": {
         "details": "Emitted when an `amount` of tokens are moved `from` one account `to` another. Note that `amount` may be zero."
@@ -2275,7 +2263,7 @@
         "details": "See {IERC360-allowance}."
       },
       "amountOf(uint256)": {
-        "details": "Returns the amount tied to the ``tokenId``."
+        "details": "Returns the amount tied to the ``shardId``."
       },
       "approve(address,uint256)": {
         "notice": "Approves the allowance of a certain amount of the sender to a spender",
@@ -2296,23 +2284,23 @@
       "isValid(uint256)": {
         "notice": "Returns a boolean stating if a given shard is currently valid or not.",
         "params": {
-          "tokenId": "The shard, whose validity is to be checked for."
+          "shardId": "The shard, whose validity is to be checked for."
         }
       },
       "name()": {
         "details": "Returns the name of the token."
       },
       "ownerOf(uint256)": {
-        "details": "Returns the owner of the `tokenId` token. Requirements: - `tokenId` must exist."
+        "details": "Returns the owner of the `shardId` token. Requirements: - `shardId` must exist."
+      },
+      "shardIdOf(address)": {
+        "details": "Returns the current shard with `shardId` tied to an ``account``."
       },
       "supportsInterface(bytes4)": {
         "details": "See {IERC165-supportsInterface}."
       },
       "symbol()": {
         "details": "Returns the symbol of the token."
-      },
-      "tokenIdOf(address)": {
-        "details": "Returns the current tokenId tied to an ``account``."
       },
       "totalSupply()": {
         "notice": "Returns the current supply."
@@ -2327,23 +2315,23 @@
         "details": "Moves an `amount` of tokens `from` one account `to` another using the allowance mechanism. The `amount` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
       },
       "wasValid(uint256,uint256)": {
-        "notice": "Returns a boolean stating if the given tokenId was current at a given clock.",
+        "notice": "Returns a boolean stating if the given shard was current at a given clock.",
         "params": {
           "clock": "The token clock to be checked for.",
-          "tokenId": "The token whose validity is to be checked for."
+          "shardId": "The token whose validity is to be checked for."
         }
       }
     },
     "version": 1
   },
   "offset": [
-    171,
-    1134
+    139,
+    1102
   ],
   "opcodes": "",
   "pcMap": {},
-  "sha1": "d3654a5c55a017ea746f472054cb3101a1990459",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport {ERC360Redeemable} from \"./ERC360Redeemable.sol\";\nimport {ERC20Holder} from \"../utils/ERC20Holder.sol\";\n\n\nabstract contract ERC360Liquidable is ERC20Holder, ERC360Redeemable {\n\n    mapping(uint256 => address) private _tokenByLiquid;\n    mapping(uint256 => uint256) private _amountByLiquid;\n\n    event LiquidIssued(uint256 liquidId);\n    event LiquidClaimed(address claimant, uint256 tokenId, uint256 liquidId);\n\n    function claimLiquid(uint256 tokenId, uint256 liquidId) external {\n        _requireUnredeemed(tokenId,liquidId);\n        _requireValidAt(tokenId,clockOf(liquidId));\n        _redeemEvent(tokenId,liquidId);\n        _transferFunds(_msgSender(),_tokenByLiquid[liquidId],_amountByLiquid[liquidId]*totalSupplyAt(clockOf(liquidId))/amountOf(tokenId));\n        emit LiquidClaimed(_msgSender(),tokenId,liquidId);\n    }\n\n    function _issueLiquid(address token, uint256 amount) internal {\n        uint256 liquidId = _createEvent();\n        _tokenByLiquid[liquidId] = token;\n        _amountByLiquid[liquidId] = amount;\n        emit LiquidIssued(liquidId);\n    }\n\n}",
+  "sha1": "a080722d295fb7c6dfbb0b573a939db5634abeea",
+  "source": "pragma solidity ^0.8.20;\n\nimport {ERC360Redeemable} from \"./ERC360Redeemable.sol\";\nimport {ERC20Holder} from \"../utils/ERC20Holder.sol\";\n\n\nabstract contract ERC360Liquidable is ERC20Holder, ERC360Redeemable {\n\n    mapping(uint256 => address) private _tokenByLiquid;\n    mapping(uint256 => uint256) private _amountByLiquid;\n\n    event LiquidIssued(uint256 liquidId);\n    event LiquidClaimed(address claimant, uint256 shardId, uint256 liquidId);\n\n    function claimLiquid(uint256 shardId, uint256 liquidId) external {\n        _requireUnredeemed(shardId,liquidId);\n        _requireValidAt(shardId,clockOf(liquidId));\n        _redeemEvent(shardId,liquidId);\n        _transferFunds(_msgSender(),_tokenByLiquid[liquidId],_amountByLiquid[liquidId]*totalSupplyAt(clockOf(liquidId))/amountOf(shardId));\n        emit LiquidClaimed(_msgSender(),shardId,liquidId);\n    }\n\n    function _issueLiquid(address token, uint256 amount) internal {\n        uint256 liquidId = _createEvent();\n        _tokenByLiquid[liquidId] = token;\n        _amountByLiquid[liquidId] = amount;\n        emit LiquidIssued(liquidId);\n    }\n\n}",
   "sourceMap": "",
   "sourcePath": "contracts/ERC360/extensions/ERC360Liquidable.sol",
   "type": "contract"

@@ -4,12 +4,14 @@ pragma solidity ^0.8.20;
  * @dev Standard ERC360 Errors
  */
 interface IERC360Errors {
-
+    
     /**
-     * @dev Indicates a `tokenId` whose `owner` is the zero address.
-     * @param tokenId Identifier number of a token.
+     * @dev Indicates an error concerning the validity of a shard.
+     * @param shardId Identifier number of a shard.
+     * @param clock The clock at which the shard was invalid.
      */
-    error ERC360NonexistentTokenId(uint256 tokenId);
+    error ERC360InvalidShard(uint256 shardId, uint256 clock);
+
     
     /**
      * @dev Indicates an error related to the current `balance` of a `sender`. Used in transfers.

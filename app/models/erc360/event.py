@@ -6,8 +6,6 @@ from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.dialects.postgresql import JSONB
 
-
-
 class Event(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
     erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))

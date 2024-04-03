@@ -142,25 +142,24 @@
     }
   ],
   "allSourcePaths": {
-    "18": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+    "24": "node_modules/@openzeppelin/contracts/utils/Context.sol",
     "9": "contracts/ERC360/utils/Administrable.sol"
   },
   "ast": {
     "absolutePath": "contracts/ERC360/utils/Administrable.sol",
     "exportedSymbols": {
       "Administrable": [
-        2883
+        2146
       ],
       "Context": [
-        3211
+        2912
       ]
     },
-    "id": 2884,
-    "license": "MIT",
+    "id": 2147,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2660,
+        "id": 1923,
         "literals": [
           "solidity",
           "^",
@@ -168,26 +167,26 @@
           ".20"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:24:9"
+        "src": "0:24:9"
       },
       {
         "absolutePath": "node_modules/@openzeppelin/contracts/utils/Context.sol",
         "file": "node_modules/@openzeppelin/contracts/utils/Context.sol",
-        "id": 2662,
+        "id": 1925,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2884,
-        "sourceUnit": 3212,
-        "src": "61:79:9",
+        "scope": 2147,
+        "sourceUnit": 2913,
+        "src": "26:79:9",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 2661,
+              "id": 1924,
               "name": "Context",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 3211,
-              "src": "69:7:9",
+              "referencedDeclaration": 2912,
+              "src": "34:7:9",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -200,54 +199,54 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 2664,
+              "id": 1927,
               "name": "Context",
               "nameLocations": [
-                "1644:7:9"
+                "1572:7:9"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 3211,
-              "src": "1644:7:9"
+              "referencedDeclaration": 2912,
+              "src": "1572:7:9"
             },
-            "id": 2665,
+            "id": 1928,
             "nodeType": "InheritanceSpecifier",
-            "src": "1644:7:9"
+            "src": "1572:7:9"
           }
         ],
         "canonicalName": "Administrable",
         "contractDependencies": [],
         "contractKind": "contract",
         "documentation": {
-          "id": 2663,
+          "id": 1926,
           "nodeType": "StructuredDocumentation",
-          "src": "144:1463:9",
+          "src": "107:1429:9",
           "text": " @dev Contract module that allows decendants to implement permit-based access\n control mechanisms. (Inspired by AccessControl).\n Permits are referred to by their `bytes32` identifier. These should be exposed\n in the external API and be unique. The best way to achieve this is by\n using `public constant` hash digests:\n ```solidity\n bytes32 public constant MY_PERMIT = keccak256(\"MY_PERMIT\");\n ```\n Permits can be used to represent permission. To restrict access to a\n function call, use {hasPermit}:\n ```solidity\n function foo() public {\n     require(hasPermit(MY_PERMIT, msg.sender));\n     ...\n }\n ```\n Permits can be set dynamically via the {setPermit} function. Each permit has an associated parent, and only\n accounts that have a permits's parent permit can call {setPermit}.\n By default, the parent permit for all permits is `bytes32(0)`, which means\n that by default only accounts with this permit will be able to set other\n permits. More complex permit relationships can be created by using\n {_setPermitParent}.\n INFO: The `bytes32(0)` permit is also its own parent: it has permission to\n set this permit. Permits whose holders also hold its parents can't be revoked externally.\n This means that the parent of a permit must be revoked before revoking the child.\n The master permit `bytes32(0)` can therefore NOT be externally revoked either."
         },
         "fullyImplemented": true,
-        "id": 2883,
+        "id": 2146,
         "linearizedBaseContracts": [
-          2883,
-          3211
+          2146,
+          2912
         ],
         "name": "Administrable",
-        "nameLocation": "1627:13:9",
+        "nameLocation": "1555:13:9",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
             "documentation": {
-              "id": 2666,
+              "id": 1929,
               "nodeType": "StructuredDocumentation",
-              "src": "1661:261:9",
+              "src": "1587:260:9",
               "text": "@notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.\n @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;"
             },
-            "id": 2672,
+            "id": 1935,
             "mutability": "mutable",
             "name": "_hasPermit",
-            "nameLocation": "1981:10:9",
+            "nameLocation": "1905:10:9",
             "nodeType": "VariableDeclaration",
-            "scope": 2883,
-            "src": "1928:63:9",
+            "scope": 2146,
+            "src": "1852:63:9",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -255,21 +254,21 @@
               "typeString": "mapping(bytes32 => mapping(address => bool))"
             },
             "typeName": {
-              "id": 2671,
+              "id": 1934,
               "keyName": "",
               "keyNameLocation": "-1:-1:-1",
               "keyType": {
-                "id": 2667,
+                "id": 1930,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1936:7:9",
+                "src": "1860:7:9",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1928:44:9",
+              "src": "1852:44:9",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_address_$_t_bool_$_$",
                 "typeString": "mapping(bytes32 => mapping(address => bool))"
@@ -277,21 +276,21 @@
               "valueName": "",
               "valueNameLocation": "-1:-1:-1",
               "valueType": {
-                "id": 2670,
+                "id": 1933,
                 "keyName": "",
                 "keyNameLocation": "-1:-1:-1",
                 "keyType": {
-                  "id": 2668,
+                  "id": 1931,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1955:7:9",
+                  "src": "1879:7:9",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address",
                     "typeString": "address"
                   }
                 },
                 "nodeType": "Mapping",
-                "src": "1947:24:9",
+                "src": "1871:24:9",
                 "typeDescriptions": {
                   "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
                   "typeString": "mapping(address => bool)"
@@ -299,10 +298,10 @@
                 "valueName": "",
                 "valueNameLocation": "-1:-1:-1",
                 "valueType": {
-                  "id": 2669,
+                  "id": 1932,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1966:4:9",
+                  "src": "1890:4:9",
                   "typeDescriptions": {
                     "typeIdentifier": "t_bool",
                     "typeString": "bool"
@@ -314,13 +313,13 @@
           },
           {
             "constant": false,
-            "id": 2676,
+            "id": 1939,
             "mutability": "mutable",
             "name": "_parentByPermit",
-            "nameLocation": "2034:15:9",
+            "nameLocation": "1957:15:9",
             "nodeType": "VariableDeclaration",
-            "scope": 2883,
-            "src": "1998:51:9",
+            "scope": 2146,
+            "src": "1921:51:9",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -328,21 +327,21 @@
               "typeString": "mapping(bytes32 => bytes32)"
             },
             "typeName": {
-              "id": 2675,
+              "id": 1938,
               "keyName": "",
               "keyNameLocation": "-1:-1:-1",
               "keyType": {
-                "id": 2673,
+                "id": 1936,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "2006:7:9",
+                "src": "1929:7:9",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1998:27:9",
+              "src": "1921:27:9",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_bytes32_$",
                 "typeString": "mapping(bytes32 => bytes32)"
@@ -350,10 +349,10 @@
               "valueName": "",
               "valueNameLocation": "-1:-1:-1",
               "valueType": {
-                "id": 2674,
+                "id": 1937,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "2017:7:9",
+                "src": "1940:7:9",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
@@ -364,23 +363,23 @@
           },
           {
             "errorSelector": "01b6a4a1",
-            "id": 2682,
+            "id": 1945,
             "name": "AdministrableUnauthorizedSet",
-            "nameLocation": "2064:28:9",
+            "nameLocation": "1985:28:9",
             "nodeType": "ErrorDefinition",
             "parameters": {
-              "id": 2681,
+              "id": 1944,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2678,
+                  "id": 1941,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2682,
-                  "src": "2093:7:9",
+                  "scope": 1945,
+                  "src": "2014:7:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -388,10 +387,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2677,
+                    "id": 1940,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2093:7:9",
+                    "src": "2014:7:9",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -402,13 +401,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2680,
+                  "id": 1943,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2682,
-                  "src": "2101:7:9",
+                  "scope": 1945,
+                  "src": "2022:7:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -416,10 +415,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2679,
+                    "id": 1942,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2101:7:9",
+                    "src": "2022:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -428,29 +427,29 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2092:17:9"
+              "src": "2013:17:9"
             },
-            "src": "2058:52:9"
+            "src": "1979:52:9"
           },
           {
             "errorSelector": "4e8cc30a",
-            "id": 2688,
+            "id": 1951,
             "name": "AdministrableInvalidParentSet",
-            "nameLocation": "2122:29:9",
+            "nameLocation": "2042:29:9",
             "nodeType": "ErrorDefinition",
             "parameters": {
-              "id": 2687,
+              "id": 1950,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2684,
+                  "id": 1947,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2688,
-                  "src": "2152:7:9",
+                  "scope": 1951,
+                  "src": "2072:7:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -458,10 +457,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2683,
+                    "id": 1946,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2152:7:9",
+                    "src": "2072:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -471,13 +470,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2686,
+                  "id": 1949,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2688,
-                  "src": "2160:7:9",
+                  "scope": 1951,
+                  "src": "2080:7:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -485,10 +484,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2685,
+                    "id": 1948,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2160:7:9",
+                    "src": "2080:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -497,15 +496,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2151:17:9"
+              "src": "2071:17:9"
             },
-            "src": "2116:53:9"
+            "src": "2036:53:9"
           },
           {
             "body": {
-              "id": 2702,
+              "id": 1965,
               "nodeType": "Block",
-              "src": "2351:70:9",
+              "src": "2267:67:9",
               "statements": [
                 {
                   "expression": {
@@ -516,18 +515,18 @@
                             "arguments": [],
                             "expression": {
                               "argumentTypes": [],
-                              "id": 2695,
+                              "id": 1958,
                               "name": "_msgSender",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 3201,
-                              "src": "2380:10:9",
+                              "referencedDeclaration": 2902,
+                              "src": "2295:10:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
                                 "typeString": "function () view returns (address)"
                               }
                             },
-                            "id": 2696,
+                            "id": 1959,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -536,7 +535,7 @@
                             "nameLocations": [],
                             "names": [],
                             "nodeType": "FunctionCall",
-                            "src": "2380:12:9",
+                            "src": "2295:12:9",
                             "tryCall": false,
                             "typeDescriptions": {
                               "typeIdentifier": "t_address",
@@ -544,12 +543,12 @@
                             }
                           },
                           {
-                            "id": 2697,
+                            "id": 1960,
                             "name": "permit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2691,
-                            "src": "2393:6:9",
+                            "referencedDeclaration": 1954,
+                            "src": "2308:6:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
                               "typeString": "bytes32"
@@ -567,18 +566,18 @@
                               "typeString": "bytes32"
                             }
                           ],
-                          "id": 2694,
+                          "id": 1957,
                           "name": "hasPermit",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2755,
-                          "src": "2370:9:9",
+                          "referencedDeclaration": 2018,
+                          "src": "2285:9:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_address_$_t_bytes32_$returns$_t_bool_$",
                             "typeString": "function (address,bytes32) view returns (bool)"
                           }
                         },
-                        "id": 2698,
+                        "id": 1961,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -587,7 +586,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "2370:30:9",
+                        "src": "2285:30:9",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
@@ -602,7 +601,7 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2693,
+                      "id": 1956,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
@@ -610,13 +609,13 @@
                         -18
                       ],
                       "referencedDeclaration": -18,
-                      "src": "2362:7:9",
+                      "src": "2277:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 2699,
+                    "id": 1962,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -625,47 +624,47 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2362:39:9",
+                    "src": "2277:39:9",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2700,
+                  "id": 1963,
                   "nodeType": "ExpressionStatement",
-                  "src": "2362:39:9"
+                  "src": "2277:39:9"
                 },
                 {
-                  "id": 2701,
+                  "id": 1964,
                   "nodeType": "PlaceholderStatement",
-                  "src": "2412:1:9"
+                  "src": "2326:1:9"
                 }
               ]
             },
             "documentation": {
-              "id": 2689,
+              "id": 1952,
               "nodeType": "StructuredDocumentation",
-              "src": "2177:132:9",
+              "src": "2095:131:9",
               "text": "@notice Modifier that makes sure msg.sender has a given permit.\n @param permit The name of the permit to be checked for."
             },
-            "id": 2703,
+            "id": 1966,
             "name": "onlyPermit",
-            "nameLocation": "2324:10:9",
+            "nameLocation": "2240:10:9",
             "nodeType": "ModifierDefinition",
             "parameters": {
-              "id": 2692,
+              "id": 1955,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2691,
+                  "id": 1954,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "2343:6:9",
+                  "nameLocation": "2259:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2703,
-                  "src": "2335:14:9",
+                  "scope": 1966,
+                  "src": "2251:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -673,10 +672,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2690,
+                    "id": 1953,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2335:7:9",
+                    "src": "2251:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -685,17 +684,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2334:16:9"
+              "src": "2250:16:9"
             },
-            "src": "2315:106:9",
+            "src": "2231:103:9",
             "virtual": false,
             "visibility": "internal"
           },
           {
             "body": {
-              "id": 2717,
+              "id": 1980,
               "nodeType": "Block",
-              "src": "2623:74:9",
+              "src": "2532:71:9",
               "statements": [
                 {
                   "expression": {
@@ -706,18 +705,18 @@
                             "arguments": [],
                             "expression": {
                               "argumentTypes": [],
-                              "id": 2710,
+                              "id": 1973,
                               "name": "_msgSender",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 3201,
-                              "src": "2656:10:9",
+                              "referencedDeclaration": 2902,
+                              "src": "2564:10:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
                                 "typeString": "function () view returns (address)"
                               }
                             },
-                            "id": 2711,
+                            "id": 1974,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -726,7 +725,7 @@
                             "nameLocations": [],
                             "names": [],
                             "nodeType": "FunctionCall",
-                            "src": "2656:12:9",
+                            "src": "2564:12:9",
                             "tryCall": false,
                             "typeDescriptions": {
                               "typeIdentifier": "t_address",
@@ -734,12 +733,12 @@
                             }
                           },
                           {
-                            "id": 2712,
+                            "id": 1975,
                             "name": "permit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2706,
-                            "src": "2669:6:9",
+                            "referencedDeclaration": 1969,
+                            "src": "2577:6:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
                               "typeString": "bytes32"
@@ -757,18 +756,18 @@
                               "typeString": "bytes32"
                             }
                           ],
-                          "id": 2709,
+                          "id": 1972,
                           "name": "isPermitAdmin",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2773,
-                          "src": "2642:13:9",
+                          "referencedDeclaration": 2036,
+                          "src": "2550:13:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_address_$_t_bytes32_$returns$_t_bool_$",
                             "typeString": "function (address,bytes32) view returns (bool)"
                           }
                         },
-                        "id": 2713,
+                        "id": 1976,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -777,7 +776,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "2642:34:9",
+                        "src": "2550:34:9",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
@@ -792,7 +791,7 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2708,
+                      "id": 1971,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
@@ -800,13 +799,13 @@
                         -18
                       ],
                       "referencedDeclaration": -18,
-                      "src": "2634:7:9",
+                      "src": "2542:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 2714,
+                    "id": 1977,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -815,47 +814,47 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2634:43:9",
+                    "src": "2542:43:9",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2715,
+                  "id": 1978,
                   "nodeType": "ExpressionStatement",
-                  "src": "2634:43:9"
+                  "src": "2542:43:9"
                 },
                 {
-                  "id": 2716,
+                  "id": 1979,
                   "nodeType": "PlaceholderStatement",
-                  "src": "2688:1:9"
+                  "src": "2595:1:9"
                 }
               ]
             },
             "documentation": {
-              "id": 2704,
+              "id": 1967,
               "nodeType": "StructuredDocumentation",
-              "src": "2433:143:9",
+              "src": "2344:142:9",
               "text": "@notice Modifier that makes sure msg.sender is an admin of a given permit.\n @param permit The name of the permit to be checked for."
             },
-            "id": 2718,
+            "id": 1981,
             "name": "onlyPermitAdmin",
-            "nameLocation": "2591:15:9",
+            "nameLocation": "2500:15:9",
             "nodeType": "ModifierDefinition",
             "parameters": {
-              "id": 2707,
+              "id": 1970,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2706,
+                  "id": 1969,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "2615:6:9",
+                  "nameLocation": "2524:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2718,
-                  "src": "2607:14:9",
+                  "scope": 1981,
+                  "src": "2516:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -863,10 +862,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2705,
+                    "id": 1968,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2607:7:9",
+                    "src": "2516:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -875,17 +874,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2606:16:9"
+              "src": "2515:16:9"
             },
-            "src": "2582:115:9",
+            "src": "2491:112:9",
             "virtual": false,
             "visibility": "internal"
           },
           {
             "body": {
-              "id": 2754,
+              "id": 2017,
               "nodeType": "Block",
-              "src": "2991:143:9",
+              "src": "2892:141:9",
               "statements": [
                 {
                   "expression": {
@@ -894,18 +893,18 @@
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
                       },
-                      "id": 2733,
+                      "id": 1996,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 2728,
+                        "id": 1991,
                         "name": "permit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2723,
-                        "src": "3009:6:9",
+                        "referencedDeclaration": 1986,
+                        "src": "2909:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
@@ -917,14 +916,14 @@
                         "arguments": [
                           {
                             "hexValue": "30",
-                            "id": 2731,
+                            "id": 1994,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
                             "kind": "number",
                             "lValueRequested": false,
                             "nodeType": "Literal",
-                            "src": "3027:1:9",
+                            "src": "2927:1:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_rational_0_by_1",
                               "typeString": "int_const 0"
@@ -939,26 +938,26 @@
                               "typeString": "int_const 0"
                             }
                           ],
-                          "id": 2730,
+                          "id": 1993,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "lValueRequested": false,
                           "nodeType": "ElementaryTypeNameExpression",
-                          "src": "3019:7:9",
+                          "src": "2919:7:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_type$_t_bytes32_$",
                             "typeString": "type(bytes32)"
                           },
                           "typeName": {
-                            "id": 2729,
+                            "id": 1992,
                             "name": "bytes32",
                             "nodeType": "ElementaryTypeName",
-                            "src": "3019:7:9",
+                            "src": "2919:7:9",
                             "typeDescriptions": {}
                           }
                         },
-                        "id": 2732,
+                        "id": 1995,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -967,14 +966,14 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "3019:10:9",
+                        "src": "2919:10:9",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
                         }
                       },
-                      "src": "3009:20:9",
+                      "src": "2909:20:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -985,7 +984,7 @@
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       },
-                      "id": 2751,
+                      "id": 2014,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -993,25 +992,25 @@
                       "leftExpression": {
                         "baseExpression": {
                           "baseExpression": {
-                            "id": 2742,
+                            "id": 2005,
                             "name": "_hasPermit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2672,
-                            "src": "3066:10:9",
+                            "referencedDeclaration": 1935,
+                            "src": "2966:10:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_address_$_t_bool_$_$",
                               "typeString": "mapping(bytes32 => mapping(address => bool))"
                             }
                           },
-                          "id": 2744,
+                          "id": 2007,
                           "indexExpression": {
-                            "id": 2743,
+                            "id": 2006,
                             "name": "permit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2723,
-                            "src": "3077:6:9",
+                            "referencedDeclaration": 1986,
+                            "src": "2977:6:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
                               "typeString": "bytes32"
@@ -1022,20 +1021,20 @@
                           "isPure": false,
                           "lValueRequested": false,
                           "nodeType": "IndexAccess",
-                          "src": "3066:18:9",
+                          "src": "2966:18:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
                             "typeString": "mapping(address => bool)"
                           }
                         },
-                        "id": 2746,
+                        "id": 2009,
                         "indexExpression": {
-                          "id": 2745,
+                          "id": 2008,
                           "name": "account",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2721,
-                          "src": "3085:7:9",
+                          "referencedDeclaration": 1984,
+                          "src": "2985:7:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
@@ -1046,7 +1045,7 @@
                         "isPure": false,
                         "lValueRequested": false,
                         "nodeType": "IndexAccess",
-                        "src": "3066:27:9",
+                        "src": "2966:27:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -1057,24 +1056,24 @@
                       "rightExpression": {
                         "arguments": [
                           {
-                            "id": 2748,
+                            "id": 2011,
                             "name": "account",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2721,
-                            "src": "3111:7:9",
+                            "referencedDeclaration": 1984,
+                            "src": "3011:7:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_address",
                               "typeString": "address"
                             }
                           },
                           {
-                            "id": 2749,
+                            "id": 2012,
                             "name": "permit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2723,
-                            "src": "3119:6:9",
+                            "referencedDeclaration": 1986,
+                            "src": "3019:6:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
                               "typeString": "bytes32"
@@ -1092,18 +1091,18 @@
                               "typeString": "bytes32"
                             }
                           ],
-                          "id": 2747,
+                          "id": 2010,
                           "name": "isPermitAdmin",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2773,
-                          "src": "3097:13:9",
+                          "referencedDeclaration": 2036,
+                          "src": "2997:13:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_address_$_t_bytes32_$returns$_t_bool_$",
                             "typeString": "function (address,bytes32) view returns (bool)"
                           }
                         },
-                        "id": 2750,
+                        "id": 2013,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1112,53 +1111,53 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "3097:29:9",
+                        "src": "2997:29:9",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
                         }
                       },
-                      "src": "3066:60:9",
+                      "src": "2966:60:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       }
                     },
-                    "id": 2752,
+                    "id": 2015,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "nodeType": "Conditional",
-                    "src": "3009:117:9",
+                    "src": "2909:117:9",
                     "trueExpression": {
                       "baseExpression": {
                         "baseExpression": {
-                          "id": 2734,
+                          "id": 1997,
                           "name": "_hasPermit",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2672,
-                          "src": "3032:10:9",
+                          "referencedDeclaration": 1935,
+                          "src": "2932:10:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_address_$_t_bool_$_$",
                             "typeString": "mapping(bytes32 => mapping(address => bool))"
                           }
                         },
-                        "id": 2739,
+                        "id": 2002,
                         "indexExpression": {
                           "arguments": [
                             {
                               "hexValue": "30",
-                              "id": 2737,
+                              "id": 2000,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "3051:1:9",
+                              "src": "2951:1:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_0_by_1",
                                 "typeString": "int_const 0"
@@ -1173,26 +1172,26 @@
                                 "typeString": "int_const 0"
                               }
                             ],
-                            "id": 2736,
+                            "id": 1999,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
                             "lValueRequested": false,
                             "nodeType": "ElementaryTypeNameExpression",
-                            "src": "3043:7:9",
+                            "src": "2943:7:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_type$_t_bytes32_$",
                               "typeString": "type(bytes32)"
                             },
                             "typeName": {
-                              "id": 2735,
+                              "id": 1998,
                               "name": "bytes32",
                               "nodeType": "ElementaryTypeName",
-                              "src": "3043:7:9",
+                              "src": "2943:7:9",
                               "typeDescriptions": {}
                             }
                           },
-                          "id": 2738,
+                          "id": 2001,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -1201,7 +1200,7 @@
                           "nameLocations": [],
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "3043:10:9",
+                          "src": "2943:10:9",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_bytes32",
@@ -1213,20 +1212,20 @@
                         "isPure": false,
                         "lValueRequested": false,
                         "nodeType": "IndexAccess",
-                        "src": "3032:22:9",
+                        "src": "2932:22:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
                           "typeString": "mapping(address => bool)"
                         }
                       },
-                      "id": 2741,
+                      "id": 2004,
                       "indexExpression": {
-                        "id": 2740,
+                        "id": 2003,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2721,
-                        "src": "3055:7:9",
+                        "referencedDeclaration": 1984,
+                        "src": "2955:7:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -1237,7 +1236,7 @@
                       "isPure": false,
                       "lValueRequested": false,
                       "nodeType": "IndexAccess",
-                      "src": "3032:31:9",
+                      "src": "2932:31:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -1248,40 +1247,40 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 2727,
-                  "id": 2753,
+                  "functionReturnParameters": 1990,
+                  "id": 2016,
                   "nodeType": "Return",
-                  "src": "3002:124:9"
+                  "src": "2902:124:9"
                 }
               ]
             },
             "documentation": {
-              "id": 2719,
+              "id": 1982,
               "nodeType": "StructuredDocumentation",
-              "src": "2705:203:9",
+              "src": "2609:201:9",
               "text": "@notice Returns a boolean stating if a given address has a given permit or not.\n @param permit The name of the permit to be checked for.\n @param account The address to be checked for."
             },
             "functionSelector": "fda3487d",
-            "id": 2755,
+            "id": 2018,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "hasPermit",
-            "nameLocation": "2923:9:9",
+            "nameLocation": "2824:9:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2724,
+              "id": 1987,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2721,
+                  "id": 1984,
                   "mutability": "mutable",
                   "name": "account",
-                  "nameLocation": "2941:7:9",
+                  "nameLocation": "2842:7:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2755,
-                  "src": "2933:15:9",
+                  "scope": 2018,
+                  "src": "2834:15:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1289,10 +1288,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2720,
+                    "id": 1983,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2933:7:9",
+                    "src": "2834:7:9",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1303,13 +1302,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2723,
+                  "id": 1986,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "2957:6:9",
+                  "nameLocation": "2858:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2755,
-                  "src": "2949:14:9",
+                  "scope": 2018,
+                  "src": "2850:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1317,10 +1316,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2722,
+                    "id": 1985,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2949:7:9",
+                    "src": "2850:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1329,21 +1328,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2932:32:9"
+              "src": "2833:32:9"
             },
             "returnParameters": {
-              "id": 2727,
+              "id": 1990,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2726,
+                  "id": 1989,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2755,
-                  "src": "2985:4:9",
+                  "scope": 2018,
+                  "src": "2886:4:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1351,10 +1350,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2725,
+                    "id": 1988,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2985:4:9",
+                    "src": "2886:4:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1363,30 +1362,30 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2984:6:9"
+              "src": "2885:6:9"
             },
-            "scope": 2883,
-            "src": "2914:220:9",
+            "scope": 2146,
+            "src": "2815:218:9",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 2772,
+              "id": 2035,
               "nodeType": "Block",
-              "src": "3443:67:9",
+              "src": "3337:65:9",
               "statements": [
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 2766,
+                        "id": 2029,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2758,
-                        "src": "3471:7:9",
+                        "referencedDeclaration": 2021,
+                        "src": "3364:7:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -1395,12 +1394,12 @@
                       {
                         "arguments": [
                           {
-                            "id": 2768,
+                            "id": 2031,
                             "name": "permit",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2760,
-                            "src": "3494:6:9",
+                            "referencedDeclaration": 2023,
+                            "src": "3387:6:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
                               "typeString": "bytes32"
@@ -1414,18 +1413,18 @@
                               "typeString": "bytes32"
                             }
                           ],
-                          "id": 2767,
+                          "id": 2030,
                           "name": "permitParentOf",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2785,
-                          "src": "3479:14:9",
+                          "referencedDeclaration": 2048,
+                          "src": "3372:14:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$returns$_t_bytes32_$",
                             "typeString": "function (bytes32) view returns (bytes32)"
                           }
                         },
-                        "id": 2769,
+                        "id": 2032,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1434,7 +1433,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "3479:22:9",
+                        "src": "3372:22:9",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -1453,18 +1452,18 @@
                           "typeString": "bytes32"
                         }
                       ],
-                      "id": 2765,
+                      "id": 2028,
                       "name": "hasPermit",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2755,
-                      "src": "3461:9:9",
+                      "referencedDeclaration": 2018,
+                      "src": "3354:9:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_view$_t_address_$_t_bytes32_$returns$_t_bool_$",
                         "typeString": "function (address,bytes32) view returns (bool)"
                       }
                     },
-                    "id": 2770,
+                    "id": 2033,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1473,47 +1472,47 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "3461:41:9",
+                    "src": "3354:41:9",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 2764,
-                  "id": 2771,
+                  "functionReturnParameters": 2027,
+                  "id": 2034,
                   "nodeType": "Return",
-                  "src": "3454:48:9"
+                  "src": "3347:48:9"
                 }
               ]
             },
             "documentation": {
-              "id": 2756,
+              "id": 2019,
               "nodeType": "StructuredDocumentation",
-              "src": "3142:214:9",
+              "src": "3039:212:9",
               "text": "@notice Returns a boolean stating if a given address is an admin of a given permit or not.\n @param permit The name of the permit to be checked for.\n @param account The address to be checked for."
             },
             "functionSelector": "f6e6c61c",
-            "id": 2773,
+            "id": 2036,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "isPermitAdmin",
-            "nameLocation": "3371:13:9",
+            "nameLocation": "3265:13:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2761,
+              "id": 2024,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2758,
+                  "id": 2021,
                   "mutability": "mutable",
                   "name": "account",
-                  "nameLocation": "3393:7:9",
+                  "nameLocation": "3287:7:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2773,
-                  "src": "3385:15:9",
+                  "scope": 2036,
+                  "src": "3279:15:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1521,10 +1520,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2757,
+                    "id": 2020,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3385:7:9",
+                    "src": "3279:7:9",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1535,13 +1534,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2760,
+                  "id": 2023,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "3409:6:9",
+                  "nameLocation": "3303:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2773,
-                  "src": "3401:14:9",
+                  "scope": 2036,
+                  "src": "3295:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1549,10 +1548,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2759,
+                    "id": 2022,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3401:7:9",
+                    "src": "3295:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1561,21 +1560,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3384:32:9"
+              "src": "3278:32:9"
             },
             "returnParameters": {
-              "id": 2764,
+              "id": 2027,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2763,
+                  "id": 2026,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2773,
-                  "src": "3437:4:9",
+                  "scope": 2036,
+                  "src": "3331:4:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1583,10 +1582,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2762,
+                    "id": 2025,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3437:4:9",
+                    "src": "3331:4:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1595,42 +1594,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3436:6:9"
+              "src": "3330:6:9"
             },
-            "scope": 2883,
-            "src": "3362:148:9",
+            "scope": 2146,
+            "src": "3256:146:9",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 2784,
+              "id": 2047,
               "nodeType": "Block",
-              "src": "3587:49:9",
+              "src": "3477:47:9",
               "statements": [
                 {
                   "expression": {
                     "baseExpression": {
-                      "id": 2780,
+                      "id": 2043,
                       "name": "_parentByPermit",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2676,
-                      "src": "3605:15:9",
+                      "referencedDeclaration": 1939,
+                      "src": "3494:15:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_mapping$_t_bytes32_$_t_bytes32_$",
                         "typeString": "mapping(bytes32 => bytes32)"
                       }
                     },
-                    "id": 2782,
+                    "id": 2045,
                     "indexExpression": {
-                      "id": 2781,
+                      "id": 2044,
                       "name": "permit",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2775,
-                      "src": "3621:6:9",
+                      "referencedDeclaration": 2038,
+                      "src": "3510:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
@@ -1641,40 +1640,40 @@
                     "isPure": false,
                     "lValueRequested": false,
                     "nodeType": "IndexAccess",
-                    "src": "3605:23:9",
+                    "src": "3494:23:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
                     }
                   },
-                  "functionReturnParameters": 2779,
-                  "id": 2783,
+                  "functionReturnParameters": 2042,
+                  "id": 2046,
                   "nodeType": "Return",
-                  "src": "3598:30:9"
+                  "src": "3487:30:9"
                 }
               ]
             },
             "functionSelector": "f61c00c4",
-            "id": 2785,
+            "id": 2048,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "permitParentOf",
-            "nameLocation": "3527:14:9",
+            "nameLocation": "3417:14:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2776,
+              "id": 2039,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2775,
+                  "id": 2038,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "3550:6:9",
+                  "nameLocation": "3440:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2785,
-                  "src": "3542:14:9",
+                  "scope": 2048,
+                  "src": "3432:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1682,10 +1681,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2774,
+                    "id": 2037,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3542:7:9",
+                    "src": "3432:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1694,21 +1693,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3541:16:9"
+              "src": "3431:16:9"
             },
             "returnParameters": {
-              "id": 2779,
+              "id": 2042,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2778,
+                  "id": 2041,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2785,
-                  "src": "3578:7:9",
+                  "scope": 2048,
+                  "src": "3468:7:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1716,10 +1715,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2777,
+                    "id": 2040,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3578:7:9",
+                    "src": "3468:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1728,19 +1727,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3577:9:9"
+              "src": "3467:9:9"
             },
-            "scope": 2883,
-            "src": "3518:118:9",
+            "scope": 2146,
+            "src": "3408:116:9",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 2819,
+              "id": 2082,
               "nodeType": "Block",
-              "src": "4016:170:9",
+              "src": "3898:167:9",
               "statements": [
                 {
                   "condition": {
@@ -1748,7 +1747,7 @@
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     },
-                    "id": 2805,
+                    "id": 2068,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1758,18 +1757,18 @@
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       },
-                      "id": 2800,
+                      "id": 2063,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
-                        "id": 2798,
+                        "id": 2061,
                         "name": "status",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2792,
-                        "src": "4031:6:9",
+                        "referencedDeclaration": 2055,
+                        "src": "3912:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -1779,21 +1778,21 @@
                       "operator": "==",
                       "rightExpression": {
                         "hexValue": "66616c7365",
-                        "id": 2799,
+                        "id": 2062,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
                         "kind": "bool",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "4041:5:9",
+                        "src": "3922:5:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
                         },
                         "value": "false"
                       },
-                      "src": "4031:15:9",
+                      "src": "3912:15:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -1804,24 +1803,24 @@
                     "rightExpression": {
                       "arguments": [
                         {
-                          "id": 2802,
+                          "id": 2065,
                           "name": "account",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2788,
-                          "src": "4064:7:9",
+                          "referencedDeclaration": 2051,
+                          "src": "3945:7:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
                           }
                         },
                         {
-                          "id": 2803,
+                          "id": 2066,
                           "name": "permit",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2790,
-                          "src": "4072:6:9",
+                          "referencedDeclaration": 2053,
+                          "src": "3953:6:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bytes32",
                             "typeString": "bytes32"
@@ -1839,18 +1838,18 @@
                             "typeString": "bytes32"
                           }
                         ],
-                        "id": 2801,
+                        "id": 2064,
                         "name": "isPermitAdmin",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2773,
-                        "src": "4050:13:9",
+                        "referencedDeclaration": 2036,
+                        "src": "3931:13:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_view$_t_address_$_t_bytes32_$returns$_t_bool_$",
                           "typeString": "function (address,bytes32) view returns (bool)"
                         }
                       },
-                      "id": 2804,
+                      "id": 2067,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1859,49 +1858,49 @@
                       "nameLocations": [],
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "4050:29:9",
+                      "src": "3931:29:9",
                       "tryCall": false,
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       }
                     },
-                    "src": "4031:48:9",
+                    "src": "3912:48:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "id": 2812,
+                  "id": 2075,
                   "nodeType": "IfStatement",
-                  "src": "4027:108:9",
+                  "src": "3908:108:9",
                   "trueBody": {
-                    "id": 2811,
+                    "id": 2074,
                     "nodeType": "Block",
-                    "src": "4081:54:9",
+                    "src": "3962:54:9",
                     "statements": [
                       {
                         "errorCall": {
                           "arguments": [
                             {
-                              "id": 2807,
+                              "id": 2070,
                               "name": "account",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2788,
-                              "src": "4118:7:9",
+                              "referencedDeclaration": 2051,
+                              "src": "3999:7:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_address",
                                 "typeString": "address"
                               }
                             },
                             {
-                              "id": 2808,
+                              "id": 2071,
                               "name": "permit",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2790,
-                              "src": "4126:6:9",
+                              "referencedDeclaration": 2053,
+                              "src": "4007:6:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes32",
                                 "typeString": "bytes32"
@@ -1919,18 +1918,18 @@
                                 "typeString": "bytes32"
                               }
                             ],
-                            "id": 2806,
+                            "id": 2069,
                             "name": "AdministrableUnauthorizedSet",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2682,
-                            "src": "4089:28:9",
+                            "referencedDeclaration": 1945,
+                            "src": "3970:28:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_error_pure$_t_address_$_t_bytes32_$returns$__$",
                               "typeString": "function (address,bytes32) pure"
                             }
                           },
-                          "id": 2809,
+                          "id": 2072,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1939,16 +1938,16 @@
                           "nameLocations": [],
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "4089:44:9",
+                          "src": "3970:44:9",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
                             "typeString": "tuple()"
                           }
                         },
-                        "id": 2810,
+                        "id": 2073,
                         "nodeType": "RevertStatement",
-                        "src": "4082:51:9"
+                        "src": "3963:51:9"
                       }
                     ]
                   }
@@ -1957,36 +1956,36 @@
                   "expression": {
                     "arguments": [
                       {
-                        "id": 2814,
+                        "id": 2077,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2788,
-                        "src": "4156:7:9",
+                        "referencedDeclaration": 2051,
+                        "src": "4036:7:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
                       {
-                        "id": 2815,
+                        "id": 2078,
                         "name": "permit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2790,
-                        "src": "4164:6:9",
+                        "referencedDeclaration": 2053,
+                        "src": "4044:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
                         }
                       },
                       {
-                        "id": 2816,
+                        "id": 2079,
                         "name": "status",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2792,
-                        "src": "4171:6:9",
+                        "referencedDeclaration": 2055,
+                        "src": "4051:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -2008,18 +2007,18 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 2813,
+                      "id": 2076,
                       "name": "_setPermit",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2855,
-                      "src": "4145:10:9",
+                      "referencedDeclaration": 2118,
+                      "src": "4025:10:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_bytes32_$_t_bool_$returns$__$",
                         "typeString": "function (address,bytes32,bool)"
                       }
                     },
-                    "id": 2817,
+                    "id": 2080,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2028,77 +2027,77 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4145:33:9",
+                    "src": "4025:33:9",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2818,
+                  "id": 2081,
                   "nodeType": "ExpressionStatement",
-                  "src": "4145:33:9"
+                  "src": "4025:33:9"
                 }
               ]
             },
             "documentation": {
-              "id": 2786,
+              "id": 2049,
               "nodeType": "StructuredDocumentation",
-              "src": "3644:270:9",
+              "src": "3530:267:9",
               "text": "@notice Sets the state of a specified permit of a given address.\n @param account The address, whose permit state is to be set.\n @param permit The name of the permit, whose state is to be set.\n @param status The new Permit State to be applied."
             },
             "functionSelector": "8ab73cf9",
-            "id": 2820,
+            "id": 2083,
             "implemented": true,
             "kind": "function",
             "modifiers": [
               {
                 "arguments": [
                   {
-                    "id": 2795,
+                    "id": 2058,
                     "name": "permit",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2790,
-                    "src": "4008:6:9",
+                    "referencedDeclaration": 2053,
+                    "src": "3890:6:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
                     }
                   }
                 ],
-                "id": 2796,
+                "id": 2059,
                 "kind": "modifierInvocation",
                 "modifierName": {
-                  "id": 2794,
+                  "id": 2057,
                   "name": "onlyPermitAdmin",
                   "nameLocations": [
-                    "3992:15:9"
+                    "3874:15:9"
                   ],
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2718,
-                  "src": "3992:15:9"
+                  "referencedDeclaration": 1981,
+                  "src": "3874:15:9"
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "3992:23:9"
+                "src": "3874:23:9"
               }
             ],
             "name": "setPermit",
-            "nameLocation": "3929:9:9",
+            "nameLocation": "3811:9:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2793,
+              "id": 2056,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2788,
+                  "id": 2051,
                   "mutability": "mutable",
                   "name": "account",
-                  "nameLocation": "3947:7:9",
+                  "nameLocation": "3829:7:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2820,
-                  "src": "3939:15:9",
+                  "scope": 2083,
+                  "src": "3821:15:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2106,10 +2105,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2787,
+                    "id": 2050,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3939:7:9",
+                    "src": "3821:7:9",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2120,13 +2119,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2790,
+                  "id": 2053,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "3963:6:9",
+                  "nameLocation": "3845:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2820,
-                  "src": "3955:14:9",
+                  "scope": 2083,
+                  "src": "3837:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2134,10 +2133,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2789,
+                    "id": 2052,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3955:7:9",
+                    "src": "3837:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -2147,13 +2146,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2792,
+                  "id": 2055,
                   "mutability": "mutable",
                   "name": "status",
-                  "nameLocation": "3975:6:9",
+                  "nameLocation": "3857:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2820,
-                  "src": "3970:11:9",
+                  "scope": 2083,
+                  "src": "3852:11:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2161,10 +2160,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2791,
+                    "id": 2054,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3970:4:9",
+                    "src": "3852:4:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2173,48 +2172,48 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3938:44:9"
+              "src": "3820:44:9"
             },
             "returnParameters": {
-              "id": 2797,
+              "id": 2060,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4016:0:9"
+              "src": "3898:0:9"
             },
-            "scope": 2883,
-            "src": "3920:266:9",
+            "scope": 2146,
+            "src": "3802:263:9",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
             "body": {
-              "id": 2835,
+              "id": 2098,
               "nodeType": "Block",
-              "src": "4284:51:9",
+              "src": "4161:49:9",
               "statements": [
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 2831,
+                        "id": 2094,
                         "name": "permit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2822,
-                        "src": "4312:6:9",
+                        "referencedDeclaration": 2085,
+                        "src": "4188:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
                         }
                       },
                       {
-                        "id": 2832,
+                        "id": 2095,
                         "name": "parent",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2824,
-                        "src": "4320:6:9",
+                        "referencedDeclaration": 2087,
+                        "src": "4196:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
@@ -2232,18 +2231,18 @@
                           "typeString": "bytes32"
                         }
                       ],
-                      "id": 2830,
+                      "id": 2093,
                       "name": "_setPermitParent",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2882,
-                      "src": "4295:16:9",
+                      "referencedDeclaration": 2145,
+                      "src": "4171:16:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_bytes32_$returns$__$",
                         "typeString": "function (bytes32,bytes32)"
                       }
                     },
-                    "id": 2833,
+                    "id": 2096,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2252,71 +2251,71 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4295:32:9",
+                    "src": "4171:32:9",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 2834,
+                  "id": 2097,
                   "nodeType": "ExpressionStatement",
-                  "src": "4295:32:9"
+                  "src": "4171:32:9"
                 }
               ]
             },
             "functionSelector": "9a9abf85",
-            "id": 2836,
+            "id": 2099,
             "implemented": true,
             "kind": "function",
             "modifiers": [
               {
                 "arguments": [
                   {
-                    "id": 2827,
+                    "id": 2090,
                     "name": "permit",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 2822,
-                    "src": "4276:6:9",
+                    "referencedDeclaration": 2085,
+                    "src": "4153:6:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
                     }
                   }
                 ],
-                "id": 2828,
+                "id": 2091,
                 "kind": "modifierInvocation",
                 "modifierName": {
-                  "id": 2826,
+                  "id": 2089,
                   "name": "onlyPermitAdmin",
                   "nameLocations": [
-                    "4260:15:9"
+                    "4137:15:9"
                   ],
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2718,
-                  "src": "4260:15:9"
+                  "referencedDeclaration": 1981,
+                  "src": "4137:15:9"
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "4260:23:9"
+                "src": "4137:23:9"
               }
             ],
             "name": "setPermitParent",
-            "nameLocation": "4203:15:9",
+            "nameLocation": "4080:15:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2825,
+              "id": 2088,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2822,
+                  "id": 2085,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "4227:6:9",
+                  "nameLocation": "4104:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2836,
-                  "src": "4219:14:9",
+                  "scope": 2099,
+                  "src": "4096:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2324,10 +2323,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2821,
+                    "id": 2084,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4219:7:9",
+                    "src": "4096:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -2337,13 +2336,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2824,
+                  "id": 2087,
                   "mutability": "mutable",
                   "name": "parent",
-                  "nameLocation": "4243:6:9",
+                  "nameLocation": "4120:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2836,
-                  "src": "4235:14:9",
+                  "scope": 2099,
+                  "src": "4112:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2351,10 +2350,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2823,
+                    "id": 2086,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4235:7:9",
+                    "src": "4112:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -2363,29 +2362,29 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4218:32:9"
+              "src": "4095:32:9"
             },
             "returnParameters": {
-              "id": 2829,
+              "id": 2092,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4284:0:9"
+              "src": "4161:0:9"
             },
-            "scope": 2883,
-            "src": "4194:141:9",
+            "scope": 2146,
+            "src": "4071:139:9",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
             "body": {
-              "id": 2854,
+              "id": 2117,
               "nodeType": "Block",
-              "src": "4682:55:9",
+              "src": "4551:53:9",
               "statements": [
                 {
                   "expression": {
-                    "id": 2852,
+                    "id": 2115,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2393,25 +2392,25 @@
                     "leftHandSide": {
                       "baseExpression": {
                         "baseExpression": {
-                          "id": 2846,
+                          "id": 2109,
                           "name": "_hasPermit",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2672,
-                          "src": "4693:10:9",
+                          "referencedDeclaration": 1935,
+                          "src": "4561:10:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_bytes32_$_t_mapping$_t_address_$_t_bool_$_$",
                             "typeString": "mapping(bytes32 => mapping(address => bool))"
                           }
                         },
-                        "id": 2849,
+                        "id": 2112,
                         "indexExpression": {
-                          "id": 2847,
+                          "id": 2110,
                           "name": "permit",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2841,
-                          "src": "4704:6:9",
+                          "referencedDeclaration": 2104,
+                          "src": "4572:6:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bytes32",
                             "typeString": "bytes32"
@@ -2422,20 +2421,20 @@
                         "isPure": false,
                         "lValueRequested": false,
                         "nodeType": "IndexAccess",
-                        "src": "4693:18:9",
+                        "src": "4561:18:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
                           "typeString": "mapping(address => bool)"
                         }
                       },
-                      "id": 2850,
+                      "id": 2113,
                       "indexExpression": {
-                        "id": 2848,
+                        "id": 2111,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2839,
-                        "src": "4712:7:9",
+                        "referencedDeclaration": 2102,
+                        "src": "4580:7:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -2446,7 +2445,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "4693:27:9",
+                      "src": "4561:27:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -2455,55 +2454,55 @@
                     "nodeType": "Assignment",
                     "operator": "=",
                     "rightHandSide": {
-                      "id": 2851,
+                      "id": 2114,
                       "name": "status",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2843,
-                      "src": "4723:6:9",
+                      "referencedDeclaration": 2106,
+                      "src": "4591:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       }
                     },
-                    "src": "4693:36:9",
+                    "src": "4561:36:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "id": 2853,
+                  "id": 2116,
                   "nodeType": "ExpressionStatement",
-                  "src": "4693:36:9"
+                  "src": "4561:36:9"
                 }
               ]
             },
             "documentation": {
-              "id": 2837,
+              "id": 2100,
               "nodeType": "StructuredDocumentation",
-              "src": "4343:258:9",
+              "src": "4216:255:9",
               "text": "@notice Sets the state of a specified permit of a given address.\n @param permit The permit, whose state is to be set.\n @param account The address, whose permit state is to be set.\n @param status The new Permit State to be applied."
             },
-            "id": 2855,
+            "id": 2118,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "_setPermit",
-            "nameLocation": "4616:10:9",
+            "nameLocation": "4485:10:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2844,
+              "id": 2107,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2839,
+                  "id": 2102,
                   "mutability": "mutable",
                   "name": "account",
-                  "nameLocation": "4635:7:9",
+                  "nameLocation": "4504:7:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2855,
-                  "src": "4627:15:9",
+                  "scope": 2118,
+                  "src": "4496:15:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2511,10 +2510,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2838,
+                    "id": 2101,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4627:7:9",
+                    "src": "4496:7:9",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2525,13 +2524,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2841,
+                  "id": 2104,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "4652:6:9",
+                  "nameLocation": "4521:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2855,
-                  "src": "4644:14:9",
+                  "scope": 2118,
+                  "src": "4513:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2539,10 +2538,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2840,
+                    "id": 2103,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4644:7:9",
+                    "src": "4513:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -2552,13 +2551,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2843,
+                  "id": 2106,
                   "mutability": "mutable",
                   "name": "status",
-                  "nameLocation": "4665:6:9",
+                  "nameLocation": "4534:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2855,
-                  "src": "4660:11:9",
+                  "scope": 2118,
+                  "src": "4529:11:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2566,10 +2565,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2842,
+                    "id": 2105,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4660:4:9",
+                    "src": "4529:4:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2578,25 +2577,25 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4626:46:9"
+              "src": "4495:46:9"
             },
             "returnParameters": {
-              "id": 2845,
+              "id": 2108,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4682:0:9"
+              "src": "4551:0:9"
             },
-            "scope": 2883,
-            "src": "4607:130:9",
+            "scope": 2146,
+            "src": "4476:128:9",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "internal"
           },
           {
             "body": {
-              "id": 2881,
+              "id": 2144,
               "nodeType": "Block",
-              "src": "4812:141:9",
+              "src": "4677:138:9",
               "statements": [
                 {
                   "condition": {
@@ -2604,18 +2603,18 @@
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
                     },
-                    "id": 2867,
+                    "id": 2130,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
-                      "id": 2862,
+                      "id": 2125,
                       "name": "permit",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2857,
-                      "src": "4827:6:9",
+                      "referencedDeclaration": 2120,
+                      "src": "4691:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
@@ -2627,14 +2626,14 @@
                       "arguments": [
                         {
                           "hexValue": "30",
-                          "id": 2865,
+                          "id": 2128,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "kind": "number",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "4845:1:9",
+                          "src": "4709:1:9",
                           "typeDescriptions": {
                             "typeIdentifier": "t_rational_0_by_1",
                             "typeString": "int_const 0"
@@ -2649,26 +2648,26 @@
                             "typeString": "int_const 0"
                           }
                         ],
-                        "id": 2864,
+                        "id": 2127,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
                         "lValueRequested": false,
                         "nodeType": "ElementaryTypeNameExpression",
-                        "src": "4837:7:9",
+                        "src": "4701:7:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_type$_t_bytes32_$",
                           "typeString": "type(bytes32)"
                         },
                         "typeName": {
-                          "id": 2863,
+                          "id": 2126,
                           "name": "bytes32",
                           "nodeType": "ElementaryTypeName",
-                          "src": "4837:7:9",
+                          "src": "4701:7:9",
                           "typeDescriptions": {}
                         }
                       },
-                      "id": 2866,
+                      "id": 2129,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -2677,49 +2676,49 @@
                       "nameLocations": [],
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "4837:10:9",
+                      "src": "4701:10:9",
                       "tryCall": false,
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
                       }
                     },
-                    "src": "4827:20:9",
+                    "src": "4691:20:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
                     }
                   },
-                  "id": 2874,
+                  "id": 2137,
                   "nodeType": "IfStatement",
-                  "src": "4823:80:9",
+                  "src": "4687:80:9",
                   "trueBody": {
-                    "id": 2873,
+                    "id": 2136,
                     "nodeType": "Block",
-                    "src": "4849:54:9",
+                    "src": "4713:54:9",
                     "statements": [
                       {
                         "errorCall": {
                           "arguments": [
                             {
-                              "id": 2869,
+                              "id": 2132,
                               "name": "permit",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2857,
-                              "src": "4887:6:9",
+                              "referencedDeclaration": 2120,
+                              "src": "4751:6:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes32",
                                 "typeString": "bytes32"
                               }
                             },
                             {
-                              "id": 2870,
+                              "id": 2133,
                               "name": "parent",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 2859,
-                              "src": "4894:6:9",
+                              "referencedDeclaration": 2122,
+                              "src": "4758:6:9",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_bytes32",
                                 "typeString": "bytes32"
@@ -2737,18 +2736,18 @@
                                 "typeString": "bytes32"
                               }
                             ],
-                            "id": 2868,
+                            "id": 2131,
                             "name": "AdministrableInvalidParentSet",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2688,
-                            "src": "4857:29:9",
+                            "referencedDeclaration": 1951,
+                            "src": "4721:29:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_error_pure$_t_bytes32_$_t_bytes32_$returns$__$",
                               "typeString": "function (bytes32,bytes32) pure"
                             }
                           },
-                          "id": 2871,
+                          "id": 2134,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2757,48 +2756,48 @@
                           "nameLocations": [],
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "4857:44:9",
+                          "src": "4721:44:9",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_tuple$__$",
                             "typeString": "tuple()"
                           }
                         },
-                        "id": 2872,
+                        "id": 2135,
                         "nodeType": "RevertStatement",
-                        "src": "4850:51:9"
+                        "src": "4714:51:9"
                       }
                     ]
                   }
                 },
                 {
                   "expression": {
-                    "id": 2879,
+                    "id": 2142,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "baseExpression": {
-                        "id": 2875,
+                        "id": 2138,
                         "name": "_parentByPermit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2676,
-                        "src": "4913:15:9",
+                        "referencedDeclaration": 1939,
+                        "src": "4776:15:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_bytes32_$_t_bytes32_$",
                           "typeString": "mapping(bytes32 => bytes32)"
                         }
                       },
-                      "id": 2877,
+                      "id": 2140,
                       "indexExpression": {
-                        "id": 2876,
+                        "id": 2139,
                         "name": "permit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2857,
-                        "src": "4929:6:9",
+                        "referencedDeclaration": 2120,
+                        "src": "4792:6:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
@@ -2809,7 +2808,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "4913:23:9",
+                      "src": "4776:23:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
@@ -2818,49 +2817,49 @@
                     "nodeType": "Assignment",
                     "operator": "=",
                     "rightHandSide": {
-                      "id": 2878,
+                      "id": 2141,
                       "name": "parent",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2859,
-                      "src": "4939:6:9",
+                      "referencedDeclaration": 2122,
+                      "src": "4802:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
                       }
                     },
-                    "src": "4913:32:9",
+                    "src": "4776:32:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
                     }
                   },
-                  "id": 2880,
+                  "id": 2143,
                   "nodeType": "ExpressionStatement",
-                  "src": "4913:32:9"
+                  "src": "4776:32:9"
                 }
               ]
             },
-            "id": 2882,
+            "id": 2145,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "_setPermitParent",
-            "nameLocation": "4754:16:9",
+            "nameLocation": "4619:16:9",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2860,
+              "id": 2123,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2857,
+                  "id": 2120,
                   "mutability": "mutable",
                   "name": "permit",
-                  "nameLocation": "4779:6:9",
+                  "nameLocation": "4644:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2882,
-                  "src": "4771:14:9",
+                  "scope": 2145,
+                  "src": "4636:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2868,10 +2867,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2856,
+                    "id": 2119,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4771:7:9",
+                    "src": "4636:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -2881,13 +2880,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 2859,
+                  "id": 2122,
                   "mutability": "mutable",
                   "name": "parent",
-                  "nameLocation": "4795:6:9",
+                  "nameLocation": "4660:6:9",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2882,
-                  "src": "4787:14:9",
+                  "scope": 2145,
+                  "src": "4652:14:9",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2895,10 +2894,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2858,
+                    "id": 2121,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4787:7:9",
+                    "src": "4652:7:9",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -2907,31 +2906,31 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4770:32:9"
+              "src": "4635:32:9"
             },
             "returnParameters": {
-              "id": 2861,
+              "id": 2124,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4812:0:9"
+              "src": "4677:0:9"
             },
-            "scope": 2883,
-            "src": "4745:208:9",
+            "scope": 2146,
+            "src": "4610:205:9",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 2884,
-        "src": "1609:3349:9",
+        "scope": 2147,
+        "src": "1537:3281:9",
         "usedErrors": [
-          2682,
-          2688
+          1945,
+          1951
         ],
         "usedEvents": []
       }
     ],
-    "src": "33:4925:9"
+    "src": "0:4818:9"
   },
   "bytecode": "",
   "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
@@ -2989,13 +2988,13 @@
     "version": 1
   },
   "offset": [
-    1609,
-    4958
+    1537,
+    4818
   ],
   "opcodes": "",
   "pcMap": {},
-  "sha1": "59c015ae6cfcb2c9b5ef671e8b66603bb7e28665",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport {Context} from \"node_modules/@openzeppelin/contracts/utils/Context.sol\";\n\n/**\n * @dev Contract module that allows decendants to implement permit-based access\n * control mechanisms. (Inspired by AccessControl).\n *\n * Permits are referred to by their `bytes32` identifier. These should be exposed\n * in the external API and be unique. The best way to achieve this is by\n * using `public constant` hash digests:\n *\n * ```solidity\n * bytes32 public constant MY_PERMIT = keccak256(\"MY_PERMIT\");\n * ```\n *\n * Permits can be used to represent permission. To restrict access to a\n * function call, use {hasPermit}:\n *\n * ```solidity\n * function foo() public {\n *     require(hasPermit(MY_PERMIT, msg.sender));\n *     ...\n * }\n * ```\n *\n * Permits can be set dynamically via the {setPermit} function. Each permit has an associated parent, and only\n * accounts that have a permits's parent permit can call {setPermit}.\n *\n * By default, the parent permit for all permits is `bytes32(0)`, which means\n * that by default only accounts with this permit will be able to set other\n * permits. More complex permit relationships can be created by using\n * {_setPermitParent}.\n *\n * INFO: The `bytes32(0)` permit is also its own parent: it has permission to\n * set this permit. Permits whose holders also hold its parents can't be revoked externally.\n * This means that the parent of a permit must be revoked before revoking the child.\n * The master permit `bytes32(0)` can therefore NOT be externally revoked either.\n */\nabstract contract Administrable is Context {\n\n    /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.\n    /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;\n    mapping(bytes32 => mapping(address => bool)) private _hasPermit;\n    mapping(bytes32 => bytes32) private _parentByPermit;\n\n    error AdministrableUnauthorizedSet(address,bytes32);\n    error AdministrableInvalidParentSet(bytes32,bytes32);\n\n    /// @notice Modifier that makes sure msg.sender has a given permit.\n    /// @param permit The name of the permit to be checked for.\n    modifier onlyPermit(bytes32 permit) {\n        require(hasPermit(_msgSender(),permit));\n        _;\n    }\n    \n    /// @notice Modifier that makes sure msg.sender is an admin of a given permit.\n    /// @param permit The name of the permit to be checked for.\n    modifier onlyPermitAdmin(bytes32 permit) {\n        require(isPermitAdmin(_msgSender(),permit));\n        _;\n    }\n\n    /// @notice Returns a boolean stating if a given address has a given permit or not.\n    /// @param permit The name of the permit to be checked for.\n    /// @param account The address to be checked for.\n    function hasPermit(address account,bytes32 permit) public view returns(bool) {\n        return permit == bytes32(0) ? _hasPermit[bytes32(0)][account] : _hasPermit[permit][account] || isPermitAdmin(account,permit);\n    }\n\n    /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.\n    /// @param permit The name of the permit to be checked for.\n    /// @param account The address to be checked for.\n    function isPermitAdmin(address account,bytes32 permit) public view returns(bool) {\n        return hasPermit(account,permitParentOf(permit));\n    }\n\n    function permitParentOf(bytes32 permit) public view returns(bytes32) {\n        return _parentByPermit[permit];\n    }\n\n    /// @notice Sets the state of a specified permit of a given address.\n    /// @param account The address, whose permit state is to be set.\n    /// @param permit The name of the permit, whose state is to be set.\n    /// @param status The new Permit State to be applied.\n    function setPermit(address account,bytes32 permit,bool status) external onlyPermitAdmin(permit) {\n        if (status == false && isPermitAdmin(account,permit)) {revert AdministrableUnauthorizedSet(account,permit);}\n        _setPermit(account,permit,status);\n    }\n\n    function setPermitParent(bytes32 permit, bytes32 parent) external onlyPermitAdmin(permit) {\n        _setPermitParent(permit, parent);\n    }\n\n    /// @notice Sets the state of a specified permit of a given address.\n    /// @param permit The permit, whose state is to be set.\n    /// @param account The address, whose permit state is to be set.\n    /// @param status The new Permit State to be applied.\n    function _setPermit(address account, bytes32 permit, bool status) internal {\n        _hasPermit[permit][account] = status;\n    }\n\n    function _setPermitParent(bytes32 permit, bytes32 parent) internal {\n        if (permit == bytes32(0)) {revert AdministrableInvalidParentSet(permit,parent);}\n        _parentByPermit[permit] = parent;\n    }\n\n}",
+  "sha1": "5bc77eff820fd67fdae561ae06599e0645b0cb96",
+  "source": "pragma solidity ^0.8.20;\n\nimport {Context} from \"node_modules/@openzeppelin/contracts/utils/Context.sol\";\n\n/**\n * @dev Contract module that allows decendants to implement permit-based access\n * control mechanisms. (Inspired by AccessControl).\n *\n * Permits are referred to by their `bytes32` identifier. These should be exposed\n * in the external API and be unique. The best way to achieve this is by\n * using `public constant` hash digests:\n *\n * ```solidity\n * bytes32 public constant MY_PERMIT = keccak256(\"MY_PERMIT\");\n * ```\n *\n * Permits can be used to represent permission. To restrict access to a\n * function call, use {hasPermit}:\n *\n * ```solidity\n * function foo() public {\n *     require(hasPermit(MY_PERMIT, msg.sender));\n *     ...\n * }\n * ```\n *\n * Permits can be set dynamically via the {setPermit} function. Each permit has an associated parent, and only\n * accounts that have a permits's parent permit can call {setPermit}.\n *\n * By default, the parent permit for all permits is `bytes32(0)`, which means\n * that by default only accounts with this permit will be able to set other\n * permits. More complex permit relationships can be created by using\n * {_setPermitParent}.\n *\n * INFO: The `bytes32(0)` permit is also its own parent: it has permission to\n * set this permit. Permits whose holders also hold its parents can't be revoked externally.\n * This means that the parent of a permit must be revoked before revoking the child.\n * The master permit `bytes32(0)` can therefore NOT be externally revoked either.\n */\nabstract contract Administrable is Context {\n\n    /// @notice A mapping pointing to another mapping, pointing to a Permit State, given the address of a permit holder, given the name of the permit.\n    /// @custom:illustration permits[permitName][address] == PermitState.authorized || PermitState.administrator;\n    mapping(bytes32 => mapping(address => bool)) private _hasPermit;\n    mapping(bytes32 => bytes32) private _parentByPermit;\n\n    error AdministrableUnauthorizedSet(address,bytes32);\n    error AdministrableInvalidParentSet(bytes32,bytes32);\n\n    /// @notice Modifier that makes sure msg.sender has a given permit.\n    /// @param permit The name of the permit to be checked for.\n    modifier onlyPermit(bytes32 permit) {\n        require(hasPermit(_msgSender(),permit));\n        _;\n    }\n    \n    /// @notice Modifier that makes sure msg.sender is an admin of a given permit.\n    /// @param permit The name of the permit to be checked for.\n    modifier onlyPermitAdmin(bytes32 permit) {\n        require(isPermitAdmin(_msgSender(),permit));\n        _;\n    }\n\n    /// @notice Returns a boolean stating if a given address has a given permit or not.\n    /// @param permit The name of the permit to be checked for.\n    /// @param account The address to be checked for.\n    function hasPermit(address account,bytes32 permit) public view returns(bool) {\n        return permit == bytes32(0) ? _hasPermit[bytes32(0)][account] : _hasPermit[permit][account] || isPermitAdmin(account,permit);\n    }\n\n    /// @notice Returns a boolean stating if a given address is an admin of a given permit or not.\n    /// @param permit The name of the permit to be checked for.\n    /// @param account The address to be checked for.\n    function isPermitAdmin(address account,bytes32 permit) public view returns(bool) {\n        return hasPermit(account,permitParentOf(permit));\n    }\n\n    function permitParentOf(bytes32 permit) public view returns(bytes32) {\n        return _parentByPermit[permit];\n    }\n\n    /// @notice Sets the state of a specified permit of a given address.\n    /// @param account The address, whose permit state is to be set.\n    /// @param permit The name of the permit, whose state is to be set.\n    /// @param status The new Permit State to be applied.\n    function setPermit(address account,bytes32 permit,bool status) external onlyPermitAdmin(permit) {\n        if (status == false && isPermitAdmin(account,permit)) {revert AdministrableUnauthorizedSet(account,permit);}\n        _setPermit(account,permit,status);\n    }\n\n    function setPermitParent(bytes32 permit, bytes32 parent) external onlyPermitAdmin(permit) {\n        _setPermitParent(permit, parent);\n    }\n\n    /// @notice Sets the state of a specified permit of a given address.\n    /// @param permit The permit, whose state is to be set.\n    /// @param account The address, whose permit state is to be set.\n    /// @param status The new Permit State to be applied.\n    function _setPermit(address account, bytes32 permit, bool status) internal {\n        _hasPermit[permit][account] = status;\n    }\n\n    function _setPermitParent(bytes32 permit, bytes32 parent) internal {\n        if (permit == bytes32(0)) {revert AdministrableInvalidParentSet(permit,parent);}\n        _parentByPermit[permit] = parent;\n    }\n\n}",
   "sourceMap": "",
   "sourcePath": "contracts/ERC360/utils/Administrable.sol",
   "type": "contract"

@@ -37,11 +37,11 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
-      "name": "NewTokenId",
+      "name": "NewShard",
       "type": "event"
     },
     {
@@ -97,7 +97,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -172,7 +172,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -191,7 +191,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -223,7 +223,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -239,19 +239,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "symbol",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -259,12 +246,25 @@
           "type": "address"
         }
       ],
-      "name": "tokenIdOf",
+      "name": "shardIdOf",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "symbol",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -359,7 +359,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         },
         {
@@ -388,18 +388,17 @@
     "absolutePath": "contracts/ERC360/IERC360Metadata.sol",
     "exportedSymbols": {
       "IERC360": [
-        3122
+        737
       ],
       "IERC360Metadata": [
-        3189
+        806
       ]
     },
-    "id": 3190,
-    "license": "MIT",
+    "id": 807,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3171,
+        "id": 788,
         "literals": [
           "solidity",
           "^",
@@ -407,26 +406,26 @@
           ".20"
         ],
         "nodeType": "PragmaDirective",
-        "src": "35:24:3"
+        "src": "0:24:3"
       },
       {
         "absolutePath": "contracts/ERC360/IERC360.sol",
         "file": "./IERC360.sol",
-        "id": 3173,
+        "id": 790,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 3190,
-        "sourceUnit": 3123,
-        "src": "63:38:3",
+        "scope": 807,
+        "sourceUnit": 738,
+        "src": "26:38:3",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 3172,
+              "id": 789,
               "name": "IERC360",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 3122,
-              "src": "71:7:3",
+              "referencedDeclaration": 737,
+              "src": "34:7:3",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -439,73 +438,73 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 3175,
+              "id": 792,
               "name": "IERC360",
               "nameLocations": [
-                "225:7:3"
+                "183:7:3"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 3122,
-              "src": "225:7:3"
+              "referencedDeclaration": 737,
+              "src": "183:7:3"
             },
-            "id": 3176,
+            "id": 793,
             "nodeType": "InheritanceSpecifier",
-            "src": "225:7:3"
+            "src": "183:7:3"
           }
         ],
         "canonicalName": "IERC360Metadata",
         "contractDependencies": [],
         "contractKind": "interface",
         "documentation": {
-          "id": 3174,
+          "id": 791,
           "nodeType": "StructuredDocumentation",
-          "src": "105:89:3",
+          "src": "66:87:3",
           "text": " @dev Interface for the optional metadata functions from the ERC360 standard."
         },
         "fullyImplemented": false,
-        "id": 3189,
+        "id": 806,
         "linearizedBaseContracts": [
-          3189,
-          3122
+          806,
+          737
         ],
         "name": "IERC360Metadata",
-        "nameLocation": "206:15:3",
+        "nameLocation": "164:15:3",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "documentation": {
-              "id": 3177,
+              "id": 794,
               "nodeType": "StructuredDocumentation",
-              "src": "240:56:3",
+              "src": "197:54:3",
               "text": " @dev Returns the name of the token."
             },
             "functionSelector": "06fdde03",
-            "id": 3182,
+            "id": 799,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "name",
-            "nameLocation": "311:4:3",
+            "nameLocation": "265:4:3",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3178,
+              "id": 795,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "315:2:3"
+              "src": "269:2:3"
             },
             "returnParameters": {
-              "id": 3181,
+              "id": 798,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3180,
+                  "id": 797,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3182,
-                  "src": "341:13:3",
+                  "scope": 799,
+                  "src": "295:13:3",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -513,10 +512,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 3179,
+                    "id": 796,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "341:6:3",
+                    "src": "295:6:3",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -525,48 +524,48 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "340:15:3"
+              "src": "294:15:3"
             },
-            "scope": 3189,
-            "src": "302:54:3",
+            "scope": 806,
+            "src": "256:54:3",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           },
           {
             "documentation": {
-              "id": 3183,
+              "id": 800,
               "nodeType": "StructuredDocumentation",
-              "src": "364:58:3",
+              "src": "316:56:3",
               "text": " @dev Returns the symbol of the token."
             },
             "functionSelector": "95d89b41",
-            "id": 3188,
+            "id": 805,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "symbol",
-            "nameLocation": "437:6:3",
+            "nameLocation": "386:6:3",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3184,
+              "id": 801,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "443:2:3"
+              "src": "392:2:3"
             },
             "returnParameters": {
-              "id": 3187,
+              "id": 804,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3186,
+                  "id": 803,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3188,
-                  "src": "469:13:3",
+                  "scope": 805,
+                  "src": "418:13:3",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -574,10 +573,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 3185,
+                    "id": 802,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "469:6:3",
+                    "src": "418:6:3",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -586,26 +585,26 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "468:15:3"
+              "src": "417:15:3"
             },
-            "scope": 3189,
-            "src": "428:56:3",
+            "scope": 806,
+            "src": "377:56:3",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 3190,
-        "src": "196:291:3",
+        "scope": 807,
+        "src": "154:281:3",
         "usedErrors": [],
         "usedEvents": [
-          2985,
-          2994,
-          3001
+          600,
+          609,
+          616
         ]
       }
     ],
-    "src": "35:452:3"
+    "src": "0:435:3"
   },
   "bytecode": "",
   "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
@@ -634,8 +633,8 @@
       "Approval(address,address,uint256)": {
         "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `amount` is the new allowance."
       },
-      "NewTokenId(address,uint256)": {
-        "details": "Emitted when the current balance of an `account` is tied to a new `tokenId`."
+      "NewShard(address,uint256)": {
+        "details": "Emitted when the current balance of an `account` is tied to a new `shardId`."
       },
       "Transfer(address,address,uint256)": {
         "details": "Emitted when an `amount` of tokens are moved `from` one account `to` another. Note that `amount` may be zero."
@@ -647,7 +646,7 @@
         "details": "Returns the remaining amount of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default. This amount changes when {approve} or {transferFrom} are called."
       },
       "amountOf(uint256)": {
-        "details": "Returns the amount tied to the ``tokenId``."
+        "details": "Returns the amount tied to the ``shardId``."
       },
       "approve(address,uint256)": {
         "details": "Sets an `amount` of tokens as the allowance of `spender` over the caller's tokens. Returns a boolean value indicating whether the operation succeeded. IMPORTANT: Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729 Emits an {Approval} event."
@@ -659,22 +658,22 @@
         "details": "Returns the amount of tokens ever created."
       },
       "expirationOf(uint256)": {
-        "details": "Returns the clock at which a ``tokenId`` expired.  Requirements: - `tokenId` must exist."
+        "details": "Returns the clock at which a shard with ``shardId`` expired.  Requirements: - `shardId` must exist."
       },
       "isValid(uint256)": {
-        "details": "Returns true if the `tokenId` is currently valid. Requirements: - `tokenId` must exist."
+        "details": "Returns true if the shard with `shardId` is currently valid. Requirements: - `shardId` must exist."
       },
       "name()": {
         "details": "Returns the name of the token."
       },
       "ownerOf(uint256)": {
-        "details": "Returns the owner of the `tokenId` token. Requirements: - `tokenId` must exist."
+        "details": "Returns the owner of the `shardId` token. Requirements: - `shardId` must exist."
+      },
+      "shardIdOf(address)": {
+        "details": "Returns the current shard with `shardId` tied to an ``account``."
       },
       "symbol()": {
         "details": "Returns the symbol of the token."
-      },
-      "tokenIdOf(address)": {
-        "details": "Returns the current tokenId tied to an ``account``."
       },
       "totalSupply()": {
         "details": "Returns the amount of currently valid tokens in existence."
@@ -689,19 +688,19 @@
         "details": "Moves an `amount` of tokens `from` one account `to` another using the allowance mechanism. The `amount` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
       },
       "wasValid(uint256,uint256)": {
-        "details": "Returns true if the `tokenId` was valid at 'clock'. Requirements: - `tokenId` must exist."
+        "details": "Returns true if the shard with `shardId` was valid at 'clock'. Requirements: - `shardId` must exist."
       }
     },
     "version": 1
   },
   "offset": [
-    196,
-    487
+    154,
+    435
   ],
   "opcodes": "",
   "pcMap": {},
-  "sha1": "4c3b02381822d7ab7f731c7824975a8147dfb97d",
-  "source": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.20;\n\nimport {IERC360} from \"./IERC360.sol\";\n\n/**\n * @dev Interface for the optional metadata functions from the ERC360 standard.\n */\ninterface IERC360Metadata is IERC360 {\n    /**\n     * @dev Returns the name of the token.\n     */\n    function name() external view returns (string memory);\n\n    /**\n     * @dev Returns the symbol of the token.\n     */\n    function symbol() external view returns (string memory);\n}",
+  "sha1": "ace98b11a0adc92eac546621be66c8bd196ebb4e",
+  "source": "pragma solidity ^0.8.20;\n\nimport {IERC360} from \"./IERC360.sol\";\n\n/**\n * @dev Interface for the optional metadata functions from the ERC360 standard.\n */\ninterface IERC360Metadata is IERC360 {\n    /**\n     * @dev Returns the name of the token.\n     */\n    function name() external view returns (string memory);\n\n    /**\n     * @dev Returns the symbol of the token.\n     */\n    function symbol() external view returns (string memory);\n}",
   "sourceMap": "",
   "sourcePath": "contracts/ERC360/IERC360Metadata.sol",
   "type": "interface"

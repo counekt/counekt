@@ -10,14 +10,14 @@ abstract contract ERC360Liquidable is ERC20Holder, ERC360Redeemable {
     mapping(uint256 => uint256) private _amountByLiquid;
 
     event LiquidIssued(uint256 liquidId);
-    event LiquidClaimed(address claimant, uint256 tokenId, uint256 liquidId);
+    event LiquidClaimed(address claimant, uint256 shardId, uint256 liquidId);
 
-    function claimLiquid(uint256 tokenId, uint256 liquidId) external {
-        _requireUnredeemed(tokenId,liquidId);
-        _requireValidAt(tokenId,clockOf(liquidId));
-        _redeemEvent(tokenId,liquidId);
-        _transferFunds(_msgSender(),_tokenByLiquid[liquidId],_amountByLiquid[liquidId]*totalSupplyAt(clockOf(liquidId))/amountOf(tokenId));
-        emit LiquidClaimed(_msgSender(),tokenId,liquidId);
+    function claimLiquid(uint256 shardId, uint256 liquidId) external {
+        _requireUnredeemed(shardId,liquidId);
+        _requireValidAt(shardId,clockOf(liquidId));
+        _redeemEvent(shardId,liquidId);
+        _transferFunds(_msgSender(),_tokenByLiquid[liquidId],_amountByLiquid[liquidId]*totalSupplyAt(clockOf(liquidId))/amountOf(shardId));
+        emit LiquidClaimed(_msgSender(),shardId,liquidId);
     }
 
     function _issueLiquid(address token, uint256 amount) internal {

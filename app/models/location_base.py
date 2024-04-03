@@ -5,7 +5,7 @@ import math
 from sqlalchemy.ext.hybrid import hybrid_method
 
 
-class LocationBase:
+class Location(db.Model, Base):
     location_address = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)

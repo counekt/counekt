@@ -4,10 +4,7 @@ from app.models.static.file import File
 from PIL import Image
 
 
-class Photo(db.Model, File, Base):
-
-    is_empty = db.Column(db.Boolean, default=True)
-    replacement = db.Column(db.String(2048))
+class Photo(File):
 
     def save(self, file, d=(256, 256), path=None):
         image = Image.open(file)
@@ -33,6 +30,10 @@ class Photo(db.Model, File, Base):
         if not self.is_empty:
             return super(Photo, self).src
         return self.replacement
+
+    @property
+    def replacement(self):
+        return ""
 
     def __repr__(self):
         return "<Picture {}>".format(self.filename)

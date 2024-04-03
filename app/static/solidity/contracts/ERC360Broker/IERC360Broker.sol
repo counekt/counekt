@@ -1,4 +1,5 @@
 pragma solidity ^0.8.20;
+import {ERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @dev Required interface of an ERC360Broker compliant contract.

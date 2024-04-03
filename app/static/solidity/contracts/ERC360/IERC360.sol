@@ -21,9 +21,9 @@ interface IERC360 {
 
     /**
      * @dev Emitted when the current balance of an `account` is tied to
-     * a new `tokenId`.
+     * a new `shardId`.
      */
-    event NewTokenId(address account, uint256 tokenId);
+    event NewShard(address account, uint256 shardId);
 
     /**
      * @dev Moves an `amount` of tokens from the caller's account to `to`.
@@ -89,23 +89,23 @@ interface IERC360 {
     function currentClock() external view returns (uint256);
 
     /**
-     * @dev Returns the owner of the `tokenId` token.
+     * @dev Returns the owner of the `shardId` token.
      *
      * Requirements:
      *
-     * - `tokenId` must exist.
+     * - `shardId` must exist.
      */
-    function ownerOf(uint256 tokenId) external view returns (address owner);
+    function ownerOf(uint256 shardId) external view returns (address owner);
 
     /**
-     * @dev Returns the amount tied to the ``tokenId``.
+     * @dev Returns the amount tied to the ``shardId``.
      */
-    function amountOf(uint256 tokenId) external view returns (uint256 amount);
+    function amountOf(uint256 shardId) external view returns (uint256 amount);
 
     /**
-     * @dev Returns the current tokenId tied to an ``account``.
+     * @dev Returns the current shard with `shardId` tied to an ``account``.
      */
-    function tokenIdOf(address account) external view returns (uint256 tokenId);
+    function shardIdOf(address account) external view returns (uint256 shardId);
 
 
     /**
@@ -114,32 +114,32 @@ interface IERC360 {
     function balanceOf(address account) external view returns (uint256 balance);
     
     /**
-     * @dev Returns true if the `tokenId` is currently valid.
+     * @dev Returns true if the shard with `shardId` is currently valid.
      *
      * Requirements:
      *
-     * - `tokenId` must exist.
+     * - `shardId` must exist.
      */
-    function isValid(uint256 tokenId) external view returns(bool);
+    function isValid(uint256 shardId) external view returns(bool);
 
 
     /**
-     * @dev Returns true if the `tokenId` was valid at 'clock'.
+     * @dev Returns true if the shard with `shardId` was valid at 'clock'.
      *
      * Requirements:
      *
-     * - `tokenId` must exist.
+     * - `shardId` must exist.
      */
-    function wasValid(uint256 tokenId, uint256 clock) external view returns(bool);
+    function wasValid(uint256 shardId, uint256 clock) external view returns(bool);
 
 
 
     /**
-     * @dev Returns the clock at which a ``tokenId`` expired.
+     * @dev Returns the clock at which a shard with ``shardId`` expired.
      * 
      * Requirements:
      *
-     * - `tokenId` must exist.
+     * - `shardId` must exist.
      */
-    function expirationOf(uint256 tokenId) external view returns (uint256 expiration);
+    function expirationOf(uint256 shardId) external view returns (uint256 expiration);
 }

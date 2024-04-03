@@ -3,7 +3,6 @@ import app.funcs as funcs
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from app.models.static.photo import Photo
 from app.models.base import Base
-from app.models.location_base import LocationBase
 from flask import url_for
 import app.models as models
 import json
@@ -12,15 +11,7 @@ from app.models.profile.wallet import _permits
 import math
 from markupsafe import Markup
 
-class ERC360(db.Model, Base, LocationBase):
-
-    def __init__(self,creator,address,block,**kwargs):
-        super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
-        self.address = address
-        self.timeline_last_updated_at = block
-        models.Permit.create_initial_permits(self,creator)
-        # do custom initialization here
-        self.photo = Photo(filename="photo", path=f"static/erc360s/{address}/photo/", replacement="/static/images/erc360.jpg")
+class ERC360(db.Model, Base):
 
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     active = db.Column(db.Boolean,default=True)
@@ -30,7 +21,7 @@ class ERC360(db.Model, Base, LocationBase):
     total_supply = db.Column(db.Integer, default=0) # Total Amount of tokens
 
     timeline_last_updated_at = db.Column(db.Integer) # ETH block number
-    token_ids_last_updated_at = db.Column(db.Integer) # ETH block number
+    shards_last_updated_at = db.Column(db.Integer) # ETH block number
     bank_exchanges_last_updated_at = db.Column(db.Integer) # ETH block number
     dividend_claims_last_updated_at = db.Column(db.Integer) # ETH block number
     referendum_votes_last_updated_at = db.Column(db.Integer) # ETH block number
@@ -44,13 +35,16 @@ class ERC360(db.Model, Base, LocationBase):
     photo_id = db.Column(db.Integer, db.ForeignKey('photo.id', ondelete="cascade"))
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship("Location", foreign_keys=[location_id])
+
     events = db.relationship(
         'Event', backref='erc360', lazy='dynamic',
         foreign_keys='Event.erc360_id', order_by="Event.timestamp", passive_deletes=True)
 
-    token_ids = db.relationship(
-        'ERC360TokenId', backref='erc360', lazy='dynamic',
-        foreign_keys='ERC360TokenId.erc360_id',order_by="ERC360TokenId.token_id",passive_deletes=True)
+    shards = db.relationship(
+        'ERC360Shard', backref='erc360', lazy='dynamic',
+        foreign_keys='ERC360Shard.erc360_id',order_by="ERC360Shard.identifier",passive_deletes=True)
 
     dividends = db.relationship(
         'Dividend', backref='erc360', lazy='dynamic',
@@ -71,6 +65,14 @@ class ERC360(db.Model, Base, LocationBase):
     @hybrid_property
     def bank_events(self):
         return self.events.filter(models.Event.is_bank_event() == True)
+
+    def __init__(self,creator,address,block,**kwargs):
+        super(ERC360, self).__init__(**{k: kwargs[k] for k in kwargs})
+        self.address = address
+        self.timeline_last_updated_at = block
+        models.Permit.create_initial_permits(self,creator)
+        # do custom initialization here
+        self.photo = Photo(filename="photo", path=f"static/erc360s/{address}/photo/", replacement="/static/images/erc360.jpg")
 
     def get_timeline(self):
         return [e.payload for e in self.events]
@@ -149,7 +151,7 @@ class ERC360(db.Model, Base, LocationBase):
                 timestamp = w3.eth.getBlock(ntid.blockNumber).timestamp
                 # REGISTER OLD TOKEN-IDS OF ACCOUNT AS EXPIRED
                 wallet = models.Wallet.get_or_register(address=ntid.args.account)
-                non_expired = self.token_ids.filter(models.ERC360TokenId.wallet_id == wallet.id, models.ERC360TokenId.is_expired != True)
+                non_expired = self.token_ids.filter(models.ERC360Shard.wallet_id == wallet.id, models.ERC360Shard.is_expired != True)
                 for ne in non_expired:
                     exp = contract.functions.expirationOf(ne.token_id).call()
                     ne.expire(exp) # FAILS TO ACCOUNT FOR MULTIPLE EXPS AT ONCE
@@ -159,7 +161,7 @@ class ERC360(db.Model, Base, LocationBase):
                 # REGISTER NEW TOKEN-ID
                 amount = contract.functions.amountOf(ntid.args.tokenId).call()
                 print(f"\nTOKEN ID: {ntid.args.tokenId}\n")
-                token_id = models.ERC360TokenId(token_id=ntid.args.tokenId,wallet=wallet,amount=amount)
+                token_id = models.ERC360Shard(token_id=ntid.args.tokenId,wallet=wallet,amount=amount)
                 token_id.creation_timestamp = timestamp
                 self.token_ids.append(token_id)
 
@@ -182,9 +184,9 @@ class ERC360(db.Model, Base, LocationBase):
         new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.dividend_claims_last_updated_at or self.block)
         for nc in new_claims:
             dividend = self.dividends.filter_by(clock=nc.args.dividendClock).first()
-            token_id = self.token_ids.filter(models.ERC360TokenId.owner.has(address=nc.args.by)).first()
+            token_id = self.token_ids.filter(models.ERC360Shard.owner.has(address=nc.args.by)).first()
             if not dividend or not token_id:
-                raise Exception("Dividend or ERC360TokenId does not exist...")
+                raise Exception("Dividend or ERC360Shard does not exist...")
             claim = models.DividendClaim.filter_by(dividend=dividend,token_id=token_id).first()
             if not claim:
                 claim = models.DividendClaim(value=nc.args.value)
@@ -197,9 +199,9 @@ class ERC360(db.Model, Base, LocationBase):
         new_votes = contract.events.VoteCast.getLogs(fromBlock=self.referendum_votes_last_updated_at or self.block)
         for nv in new_votes:
             referendum = self.referendums.filter_by(clock=nv.args.referendumClock).first()
-            token_id = self.token_ids.filter(models.ERC360TokenId.owner.has(address=nv.args.by)).first()
+            token_id = self.token_ids.filter(models.ERC360Shard.owner.has(address=nv.args.by)).first()
             if not referendum or not token_id:
-                raise Exception("Referendum or ERC360TokenId does not exist...")
+                raise Exception("Referendum or ERC360Shard does not exist...")
             vote = models.Vote.filter_by(referendum=referendum,token_id=token_id).first()
             if not vote:
                 vote = models.Vote(token_id=token_id, in_favor=nv.args.favor)
@@ -221,11 +223,11 @@ class ERC360(db.Model, Base, LocationBase):
         return contract
 
     def get_token_id_by_clock(self,account,clock):
-        return self.token_ids.filter(models.ERC360TokenId.wallet.has(address=account)).filter(models.ERC360TokenId.token_id <= self.current_clock < models.ERC360TokenId.expiration_clock).first() 
+        return self.token_ids.filter(models.ERC360Shard.wallet.has(address=account)).filter((models.ERC360Shard.identifier <= self.current_clock < models.ERC360Shard.expiration_clock) or not models.ERC360Shard.expiration_clock).first() 
 
     @hybrid_property
     def current_token_ids(self):
-        return self.token_ids.filter(models.ERC360TokenId.is_expired != True).order_by(models.ERC360TokenId.amount.desc()) if self.token_ids.first() else []
+        return self.token_ids.filter(models.ERC360Shard.is_expired != True).order_by(models.ERC360Shard.amount.desc()) if self.token_ids.first() else []
 
     @property
     def href(self):
