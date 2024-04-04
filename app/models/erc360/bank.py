@@ -39,17 +39,17 @@ class Bank(db.Model, Base):
 		return bank
 
 	def register_token(self,address,symbol=None,name=None):
-		token_amount = self.token_amounts.filter(Token.address==address,Token.id==BankTokenAmount.token_id).first()
+		token_amount = self.token_amounts.filter(Token.address==address,Token.id==TokenAmount.token_id).first()
 		if not token_amount:
 			token = Token.get_or_register(address=address,symbol=symbol,name=name)
-			token_amount = BankTokenAmount()
+			token_amount = TokenAmount()
 			token_amount.token = token
 			self.token_amounts.append(token_amount)
-		return token_amount		
+		return token_amount
 
 
 	def add_amount(self,amount,token):
-		BankTokenAmount.get_or_register(self,token).amount += amount
+		TokenAmount.get_or_register_at_bank(self,token).amount += amount
 
 	def subtract_amount(self,amount,token):
 		self.add_amount(-amount,token)
@@ -75,6 +75,22 @@ class TokenAmount(db.Model,Base):
 	def token(self):
 		return db.relationship("Token",foreign_keys=[self.token_id])
 
+	@classmethod
+	def get_or_register_at_bank(cls,bank,token,symbol=None,name=None):
+		token_amount = cls.query.filter(cls.bank==bank,Token.address==token,Token.id==cls.token_id).first()
+		if not token_amount:
+			token = Token.get_or_register(address=token,symbol=symbol,name=name)
+			token_amount = cls()
+			token_amount.token = token
+			bank.token_amounts.append(token_amount)
+		return token_amount
+
+	def __init__(self,**kwargs):
+		super(TokenAmount, self).__init__(**{k: kwargs[k] for k in kwargs})
+		# do custom initialization here
+		db.session.add(self)
+		self.amount = 0
+
 	@hybrid_property
 	def min_amount_in_decimals(self):
 		return '0.'+'0'*(self.decimals-1)+'1' if self.decimals > 0 else '1'
@@ -97,26 +113,6 @@ class TokenAmount(db.Model,Base):
 
 	def __repr__(self):
 		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")
-
-
-class BankTokenAmount(TokenAmount):
-
-	def __init__(self,**kwargs):
-		super(BankTokenAmount, self).__init__(**{k: kwargs[k] for k in kwargs})
-		# do custom initialization here
-		db.session.add(self)
-		self.amount = 0
-
-	@classmethod
-	def get_or_register(cls,bank,token,symbol=None,name=None):
-		token_amount = cls.query.filter(cls.bank==bank,Token.address==token,Token.id==cls.token_id).first()
-		if not token_amount:
-			token = Token.get_or_register(address=token,symbol=symbol,name=name)
-			token_amount = cls()
-			token_amount.token = token
-			bank.token_amounts.append(token_amount)
-			print(token_amount)
-		return token_amount
 
 
 class Token(db.Model,Base):

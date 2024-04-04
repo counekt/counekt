@@ -4,18 +4,18 @@
     console.log("Loading chart");
 
   const ctx = document.getElementById('erc360-ownership-chart');
-  {% set current_token_ids = erc360.current_token_ids %}
+  {% set current_shards = erc360.current_shards %}
   new Chart(ctx, {
     type: 'pie',
     data: {
   labels: [
-    {% for t_id in current_token_ids %}'{{t_id.wallet.representation}}',{% endfor %}
+    {% for shard in current_shards %}'{{shard.wallet.representation}}',{% endfor %}
   ],
   datasets: [{
     label: 'Amount',
-    data: [{% for t_id in current_token_ids %}{{t_id.amount}},{% endfor %}],
+    data: [{% for shard in current_shards %}{{shard.amount}},{% endfor %}],
     backgroundColor: [
-      {% for t_id in current_token_ids %}'rgb(255, 205, 86)',{% endfor %}
+      {% for shard in current_shards %}'rgb(255, 205, 86)',{% endfor %}
     ],
     hoverOffset: 4
   }]

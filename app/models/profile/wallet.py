@@ -53,14 +53,14 @@ class Wallet(db.Model, Base):
         .join(models.Wallet, models.Wallet.id == _permits.c.wallet_id)
 
     @property
-    def erc360s_from_token_ids(self):
+    def erc360s_from_shards(self):
         return models.ERC360.query\
-        .join(models.ERC360TokenId,models.ERC360TokenId.erc360_id == models.ERC360.id)\
-        .join(models.Wallet, models.Wallet.id == models.ERC360TokenId.wallet_id)
+        .join(models.ERC360Shard,models.ERC360Shard.erc360_id == models.ERC360.id)\
+        .join(models.Wallet, models.Wallet.id == models.ERC360Shard.wallet_id)
 
     @property
     def erc360s(self):
-        return self.erc360s_from_token_ids.union(self.erc360s_from_permits)
+        return self.erc360s_from_shards.union(self.erc360s_from_permits)
 
     @property
     def etherscan_url(self):
