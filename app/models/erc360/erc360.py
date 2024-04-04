@@ -73,6 +73,7 @@ class ERC360(db.Model, Base):
         models.Permit.create_initial_permits(self,creator)
         # do custom initialization here
         self.photo = Photo(filename="photo", path=f"static/erc360s/{address}/photo/", replacement="/static/images/erc360.jpg")
+        self.location = models.Location()
 
     def get_timeline(self):
         return [e.payload for e in self.events]
@@ -144,14 +145,14 @@ class ERC360(db.Model, Base):
     def update_ownership(self):
         contract = self.get_w3_contract()
         # Register new token id's
-        updated_token_ids = contract.events.NewTokenId.getLogs(fromBlock=self.token_ids_last_updated_at or self.block)
-        for ntid in updated_token_ids:
+        updated_shards = contract.events.NewTokenId.getLogs(fromBlock=self.shards_last_updated_at or self.block)
+        for ntid in updated_shards:
             # IF NOT ALREADY THERE
-            if not self.token_ids.filter_by(token_id=ntid.args.tokenId).first():
+            if not self.shards.filter_by(token_id=ntid.args.tokenId).first():
                 timestamp = w3.eth.getBlock(ntid.blockNumber).timestamp
                 # REGISTER OLD TOKEN-IDS OF ACCOUNT AS EXPIRED
                 wallet = models.Wallet.get_or_register(address=ntid.args.account)
-                non_expired = self.token_ids.filter(models.ERC360Shard.wallet_id == wallet.id, models.ERC360Shard.is_expired != True)
+                non_expired = self.shards.filter(models.ERC360Shard.wallet_id == wallet.id, models.ERC360Shard.is_expired != True)
                 for ne in non_expired:
                     exp = contract.functions.expirationOf(ne.token_id).call()
                     ne.expire(exp) # FAILS TO ACCOUNT FOR MULTIPLE EXPS AT ONCE
@@ -163,10 +164,10 @@ class ERC360(db.Model, Base):
                 print(f"\nTOKEN ID: {ntid.args.tokenId}\n")
                 token_id = models.ERC360Shard(token_id=ntid.args.tokenId,wallet=wallet,amount=amount)
                 token_id.creation_timestamp = timestamp
-                self.token_ids.append(token_id)
+                self.shards.append(token_id)
 
-            if ntid.blockNumber > int(self.token_ids_last_updated_at or self.block):
-                self.token_ids_last_updated_at = ntid.blockNumber
+            if ntid.blockNumber > int(self.shards_last_updated_at or self.block):
+                self.shards_last_updated_at = ntid.blockNumber
             
         # For reference to decide which token id's are currently valid and which ones aren't
         self.current_clock = contract.functions.currentClock().call()
@@ -184,7 +185,7 @@ class ERC360(db.Model, Base):
         new_claims = contract.events.DividendClaimed.getLogs(fromBlock=self.dividend_claims_last_updated_at or self.block)
         for nc in new_claims:
             dividend = self.dividends.filter_by(clock=nc.args.dividendClock).first()
-            token_id = self.token_ids.filter(models.ERC360Shard.owner.has(address=nc.args.by)).first()
+            token_id = self.shards.filter(models.ERC360Shard.owner.has(address=nc.args.by)).first()
             if not dividend or not token_id:
                 raise Exception("Dividend or ERC360Shard does not exist...")
             claim = models.DividendClaim.filter_by(dividend=dividend,token_id=token_id).first()
@@ -199,7 +200,7 @@ class ERC360(db.Model, Base):
         new_votes = contract.events.VoteCast.getLogs(fromBlock=self.referendum_votes_last_updated_at or self.block)
         for nv in new_votes:
             referendum = self.referendums.filter_by(clock=nv.args.referendumClock).first()
-            token_id = self.token_ids.filter(models.ERC360Shard.owner.has(address=nv.args.by)).first()
+            token_id = self.shards.filter(models.ERC360Shard.owner.has(address=nv.args.by)).first()
             if not referendum or not token_id:
                 raise Exception("Referendum or ERC360Shard does not exist...")
             vote = models.Vote.filter_by(referendum=referendum,token_id=token_id).first()
@@ -222,12 +223,12 @@ class ERC360(db.Model, Base):
         contract = w3.eth.contract(address=self.address,abi=funcs.get_abi())
         return contract
 
-    def get_token_id_by_clock(self,account,clock):
-        return self.token_ids.filter(models.ERC360Shard.wallet.has(address=account)).filter((models.ERC360Shard.identifier <= self.current_clock < models.ERC360Shard.expiration_clock) or not models.ERC360Shard.expiration_clock).first() 
+    def get_shard_by_clock(self,account,clock):
+        return self.shards.filter(models.ERC360Shard.wallet.has(address=account)).filter((models.ERC360Shard.identifier <= self.current_clock < models.ERC360Shard.expiration_clock) or not models.ERC360Shard.expiration_clock).first() 
 
     @hybrid_property
-    def current_token_ids(self):
-        return self.token_ids.filter(models.ERC360Shard.is_expired != True).order_by(models.ERC360Shard.amount.desc()) if self.token_ids.first() else []
+    def current_shards(self):
+        return self.shards.filter(models.ERC360Shard.is_expired != True).order_by(models.ERC360Shard.amount.desc()) if self.shards.first() else []
 
     @property
     def href(self):
@@ -253,7 +254,10 @@ class ERC360(db.Model, Base):
         mantissa, exponent = '{:.2e}'.format(total_supply).split('e')
         return Markup(f"{math.floor(float(mantissa)*100)/100} x 10<sup>{int(exponent)}</sup>");
 
-
+    @classmethod
+    def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
+        query = cls.query.join(models.Location).filter(models.Location.is_in_explore_query(latitude, longitude, radius))
+        return query
 
     def __repr__(self):
         return "<ERC360 {}>".format(self.address)

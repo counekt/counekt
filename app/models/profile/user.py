@@ -173,7 +173,7 @@ class User(UserMixin, db.Model, Base):
 
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
-        query = super().get_explore_query(latitude,longitude,radius)
+        query = cls.query.join(models.Location).filter(models.Location.is_in_explore_query(latitude, longitude, radius))
 
         if skill:
             query = query.filter(cls.skills.any(Skill.title == skill))

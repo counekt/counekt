@@ -74,8 +74,8 @@ def map():
         users = query.all()
 
         loc = {"lat": location.latitude, "lng": location.longitude, "zoom": funcs.get_zoom_from_rad(radius)}
-        users_info = [{"username": u.username, "photo": u.photo.src, "name": u.name if u.name else u.username, "lat": u.latitude, "lng": u.longitude} for u in users]
-        erc360s_info = [{"address": e.address, "photo": e.photo.src, "name": e.name, "symbol": e.symbol, "lat": e.latitude, "lng": e.longitude} for e in erc360s]
+        users_info = [{"username": u.username, "photo": u.photo.src, "name": u.name if u.name else u.username, "lat": u.location.latitude, "lng": u.location.longitude} for u in users]
+        erc360s_info = [{"address": e.address, "photo": e.photo.src, "name": e.name, "symbol": e.symbol, "lat": e.location.latitude, "lng": e.location.longitude} for e in erc360s]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'users_info': users_info, 'erc360s_info':erc360s_info, 'loc': loc})
 
     return render_template("map.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)

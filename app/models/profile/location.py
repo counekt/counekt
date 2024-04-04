@@ -28,10 +28,13 @@ class Location(db.Model, Base):
 
         return location
 
+    @ hybrid_method
+    def is_in_explore_query(cls, latitude, longitude, radius):
+        return cls.is_nearby(latitude, longitude, radius) & (cls.show == True) & (cls.is_visible == True)
+
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius):
-        query = cls.query.filter(cls.is_nearby(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
-        query = query.filter(cls.show == True, cls.is_visible == True)
+        query = cls.query.filter(cls.is_in_explore_query(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
         return query
 
     @ hybrid_method
