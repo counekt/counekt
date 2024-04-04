@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Authentication Token Expired{% endblock %}
+{% block content %}
+  <p class="title is-3">410 Authentication Token Expired</p>
+  <p class="subtitle is-4"><i>Authentication Token: </i><b class="subtitle is-4 is-family-code">{{auth_token}}</b></p>
+  <p class="subtitle is-4">The specified authentication token has either expired or is invalid.</p>
+
+  <p class="subtitle is-5 has-text-weight-bold"><a href="{{ url_for('auth.login') }}">Back</a></p>
+{% endblock %}

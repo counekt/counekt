@@ -6,6 +6,8 @@ from PIL import Image
 
 class Photo(File):
 
+    __tablename__ = "file"
+
     def save(self, file, d=(256, 256), path=None):
         image = Image.open(file)
         new_image = image.resize((256, 256), Image.ANTIALIAS)
@@ -31,9 +33,5 @@ class Photo(File):
             return super(Photo, self).src
         return self.replacement
 
-    @property
-    def replacement(self):
-        return ""
-
     def __repr__(self):
-        return "<Picture {}>".format(self.filename)
+        return "<Photo {}>".format(self.filename or self.replacement)

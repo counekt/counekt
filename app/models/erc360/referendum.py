@@ -64,7 +64,7 @@ class Vote(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	referendum_id = db.Column(db.Integer, db.ForeignKey('referendum.id', ondelete='CASCADE'))
 	erc360_shard_id = db.Column(db.Integer, db.ForeignKey('erc360_shard.id', ondelete='CASCADE')) 
-	erc360_shard = db.relationship("ERC360Shard", foreign_keys=[erc360_token_id_id]) # the shard used to claim dividend
+	erc360_shard = db.relationship("ERC360Shard", foreign_keys=[erc360_shard_id]) # the shard used to claim dividend
 	in_favor = db.Column(db.Boolean) # states if in favor or not
 
 	def __repr__(self):

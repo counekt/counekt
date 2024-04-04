@@ -43,7 +43,7 @@ class User(UserMixin, db.Model, Base):
 
     photo_id = db.Column(db.Integer, db.ForeignKey('file.id'))
 
-    photo = db.relationship("File", foreign_keys=[photo_id])
+    photo = db.relationship("Photo", foreign_keys=[photo_id])
 
     main_wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id'))
     _main_wallet = db.relationship("Wallet", foreign_keys=[main_wallet_id])
@@ -69,10 +69,6 @@ class User(UserMixin, db.Model, Base):
     notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
 
-    memberships = db.relationship(
-        'Membership', lazy='dynamic',
-        foreign_keys='Membership.owner_id', backref="owner", cascade='all,delete')
-    
     @property
     def main_wallet(self):
         return self._main_wallet or self.wallets.first()
@@ -82,6 +78,7 @@ class User(UserMixin, db.Model, Base):
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
         self.photo = models.Photo(path=f"static/profile/{self.username}/photo/", replacement=self.gravatar)
+        self.location = models.Location()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -92,6 +89,9 @@ class User(UserMixin, db.Model, Base):
     def set_birthdate(self, birthdate):
         self.birthdate = birthdate
         return birthdate
+
+    def set_location(self, location):
+        self.location.set(location)
 
     def register_wallet(self,address):
         wallet = models.Wallet.query.filter_by(address=address).first()

@@ -10,7 +10,7 @@ class Notification(db.Model, Base):
     seen = db.Column(db.Boolean, default=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     receiver = db.relationship("User", foreign_keys=[receiver_id])
-    timestamp = db.Column(db.Float, index=True, default=time)
+    timestamp = db.Column(db.DateTime, index=True, default=time)
     payload_json = db.Column(db.Text)
 
     @property

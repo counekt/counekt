@@ -11,13 +11,13 @@ class Dividend(db.Model, Base):
 		self.token_residual = TokenAmount(token=Token.register(token_address),amount=amount)
 	
 	id = db.Column(db.Integer, primary_key=True)
-	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
 	clock = db.Column(db.BigInteger) # clock
 	identifier = db.Column(db.Integer) # event id, used for identification
-	token_amount_id = db.Column(db.Integer, db.ForeignKey('token_amount.id', ondelete='CASCADE'))
-	token_residual_id = db.Column(db.Integer, db.ForeignKey('token_amount.id', ondelete='CASCADE'))
-	token_amount = db.relationship("TokenAmount", foreign_keys=[token_amount_id])
-	token_residual = db.relationship("TokenAmount", foreign_keys=[token_residual_id])
+	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
+	initial_token_amount_id = db.Column(db.Integer, db.ForeignKey('token_amount.id'))
+	residual_token_amount_id = db.Column(db.Integer, db.ForeignKey('token_amount.id'))
+	initial_token_amount = db.relationship("TokenAmount", foreign_keys=[initial_token_amount_id])
+	residual_token_amount = db.relationship("TokenAmount", foreign_keys=[residual_token_amount_id])
 	claims = db.relationship(
         'DividendClaim', lazy='dynamic',
         foreign_keys='DividendClaim.dividend_id', passive_deletes=True, backref="dividend")
@@ -34,7 +34,7 @@ class DividendClaim(db.Model, Base):
 	dividend_id = db.Column(db.Integer, db.ForeignKey('dividend.id', ondelete='CASCADE'))
 	token_amount_id = db.Column(db.Integer, db.ForeignKey('token_amount.id', ondelete='CASCADE'))
 	token_amount = db.relationship("TokenAmount", foreign_keys=[token_amount_id])
-	erc360_shard_id = db.Column(db.Integer, db.ForeignKey('erc360_token_id.id', ondelete='CASCADE')) 
+	erc360_shard_id = db.Column(db.Integer, db.ForeignKey('erc360_shard.id', ondelete='CASCADE')) 
 	erc360_shard = db.relationship("ERC360Shard", foreign_keys=[erc360_shard_id]) # shard used to claim dividend
 
 	def __repr__(self):

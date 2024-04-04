@@ -5,6 +5,11 @@ from sqlalchemy import union_all
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 
+bank_token_amounts = db.Table('bank_token_amounts',
+                  db.Column('bank_id', db.Integer, db.ForeignKey('bank.id')),
+                  db.Column('token_amount_id', db.Integer, db.ForeignKey('token_amount.id'))
+                  )
+
 class Bank(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
@@ -14,9 +19,8 @@ class Bank(db.Model, Base):
 	permit_id = db.Column(db.Integer, db.ForeignKey('permit.id'))
 	permit = db.relationship("Permit",foreign_keys=[permit_id])
 
-	token_amounts = db.relationship(
-        'BankTokenAmount', lazy='dynamic',
-        foreign_keys='BankTokenAmount.bank_id', backref="bank", passive_deletes=True, cascade="all, delete")
+
+	token_amounts = db.relationship('TokenAmount', secondary=bank_token_amounts, lazy='dynamic')
 
 	def __init__(self,**kwargs):
 		super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
@@ -57,8 +61,7 @@ class Bank(db.Model, Base):
 	def __repr__(self):
 		return '<Bank {}>'.format(self.name)
 
-class TokenAmount(Base):
-
+class TokenAmount(db.Model,Base):
 
 	id = db.Column(db.Integer, primary_key=True)
 
@@ -96,7 +99,7 @@ class TokenAmount(Base):
 		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")
 
 
-class BankTokenAmount(db.Model, TokenAmount):
+class BankTokenAmount(TokenAmount):
 
 	def __init__(self,**kwargs):
 		super(BankTokenAmount, self).__init__(**{k: kwargs[k] for k in kwargs})
@@ -115,7 +118,6 @@ class BankTokenAmount(db.Model, TokenAmount):
 			print(token_amount)
 		return token_amount
 
-	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
 
 class Token(db.Model,Base):
 	id = db.Column(db.Integer, primary_key=True)

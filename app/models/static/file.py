@@ -5,14 +5,16 @@ from flask import url_for
 import app.funcs as funcs
 from flask import current_app
 from datetime import datetime
-from app import db
+from app.models.base import Base
 
 
 class File(db.Model,Base):
+    __tablename__ = "file"
+
     id = db.Column(db.Integer, primary_key=True)
+    replacement = db.Column(db.String)
     filename = db.Column(db.String)
     path = db.Column(db.String(2048))
-
     is_empty = db.Column(db.Boolean, default=True)
 
     def save_locally(self, file_format):

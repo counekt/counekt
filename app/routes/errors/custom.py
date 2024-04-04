@@ -6,10 +6,10 @@ from app.routes.api.errors import error_response as api_error_response
 from flask import current_app
 
 
-def token_is_expired_error(token):
+def auth_token_is_expired_error(auth_token):
     if wants_json_response():
-        return api_error_response(410, message=f"Token Expired: {token}\nThe specified token has either expired or is invalid.")
-    return render_template('errors/token-is-expired.html', token=token, navbar=True, frame=True), 410
+        return api_error_response(410, message=f"Token Expired: {auth_token}\nThe specified authentication token has either expired or is invalid.")
+    return render_template('errors/auth-token-is-expired.html', auth_token=auth_token, navbar=True, frame=True), 410
 
 
 def email_not_sent_error(e):

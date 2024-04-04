@@ -3,21 +3,23 @@ import app.funcs as funcs
 from sqlalchemy import func, inspect
 import math
 from sqlalchemy.ext.hybrid import hybrid_method
+from app.models.base import Base
 
 
 class Location(db.Model, Base):
-    location_address = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    address = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     sin_rad_lat = db.Column(db.Float)
     cos_rad_lat = db.Column(db.Float)
     rad_lng = db.Column(db.Float)
-    show_location = db.Column(db.Boolean, default=False)
+    show = db.Column(db.Boolean, default=False)
     is_visible = db.Column(db.Boolean, default=False)
 
-    def set_location(self, location):
+    def set(self, location):
         if location:
-            self.location_address = funcs.shorten_addr(location=location)
+            self.address = funcs.shorten_addr(location=location)
             self.latitude = location.latitude
             self.longitude = location.longitude
             self.sin_rad_lat = math.sin(math.pi * location.latitude / 180)
@@ -29,7 +31,7 @@ class Location(db.Model, Base):
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius):
         query = cls.query.filter(cls.is_nearby(latitude=float(latitude), longitude=float(longitude), radius=float(radius)))
-        query = query.filter(cls.show_location == True, cls.is_visible == True)
+        query = query.filter(cls.show == True, cls.is_visible == True)
         return query
 
     @ hybrid_method

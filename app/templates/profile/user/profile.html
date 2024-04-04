@@ -199,9 +199,10 @@ $("#connect-button").hover(
 </script>
 <script type="text/javascript">
   var username = "{{user.username}}";
-  var has_marker = {% if user.latitude and user.longitude %}true{% else %}false{% endif %};
-  var mapLatLng = {% if user.latitude and user.longitude %}[{{user.latitude}}, {{user.longitude}}]{% else %}[55.676111, 12.568333]{% endif %};
-  var mapZoom = {% if user.latitude and user.longitude %}12{% else %}2{% endif %};
+  var has_marker = {% if user.location.latitude and user.location.longitude %}true{% else %}false{% endif %};
+  var mapLatLng = {% if user.latitude and user.longitude %}[{{user.location.latitude}}, {{user.location.longitude}}]{% else %}[55.676111, 12.568333]{% endif %};
+  var mapZoom = {% if user.location.latitude and user.location.longitude %}12{% else %}2{% endif %};
+  $('#location-field').val("{% if user.location.address %}{{user.location.address}}{% else %}{% endif %}")
 
   function load_map_js() {
   var map = L.map('map').setView(mapLatLng, mapZoom);

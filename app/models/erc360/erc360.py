@@ -32,7 +32,7 @@ class ERC360(db.Model, Base):
     description = db.Column(db.String)
     public = db.Column(db.Boolean, default=False)
 
-    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id', ondelete="cascade"))
+    photo_id = db.Column(db.Integer, db.ForeignKey('file.id', ondelete="cascade"))
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
