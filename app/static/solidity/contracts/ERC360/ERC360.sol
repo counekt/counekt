@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.20;
 
 import {Context} from "node_modules/@openzeppelin/contracts/utils/Context.sol";
@@ -16,12 +14,12 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     using Counters for Counters.Counter;
 
     /// @notice Integer value to implement a concept of time and to distinguish tokens by id's.
-    Counters.Counter _tokenIdClock;
+    Counters.Counter _shardClock;
 
-    /// @notice A struct representing the related info of a semi-fungible Shard token.
+    /// @notice A struct representing the related info of the semi-fungible shard of the ERC360 token.
     /// @param amount Amount that the token represents.
     /// @param owner The owner of the token.
-    struct TokenInfo {
+    struct ShardInfo {
         uint256 amount;
         address owner; 
     }
@@ -35,18 +33,16 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /// @notice Mapping pointing to integer value representing the total amount of tokens on the market, provided the clock.
     mapping(uint256 => uint256) private _totalSupplyByClock;
     
-    /// @notice Mapping pointing to a currently valid tokenId given the address of its owner.
-    mapping(address => uint256) private _currentTokenIdByOwner;
+    /// @notice Mapping pointing to a currently valid shardId given the address of its owner.
+    mapping(address => uint256) private _currentShardIdByOwner;
     
-    /// @notice Mapping pointing to related info of a token given the tokenId.
-    mapping(uint256 => TokenInfo) private _infoByTokenId;
+    /// @notice Mapping pointing to related info of a token given the shardId.
+    mapping(uint256 => ShardInfo) private _infoByShardId;
 
-    // @notice Mapping pointing to an expiration clock given a tokenId.
-    mapping(uint256 => uint256) private _expirationByTokenId;
+    // @notice Mapping pointing to an expiration clock given a shardId.
+    mapping(uint256 => uint256) private _expirationByShardId;
 
     mapping(address => mapping(address => uint256)) private _allowances;
-
-    error ERC360InvalidTokenId(uint256, uint256);
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -86,30 +82,30 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
         return _allowances[owner][spender];
     }
 
-    function ownerOf(uint256 tokenId) public view virtual returns (address) {
-        return _infoByTokenId[tokenId].owner;
+    function ownerOf(uint256 shardId) public view virtual returns (address) {
+        return _infoByShardId[shardId].owner;
     }
 
-    function amountOf(uint256 tokenId) public view virtual returns (uint256) {
-        return _infoByTokenId[tokenId].amount;
+    function amountOf(uint256 shardId) public view virtual returns (uint256) {
+        return _infoByShardId[shardId].amount;
     }
 
-    function tokenIdOf(address account) public view virtual returns (uint256) {
-        return _currentTokenIdByOwner[account]; // if 0, account has never been owner of this token before
+    function shardIdOf(address account) public view virtual returns (uint256) {
+        return _currentShardIdByOwner[account]; // if 0, account has never been owner of this token before
     }
 
     function balanceOf(address account) public view virtual returns (uint256) {
-        return amountOf(tokenIdOf(account));
+        return amountOf(shardIdOf(account));
     }
 
     /// @notice Returns the clock.
     function currentClock() public view returns(uint256) {
-        return _tokenIdClock.current();
+        return _shardClock.current();
     }
 
     /// @notice Returns the clock, in which a shard will or has expired.
-    function expirationOf(uint256 tokenId) public view returns(uint256) {
-        return  _expirationByTokenId[tokenId] > 0 ? _expirationByTokenId[tokenId] : type(uint256).max;
+    function expirationOf(uint256 shardId) public view returns(uint256) {
+        return  _expirationByShardId[shardId] > 0 ? _expirationByShardId[shardId] : type(uint256).max;
     }
 
     /// @notice Returns the supply at.
@@ -123,16 +119,16 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     }
 
     /// @notice Returns a boolean stating if a given shard is currently valid or not.
-    /// @param tokenId The shard, whose validity is to be checked for.
-    function isValid(uint256 tokenId) public view returns(bool) {
-        return currentClock() < expirationOf(tokenId);
+    /// @param shardId The shard, whose validity is to be checked for.
+    function isValid(uint256 shardId) public view returns(bool) {
+        return currentClock() < expirationOf(shardId);
     }
     
-    /// @notice Returns a boolean stating if the given tokenId was current at a given clock.
-    /// @param tokenId The token whose validity is to be checked for.
+    /// @notice Returns a boolean stating if the given shard was current at a given clock.
+    /// @param shardId The token whose validity is to be checked for.
     /// @param clock The token clock to be checked for.
-    function wasValid(uint256 tokenId, uint256 clock) public view returns(bool) {
-        return tokenId <= clock && clock < expirationOf(tokenId);
+    function wasValid(uint256 shardId, uint256 clock) public view returns(bool) {
+        return shardId <= clock && clock < expirationOf(shardId);
     }
 
     /// @notice Approves the allowance of a certain amount of the sender to a spender
@@ -183,28 +179,28 @@ abstract contract ERC360 is Context, ERC165, IERC360, IERC360Metadata, IERC360Er
     /// @param account The recipient of the newly minted tokens.
     /// @param amount Amount, which will be subtracted from the previous shard and sent to the receiver.
     function _mint(address account, uint256 amount) internal {
-        _update(account,amount+balanceOf(account));
-        _totalSupplyByClock[currentClock()] += amount;
+        _update(account,amount+balanceOf(account)); // dev: increments clock
+        _totalSupplyByClock[currentClock()] += amount; // Update now new total supply
     }
 
     /// @notice Pushes a shard to the registry of currently valid shards.
     /// @param account The owner of the Shard.
-    /// @param amount Amount of the Shard represents.
+    /// @param amount Amount that the Shard represents.
     function _update(address account,uint256 amount) internal {
         if (account == address(0)) {revert ERC360InvalidReceiver(address(0));}
-        _totalSupplyByClock[currentClock()+1] = _totalSupplyByClock[currentClock()]; // forward the total supply to next clock/tokenId
-        _tokenIdClock.increment(); // increment clock/tokenId
-        _expirationByTokenId[tokenIdOf(account)] = currentClock(); // Expire the old token
-        _currentTokenIdByOwner[account] = currentClock();
-        // The static info, amount and owner
-        _infoByTokenId[currentClock()] = TokenInfo({
+        _totalSupplyByClock[currentClock()+1] = _totalSupplyByClock[currentClock()]; // forward the old total supply to next shard clock
+        _shardClock.increment(); // increment shard clock
+        _expirationByShardId[shardIdOf(account)] = currentClock(); // Expire the old token
+        _currentShardIdByOwner[account] = currentClock();
+        // Create new shard with static info; amount and owner
+        _infoByShardId[currentClock()] = ShardInfo({
                                 amount:amount,
                                 owner: account});
-        emit NewTokenId(account,currentClock());
+        emit NewShard(account,currentClock());
     }
 
-    function _requireValidAt(uint256 tokenId, uint256 clock) internal view {
-        if (!wasValid(tokenId,clock)) {revert ERC360InvalidTokenId(tokenId,clock);}
+    function _requireValidAt(uint256 shardId, uint256 clock) internal view {
+        if (!wasValid(shardId,clock)) {revert ERC360InvalidShard(shardId,clock);}
     }
 
 }

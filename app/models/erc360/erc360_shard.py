@@ -3,25 +3,25 @@ import app.models as models
 from app.models.base import Base
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
-class ERC360TokenId(db.Model, Base):
+class ERC360Shard(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
 
 	wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id', ondelete='CASCADE'))
-	wallet = db.relationship("Wallet", foreign_keys=[wallet_id], backref="erc360_token_ids")
+	wallet = db.relationship("Wallet", foreign_keys=[wallet_id], backref="erc360_shards")
 	
 	amount = db.Column(db.Integer) # Amount
 
-	""" Representation as Big Integers will likely run out year 2262, Fri on Apr 11 """
+	""" Representation as Big Integers for Unix Timestamps will likely run out year 2262, Fri on Apr 11 """
 	MAX_INT = 9223372036854775807
 	
 	# Used for representation in accordance to reality
-	creation_timestamp = db.Column(db.BigInteger) # ETH Block push timestamp
-	expiration_timestamp = db.Column(db.BigInteger, default=MAX_INT)
+	creation_timestamp = db.Column(db.BigInteger) # ETH Block push UNIX timestamp
+	expiration_timestamp = db.Column(db.BigInteger) # ETH Block expiration UNIX timestamp
 
 	# Used for representation in accordance to the contract machinery
-	token_id = db.Column(db.BigInteger) # Clock push time and identity
-	expiration_clock = db.Column(db.BigInteger, default=MAX_INT) # Token Id Clock expiration time
+	identifier = db.Column(db.BigInteger) # Clock push time and identity
+	expiration_clock = db.Column(db.BigInteger) # Shard Clock expiration time
 
 	@hybrid_property
 	def share(self):
@@ -33,12 +33,12 @@ class ERC360TokenId(db.Model, Base):
 
 	@hybrid_property
 	def is_expired(self):
-		return self.expiration_clock != self.MAX_INT
+		return self.expiration_clock != None
 
 	def expire(self,clock):
 		self.expiration_clock = min(clock,self.MAX_INT)
 
 
 	def __repr__(self):
-		return '<ERC360TokenId {}>'.format(self.token_id)
+		return '<ERC360Shard {}>'.format(self.identifier)
 

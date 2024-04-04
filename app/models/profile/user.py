@@ -14,7 +14,6 @@ from app import login
 import os
 import app.models as models
 from app.models.base import Base
-from app.models.location_base import LocationBase
 
 
 associates = db.Table('associates',
@@ -27,11 +26,11 @@ followers = db.Table('followers',
                      db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
 
 
-class User(UserMixin, db.Model, Base, LocationBase):
+class User(UserMixin, db.Model, Base):
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     creation_datetime = db.Column(db.DateTime, index=True)
-    token = db.Column(db.String(32), index=True, unique=True)
-    token_expiration = db.Column(db.DateTime)
+    auth_token = db.Column(db.String(32), index=True, unique=True)
+    auth_token_expiration = db.Column(db.DateTime)
     username = db.Column(db.String(120), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     is_activated = db.Column(db.Boolean, default=False)
@@ -42,12 +41,15 @@ class User(UserMixin, db.Model, Base, LocationBase):
     birthdate = db.Column(db.DateTime)
     gender = db.Column(db.String, default="Unspecified")
 
-    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    photo_id = db.Column(db.Integer, db.ForeignKey('file.id'))
 
     photo = db.relationship("Photo", foreign_keys=[photo_id])
 
     main_wallet_id = db.Column(db.Integer, db.ForeignKey('wallet.id'))
     _main_wallet = db.relationship("Wallet", foreign_keys=[main_wallet_id])
+
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship("Location", foreign_keys=[location_id])
 
     skills = db.relationship(
         'Skill', backref='owner', lazy='dynamic',
@@ -67,10 +69,6 @@ class User(UserMixin, db.Model, Base, LocationBase):
     notifications = db.relationship('Notification', back_populates='receiver',
                                     lazy='dynamic', foreign_keys='Notification.receiver_id')
 
-    memberships = db.relationship(
-        'Membership', lazy='dynamic',
-        foreign_keys='Membership.owner_id', backref="owner", cascade='all,delete')
-    
     @property
     def main_wallet(self):
         return self._main_wallet or self.wallets.first()
@@ -80,6 +78,7 @@ class User(UserMixin, db.Model, Base, LocationBase):
         # do custom initialization here
         self.creation_datetime = datetime.utcnow()
         self.photo = models.Photo(path=f"static/profile/{self.username}/photo/", replacement=self.gravatar)
+        self.location = models.Location()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -90,6 +89,9 @@ class User(UserMixin, db.Model, Base, LocationBase):
     def set_birthdate(self, birthdate):
         self.birthdate = birthdate
         return birthdate
+
+    def set_location(self, location):
+        self.location.set(location)
 
     def register_wallet(self,address):
         wallet = models.Wallet.query.filter_by(address=address).first()
@@ -135,35 +137,35 @@ class User(UserMixin, db.Model, Base, LocationBase):
     def is_younger_than(self, age):
         return funcs.is_younger_than(self.birthdate, age)
 
-    def get_token(self, expires_in=600):
+    def get_auth_token(self, expires_in=600):
         now = datetime.utcnow()
-        if self.token and self.token_expiration > now + timedelta(seconds=60):
-            return self.token
-        self.token = base64.b64encode(os.urandom(24)).decode('utf-8').replace('/', '')
-        self.token_expiration = now + timedelta(seconds=expires_in)
+        if self.auth_token and self.auth_token_expiration > now + timedelta(seconds=60):
+            return self.auth_token
+        self.auth_token = base64.b64encode(os.urandom(24)).decode('utf-8').replace('/', '')
+        self.auth_token_expiration = now + timedelta(seconds=expires_in)
         db.session.add(self)
-        return self.token
+        return self.auth_token
 
-    def refresh_token(self, expires_in=600):
+    def refresh_auth_token(self, expires_in=600):
         now = datetime.utcnow()
-        self.token_expiration = now + timedelta(seconds=expires_in)
-        return self.token
+        self.auth_token_expiration = now + timedelta(seconds=expires_in)
+        return self.auth_token
 
-    def revoke_token(self):
+    def revoke_auth_token(self):
         now = datetime.utcnow()
-        self.token_expiration = now
+        self.auth_token_expiration = now
 
     @staticmethod
-    def check_token(token):
-        user = User.query.filter_by(token=token).first()
-        if user is None or user.token_is_expired:
+    def check_auth_token(auth_token):
+        user = User.query.filter_by(auth_token=auth_token).first()
+        if user is None or user.auth_token_is_expired:
             return None
         return user
 
     @hybrid_property
-    def token_is_expired(self):
-        if self.token_expiration:
-            return self.token_expiration < datetime.utcnow()
+    def auth_token_is_expired(self):
+        if self.auth_token_expiration:
+            return self.auth_token_expiration < datetime.utcnow()
         return True
 
     def __repr__(self):
@@ -171,7 +173,7 @@ class User(UserMixin, db.Model, Base, LocationBase):
 
     @classmethod
     def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
-        query = super().get_explore_query(latitude,longitude,radius)
+        query = cls.query.join(models.Location).filter(models.Location.is_in_explore_query(latitude, longitude, radius))
 
         if skill:
             query = query.filter(cls.skills.any(Skill.title == skill))

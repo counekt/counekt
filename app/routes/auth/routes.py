@@ -2,7 +2,7 @@
 from flask import redirect, url_for, render_template, abort, request, current_app
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 import app.routes.auth.funcs as funcs
-from app.routes.errors.custom import token_is_expired_error, email_not_sent_error
+from app.routes.errors.custom import auth_token_is_expired_error, email_not_sent_error
 from app import db, models
 from app.routes.auth import bp
 import json
@@ -10,6 +10,7 @@ from datetime import date
 import smtplib
 
 
+@ bp.route("/signup/")
 @ bp.route("/register/", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -66,12 +67,12 @@ def register():
             user = models.User(username=username, email=email, gender=gender)
             user.set_password(password)
             user.set_birthdate(date(month=int(month), day=int(day), year=int(year)))
+            db.session.add(user)
+            db.session.commit()
             try:
                 funcs.send_auth_email(user=user)
             except smtplib.SMTPException as e:
                 return json.dumps({'status': 'Email not sent', 'msg': 'Error: Email Not Sent', 'display': "flash"})
-            db.session.add(user)
-            db.session.commit()
             return json.dumps({'status': 'success'})
 
         elif step == "finally":
@@ -82,8 +83,8 @@ def register():
             user = models.User.query.filter_by(username=username).first()
             if not user:
                 return json.dumps({'status': 'error'})
-            if user.token_is_expired:
-                return token_is_expired_error(token=user.token)
+            if user.auth_token_is_expired:
+                return auth_token_is_expired_error(auth_token=user.auth_token)
             try:
                 funcs.send_auth_email(user=user)
             except smtplib.SMTPException as e:
@@ -132,16 +133,16 @@ def logout():
     return render_template("auth/logout.html", size="medium")
 
 
-@bp.route('/activate/<token>/', methods=['GET', 'POST'])
-def activate(token):
+@bp.route('/activate/<auth_token>/', methods=['GET', 'POST'])
+def activate(auth_token):
     if current_user.is_authenticated:
         return redirect(url_for('index.index'))
-    user = models.User.check_token(token=token)
+    user = models.User.check_auth_token(auth_token=auth_token)
     print(user)
     if not user:
-        return token_is_expired_error(token=token)
+        return auth_token_is_expired_error(auth_token=auth_token)
     user.is_activated = True
-    user.revoke_token()
+    user.revoke_auth_token()
     db.session.commit()
     login_user(user, remember=True)
     return redirect(url_for('index.index'))

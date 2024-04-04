@@ -1,60 +1,47 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.20;
+import {IERC360} from "../ERC360/IERC360.sol";
+import {ERC360} from "../ERC360/ERC360.sol";
+import {IERC360Broker} from "./IERC360Broker.sol";
+import {IERC360BrokerErrors} from "./IERC360BrokerErrors.sol";
+import {ERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Context} from "node_modules/@openzeppelin/contracts/utils/Context.sol";
+import {Ownable} from "node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
-pragma solidity ^0.8.4;
+/// @title A broker of ERC360 tokens.
+/// @author Frederik W. L. Christoffersen
+abstract contract ERC360Broker is Context, Ownable, IERC360Broker, IERC360BrokerErrors {
 
-import "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+    /// @notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale status
+    mapping(ERC360 => mapping(uint256 => Status)) _statusByToken;
 
-/*
-contract ERC360Broker {
+    /// @notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale 
+    mapping(ERC360 => mapping(uint256 => Sale)) _saleByToken;
 
-    /// @notice An enum representing a Sale State of a Shard.
-    /// @param notForSale The Shard is NOT for sale.
-    /// @param forSale The Shard IS for sale.
-    /// @param sold The Shard has been sold.
-    enum SaleState {
-        notForSale,
-        forSale,
-        sold
+    function statusOf(ERC360 token, uint256 tokenId) public view virtual returns(Status) {
+    	return _statusByToken[token][tokenId];
     }
 
-    /// @notice Mapping pointing to an enum stating whether a given Shard isn't, is for sale, or has been sold.
-    mapping(address => mapping(uint256 => SaleState)) saleStateByShard;
-    
-    /// @notice Mapping pointing to related sale info of a Shard given the bytes of a unique Shard instance.
-    mapping(address => mapping(uint256 => ShardSale)) saleByShard;
-
-    /// @notice Event emitted when a sale of a Shard is sold.
-    /// @param status The enum stating whether the given Shard now isn't, is for sale, or has been sold.
-    /// @param tokenId The shard whose sale state was updated.
-    /// @param sale The sale info reffering to either a listing or a purchase, depending on the status.
-    event SaleStateUpdated(
-        SaleState status,
-        uint256 tokenId,
-        ShardSale sale
-        );
-
-    /// @notice A struct representing the related sale info of a non-fungible Shard token.
-    /// @param amount Amount that is for sale.
-    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    /// @param token The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
-    /// @param to Address pointing to a potentially specifically set buyer of the sale.
-    struct ShardSale {
-        uint256 amount;
-        uint256 price;
-        address token;
-        address to;
+    function saleOf(ERC360 token, uint256 tokenId) public view virtual returns(Sale memory) {
+    	return _saleByToken[token][tokenId];
     }
 
-    /// @notice Puts a given shard for sale.
-    /// @param shardId The shard to be put for sale.
-    /// @param amount Amount of the Shard to be put for sale.
-    /// @param token The address of the token that is accepted when purchasing. A value of 0x0 represents ether.
-    /// @param price The amount which the Shard is for sale as. The token address being the valuta.
-    /// @param to The specifically set buyer of the sale. Open to anyone, if address(0).
-    function putForSale(uint256 amount, address token, uint256 price, address to) public onlyHolder(shard) onlyValidShard(shard) {
-        _putForSale(shard,amount,tokenAddress,price,to);
+    /// @notice Puts a given token for sale.
+    /// @param token The token to be put for sale.
+    /// @param amount Amount of the ERC360 token to be put for sale.
+    /// @param paymentToken The address of the token of payment that is accepted when purchasing. A value of 0x0 represents ether.
+    /// @param price The amount which the token is for sale as. The token address being the valuta.
+    function putForSale(IERC360 token, uint256 amount, IERC20 paymentToken, uint256 price) external {
+        _putForSale(token,amount,paymentToken,price);
     }
 
+    function _putForSale(IERC360 token, uint256 amount, IERC20 paymentToken, uint256 price) internal {
+    	uint256 shardId = token.shardIdOf(_msgSender());
+    	require(token.amountOf(shardId) >= amount);
+    	// ...
+    }
+
+    /*
     /// @notice Cancels a sell of a given shard.
     /// @param shardId The shard to be put off sale.
     function cancelSale(uint256 shardId) public onlyHolder(shard) onlyValidShard(shard) {
@@ -66,7 +53,7 @@ contract ERC360Broker {
     /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'
     /// @param shardId The shard of which a fraction will be purchased.
     function purchase(uint256 shardId, uint256 amount, uint256 price) external payable onlyValidShard(shard) {
-        require(saleStateByShard[shardId]==SaleState.forSale, "NS");
+        require(saleStateByToken[shardId]==SaleState.forSale, "NS");
         require(price == saleByShard[shardId].price, "WP");
         require(amount != 0, "ES");
         require(saleByShard[shardId].amount >= amount, "ES");
@@ -141,8 +128,10 @@ contract ERC360Broker {
         saleStateByShard[shardId] = SaleState.forSale;
         emit SaleStateUpdated(SaleState.forSale,shardId,saleByShard[shardId]);
     }
+    */
 }
 
+/*
 /// @notice Returns the two quotients and the remainder of an uneven division with a fraction. Useful for dividing ether and tokens.
 /// @param dividend The dividend, which will be divided by the fraction.
 /// @param numerator Numerator of fraction, which the dividend will be divided into.
@@ -154,3 +143,4 @@ function divideUnequallyIntoTwoWithRemainder(uint256 dividend, uint256 numerator
     return (quotient1, quotient2, dividend - (quotient1 + quotient2));
 }
 */
+   

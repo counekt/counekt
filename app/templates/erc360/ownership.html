@@ -17,7 +17,7 @@
     </p>
   </header>
   <section id="ownership-content" class="modal-card-body has-text-centered">
-      {% if erc360.token_ids.count() == 0 %}
+      {% if erc360.shards.count() == 0 %}
       <div style="height: 400px;"><p style="height:400px;line-height:400px;">No tokens minted yet...</p></div>
       <canvas id="erc360-ownership-chart" style="visibility:hidden;max-height: 0px !important;"></canvas>
       {% else %}

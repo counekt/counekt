@@ -1,0 +1,1877 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC360",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "contract IERC20",
+          "name": "paymentToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        }
+      ],
+      "name": "putForSale",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ERC360",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "saleOf",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "contract ERC20",
+              "name": "paymentToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IERC360Broker.Sale",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ERC360",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "statusOf",
+      "outputs": [
+        {
+          "internalType": "enum IERC360Broker.Status",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "allSourcePaths": {
+    "0": "contracts/ERC360/ERC360.sol",
+    "1": "contracts/ERC360/IERC360.sol",
+    "14": "contracts/ERC360Broker/ERC360Broker.sol",
+    "15": "contracts/ERC360Broker/IERC360Broker.sol",
+    "16": "contracts/ERC360Broker/IERC360BrokerErrors.sol",
+    "17": "node_modules/@openzeppelin/contracts/access/Ownable.sol",
+    "19": "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
+    "2": "contracts/ERC360/IERC360Errors.sol",
+    "24": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+    "25": "node_modules/@openzeppelin/contracts/utils/Counters.sol",
+    "26": "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol",
+    "27": "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol",
+    "3": "contracts/ERC360/IERC360Metadata.sol"
+  },
+  "ast": {
+    "absolutePath": "contracts/ERC360Broker/ERC360Broker.sol",
+    "exportedSymbols": {
+      "Context": [
+        2912
+      ],
+      "ERC20": [
+        4176
+      ],
+      "ERC360": [
+        588
+      ],
+      "ERC360Broker": [
+        2866
+      ],
+      "IERC20": [
+        3100
+      ],
+      "IERC360": [
+        737
+      ],
+      "IERC360Broker": [
+        2886
+      ],
+      "IERC360BrokerErrors": [
+        2890
+      ],
+      "Ownable": [
+        3589
+      ]
+    },
+    "id": 2867,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2733,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".20"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:14"
+      },
+      {
+        "absolutePath": "contracts/ERC360/IERC360.sol",
+        "file": "../ERC360/IERC360.sol",
+        "id": 2735,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 738,
+        "src": "25:46:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2734,
+              "name": "IERC360",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 737,
+              "src": "33:7:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "contracts/ERC360/ERC360.sol",
+        "file": "../ERC360/ERC360.sol",
+        "id": 2737,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 589,
+        "src": "72:44:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2736,
+              "name": "ERC360",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 588,
+              "src": "80:6:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "contracts/ERC360Broker/IERC360Broker.sol",
+        "file": "./IERC360Broker.sol",
+        "id": 2739,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 2887,
+        "src": "117:50:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2738,
+              "name": "IERC360Broker",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 2886,
+              "src": "125:13:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "contracts/ERC360Broker/IERC360BrokerErrors.sol",
+        "file": "./IERC360BrokerErrors.sol",
+        "id": 2741,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 2891,
+        "src": "168:62:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2740,
+              "name": "IERC360BrokerErrors",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 2890,
+              "src": "176:19:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "file": "node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "id": 2743,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 4177,
+        "src": "231:81:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2742,
+              "name": "ERC20",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 4176,
+              "src": "239:5:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "file": "node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "id": 2745,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 3101,
+        "src": "313:83:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2744,
+              "name": "IERC20",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 3100,
+              "src": "321:6:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+        "file": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+        "id": 2747,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 2913,
+        "src": "397:79:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2746,
+              "name": "Context",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 2912,
+              "src": "405:7:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "node_modules/@openzeppelin/contracts/access/Ownable.sol",
+        "file": "node_modules/@openzeppelin/contracts/access/Ownable.sol",
+        "id": 2749,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 2867,
+        "sourceUnit": 3590,
+        "src": "477:80:14",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2748,
+              "name": "Ownable",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 3589,
+              "src": "485:7:14",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "abstract": true,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 2751,
+              "name": "Context",
+              "nameLocations": [
+                "673:7:14"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 2912,
+              "src": "673:7:14"
+            },
+            "id": 2752,
+            "nodeType": "InheritanceSpecifier",
+            "src": "673:7:14"
+          },
+          {
+            "baseName": {
+              "id": 2753,
+              "name": "Ownable",
+              "nameLocations": [
+                "682:7:14"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 3589,
+              "src": "682:7:14"
+            },
+            "id": 2754,
+            "nodeType": "InheritanceSpecifier",
+            "src": "682:7:14"
+          },
+          {
+            "baseName": {
+              "id": 2755,
+              "name": "IERC360Broker",
+              "nameLocations": [
+                "691:13:14"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 2886,
+              "src": "691:13:14"
+            },
+            "id": 2756,
+            "nodeType": "InheritanceSpecifier",
+            "src": "691:13:14"
+          },
+          {
+            "baseName": {
+              "id": 2757,
+              "name": "IERC360BrokerErrors",
+              "nameLocations": [
+                "706:19:14"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 2890,
+              "src": "706:19:14"
+            },
+            "id": 2758,
+            "nodeType": "InheritanceSpecifier",
+            "src": "706:19:14"
+          }
+        ],
+        "canonicalName": "ERC360Broker",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 2750,
+          "nodeType": "StructuredDocumentation",
+          "src": "559:80:14",
+          "text": "@title A broker of ERC360 tokens.\n @author Frederik W. L. Christoffersen"
+        },
+        "fullyImplemented": true,
+        "id": 2866,
+        "linearizedBaseContracts": [
+          2866,
+          2890,
+          2886,
+          3589,
+          2912
+        ],
+        "name": "ERC360Broker",
+        "nameLocation": "657:12:14",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "documentation": {
+              "id": 2759,
+              "nodeType": "StructuredDocumentation",
+              "src": "733:100:14",
+              "text": "@notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale status"
+            },
+            "id": 2767,
+            "mutability": "mutable",
+            "name": "_statusByToken",
+            "nameLocation": "884:14:14",
+            "nodeType": "VariableDeclaration",
+            "scope": 2866,
+            "src": "838:60:14",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_contract$_ERC360_$588_$_t_mapping$_t_uint256_$_t_enum$_Status_$2876_$_$",
+              "typeString": "mapping(contract ERC360 => mapping(uint256 => enum IERC360Broker.Status))"
+            },
+            "typeName": {
+              "id": 2766,
+              "keyName": "",
+              "keyNameLocation": "-1:-1:-1",
+              "keyType": {
+                "id": 2761,
+                "nodeType": "UserDefinedTypeName",
+                "pathNode": {
+                  "id": 2760,
+                  "name": "ERC360",
+                  "nameLocations": [
+                    "846:6:14"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 588,
+                  "src": "846:6:14"
+                },
+                "referencedDeclaration": 588,
+                "src": "846:6:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_ERC360_$588",
+                  "typeString": "contract ERC360"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "838:45:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_contract$_ERC360_$588_$_t_mapping$_t_uint256_$_t_enum$_Status_$2876_$_$",
+                "typeString": "mapping(contract ERC360 => mapping(uint256 => enum IERC360Broker.Status))"
+              },
+              "valueName": "",
+              "valueNameLocation": "-1:-1:-1",
+              "valueType": {
+                "id": 2765,
+                "keyName": "",
+                "keyNameLocation": "-1:-1:-1",
+                "keyType": {
+                  "id": 2762,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "864:7:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "856:26:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_uint256_$_t_enum$_Status_$2876_$",
+                  "typeString": "mapping(uint256 => enum IERC360Broker.Status)"
+                },
+                "valueName": "",
+                "valueNameLocation": "-1:-1:-1",
+                "valueType": {
+                  "id": 2764,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 2763,
+                    "name": "Status",
+                    "nameLocations": [
+                      "875:6:14"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 2876,
+                    "src": "875:6:14"
+                  },
+                  "referencedDeclaration": 2876,
+                  "src": "875:6:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_Status_$2876",
+                    "typeString": "enum IERC360Broker.Status"
+                  }
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "documentation": {
+              "id": 2768,
+              "nodeType": "StructuredDocumentation",
+              "src": "905:94:14",
+              "text": "@notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale "
+            },
+            "id": 2776,
+            "mutability": "mutable",
+            "name": "_saleByToken",
+            "nameLocation": "1048:12:14",
+            "nodeType": "VariableDeclaration",
+            "scope": 2866,
+            "src": "1004:56:14",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_contract$_ERC360_$588_$_t_mapping$_t_uint256_$_t_struct$_Sale_$2885_storage_$_$",
+              "typeString": "mapping(contract ERC360 => mapping(uint256 => struct IERC360Broker.Sale))"
+            },
+            "typeName": {
+              "id": 2775,
+              "keyName": "",
+              "keyNameLocation": "-1:-1:-1",
+              "keyType": {
+                "id": 2770,
+                "nodeType": "UserDefinedTypeName",
+                "pathNode": {
+                  "id": 2769,
+                  "name": "ERC360",
+                  "nameLocations": [
+                    "1012:6:14"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 588,
+                  "src": "1012:6:14"
+                },
+                "referencedDeclaration": 588,
+                "src": "1012:6:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_contract$_ERC360_$588",
+                  "typeString": "contract ERC360"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "1004:43:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_contract$_ERC360_$588_$_t_mapping$_t_uint256_$_t_struct$_Sale_$2885_storage_$_$",
+                "typeString": "mapping(contract ERC360 => mapping(uint256 => struct IERC360Broker.Sale))"
+              },
+              "valueName": "",
+              "valueNameLocation": "-1:-1:-1",
+              "valueType": {
+                "id": 2774,
+                "keyName": "",
+                "keyNameLocation": "-1:-1:-1",
+                "keyType": {
+                  "id": 2771,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1030:7:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "1022:24:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Sale_$2885_storage_$",
+                  "typeString": "mapping(uint256 => struct IERC360Broker.Sale)"
+                },
+                "valueName": "",
+                "valueNameLocation": "-1:-1:-1",
+                "valueType": {
+                  "id": 2773,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 2772,
+                    "name": "Sale",
+                    "nameLocations": [
+                      "1041:4:14"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 2885,
+                    "src": "1041:4:14"
+                  },
+                  "referencedDeclaration": 2885,
+                  "src": "1041:4:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Sale_$2885_storage_ptr",
+                    "typeString": "struct IERC360Broker.Sale"
+                  }
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 2793,
+              "nodeType": "Block",
+              "src": "1152:51:14",
+              "statements": [
+                {
+                  "expression": {
+                    "baseExpression": {
+                      "baseExpression": {
+                        "id": 2787,
+                        "name": "_statusByToken",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2767,
+                        "src": "1166:14:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_contract$_ERC360_$588_$_t_mapping$_t_uint256_$_t_enum$_Status_$2876_$_$",
+                          "typeString": "mapping(contract ERC360 => mapping(uint256 => enum IERC360Broker.Status))"
+                        }
+                      },
+                      "id": 2789,
+                      "indexExpression": {
+                        "id": 2788,
+                        "name": "token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2779,
+                        "src": "1181:5:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_ERC360_$588",
+                          "typeString": "contract ERC360"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "1166:21:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_uint256_$_t_enum$_Status_$2876_$",
+                        "typeString": "mapping(uint256 => enum IERC360Broker.Status)"
+                      }
+                    },
+                    "id": 2791,
+                    "indexExpression": {
+                      "id": 2790,
+                      "name": "tokenId",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2781,
+                      "src": "1188:7:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1166:30:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_Status_$2876",
+                      "typeString": "enum IERC360Broker.Status"
+                    }
+                  },
+                  "functionReturnParameters": 2786,
+                  "id": 2792,
+                  "nodeType": "Return",
+                  "src": "1159:37:14"
+                }
+              ]
+            },
+            "functionSelector": "5aba0dea",
+            "id": 2794,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "statusOf",
+            "nameLocation": "1076:8:14",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2782,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2779,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "1092:5:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2794,
+                  "src": "1085:12:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_ERC360_$588",
+                    "typeString": "contract ERC360"
+                  },
+                  "typeName": {
+                    "id": 2778,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2777,
+                      "name": "ERC360",
+                      "nameLocations": [
+                        "1085:6:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 588,
+                      "src": "1085:6:14"
+                    },
+                    "referencedDeclaration": 588,
+                    "src": "1085:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_ERC360_$588",
+                      "typeString": "contract ERC360"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2781,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "1107:7:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2794,
+                  "src": "1099:15:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 2780,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1099:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1084:31:14"
+            },
+            "returnParameters": {
+              "id": 2786,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2785,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2794,
+                  "src": "1144:6:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_Status_$2876",
+                    "typeString": "enum IERC360Broker.Status"
+                  },
+                  "typeName": {
+                    "id": 2784,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2783,
+                      "name": "Status",
+                      "nameLocations": [
+                        "1144:6:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 2876,
+                      "src": "1144:6:14"
+                    },
+                    "referencedDeclaration": 2876,
+                    "src": "1144:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_Status_$2876",
+                      "typeString": "enum IERC360Broker.Status"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1143:8:14"
+            },
+            "scope": 2866,
+            "src": "1067:136:14",
+            "stateMutability": "view",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 2811,
+              "nodeType": "Block",
+              "src": "1297:49:14",
+              "statements": [
+                {
+                  "expression": {
+                    "baseExpression": {
+                      "baseExpression": {
+                        "id": 2805,
+                        "name": "_saleByToken",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2776,
+                        "src": "1311:12:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_contract$_ERC360_$588_$_t_mapping$_t_uint256_$_t_struct$_Sale_$2885_storage_$_$",
+                          "typeString": "mapping(contract ERC360 => mapping(uint256 => struct IERC360Broker.Sale storage ref))"
+                        }
+                      },
+                      "id": 2807,
+                      "indexExpression": {
+                        "id": 2806,
+                        "name": "token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2797,
+                        "src": "1324:5:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_ERC360_$588",
+                          "typeString": "contract ERC360"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "nodeType": "IndexAccess",
+                      "src": "1311:19:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Sale_$2885_storage_$",
+                        "typeString": "mapping(uint256 => struct IERC360Broker.Sale storage ref)"
+                      }
+                    },
+                    "id": 2809,
+                    "indexExpression": {
+                      "id": 2808,
+                      "name": "tokenId",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2799,
+                      "src": "1331:7:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1311:28:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Sale_$2885_storage",
+                      "typeString": "struct IERC360Broker.Sale storage ref"
+                    }
+                  },
+                  "functionReturnParameters": 2804,
+                  "id": 2810,
+                  "nodeType": "Return",
+                  "src": "1304:35:14"
+                }
+              ]
+            },
+            "functionSelector": "73969166",
+            "id": 2812,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "saleOf",
+            "nameLocation": "1218:6:14",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2800,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2797,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "1232:5:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2812,
+                  "src": "1225:12:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_ERC360_$588",
+                    "typeString": "contract ERC360"
+                  },
+                  "typeName": {
+                    "id": 2796,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2795,
+                      "name": "ERC360",
+                      "nameLocations": [
+                        "1225:6:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 588,
+                      "src": "1225:6:14"
+                    },
+                    "referencedDeclaration": 588,
+                    "src": "1225:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_ERC360_$588",
+                      "typeString": "contract ERC360"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2799,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "1247:7:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2812,
+                  "src": "1239:15:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 2798,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1239:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1224:31:14"
+            },
+            "returnParameters": {
+              "id": 2804,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2803,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2812,
+                  "src": "1284:11:14",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Sale_$2885_memory_ptr",
+                    "typeString": "struct IERC360Broker.Sale"
+                  },
+                  "typeName": {
+                    "id": 2802,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2801,
+                      "name": "Sale",
+                      "nameLocations": [
+                        "1284:4:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 2885,
+                      "src": "1284:4:14"
+                    },
+                    "referencedDeclaration": 2885,
+                    "src": "1284:4:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Sale_$2885_storage_ptr",
+                      "typeString": "struct IERC360Broker.Sale"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1283:13:14"
+            },
+            "scope": 2866,
+            "src": "1209:137:14",
+            "stateMutability": "view",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 2833,
+              "nodeType": "Block",
+              "src": "1844:61:14",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 2827,
+                        "name": "token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2816,
+                        "src": "1866:5:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC360_$737",
+                          "typeString": "contract IERC360"
+                        }
+                      },
+                      {
+                        "id": 2828,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2818,
+                        "src": "1872:6:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 2829,
+                        "name": "paymentToken",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2821,
+                        "src": "1879:12:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC20_$3100",
+                          "typeString": "contract IERC20"
+                        }
+                      },
+                      {
+                        "id": 2830,
+                        "name": "price",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2823,
+                        "src": "1892:5:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_contract$_IERC360_$737",
+                          "typeString": "contract IERC360"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_contract$_IERC20_$3100",
+                          "typeString": "contract IERC20"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 2826,
+                      "name": "_putForSale",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2865,
+                      "src": "1854:11:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC360_$737_$_t_uint256_$_t_contract$_IERC20_$3100_$_t_uint256_$returns$__$",
+                        "typeString": "function (contract IERC360,uint256,contract IERC20,uint256)"
+                      }
+                    },
+                    "id": 2831,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1854:44:14",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 2832,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1854:44:14"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 2813,
+              "nodeType": "StructuredDocumentation",
+              "src": "1352:391:14",
+              "text": "@notice Puts a given token for sale.\n @param token The token to be put for sale.\n @param amount Amount of the ERC360 token to be put for sale.\n @param paymentToken The address of the token of payment that is accepted when purchasing. A value of 0x0 represents ether.\n @param price The amount which the token is for sale as. The token address being the valuta."
+            },
+            "functionSelector": "b85d7831",
+            "id": 2834,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "putForSale",
+            "nameLocation": "1757:10:14",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2824,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2816,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "1776:5:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2834,
+                  "src": "1768:13:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC360_$737",
+                    "typeString": "contract IERC360"
+                  },
+                  "typeName": {
+                    "id": 2815,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2814,
+                      "name": "IERC360",
+                      "nameLocations": [
+                        "1768:7:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 737,
+                      "src": "1768:7:14"
+                    },
+                    "referencedDeclaration": 737,
+                    "src": "1768:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IERC360_$737",
+                      "typeString": "contract IERC360"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2818,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "1791:6:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2834,
+                  "src": "1783:14:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 2817,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1783:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2821,
+                  "mutability": "mutable",
+                  "name": "paymentToken",
+                  "nameLocation": "1806:12:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2834,
+                  "src": "1799:19:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC20_$3100",
+                    "typeString": "contract IERC20"
+                  },
+                  "typeName": {
+                    "id": 2820,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2819,
+                      "name": "IERC20",
+                      "nameLocations": [
+                        "1799:6:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3100,
+                      "src": "1799:6:14"
+                    },
+                    "referencedDeclaration": 3100,
+                    "src": "1799:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IERC20_$3100",
+                      "typeString": "contract IERC20"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2823,
+                  "mutability": "mutable",
+                  "name": "price",
+                  "nameLocation": "1828:5:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2834,
+                  "src": "1820:13:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 2822,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1820:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1767:67:14"
+            },
+            "returnParameters": {
+              "id": 2825,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1844:0:14"
+            },
+            "scope": 2866,
+            "src": "1748:157:14",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 2864,
+              "nodeType": "Block",
+              "src": "2008:122:14",
+              "statements": [
+                {
+                  "assignments": [
+                    2848
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 2848,
+                      "mutability": "mutable",
+                      "name": "shardId",
+                      "nameLocation": "2023:7:14",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 2864,
+                      "src": "2015:15:14",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 2847,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2015:7:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 2854,
+                  "initialValue": {
+                    "arguments": [
+                      {
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 2851,
+                          "name": "_msgSender",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 2902,
+                          "src": "2049:10:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                            "typeString": "function () view returns (address)"
+                          }
+                        },
+                        "id": 2852,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "nameLocations": [],
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "2049:12:14",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "id": 2849,
+                        "name": "token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2837,
+                        "src": "2033:5:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC360_$737",
+                          "typeString": "contract IERC360"
+                        }
+                      },
+                      "id": 2850,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "2039:9:14",
+                      "memberName": "shardIdOf",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 702,
+                      "src": "2033:15:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
+                        "typeString": "function (address) view external returns (uint256)"
+                      }
+                    },
+                    "id": 2853,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2033:29:14",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2015:47:14"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 2861,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "arguments": [
+                            {
+                              "id": 2858,
+                              "name": "shardId",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 2848,
+                              "src": "2092:7:14",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "expression": {
+                              "id": 2856,
+                              "name": "token",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 2837,
+                              "src": "2077:5:14",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_contract$_IERC360_$737",
+                                "typeString": "contract IERC360"
+                              }
+                            },
+                            "id": 2857,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberLocation": "2083:8:14",
+                            "memberName": "amountOf",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 694,
+                            "src": "2077:14:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_external_view$_t_uint256_$returns$_t_uint256_$",
+                              "typeString": "function (uint256) view external returns (uint256)"
+                            }
+                          },
+                          "id": 2859,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "2077:23:14",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": ">=",
+                        "rightExpression": {
+                          "id": 2860,
+                          "name": "amount",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 2839,
+                          "src": "2104:6:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "2077:33:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 2855,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "2069:7:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 2862,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2069:42:14",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 2863,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2069:42:14"
+                }
+              ]
+            },
+            "id": 2865,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_putForSale",
+            "nameLocation": "1920:11:14",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2845,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2837,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "1940:5:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2865,
+                  "src": "1932:13:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC360_$737",
+                    "typeString": "contract IERC360"
+                  },
+                  "typeName": {
+                    "id": 2836,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2835,
+                      "name": "IERC360",
+                      "nameLocations": [
+                        "1932:7:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 737,
+                      "src": "1932:7:14"
+                    },
+                    "referencedDeclaration": 737,
+                    "src": "1932:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IERC360_$737",
+                      "typeString": "contract IERC360"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2839,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "1955:6:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2865,
+                  "src": "1947:14:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 2838,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1947:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2842,
+                  "mutability": "mutable",
+                  "name": "paymentToken",
+                  "nameLocation": "1970:12:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2865,
+                  "src": "1963:19:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IERC20_$3100",
+                    "typeString": "contract IERC20"
+                  },
+                  "typeName": {
+                    "id": 2841,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 2840,
+                      "name": "IERC20",
+                      "nameLocations": [
+                        "1963:6:14"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3100,
+                      "src": "1963:6:14"
+                    },
+                    "referencedDeclaration": 3100,
+                    "src": "1963:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IERC20_$3100",
+                      "typeString": "contract IERC20"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2844,
+                  "mutability": "mutable",
+                  "name": "price",
+                  "nameLocation": "1992:5:14",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2865,
+                  "src": "1984:13:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 2843,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1984:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1931:67:14"
+            },
+            "returnParameters": {
+              "id": 2846,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2008:0:14"
+            },
+            "scope": 2866,
+            "src": "1911:219:14",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 2867,
+        "src": "639:6507:14",
+        "usedErrors": [],
+        "usedEvents": [
+          3490
+        ]
+      }
+    ],
+    "src": "0:7919:14"
+  },
+  "bytecode": "",
+  "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.8.21+commit.d9974bed"
+  },
+  "contractName": "ERC360Broker",
+  "coverageMap": {
+    "branches": {},
+    "statements": {}
+  },
+  "dependencies": [
+    "Context",
+    "Counters",
+    "ERC165",
+    "ERC360",
+    "IERC165",
+    "IERC20",
+    "IERC360",
+    "IERC360Broker",
+    "IERC360BrokerErrors",
+    "IERC360Errors",
+    "IERC360Metadata",
+    "Ownable"
+  ],
+  "deployedBytecode": "",
+  "deployedSourceMap": "",
+  "language": "Solidity",
+  "natspec": {
+    "author": "Frederik W. L. Christoffersen",
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "putForSale(address,uint256,address,uint256)": {
+        "notice": "Puts a given token for sale.",
+        "params": {
+          "amount": "Amount of the ERC360 token to be put for sale.",
+          "paymentToken": "The address of the token of payment that is accepted when purchasing. A value of 0x0 represents ether.",
+          "price": "The amount which the token is for sale as. The token address being the valuta.",
+          "token": "The token to be put for sale."
+        }
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "title": "A broker of ERC360 tokens.",
+    "version": 1
+  },
+  "offset": [
+    639,
+    7146
+  ],
+  "opcodes": "",
+  "pcMap": {},
+  "sha1": "4736429233e3dafdcd9719b61b2f3bce8861955b",
+  "source": "pragma solidity ^0.8.20;\nimport {IERC360} from \"../ERC360/IERC360.sol\";\nimport {ERC360} from \"../ERC360/ERC360.sol\";\nimport {IERC360Broker} from \"./IERC360Broker.sol\";\nimport {IERC360BrokerErrors} from \"./IERC360BrokerErrors.sol\";\nimport {ERC20} from \"node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol\";\nimport {IERC20} from \"node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport {Context} from \"node_modules/@openzeppelin/contracts/utils/Context.sol\";\nimport {Ownable} from \"node_modules/@openzeppelin/contracts/access/Ownable.sol\";\n\n/// @title A broker of ERC360 tokens.\n/// @author Frederik W. L. Christoffersen\nabstract contract ERC360Broker is Context, Ownable, IERC360Broker, IERC360BrokerErrors {\n\n    /// @notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale status\n    mapping(ERC360 => mapping(uint256 => Status)) _statusByToken;\n\n    /// @notice Mapping taking ERC360 token address and shardId, pointing to a corresponding sale \n    mapping(ERC360 => mapping(uint256 => Sale)) _saleByToken;\n\n    function statusOf(ERC360 token, uint256 tokenId) public view virtual returns(Status) {\n    \treturn _statusByToken[token][tokenId];\n    }\n\n    function saleOf(ERC360 token, uint256 tokenId) public view virtual returns(Sale memory) {\n    \treturn _saleByToken[token][tokenId];\n    }\n\n    /// @notice Puts a given token for sale.\n    /// @param token The token to be put for sale.\n    /// @param amount Amount of the ERC360 token to be put for sale.\n    /// @param paymentToken The address of the token of payment that is accepted when purchasing. A value of 0x0 represents ether.\n    /// @param price The amount which the token is for sale as. The token address being the valuta.\n    function putForSale(IERC360 token, uint256 amount, IERC20 paymentToken, uint256 price) external {\n        _putForSale(token,amount,paymentToken,price);\n    }\n\n    function _putForSale(IERC360 token, uint256 amount, IERC20 paymentToken, uint256 price) internal {\n    \tuint256 shardId = token.shardIdOf(_msgSender());\n    \trequire(token.amountOf(shardId) >= amount);\n    \t// ...\n    }\n\n    /*\n    /// @notice Cancels a sell of a given shard.\n    /// @param shardId The shard to be put off sale.\n    function cancelSale(uint256 shardId) public onlyHolder(shard) onlyValidShard(shard) {\n        require(saleStateByShard[shardId]==SaleState.forSale, \"NS\");\n        _cancelSale(shard);\n    }\n\n    /// @notice Purchases a listed Shard for sale.\n    /// @dev If the purchase is with tokens (ie. tokenAddress != 0x0), first call 'token.approve(Shardable.address, salePrice);'\n    /// @param shardId The shard of which a fraction will be purchased.\n    function purchase(uint256 shardId, uint256 amount, uint256 price) external payable onlyValidShard(shard) {\n        require(saleStateByToken[shardId]==SaleState.forSale, \"NS\");\n        require(price == saleByShard[shardId].price, \"WP\");\n        require(amount != 0, \"ES\");\n        require(saleByShard[shardId].amount >= amount, \"ES\");\n        require((saleByShard[shardId].to == msg.sender) || (saleByShard[shard].to == address(0x0)), \"SR\");\n        saleStateByShard[shardId] = SaleState.sold; // shard has been sold\n        uint256 totalPrice = amount * saleByShard[shardId].price;\n        (uint256 profitToCounekt, uint256 profitToSeller, uint256 remainder) = divideUnequallyIntoTwoWithRemainder(totalPrice,25,1000);\n        profitToSeller += remainder; // remainder goes to seller\n        // if ether\n        if (saleByShard[shardId].tokenAddress == address(0x0)) {\n            require(msg.value >= totalPrice, \"IE\");\n            // Pay Service Fee of 2.5% to Counekt\n            (bool successToCounekt,) = payable(0x49a71890aea5A751E30e740C504f2E9683f347bC).call{value:profitToCounekt}(\"\");\n            // Rest goes to the seller\n            (bool successToSeller,) = payable(infoByShard[shardId].owner).call{value:profitToSeller}(\"\");\n            require(successToSeller && successToCounekt, \"TF\");\n        }\n        else {\n            IERC20 token = IERC20(saleByShard[shardId].tokenAddress);\n            require(token.allowance(msg.sender,address(this)) >= totalPrice,\"IT\");\n            // Pay Service Fee of 2.5% to Counekt\n            require(token.transferFrom(msg.sender, 0x49a71890aea5A751E30e740C504f2E9683f347bC, profitToCounekt), \"NT\");\n            // Rest goes to the seller\n            if (infoByShard[shardId].owner.code.length > 0) {\n                token.transferFrom(msg.sender, address(this), profitToSeller);\n                token.approve(infoByShard[shardId].owner,profitToSeller);\n                infoByShard[shardId].owner.receiveToken(tokenAddress,profitToSeller);\n            }\n            else {token.transferFrom(msg.sender,infoByShard[shardId].owner,profitToSeller);}\n        }\n        _split(shardId, amount,msg.sender);\n        if (infoByShard[shardId].owner == address(this)) { // if newly issued shards\n            // add those to the outstanding shard amount\n            totalSupplyByClock[clock] += amount;\n        }\n        emit SaleStateUpdated(SaleState.sold,shard,ShardSale(amount,saleByShard[shardId].price,saleByShard[shardId].tokenAddress,saleByShard[shardId].to));\n        // if not whole shard is bought\n        if (saleByShard[shardId].amount != amount) { \n            // put the rest to sale again\n            _putForSale(currentShardIdByOwner[infoByShard[shardId].owner],saleByShard[shardId].amount-amount,saleByShard[shardId].tokenAddress,saleByShard[shardId].price,saleByShard[shardId].to);\n        }\n    }\n\n    /// @notice Returns the price, at which a shard is for sale.\n    function getShardSalePrice(uint256 shardId) public view returns(uint256) {\n        return saleByShard[shardId].price;\n    }\n\n    /// @notice Cancels a sell of a given Shard.\n    /// @param shard The shard to be put off sale.\n    function _cancelSale(uint256 shardId) internal onlyValidShard(shard) {\n        saleStateByShard[shard] = SaleState.notForSale;\n        emit SaleStateUpdated(SaleState.notForSale,shard,ShardSale(0,0,address(0),address(0)));\n    }\n\n\n    /// @notice Puts a given shard for sale.\n    /// @param shardId The shard to be put for sale.\n    /// @param amount Amount of the Shard to be put for sale.\n    /// @param tokenAddress The address of the token that is accepted when purchasing. A value of 0x0 represents ether.\n    /// @param price The amount which the Shard is for sale as. The token address being the valuta.\n    /// @param to The specifically set buyer of the sale. For anyone to buy if address(0).\n    function _putForSale(uint256 shardId, uint256 amount, address tokenAddress, uint256 price, address to) internal onlyValidShard(shard) onlyIfActive {\n        require(saleStateByShard[shardId]==SaleState.notForSale);\n        require(amount <= infoByShard[shardId].amount, \"IA\");\n        saleByShard[shardId] = ShardSale({\n            amount: amount,\n            price: price,\n            tokenAddress: tokenAddress,\n            to: to\n        });\n        saleStateByShard[shardId] = SaleState.forSale;\n        emit SaleStateUpdated(SaleState.forSale,shardId,saleByShard[shardId]);\n    }\n    */\n}\n\n/*\n/// @notice Returns the two quotients and the remainder of an uneven division with a fraction. Useful for dividing ether and tokens.\n/// @param dividend The dividend, which will be divided by the fraction.\n/// @param numerator Numerator of fraction, which the dividend will be divided into.\n/// @param denominator Denominator of fraction, which the dividend will be divided into.\nfunction divideUnequallyIntoTwoWithRemainder(uint256 dividend, uint256 numerator, uint256 denominator) pure returns(uint256, uint256, uint256) {\n    require(denominator > numerator);\n    uint256 quotient1 = dividend*numerator/denominator;\n    uint256 quotient2 = dividend*(denominator-numerator)/denominator;\n    return (quotient1, quotient2, dividend - (quotient1 + quotient2));\n}\n*/\n   ",
+  "sourceMap": "",
+  "sourcePath": "contracts/ERC360Broker/ERC360Broker.sol",
+  "type": "contract"
+}

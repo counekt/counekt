@@ -53,24 +53,24 @@ def edit_user():
             if not lat or not lng:
                 return json.dumps({'status': 'Coordinates must be filled in, if you want to show your location and or be visible on the map', 'box_id': 'location'})
 
-            if [current_user.latitude, current_user.longitude] != [float(lat), float(lng)]:
+            if [current_user.location.latitude, current_user.location.longitude] != [float(lat), float(lng)]:
                 location = funcs.reverse_geocode([lat, lng])
                 if not location:
                     return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
-                current_user.set_location(location=location)
+                current_user.location.set(location=location)
 
-            current_user.show_location = True
+            current_user.location.show = True
             if is_visible:
-                current_user.is_visible = True
+                current_user.location.is_visible = True
         else:
-            current_user.latitude = None
-            current_user.longitude = None
-            current_user.sin_rad_lat = None
-            current_user.cos_rad_lat = None
-            current_user.rad_lng = None
-            current_user.location_address = None
-            current_user.is_visible = False
-            current_user.show_location = False
+            current_user.location.latitude = None
+            current_user.location.longitude = None
+            current_user.location.sin_rad_lat = None
+            current_user.location.cos_rad_lat = None
+            current_user.location.rad_lng = None
+            current_user.location.address = None
+            current_user.location.is_visible = False
+            current_user.location.show = False
 
         if not month or not day or not year:
             return json.dumps({'status': 'Birthday must be filled in', 'box_id': 'birthdate'})
@@ -105,7 +105,7 @@ def edit_user():
                 db.session.delete(skill)
 
         db.session.commit()
-        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.location_address, 'skill-bar':render_template("profile/skill-bar.html", skillrows=current_user.skillrows)})
+        return json.dumps({'status': 'success', 'username': current_user.username, 'address':current_user.location.address, 'skill-bar':render_template("profile/skill-bar.html", skillrows=current_user.skillrows)})
     return render_template("profile/user/profile.html", user=current_user, background=True, navbar=True, size="medium", noscroll=True)
 
 

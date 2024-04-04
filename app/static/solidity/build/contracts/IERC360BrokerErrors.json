@@ -1,0 +1,92 @@
+{
+  "abi": [],
+  "allSourcePaths": {
+    "16": "contracts/ERC360Broker/IERC360BrokerErrors.sol"
+  },
+  "ast": {
+    "absolutePath": "contracts/ERC360Broker/IERC360BrokerErrors.sol",
+    "exportedSymbols": {
+      "IERC360BrokerErrors": [
+        2890
+      ]
+    },
+    "id": 2891,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2888,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".20"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:16"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IERC360BrokerErrors",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 2889,
+          "nodeType": "StructuredDocumentation",
+          "src": "26:45:16",
+          "text": " @dev Standard IERC360Broker Errors"
+        },
+        "fullyImplemented": true,
+        "id": 2890,
+        "linearizedBaseContracts": [
+          2890
+        ],
+        "name": "IERC360BrokerErrors",
+        "nameLocation": "82:19:16",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 2891,
+        "src": "72:34:16",
+        "usedErrors": [],
+        "usedEvents": []
+      }
+    ],
+    "src": "0:106:16"
+  },
+  "bytecode": "",
+  "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.8.21+commit.d9974bed"
+  },
+  "contractName": "IERC360BrokerErrors",
+  "coverageMap": {
+    "branches": {},
+    "statements": {}
+  },
+  "dependencies": [],
+  "deployedBytecode": "",
+  "deployedSourceMap": "",
+  "language": "Solidity",
+  "natspec": {
+    "details": "Standard IERC360Broker Errors",
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "offset": [
+    72,
+    106
+  ],
+  "opcodes": "",
+  "pcMap": {},
+  "sha1": "86d4ffd8b7ee33bf4610a9eb696160463e6f171b",
+  "source": "pragma solidity ^0.8.20;\n\n/**\n * @dev Standard IERC360Broker Errors\n */\ninterface IERC360BrokerErrors {\n\n}",
+  "sourceMap": "",
+  "sourcePath": "contracts/ERC360Broker/IERC360BrokerErrors.sol",
+  "type": "interface"
+}

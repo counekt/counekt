@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 class Referendum(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
-	event_id = db.Column(db.Integer) # event id, used for identification
+	identifier = db.Column(db.Integer) # event identifier, used for identification
 	clock = db.Column(db.BigInteger) # clock
 	timestamp = db.Column(db.BigInteger) # ETH Block timestamp of creation
 	duration = db.Column(db.Integer) # duration
@@ -17,15 +17,15 @@ class Referendum(db.Model, Base):
 	in_favor_amount = db.Column(db.Integer,default=0) # total amount of votes cast in favor
 
 	votes = db.relationship(
-        'ReferendumVote', lazy='dynamic',
-        foreign_keys='ReferendumVote.referendum_id', passive_deletes=True)
+        'Vote', lazy='dynamic',
+        foreign_keys='Vote.referendum_id', passive_deletes=True)
 	proposals = db.relationship(
-        'ReferendumProposal', lazy='dynamic',
-        foreign_keys='ReferendumProposal.referendum_id', passive_deletes=True)
+        'Proposal', lazy='dynamic',
+        foreign_keys='Proposal.referendum_id', passive_deletes=True)
 
 	@classmethod
-	def get_or_register(cls,erc360,event_id):
-		referendum = cls.query.filter(cls.event_id==event_id).first()
+	def get_or_register(cls,erc360,identifier):
+		referendum = cls.query.filter(cls.identifier==identifier).first()
 		if not referendum:
 		    referendum = cls()
 		    erc360.referendums.append(referendum)
@@ -42,7 +42,7 @@ class Referendum(db.Model, Base):
 	def __repr__(self):
 		return '<Referendum {}>'.format(self.clock)
 
-class ReferendumProposal(db.Model, Base):
+class Proposal(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	referendum_id = db.Column(db.Integer, db.ForeignKey('referendum.id', ondelete='CASCADE'))
 	index = db.Column(db.Integer) # Index as part of Referendum proposals
@@ -60,11 +60,11 @@ class ReferendumProposal(db.Model, Base):
 	def __repr__(self):
 		return '<Proposal {}>'.format(self.func)
 
-class ReferendumVote(db.Model, Base):
+class Vote(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	referendum_id = db.Column(db.Integer, db.ForeignKey('referendum.id', ondelete='CASCADE'))
-	erc360_token_id_id = db.Column(db.Integer, db.ForeignKey('erc360_token_id.id', ondelete='CASCADE')) 
-	erc360_token_id = db.relationship("ERC360TokenId", foreign_keys=[erc360_token_id_id]) # the shard used to claim dividend
+	erc360_shard_id = db.Column(db.Integer, db.ForeignKey('erc360_shard.id', ondelete='CASCADE')) 
+	erc360_shard = db.relationship("ERC360Shard", foreign_keys=[erc360_shard_id]) # the shard used to claim dividend
 	in_favor = db.Column(db.Boolean) # states if in favor or not
 
 	def __repr__(self):

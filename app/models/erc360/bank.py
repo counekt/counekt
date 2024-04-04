@@ -5,6 +5,11 @@ from sqlalchemy import union_all
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 
+bank_token_amounts = db.Table('bank_token_amounts',
+                  db.Column('bank_id', db.Integer, db.ForeignKey('bank.id')),
+                  db.Column('token_amount_id', db.Integer, db.ForeignKey('token_amount.id'))
+                  )
+
 class Bank(db.Model, Base):
 	id = db.Column(db.Integer, primary_key=True)
 	erc360_id = db.Column(db.Integer, db.ForeignKey('erc360.id', ondelete='CASCADE'))
@@ -14,9 +19,8 @@ class Bank(db.Model, Base):
 	permit_id = db.Column(db.Integer, db.ForeignKey('permit.id'))
 	permit = db.relationship("Permit",foreign_keys=[permit_id])
 
-	token_amounts = db.relationship(
-        'BankTokenAmount', lazy='dynamic',
-        foreign_keys='BankTokenAmount.bank_id', backref="bank", passive_deletes=True, cascade="all, delete")
+
+	token_amounts = db.relationship('TokenAmount', secondary=bank_token_amounts, lazy='dynamic')
 
 	def __init__(self,**kwargs):
 		super(Bank, self).__init__(**{k: kwargs[k] for k in kwargs})
@@ -35,17 +39,17 @@ class Bank(db.Model, Base):
 		return bank
 
 	def register_token(self,address,symbol=None,name=None):
-		token_amount = self.token_amounts.filter(Token.address==address,Token.id==BankTokenAmount.token_id).first()
+		token_amount = self.token_amounts.filter(Token.address==address,Token.id==TokenAmount.token_id).first()
 		if not token_amount:
 			token = Token.get_or_register(address=address,symbol=symbol,name=name)
-			token_amount = BankTokenAmount()
+			token_amount = TokenAmount()
 			token_amount.token = token
 			self.token_amounts.append(token_amount)
-		return token_amount		
+		return token_amount
 
 
 	def add_amount(self,amount,token):
-		BankTokenAmount.get_or_register(self,token).amount += amount
+		TokenAmount.get_or_register_at_bank(self,token).amount += amount
 
 	def subtract_amount(self,amount,token):
 		self.add_amount(-amount,token)
@@ -57,8 +61,7 @@ class Bank(db.Model, Base):
 	def __repr__(self):
 		return '<Bank {}>'.format(self.name)
 
-class TokenAmount(Base):
-
+class TokenAmount(db.Model,Base):
 
 	id = db.Column(db.Integer, primary_key=True)
 
@@ -71,6 +74,22 @@ class TokenAmount(Base):
 	@declared_attr
 	def token(self):
 		return db.relationship("Token",foreign_keys=[self.token_id])
+
+	@classmethod
+	def get_or_register_at_bank(cls,bank,token,symbol=None,name=None):
+		token_amount = cls.query.filter(cls.bank==bank,Token.address==token,Token.id==cls.token_id).first()
+		if not token_amount:
+			token = Token.get_or_register(address=token,symbol=symbol,name=name)
+			token_amount = cls()
+			token_amount.token = token
+			bank.token_amounts.append(token_amount)
+		return token_amount
+
+	def __init__(self,**kwargs):
+		super(TokenAmount, self).__init__(**{k: kwargs[k] for k in kwargs})
+		# do custom initialization here
+		db.session.add(self)
+		self.amount = 0
 
 	@hybrid_property
 	def min_amount_in_decimals(self):
@@ -95,27 +114,6 @@ class TokenAmount(Base):
 	def __repr__(self):
 		return '<TokenAmount: {} {}>'.format(self.amount or 0,self.token.symbol if self.token else "")
 
-
-class BankTokenAmount(db.Model, TokenAmount):
-
-	def __init__(self,**kwargs):
-		super(BankTokenAmount, self).__init__(**{k: kwargs[k] for k in kwargs})
-		# do custom initialization here
-		db.session.add(self)
-		self.amount = 0
-
-	@classmethod
-	def get_or_register(cls,bank,token,symbol=None,name=None):
-		token_amount = cls.query.filter(cls.bank==bank,Token.address==token,Token.id==cls.token_id).first()
-		if not token_amount:
-			token = Token.get_or_register(address=token,symbol=symbol,name=name)
-			token_amount = cls()
-			token_amount.token = token
-			bank.token_amounts.append(token_amount)
-			print(token_amount)
-		return token_amount
-
-	bank_id = db.Column(db.Integer, db.ForeignKey('bank.id', ondelete='CASCADE'))
 
 class Token(db.Model,Base):
 	id = db.Column(db.Integer, primary_key=True)

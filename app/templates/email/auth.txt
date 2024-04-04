@@ -2,7 +2,7 @@ Hi {{ user.username }},
 
 To activate your account click on the following link:
 
-{{ url_for('auth.activate', token=token, _external=True) }}
+{{ url_for('auth.activate', auth_token=auth_token, _external=True) }}
 
 If you have not created a user, simply ignore this message.
 

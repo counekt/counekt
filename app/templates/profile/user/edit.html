@@ -44,7 +44,7 @@
 
     <h1><b>Show location</b></h1>
     <label class="switch">
-      <input type="checkbox" id="show-location" {% if user.show_location %}checked{% endif %}>
+      <input type="checkbox" id="show-location" {% if user.location.show %}checked{% endif %}>
       <span class="slider round"></span>
     </label>
     <div id="feedback-show-location" class="feedback">
@@ -54,7 +54,7 @@
     <div id="location-settings">
       <div id="location">
         <h1><b>Location</b></h1>
-        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" {% if user.location_address %}value="{{ user.location_address }}"{% endif %}></input>
+        <input class="input has-fixed-size" placeholder="Add your location" id="location-field" rows="2" {% if user.location_address %}value="{{ user.location.address }}"{% endif %}></input>
         <div id="map">
         </div>
       </div>
@@ -64,7 +64,7 @@
         <br id="location-anchor">
         <h1><b>Visible on the map</b></h1>
       <label class="switch">
-        <input type="checkbox" id="visible" {% if user.is_visible %}checked{% endif %}>
+        <input type="checkbox" id="visible" {% if user.location.is_visible %}checked{% endif %}>
         <span class="slider round"></span>
       </label>
       <div id="feedback-visible" class="feedback">

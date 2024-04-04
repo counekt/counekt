@@ -110,39 +110,28 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "shardId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "clock",
+          "type": "uint256"
+        }
+      ],
+      "name": "ERC360InvalidShard",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "spender",
           "type": "address"
         }
       ],
       "name": "ERC360InvalidSpender",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "ERC360InvalidTokenId",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        }
-      ],
-      "name": "ERC360NonexistentTokenId",
       "type": "error"
     },
     {
@@ -182,11 +171,11 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
-      "name": "NewTokenId",
+      "name": "NewShard",
       "type": "event"
     },
     {
@@ -242,7 +231,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -393,7 +382,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -484,7 +473,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -562,7 +551,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         }
       ],
@@ -663,6 +652,25 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "shardIdOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes4",
           "name": "interfaceId",
           "type": "bytes4"
@@ -687,25 +695,6 @@
           "internalType": "string",
           "name": "",
           "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "tokenIdOf",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -828,7 +817,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "shardId",
           "type": "uint256"
         },
         {
@@ -859,10 +848,10 @@
     "10": "contracts/ERC360/utils/ERC20Holder.sol",
     "11": "contracts/ERC360/utils/Managable.sol",
     "13": "contracts/ERC360/utils/Spendable.sol",
-    "18": "node_modules/@openzeppelin/contracts/utils/Context.sol",
     "2": "contracts/ERC360/IERC360Errors.sol",
-    "20": "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol",
-    "21": "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol",
+    "24": "node_modules/@openzeppelin/contracts/utils/Context.sol",
+    "26": "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol",
+    "27": "node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol",
     "3": "contracts/ERC360/IERC360Metadata.sol",
     "6": "contracts/ERC360/extensions/ERC360Managable.sol",
     "9": "contracts/ERC360/utils/Administrable.sol"
@@ -871,27 +860,26 @@
     "absolutePath": "contracts/ERC360/extensions/ERC360Managable.sol",
     "exportedSymbols": {
       "ERC20Holder": [
-        1141
+        2222
       ],
       "ERC360": [
-        2204
+        588
       ],
       "ERC360Managable": [
-        618
+        1425
       ],
       "Managable": [
-        1283
+        2364
       ],
       "Spendable": [
-        1560
+        2731
       ]
     },
-    "id": 619,
-    "license": "MIT",
+    "id": 1426,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 565,
+        "id": 1372,
         "literals": [
           "solidity",
           "^",
@@ -899,26 +887,26 @@
           ".20"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:24:6"
+        "src": "0:24:6"
       },
       {
         "absolutePath": "contracts/ERC360/ERC360.sol",
         "file": "../ERC360.sol",
-        "id": 567,
+        "id": 1374,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 619,
-        "sourceUnit": 2205,
-        "src": "58:37:6",
+        "scope": 1426,
+        "sourceUnit": 589,
+        "src": "26:37:6",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 566,
+              "id": 1373,
               "name": "ERC360",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 2204,
-              "src": "66:6:6",
+              "referencedDeclaration": 588,
+              "src": "34:6:6",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -929,21 +917,21 @@
       {
         "absolutePath": "contracts/ERC360/utils/Spendable.sol",
         "file": "../utils/Spendable.sol",
-        "id": 569,
+        "id": 1376,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 619,
-        "sourceUnit": 1561,
-        "src": "96:49:6",
+        "scope": 1426,
+        "sourceUnit": 2732,
+        "src": "64:49:6",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 568,
+              "id": 1375,
               "name": "Spendable",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 1560,
-              "src": "104:9:6",
+              "referencedDeclaration": 2731,
+              "src": "72:9:6",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -954,21 +942,21 @@
       {
         "absolutePath": "contracts/ERC360/utils/Managable.sol",
         "file": "../utils/Managable.sol",
-        "id": 571,
+        "id": 1378,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 619,
-        "sourceUnit": 1284,
-        "src": "146:49:6",
+        "scope": 1426,
+        "sourceUnit": 2365,
+        "src": "114:49:6",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 570,
+              "id": 1377,
               "name": "Managable",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 1283,
-              "src": "154:9:6",
+              "referencedDeclaration": 2364,
+              "src": "122:9:6",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -979,21 +967,21 @@
       {
         "absolutePath": "contracts/ERC360/utils/ERC20Holder.sol",
         "file": "../utils/ERC20Holder.sol",
-        "id": 573,
+        "id": 1380,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 619,
-        "sourceUnit": 1142,
-        "src": "196:53:6",
+        "scope": 1426,
+        "sourceUnit": 2223,
+        "src": "164:53:6",
         "symbolAliases": [
           {
             "foreign": {
-              "id": 572,
+              "id": 1379,
               "name": "ERC20Holder",
               "nodeType": "Identifier",
               "overloadedDeclarations": [],
-              "referencedDeclaration": 1141,
-              "src": "204:11:6",
+              "referencedDeclaration": 2222,
+              "src": "172:11:6",
               "typeDescriptions": {}
             },
             "nameLocation": "-1:-1:-1"
@@ -1006,63 +994,63 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 574,
+              "id": 1381,
               "name": "ERC360",
               "nameLocations": [
-                "288:6:6"
+                "256:6:6"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2204,
-              "src": "288:6:6"
+              "referencedDeclaration": 588,
+              "src": "256:6:6"
             },
-            "id": 575,
+            "id": 1382,
             "nodeType": "InheritanceSpecifier",
-            "src": "288:6:6"
+            "src": "256:6:6"
           },
           {
             "baseName": {
-              "id": 576,
+              "id": 1383,
               "name": "Managable",
               "nameLocations": [
-                "296:9:6"
+                "264:9:6"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 1283,
-              "src": "296:9:6"
+              "referencedDeclaration": 2364,
+              "src": "264:9:6"
             },
-            "id": 577,
+            "id": 1384,
             "nodeType": "InheritanceSpecifier",
-            "src": "296:9:6"
+            "src": "264:9:6"
           }
         ],
         "canonicalName": "ERC360Managable",
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 618,
+        "id": 1425,
         "linearizedBaseContracts": [
-          618,
-          1283,
-          1560,
-          2883,
-          2204,
-          3169,
-          3189,
-          3122,
-          3309,
-          3321,
-          3211,
-          1141
+          1425,
+          2364,
+          2731,
+          2146,
+          588,
+          786,
+          806,
+          737,
+          3010,
+          3022,
+          2912,
+          2222
         ],
         "name": "ERC360Managable",
-        "nameLocation": "269:15:6",
+        "nameLocation": "237:15:6",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 598,
+              "id": 1405,
               "nodeType": "Block",
-              "src": "391:95:6",
+              "src": "359:95:6",
               "statements": [
                 {
                   "expression": {
@@ -1071,18 +1059,18 @@
                         "arguments": [],
                         "expression": {
                           "argumentTypes": [],
-                          "id": 589,
+                          "id": 1396,
                           "name": "_msgSender",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 3201,
-                          "src": "412:10:6",
+                          "referencedDeclaration": 2902,
+                          "src": "380:10:6",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
                             "typeString": "function () view returns (address)"
                           }
                         },
-                        "id": 590,
+                        "id": 1397,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1091,7 +1079,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "412:12:6",
+                        "src": "380:12:6",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -1102,14 +1090,14 @@
                         "arguments": [
                           {
                             "hexValue": "30",
-                            "id": 593,
+                            "id": 1400,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
                             "kind": "number",
                             "lValueRequested": false,
                             "nodeType": "Literal",
-                            "src": "433:1:6",
+                            "src": "401:1:6",
                             "typeDescriptions": {
                               "typeIdentifier": "t_rational_0_by_1",
                               "typeString": "int_const 0"
@@ -1124,26 +1112,26 @@
                               "typeString": "int_const 0"
                             }
                           ],
-                          "id": 592,
+                          "id": 1399,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "lValueRequested": false,
                           "nodeType": "ElementaryTypeNameExpression",
-                          "src": "425:7:6",
+                          "src": "393:7:6",
                           "typeDescriptions": {
                             "typeIdentifier": "t_type$_t_bytes32_$",
                             "typeString": "type(bytes32)"
                           },
                           "typeName": {
-                            "id": 591,
+                            "id": 1398,
                             "name": "bytes32",
                             "nodeType": "ElementaryTypeName",
-                            "src": "425:7:6",
+                            "src": "393:7:6",
                             "typeDescriptions": {}
                           }
                         },
-                        "id": 594,
+                        "id": 1401,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -1152,7 +1140,7 @@
                         "nameLocations": [],
                         "names": [],
                         "nodeType": "FunctionCall",
-                        "src": "425:10:6",
+                        "src": "393:10:6",
                         "tryCall": false,
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -1161,14 +1149,14 @@
                       },
                       {
                         "hexValue": "74727565",
-                        "id": 595,
+                        "id": 1402,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
                         "kind": "bool",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "436:4:6",
+                        "src": "404:4:6",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -1191,18 +1179,18 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 588,
+                      "id": 1395,
                       "name": "_setPermit",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2855,
-                      "src": "401:10:6",
+                      "referencedDeclaration": 2118,
+                      "src": "369:10:6",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_bytes32_$_t_bool_$returns$__$",
                         "typeString": "function (address,bytes32,bool)"
                       }
                     },
-                    "id": 596,
+                    "id": 1403,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1211,82 +1199,82 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "401:40:6",
+                    "src": "369:40:6",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 597,
+                  "id": 1404,
                   "nodeType": "ExpressionStatement",
-                  "src": "401:40:6"
+                  "src": "369:40:6"
                 }
               ]
             },
-            "id": 599,
+            "id": 1406,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
               {
                 "arguments": [
                   {
-                    "id": 584,
+                    "id": 1391,
                     "name": "name_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 579,
-                    "src": "376:5:6",
+                    "referencedDeclaration": 1386,
+                    "src": "344:5:6",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
                       "typeString": "string memory"
                     }
                   },
                   {
-                    "id": 585,
+                    "id": 1392,
                     "name": "symbol_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 581,
-                    "src": "382:7:6",
+                    "referencedDeclaration": 1388,
+                    "src": "350:7:6",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_memory_ptr",
                       "typeString": "string memory"
                     }
                   }
                 ],
-                "id": 586,
+                "id": 1393,
                 "kind": "baseConstructorSpecifier",
                 "modifierName": {
-                  "id": 583,
+                  "id": 1390,
                   "name": "ERC360",
                   "nameLocations": [
-                    "369:6:6"
+                    "337:6:6"
                   ],
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2204,
-                  "src": "369:6:6"
+                  "referencedDeclaration": 588,
+                  "src": "337:6:6"
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "369:21:6"
+                "src": "337:21:6"
               }
             ],
             "name": "",
             "nameLocation": "-1:-1:-1",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 582,
+              "id": 1389,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 579,
+                  "id": 1386,
                   "mutability": "mutable",
                   "name": "name_",
-                  "nameLocation": "339:5:6",
+                  "nameLocation": "307:5:6",
                   "nodeType": "VariableDeclaration",
-                  "scope": 599,
-                  "src": "325:19:6",
+                  "scope": 1406,
+                  "src": "293:19:6",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1294,10 +1282,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 578,
+                    "id": 1385,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "325:6:6",
+                    "src": "293:6:6",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1307,13 +1295,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 581,
+                  "id": 1388,
                   "mutability": "mutable",
                   "name": "symbol_",
-                  "nameLocation": "360:7:6",
+                  "nameLocation": "328:7:6",
                   "nodeType": "VariableDeclaration",
-                  "scope": 599,
-                  "src": "346:21:6",
+                  "scope": 1406,
+                  "src": "314:21:6",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1321,10 +1309,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 580,
+                    "id": 1387,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "346:6:6",
+                    "src": "314:6:6",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1333,48 +1321,48 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "324:44:6"
+              "src": "292:44:6"
             },
             "returnParameters": {
-              "id": 587,
+              "id": 1394,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "391:0:6"
+              "src": "359:0:6"
             },
-            "scope": 618,
-            "src": "313:173:6",
+            "scope": 1425,
+            "src": "281:173:6",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "internal"
           },
           {
             "body": {
-              "id": 616,
+              "id": 1423,
               "nodeType": "Block",
-              "src": "578:38:6",
+              "src": "546:38:6",
               "statements": [
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 612,
+                        "id": 1419,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 601,
-                        "src": "594:7:6",
+                        "referencedDeclaration": 1408,
+                        "src": "562:7:6",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
                       {
-                        "id": 613,
+                        "id": 1420,
                         "name": "amount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 603,
-                        "src": "602:6:6",
+                        "referencedDeclaration": 1410,
+                        "src": "570:6:6",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -1392,18 +1380,18 @@
                           "typeString": "uint256"
                         }
                       ],
-                      "id": 611,
+                      "id": 1418,
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2110,
-                      "src": "588:5:6",
+                      "referencedDeclaration": 494,
+                      "src": "556:5:6",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
                         "typeString": "function (address,uint256)"
                       }
                     },
-                    "id": 614,
+                    "id": 1421,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1412,21 +1400,21 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "588:21:6",
+                    "src": "556:21:6",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 615,
+                  "id": 1422,
                   "nodeType": "ExpressionStatement",
-                  "src": "588:21:6"
+                  "src": "556:21:6"
                 }
               ]
             },
             "functionSelector": "40c10f19",
-            "id": 617,
+            "id": 1424,
             "implemented": true,
             "kind": "function",
             "modifiers": [
@@ -1436,14 +1424,14 @@
                     "arguments": [
                       {
                         "hexValue": "4d494e54",
-                        "id": 607,
+                        "id": 1414,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "569:6:6",
+                        "src": "537:6:6",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_fdf81848136595c31bb5f76217767372bc4bf906663038eb38381131ea27ecba",
                           "typeString": "literal_string \"MINT\""
@@ -1458,18 +1446,18 @@
                           "typeString": "literal_string \"MINT\""
                         }
                       ],
-                      "id": 606,
+                      "id": 1413,
                       "name": "keccak256",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": -8,
-                      "src": "559:9:6",
+                      "src": "527:9:6",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_keccak256_pure$_t_bytes_memory_ptr_$returns$_t_bytes32_$",
                         "typeString": "function (bytes memory) pure returns (bytes32)"
                       }
                     },
-                    "id": 608,
+                    "id": 1415,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": true,
@@ -1478,7 +1466,7 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "559:17:6",
+                    "src": "527:17:6",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
@@ -1486,38 +1474,38 @@
                     }
                   }
                 ],
-                "id": 609,
+                "id": 1416,
                 "kind": "modifierInvocation",
                 "modifierName": {
-                  "id": 605,
+                  "id": 1412,
                   "name": "onlyPermit",
                   "nameLocations": [
-                    "548:10:6"
+                    "516:10:6"
                   ],
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2703,
-                  "src": "548:10:6"
+                  "referencedDeclaration": 1966,
+                  "src": "516:10:6"
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "548:29:6"
+                "src": "516:29:6"
               }
             ],
             "name": "mint",
-            "nameLocation": "501:4:6",
+            "nameLocation": "469:4:6",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 604,
+              "id": 1411,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 601,
+                  "id": 1408,
                   "mutability": "mutable",
                   "name": "account",
-                  "nameLocation": "514:7:6",
+                  "nameLocation": "482:7:6",
                   "nodeType": "VariableDeclaration",
-                  "scope": 617,
-                  "src": "506:15:6",
+                  "scope": 1424,
+                  "src": "474:15:6",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1525,10 +1513,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 600,
+                    "id": 1407,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "506:7:6",
+                    "src": "474:7:6",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1539,13 +1527,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 603,
+                  "id": 1410,
                   "mutability": "mutable",
                   "name": "amount",
-                  "nameLocation": "531:6:6",
+                  "nameLocation": "499:6:6",
                   "nodeType": "VariableDeclaration",
-                  "scope": 617,
-                  "src": "523:14:6",
+                  "scope": 1424,
+                  "src": "491:14:6",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1553,10 +1541,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 602,
+                    "id": 1409,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "523:7:6",
+                    "src": "491:7:6",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1565,43 +1553,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "505:33:6"
+              "src": "473:33:6"
             },
             "returnParameters": {
-              "id": 610,
+              "id": 1417,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "578:0:6"
+              "src": "546:0:6"
             },
-            "scope": 618,
-            "src": "492:124:6",
+            "scope": 1425,
+            "src": "460:124:6",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 619,
-        "src": "251:368:6",
+        "scope": 1426,
+        "src": "219:368:6",
         "usedErrors": [
-          1686,
-          2682,
-          2688,
-          3130,
-          3139,
-          3144,
-          3149,
-          3158,
-          3163,
-          3168
+          747,
+          756,
+          761,
+          766,
+          775,
+          780,
+          785,
+          1945,
+          1951
         ],
         "usedEvents": [
-          2985,
-          2994,
-          3001
+          600,
+          609,
+          616
         ]
       }
     ],
-    "src": "32:588:6"
+    "src": "0:588:6"
   },
   "bytecode": "",
   "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
@@ -1638,7 +1625,7 @@
     "errors": {
       "ERC360InsufficientAllowance(address,uint256,uint256)": [
         {
-          "details": "Indicates a failure with the `spender`\u2019s `allowance`. Used in transfers.",
+          "details": "Indicates a failure with the `spender`\u00e2\u20ac\u2122s `allowance`. Used in transfers.",
           "params": {
             "allowance": "Amount of tokens a `spender` is allowed to operate with.",
             "needed": "Minimum amount required to perform a transfer.",
@@ -1680,19 +1667,20 @@
           }
         }
       ],
+      "ERC360InvalidShard(uint256,uint256)": [
+        {
+          "details": "Indicates an error concerning the validity of a shard.",
+          "params": {
+            "clock": "The clock at which the shard was invalid.",
+            "shardId": "Identifier number of a shard."
+          }
+        }
+      ],
       "ERC360InvalidSpender(address)": [
         {
           "details": "Indicates a failure with the `spender` to be approved. Used in approvals.",
           "params": {
             "spender": "Address that may be allowed to operate on tokens without being their owner."
-          }
-        }
-      ],
-      "ERC360NonexistentTokenId(uint256)": [
-        {
-          "details": "Indicates a `tokenId` whose `owner` is the zero address.",
-          "params": {
-            "tokenId": "Identifier number of a token."
           }
         }
       ]
@@ -1701,8 +1689,8 @@
       "Approval(address,address,uint256)": {
         "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `amount` is the new allowance."
       },
-      "NewTokenId(address,uint256)": {
-        "details": "Emitted when the current balance of an `account` is tied to a new `tokenId`."
+      "NewShard(address,uint256)": {
+        "details": "Emitted when the current balance of an `account` is tied to a new `shardId`."
       },
       "Transfer(address,address,uint256)": {
         "details": "Emitted when an `amount` of tokens are moved `from` one account `to` another. Note that `amount` may be zero."
@@ -1714,7 +1702,7 @@
         "details": "See {IERC360-allowance}."
       },
       "amountOf(uint256)": {
-        "details": "Returns the amount tied to the ``tokenId``."
+        "details": "Returns the amount tied to the ``shardId``."
       },
       "approve(address,uint256)": {
         "notice": "Approves the allowance of a certain amount of the sender to a spender",
@@ -1749,14 +1737,14 @@
       "isValid(uint256)": {
         "notice": "Returns a boolean stating if a given shard is currently valid or not.",
         "params": {
-          "tokenId": "The shard, whose validity is to be checked for."
+          "shardId": "The shard, whose validity is to be checked for."
         }
       },
       "name()": {
         "details": "Returns the name of the token."
       },
       "ownerOf(uint256)": {
-        "details": "Returns the owner of the `tokenId` token. Requirements: - `tokenId` must exist."
+        "details": "Returns the owner of the `shardId` token. Requirements: - `shardId` must exist."
       },
       "setPermit(address,bytes32,bool)": {
         "notice": "Sets the state of a specified permit of a given address.",
@@ -1766,14 +1754,14 @@
           "status": "The new Permit State to be applied."
         }
       },
+      "shardIdOf(address)": {
+        "details": "Returns the current shard with `shardId` tied to an ``account``."
+      },
       "supportsInterface(bytes4)": {
         "details": "See {IERC165-supportsInterface}."
       },
       "symbol()": {
         "details": "Returns the symbol of the token."
-      },
-      "tokenIdOf(address)": {
-        "details": "Returns the current tokenId tied to an ``account``."
       },
       "totalSupply()": {
         "notice": "Returns the current supply."
@@ -1788,23 +1776,23 @@
         "details": "Moves an `amount` of tokens `from` one account `to` another using the allowance mechanism. The `amount` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
       },
       "wasValid(uint256,uint256)": {
-        "notice": "Returns a boolean stating if the given tokenId was current at a given clock.",
+        "notice": "Returns a boolean stating if the given shard was current at a given clock.",
         "params": {
           "clock": "The token clock to be checked for.",
-          "tokenId": "The token whose validity is to be checked for."
+          "shardId": "The token whose validity is to be checked for."
         }
       }
     },
     "version": 1
   },
   "offset": [
-    251,
-    619
+    219,
+    587
   ],
   "opcodes": "",
   "pcMap": {},
-  "sha1": "98f1d887bf07dd37e0edc3e5c70c2af39a4d4be3",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport {ERC360} from \"../ERC360.sol\";\nimport {Spendable} from \"../utils/Spendable.sol\";\nimport {Managable} from \"../utils/Managable.sol\";\nimport {ERC20Holder} from \"../utils/ERC20Holder.sol\";\n\nabstract contract ERC360Managable is ERC360, Managable {\n\n    constructor(string memory name_, string memory symbol_) ERC360(name_,symbol_) {\n        _setPermit(_msgSender(),bytes32(0),true); // grant the master permit to creator\n    }\n\n    function mint(address account, uint256 amount) external onlyPermit(keccak256(\"MINT\")) {\n        _mint(account,amount);\n    }\n\n}\n",
+  "sha1": "81dbe2a525b035a20e839c6d324050177b5de314",
+  "source": "pragma solidity ^0.8.20;\n\nimport {ERC360} from \"../ERC360.sol\";\nimport {Spendable} from \"../utils/Spendable.sol\";\nimport {Managable} from \"../utils/Managable.sol\";\nimport {ERC20Holder} from \"../utils/ERC20Holder.sol\";\n\nabstract contract ERC360Managable is ERC360, Managable {\n\n    constructor(string memory name_, string memory symbol_) ERC360(name_,symbol_) {\n        _setPermit(_msgSender(),bytes32(0),true); // grant the master permit to creator\n    }\n\n    function mint(address account, uint256 amount) external onlyPermit(keccak256(\"MINT\")) {\n        _mint(account,amount);\n    }\n\n}\n",
   "sourceMap": "",
   "sourcePath": "contracts/ERC360/extensions/ERC360Managable.sol",
   "type": "contract"

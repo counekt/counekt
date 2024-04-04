@@ -4,10 +4,9 @@ from app.models.static.file import File
 from PIL import Image
 
 
-class Photo(db.Model, File, Base):
+class Photo(File):
 
-    is_empty = db.Column(db.Boolean, default=True)
-    replacement = db.Column(db.String(2048))
+    __tablename__ = "file"
 
     def save(self, file, d=(256, 256), path=None):
         image = Image.open(file)
@@ -35,4 +34,4 @@ class Photo(db.Model, File, Base):
         return self.replacement
 
     def __repr__(self):
-        return "<Picture {}>".format(self.filename)
+        return "<Photo {}>".format(self.filename or self.replacement)
