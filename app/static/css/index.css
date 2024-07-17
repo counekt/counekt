@@ -1,0 +1,116 @@
+.fixedElement {
+    position:fixed;
+    top:0;
+    width:100%;
+    z-index:100;
+}
+
+#map {
+    height: 100%;
+    min-height: 250px;
+    opacity: 90%;
+    cursor: pointer;
+
+}
+
+.leaflet-container{
+    border-radius: 12px;
+    }
+
+    div.media-content {
+      overflow: hidden;
+    }
+
+#first-thing.columns {
+  margin: auto;
+  margin-top: 100px;
+}
+
+.title.is-1.is-spaced {
+font-size:  6vw !important;
+}
+
+
+@media screen and (max-width: 768px) {
+
+
+  #first-thing.columns {
+  margin-top: 50px;
+}
+
+.title.is-1.is-spaced {
+     font-size: 46px !important;
+  }
+}
+
+@media screen and (max-width: 420.6px) {
+  .title.is-1.is-spaced {
+     font-size: 10vw !important;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+    .title.is-1.is-spaced {
+      font-size: 72px !important;
+  }
+  div.columns {
+    max-width:  1220px !important;
+  }
+
+  
+
+}
+
+.buzzword-container {
+    transition: all 1s ease-in;
+}
+
+.buzzword::before {
+            content: "meeting";
+            animation: changeBuzzword 18s infinite;
+            transition: 1s;
+        }
+
+@keyframes changeBuzzword {
+            0% { content: "meeting"; }
+    0.5% { content: "meetin"; }
+    1% { content: "meeti"; }
+    1.5% { content: "meet"; }
+    2% { content: "mee"; }
+    2.5% { content: "me"; }
+    3% { content: "m"; }
+    3.5% { content: "ma"; }
+    4% { content: "man"; }
+    4.5% { content: "mana"; }
+    5% { content: "manag"; }
+    5.5% { content: "manage"; }
+    6% { content: "managem"; }
+    6.5% { content: "manageme"; }
+    7% { content: "managemen"; }
+    7.5%, 34.16% { content: "management"; }
+    34.66% { content: "managemen"; }
+    35.16% { content: "manageme"; }
+    35.66% { content: "managem"; }
+    36.16% { content: "manage"; }
+    36.66% { content: "manag"; }
+    37.16% { content: "mana"; }
+    37.66% { content: "man"; }
+    38.16% { content: "ma"; }
+    38.66% { content: "m"; }
+    39.16% { content: "ma"; }
+    39.66% { content: "mar"; }
+    40.16% { content: "mark"; }
+    40.66% { content: "marke"; }
+    41.16%, 67.82% { content: "market"; }
+    68.32% { content: "marke"; }
+    68.82% { content: "mark"; }
+    69.32% { content: "mar"; }
+    69.82% { content: "ma"; }
+    70.32% { content: "m"; }
+    70.82% { content: "me"; }
+    71.32% { content: "mee"; }
+    71.82% { content: "meet"; }
+    72.32% { content: "meeti"; }
+    72.82% { content: "meetin"; }
+    73.32%, 100% { content: "meeting"; }
+}

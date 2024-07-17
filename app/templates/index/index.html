@@ -2,6 +2,9 @@
 {% block title %}
 <title>Counekt</title>
 {% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
 {% block content %}
 <section class="hero is-info is-fullheight" style="background-image: linear-gradient(to bottom right, navy,deepskyblue);">
   <div class="hero-body" style="min-height:775px;">
@@ -27,13 +30,20 @@
 </section>
 <section class="section hero">
   <div class="hero-body" style="max-width: 1080px; margin: auto; padding:0px;">
-  <h1 class="title is-2 is-spaced"><i>The</i> meeting place</h1>
+  <h1 class="title is-2 is-spaced buzzword-container"><i>The</i> <span class="buzzword"></span> place</h1>
   <h2 class="subtitle">
-    As a promising online meeting platform, <strong>Counekt</strong> seeks to provide <strong>entrepreneurs</strong> and likeminded with a <strong>flexible network</strong> as a tool to realise their <strong>ideas</strong> with.
+    As a promising online <i>meeting/management/market</i> platform, <strong>Counekt</strong> seeks to provide <strong>entrepreneurs</strong>, <strong>freelancers</strong> and likeminded with a <strong>flexible network</strong>, and a direct access to <strong>DAOs</strong> (decentralized autonomous organizations) and their <strong>exchange</strong>, thereby offering them the tools to bring their efforts to fruition.
   </h2>
+   <div class="content is-medium">
+    <h2 class="subtitle is-4">Currently, we are testing the following <i>leap-of-faith</i> assumptions.</h2>
+    <ul>
+      <li><i>Value hypothesis</i>: Users will engage with the networking map to enhance their professional connections. Moreover, they will participate in decentralized autonomous organizations and make use of the associated marketplace on the site.</li>
+      <li><i>Growth hypothesis</i>: The platform will grow using the viral engine of growth and generate value through a transaction-based revenue model, assuming a significant amount of users trade on the marketplace.</li>
+    </ul>
+  </div>
   <div class="columns" style="margin: auto;">
       <div class="column">
-         <div class="card">
+         <div class="card" style="max-width: 1000px;">
             <div class="card-image">
               <figure class="image is-4by3">
                 <img src="{{ url_for('static', filename='images/wallpaper.jpg') }}" alt="Placeholder image">
@@ -52,31 +62,45 @@
               </div>
             </div>
 
-            <div class="content">
-              The developer behind it all.
-           </div>
+              <div class="content">
+                The developer behind it all.
+             </div>
+          </div>
         </div>
       </div>
-      </div>
      
-</div>
-</div>
-</section>
-<section class="hero is-info" style="background-image: linear-gradient(to bottom right, purple,navy);">
-  <div class="hero-body">
-     <p class="title is-2"><i>Help us</i> get some validated learning </p>
-      <p class="subtitle">To really bring Counekt to life, we need to understand what you, as potential users, actually want and need. Your feedback will directly shape the future of this project. Let's create something great together! </p>
+  </div>
   </div>
 </section>
-<section class="hero is-info" style="background-image: linear-gradient(to bottom right, indigo,navy);">
-  <div class="container is-fluid">
-  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfscGT7W_oyR3T-mYfkyd-3uSGv6H9bl9pACj9pYLCMz8EDTg/viewform?embedded=true" height="3005" frameborder="0" marginheight="0" marginwidth="0" style="width: 100%; max-height:  500px;">Loading…</iframe>
-</div>
+<section class="hero is-info" style="background-image: linear-gradient(to top right, navy,deepskyblue );">
+  <div class="hero-body">
+     <p class="title is-2"><i>Stay tuned</i> on the development</p>
+      <p class="subtitle">Over the course of the next couple of months, I (Frederik Christoffersen) will be posting videos of the product development process on YouTube. Follow along on the ride!</p>
+      <div class="container" style="max-width: 1000px;">
+    <figure class="image is-16by9">
+     <iframe class="has-ratio" width="560" height="315" src="https://www.youtube.com/embed/p1E1cROBUAM?si=k3pnQgT36s_qGibV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen> </iframe>
+   </figure>
+ </div>
+   </div>
 </section>
+
+<section class="hero" style="background-color: white;">
+  <div class="hero-body">
+     <p class="title is-2"><i>Help us</i> get some validated learning </p>
+      <hr>
+      <p class="subtitle">To really bring Counekt to life, we need to understand what you, as potential users, actually want and need. Your feedback will directly shape the future of this project. Let's create something great together! </p>
+      <div class="container is-fullhd" style="padding:15px;text-align: center;">
+      <a style="display: inline-block;" class="button is-medium is-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfscGT7W_oyR3T-mYfkyd-3uSGv6H9bl9pACj9pYLCMz8EDTg/viewform?usp=sf_link" target="_blank">Complete our Survey</a>
+    </a>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 {% block scripts %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
 setTimeout(function(){ 
@@ -97,63 +121,4 @@ setTimeout(function(){
          	window.location.href = "/map/";
          });
 </script>
-<style type="text/css">
-
-#map {
-	height: 100%;
-	min-height: 250px;
-	opacity: 90%;
-	cursor: pointer;
-
-}
-
-.leaflet-container{
-    border-radius: 12px;
-    }
-
-    div.media-content {
-      overflow: hidden;
-    }
-
-#first-thing.columns {
-  margin: auto;
-  margin-top: 100px;
-}
-
-.title.is-1.is-spaced {
-font-size:  6vw !important;
-}
-
-
-@media screen and (max-width: 768px) {
-
-
-  #first-thing.columns {
-  margin-top: 50px;
-}
-
-.title.is-1.is-spaced {
-     font-size: 46px !important;
-  }
-}
-
-@media screen and (max-width: 420.6px) {
-  .title.is-1.is-spaced {
-     font-size: 10vw !important;
-  }
-}
-
-@media screen and (min-width: 1200px) {
-    .title.is-1.is-spaced {
-      font-size: 72px !important;
-  }
-  div.columns {
-    max-width:  1220px !important;
-  }
-
-  
-
-}
-
-</style>
 {% endblock %}
