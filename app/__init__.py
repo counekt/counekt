@@ -39,6 +39,7 @@ def create_app(config_class=Config):
     )
 
     from app.routes.index import bp as index_bp
+    from app.routes.stats import bp as stats_bp
     from app.routes.map import bp as map_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.api import bp as api_bp
@@ -50,6 +51,7 @@ def create_app(config_class=Config):
 
 
     app.register_blueprint(index_bp)
+    app.register_blueprint(stats_bp)
     app.register_blueprint(map_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)

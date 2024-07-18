@@ -29,63 +29,43 @@
 </div>
 </section>
 <section class="section hero">
-  <div class="hero-body" style="max-width: 1080px; margin: auto; padding:0px;">
+  <div class="hero-body" style="max-width: 1080px; margin: 0 auto;">
   <h1 class="title is-2 is-spaced buzzword-container"><i>The</i> <span class="buzzword"></span> place</h1>
+  <hr>
   <h2 class="subtitle">
     As a promising online <i>meeting/management/market</i> platform, <strong>Counekt</strong> seeks to provide <strong>entrepreneurs</strong>, <strong>freelancers</strong> and likeminded with a <strong>flexible network</strong>, and a direct access to <strong>DAOs</strong> (decentralized autonomous organizations) and their <strong>exchange</strong>, thereby offering them the tools to bring their efforts to fruition.
   </h2>
+    <hr>
+
    <div class="content is-medium">
     <h2 class="subtitle is-4">Currently, we are testing the following <i>leap-of-faith</i> assumptions.</h2>
     <ul>
       <li><i>Value hypothesis</i>: Users will engage with the networking map to enhance their professional connections. Moreover, they will participate in decentralized autonomous organizations and make use of the associated marketplace on the site.</li>
       <li><i>Growth hypothesis</i>: The platform will grow using the viral engine of growth and generate value through a transaction-based revenue model, assuming a significant amount of users trade on the marketplace.</li>
     </ul>
+    <div class="container is-fullhd" style="padding:15px;text-align: center;">
+      <a style="display: inline-block;" class="button is-medium is-info" href="/stats">Go to Statistics</a>
+    </a>
   </div>
-  <div class="columns" style="margin: auto;">
-      <div class="column">
-         <div class="card" style="max-width: 1000px;">
-            <div class="card-image">
-              <figure class="image is-4by3">
-                <img src="{{ url_for('static', filename='images/wallpaper.jpg') }}" alt="Placeholder image">
-              </figure>
-            </div>
-          <div class="card-content">
-            <div class="media">
-              <div class="media-left">
-                <figure class="image is-48x48">
-                  <img src="{{ url_for('static', filename='images/4years.jpg') }}" alt="Placeholder image">
-                </figure>
-              </div>
-              <div class="media-content">
-                <p class="title is-4">Frederik Walther Liberoth Christoffersen</p>
-                <p class="subtitle is-6">@FrederikWLC</p>
-              </div>
-            </div>
 
-              <div class="content">
-                The developer behind it all.
-             </div>
-          </div>
-        </div>
-      </div>
-     
-  </div>
-  </div>
+</div>
 </section>
 <section class="hero is-info" style="background-image: linear-gradient(to top right, navy,deepskyblue );">
-  <div class="hero-body">
+  <div class="hero-body" style="max-width: 1080px; margin: auto;">
      <p class="title is-2"><i>Stay tuned</i> on the development</p>
-      <p class="subtitle">Over the course of the next couple of months, I (Frederik Christoffersen) will be posting videos of the product development process on YouTube. Follow along on the ride!</p>
+      <p class="subtitle is-4">Over the course of the next couple of months, I (Frederik Christoffersen) will be posting videos of the product development process on YouTube. Follow along on the ride!</p>
+      <hr style="color: rgb(235, 235, 245)">
       <div class="container" style="max-width: 1000px;">
     <figure class="image is-16by9">
      <iframe class="has-ratio" width="560" height="315" src="https://www.youtube.com/embed/p1E1cROBUAM?si=k3pnQgT36s_qGibV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen> </iframe>
    </figure>
  </div>
+ <hr style="color: rgb(235, 235, 245)">
    </div>
 </section>
 
 <section class="hero" style="background-color: white;">
-  <div class="hero-body">
+  <div class="hero-body" style="max-width: 1080px; margin: auto;">
      <p class="title is-2"><i>Help us</i> get some validated learning </p>
       <hr>
       <p class="subtitle">To really bring Counekt to life, we need to understand what you, as potential users, actually want and need. Your feedback will directly shape the future of this project. Let's create something great together! </p>
@@ -94,8 +74,8 @@
     </a>
     </div>
   </div>
+    </div>
 </section>
-
 {% endblock %}
 {% block scripts %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
