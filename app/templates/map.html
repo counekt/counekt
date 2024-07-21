@@ -108,6 +108,8 @@
 <script src="../static/js/map.js"></script>
 <script type="text/javascript">
   $(window).on("load", function () {
+  $("#map-container").height($(window).height());map.invalidateSize();
+  $("#explore-box").height(Math.min(375, Math.max(55, $(window).height()-100)));
   explore(do_redirect=false);
   });
 </script>
@@ -145,13 +147,6 @@ map.zoomControl.setPosition('bottomright');
 // You can also put other controls in the same placeholder.
 
 map.attributionControl.setPrefix(''); // Don't show the 'Powered by Leaflet' text. Attribution overload
-$(document).ready(function() {
-setTimeout(function(){ 
-  $("#map-container").height($(window).height());map.invalidateSize();
-  $("#explore-box").height(Math.min(375, Math.max(55, $(window).height()-100)));
-}, 250);
-
-       });
 
 $(window).on("resize", function () {
    $("#map-container").height($(window).height());
