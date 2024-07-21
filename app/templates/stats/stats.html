@@ -8,9 +8,27 @@
 {% block content %}
 <section class="hero is-info is-fullheight" style="background-image: linear-gradient(to bottom right, navy,deepskyblue);">
   <div class="hero-body" style="min-height:775px;">
-  	<h1 class="title is-2 is-spaced buzzword-container">The Statistics</h1>
-  <hr>
-  <h2 class="subtitle">
+    <div class="columns" style="width:100%;">
+    
+    <div id="title-column" class="column" style="min-height: 100%;height: 100%; ">
+  	<h1 class="title is-2 is-spaced">The Statistics</h1>
   </div>
-</section>
+  <div id="stats-column" class="column columns" style="min-height: 100%;height: 100%; ">
+    <div class="column" style="width:100%;">
+    <h1 class="title is-spaced">Vanity</h1>
+    <h2 class="subtitle is-spaced"><strong>Accounts</strong>: {{models.User.query.count()}}</h2>
+    <h2 class="subtitle is-spaced"><strong>Connections</strong>: {{models.User.total_associate_count}}</h2>
+    <h2 class="subtitle is-spaced"><strong>DAOs</strong>: {{models.ERC360.query.count()}}</h2>
+    <h2 class="subtitle is-spaced"><strong>Revenue</strong>: €{{0}}</h2>
+  </div>
+  <div class="column" style="width:100%;">
+        <h1 class="title is-spaced">Actionable</h1>
+        <h2 class="subtitle is-spaced"><strong>Revenue per account</strong>: €{{0}}</h2>
+        <h2 class="subtitle is-spaced"><strong>Transactions per</strong>: €{{0}}</h2>
+        <h2 class="subtitle is-spaced"><strong>Virality coefficient</strong>: {{0}}</h2>
+        <h2 class="subtitle is-spaced"><strong>Referral rate</strong>: {{0}}</h2>
+  </div>
+</div>
+</div>  
+</div></section>
 {% endblock %}
