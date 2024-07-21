@@ -82,11 +82,10 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script type="text/javascript">
-	$(document).ready(function() {
-setTimeout(function(){ 
-	map.invalidateSize();
-
-},250)});
+	
+  $(window).on('load', function() {
+   map.invalidateSize();
+});
          var map = L.map('map', { zoomControl: false }).setView([55.676111, 12.568333], 13);
          
          //CartoDB layer names: light_all / dark_all / light_nonames / dark_nonames

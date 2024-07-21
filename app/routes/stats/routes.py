@@ -7,4 +7,4 @@ import app.routes.stats.funcs as funcs
 @bp.route("/")
 @bp.route("/stats/")
 def stats():
-	return render_template("stats/stats.html", size="medium", footer=True, navbar=True)
+	return render_template("stats/stats.html", size="medium", footer=True, navbar=True, models=models)

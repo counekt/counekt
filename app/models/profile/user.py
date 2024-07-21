@@ -27,6 +27,12 @@ followers = db.Table('followers',
 
 
 class User(UserMixin, db.Model, Base):
+
+    @classmethod
+    @property 
+    def total_associate_count(cls):
+        return db.session.query(func.count()).select_from(associates).scalar()
+
     id = db.Column(db.Integer, primary_key=True) # DELETE THIS IN FUTURE
     creation_datetime = db.Column(db.DateTime, index=True)
     auth_token = db.Column(db.String(32), index=True, unique=True)
