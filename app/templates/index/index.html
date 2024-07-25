@@ -30,7 +30,7 @@
 </section>
 <section class="section hero">
   <div class="hero-body" style="max-width: 1080px; margin: 0 auto;">
-  <h1 class="title is-2 is-spaced buzzword-container"><i>The</i> <span class="buzzword"></span> place</h1>
+  <h1 class="title is-2 is-spaced buzzword-container"><span class="text"><i>The</i></span> <span class="buzzword text"></span> <span class="text">place</span></h1>
   <hr>
   <h2 class="subtitle">
     As a promising online <i>meeting/management/market</i> platform, <strong>Counekt</strong> seeks to provide <strong>entrepreneurs</strong>, <strong>freelancers</strong> and likeminded with a <strong>flexible network</strong>, and a direct access to <strong>DAOs</strong> (decentralized autonomous organizations) and their <strong>exchange</strong>, thereby offering them the tools to bring their efforts to fruition.
@@ -57,7 +57,7 @@
       <hr style="color: rgb(235, 235, 245)">
       <div class="container" style="max-width: 1000px;">
     <figure class="image is-16by9">
-     <iframe class="has-ratio" width="560" height="315" src="https://www.youtube.com/embed/p1E1cROBUAM?si=k3pnQgT36s_qGibV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen> </iframe>
+     <iframe class="has-ratio" id="counekt-yt-vid" width="560" height="315" data-src="https://www.youtube.com/embed/p1E1cROBUAM?si=k3pnQgT36s_qGibV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen> </iframe>
    </figure>
  </div>
  <hr style="color: rgb(235, 235, 245)">
@@ -85,6 +85,7 @@
 	
   $(window).on('load', function() {
    map.invalidateSize();
+   $('#counekt-yt-vid').attr("src",$('#counekt-yt-vid').data('src'));
 });
          var map = L.map('map', { zoomControl: false }).setView([55.676111, 12.568333], 13);
          

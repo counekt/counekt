@@ -49,6 +49,14 @@ font-size:  6vw !important;
   }
 }
 
+@media screen and (max-width: 536px) {
+
+  .buzzword-container span {
+    width: 100%; display: block;
+  }
+
+}
+
 @media screen and (min-width: 1200px) {
     .title.is-1.is-spaced {
       font-size: 72px !important;
