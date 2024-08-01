@@ -197,7 +197,7 @@ function changeTo() {
   if (state) {
   if (state.loc) {$("#location-field").val(state.loc);} else {$("#location-field").val('');}
   if (state.rad) {$("#radius-value").val(state.rad);$('#radius-slider').slider('value',state.rad);} else{$("#radius-value").val(5);$('#radius-slider').slider('value',5);}
-  if (state.min) {$("#age-value0" ).val(state.min);$('#age-slider').slider('values', 0, state.min);} else {$("#age-value0" ).val(13);$('#age-slider').slider('values', 0, 13);}
+  if (state.min) {$("#age-value0" ).val(state.min);$('#age-slider').slider('values', 0, state.min);} else {$("#age-value0" ).val(18);$('#age-slider').slider('values', 0, 18);}
   if (state.max) {$("#age-value1" ).val(state.max);$('#age-slider').slider('values', 1, state.max);} else {$("#age-value1" ).val(100);$('#age-slider').slider('values', 1, 100);}
   if (state.gen) {$("#gender").val(state.gen);} else {$("#gender").val("");}
   if (state.ski) {$("#skill").val(state.ski);} else {$("#skill").val("");}
@@ -206,7 +206,7 @@ function changeTo() {
   else {
     $("#location-field").val('');
     $("#radius-value").val(5);$('#radius-slider').slider('value',5);
-    $("#age-value0").val(13);$('#age-slider').slider('values', 0, 13);
+    $("#age-value0").val(18);$('#age-slider').slider('values', 0, 18);
     $("#age-value1" ).val(100);$('#age-slider').slider('values', 1, 100);
     $("#gender").val("");
     $("#skill").val("");
@@ -233,9 +233,9 @@ function changeTo() {
  $(function() {
     $( "#age-slider" ).slider({
       range: true,
-      min: 13,
+      min: 18,
       max: 100,
-      values: [{% if selected_min_age %}{{selected_min_age}}{% else %} 13 {% endif %}, {% if selected_max_age %}{{selected_max_age}}{% else %} 100 {% endif %}],
+      values: [{% if selected_min_age %}{{selected_min_age}}{% else %} 18 {% endif %}, {% if selected_max_age %}{{selected_max_age}}{% else %} 100 {% endif %}],
       slide: function( event, ui ) {
         $( "#age-value0" ).val(ui.values[ 0 ]);
         $( "#age-value1" ).val(ui.values[ 1 ]);
