@@ -7,7 +7,7 @@ from flask import render_template
 from datetime import date
 
 
-def verify_traits(month, day, year, gender):
+def verify_traits(month, day, year, sex):
     if not month or not day or not year:
         return json.dumps({'status': 'Birthdate must be filled in', 'box_ids': ['birthdate']})
 
@@ -18,8 +18,8 @@ def verify_traits(month, day, year, gender):
     except ValueError:
         return json.dumps({'status': 'Invalid date', 'box_id': 'birthdate'})
 
-    if not gender in ["Unspecified", "Male", "Female", "Other"]:
-        return json.dumps({'status': 'Invalid gender', 'box_ids': ['gender']})
+    if not sex in ["Unspecified", "Male", "Female"]:
+        return json.dumps({'status': 'Invalid sex', 'box_ids': ['sex']})
 
 
 def verify_identifiers(username, email):
@@ -80,3 +80,4 @@ def send_auth_email(user):
                                          user=user, auth_token=auth_token),
                html_body=render_template('email/auth.html',
                                          user=user, auth_token=auth_token))
+    db.session.commit()

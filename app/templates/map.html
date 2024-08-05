@@ -60,15 +60,15 @@
                     </div>
 
 
-                      <div class="option" id="gender-box">
-                        <p class="title is-4 field-title">Gender:</p>
+                      <div class="option" id="sex-box">
+                        <p class="title is-4 field-title">Sex:</p>
                         <div class="field input-field" style="display: table; margin: 0 auto;">
                           <div class="control has-icons-left">
                           <div class="select is-info">
-                              <select id="gender">
+                              <select id="sex">
                               <option value="" selected>All</option>
-                          {% for gender in available_genders %}
-                              <option {% if gender == selected_gender %} selected {% endif %}>{{gender}}</option>
+                          {% for sex in available_sexes %}
+                              <option {% if sex == selected_sex %} selected {% endif %}>{{sex}}</option>
                           {% endfor %}
                               </select>
                           </div>
@@ -199,7 +199,7 @@ function changeTo() {
   if (state.rad) {$("#radius-value").val(state.rad);$('#radius-slider').slider('value',state.rad);} else{$("#radius-value").val(5);$('#radius-slider').slider('value',5);}
   if (state.min) {$("#age-value0" ).val(state.min);$('#age-slider').slider('values', 0, state.min);} else {$("#age-value0" ).val(18);$('#age-slider').slider('values', 0, 18);}
   if (state.max) {$("#age-value1" ).val(state.max);$('#age-slider').slider('values', 1, state.max);} else {$("#age-value1" ).val(100);$('#age-slider').slider('values', 1, 100);}
-  if (state.gen) {$("#gender").val(state.gen);} else {$("#gender").val("");}
+  if (state.sex) {$("#sex").val(state.sex);} else {$("#sex").val("");}
   if (state.ski) {$("#skill").val(state.ski);} else {$("#skill").val("");}
     explore(do_redirect=false);
   }
@@ -208,7 +208,7 @@ function changeTo() {
     $("#radius-value").val(5);$('#radius-slider').slider('value',5);
     $("#age-value0").val(18);$('#age-slider').slider('values', 0, 18);
     $("#age-value1" ).val(100);$('#age-slider').slider('values', 1, 100);
-    $("#gender").val("");
+    $("#sex").val("");
     $("#skill").val("");
     markers.clearLayers();
     map.setView([55.676111, 12.568333], 13);

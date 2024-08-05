@@ -22,19 +22,19 @@ def map():
     q_address = request.args.get('loc')
     q_radius = request.args.get('rad')
     q_skill = request.args.get('ski')
-    q_gender = request.args.get('gen')
+    q_sex = request.args.get('sex')
     q_min_age = request.args.get('min')
     q_max_age = request.args.get('max')
     q_include_erc360s = True # Remember to add on/off tick front end
 
-    q_strings = {"selected_address": q_address, "selected_radius": q_radius, "selected_skill": q_skill, "selected_gender": q_gender, "selected_min_age": q_min_age, "selected_max_age": q_max_age}
+    q_strings = {"selected_address": q_address, "selected_radius": q_radius, "selected_skill": q_skill, "selected_sex": q_sex, "selected_min_age": q_min_age, "selected_max_age": q_max_age}
 
     if request.method == 'POST':
 
         address = request.form.get("location")
         skill = request.form.get("skill")
         radius = request.form.get("radius")
-        gender = request.form.get("gender")
+        sex = request.form.get("sex")
         min_age = request.form.get("min_age")
         max_age = request.form.get("max_age")
 
@@ -55,16 +55,15 @@ def map():
         if skill:
             if skill in current_app.config["AVAILABLE_SKILLS"]:
                 url += f'&ski={skill}'
-        if gender:
-            if gender in current_app.config["AVAILABLE_GENDERS"]:
-                url += f'&gen={gender}'
+        if sex:
+            if sex in current_app.config["AVAILABLE_SEXES"]:
+                url += f'&sex={sex}'
         if min_age:
             url += f'&min={min_age}'
         if max_age:
             url += f'&max={max_age}'
 
-        query = models.User.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, gender=gender, min_age=min_age, max_age=max_age)
-        
+        query = models.User.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius, skill=skill, sex=sex, min_age=min_age, max_age=max_age)
         if q_include_erc360s:
             erc360_query = models.ERC360.get_explore_query(latitude=location.latitude, longitude=location.longitude, radius=radius)
             erc360s = erc360_query.all()
@@ -78,7 +77,7 @@ def map():
         erc360s_info = [{"address": e.address, "photo": e.photo.src, "name": e.name, "symbol": e.symbol, "lat": e.location.latitude, "lng": e.location.longitude} for e in erc360s]
         return json.dumps({'status': 'Successfully explored', 'url': url, 'users_info': users_info, 'erc360s_info':erc360s_info, 'loc': loc})
 
-    return render_template("map.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_genders=current_app.config["AVAILABLE_GENDERS"], background=False, footer=False, exonavbar=True, ** q_strings)
+    return render_template("map.html", available_skills=current_app.config["AVAILABLE_SKILLS"], available_sexes=current_app.config["AVAILABLE_SEXES"], background=False, footer=False, exonavbar=True, ** q_strings)
 
 
 @ bp.route("/about/", methods=['GET'])

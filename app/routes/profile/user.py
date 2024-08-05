@@ -21,6 +21,11 @@ def user(username):
     return render_template("profile/user/profile.html", user=user, navbar=True, background=True, size="medium", models=models)
 
 
+@ bp.route("/settings/profile/modal/", methods=["GET"])
+@login_required
+def edit_user_modal():
+    return render_template("profile/user/edit.html", user=current_user)
+
 @ bp.route("/settings/profile/", methods=["GET", "POST"])
 @login_required
 def edit_user():
@@ -39,7 +44,7 @@ def edit_user():
         day = flask_request.form.get("day")
         year = flask_request.form.get("year")
 
-        gender = flask_request.form.get("gender")
+        sex = flask_request.form.get("sex")
         skills = eval(flask_request.form.get("skills"))
 
         file = flask_request.files.get("photo")
@@ -91,7 +96,7 @@ def edit_user():
             current_user.photo.save(file=file)
         current_user.name = name.strip()
         current_user.set_birthdate(birthdate)
-        current_user.gender = gender
+        current_user.sex = sex
 
         # Add skills that are not already there
         for skill in skills:

@@ -291,4 +291,4 @@ def silent_local_remove(file_path):
     # exception if a different error occurred
 
 def get_s3_client():
-    return current_app.boto_session.client('s3',endpoint_url='https://s3.nl-1.wasabisys.com')
+    return current_app.boto_session.client('s3',endpoint_url='https://s3.eu-central-1.wasabisys.com')

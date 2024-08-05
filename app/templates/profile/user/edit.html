@@ -83,18 +83,18 @@
       </div>
       <br id="birthdate-anchor">
 
-      <h1><b>Gender</b></h1>
+      <h1><b>Sex</b></h1>
       <div class='select'> 
-        <select id="gender"> 
+        <select id="sex"> 
           <option value="Unspecified" selected>Unspecified</option>
-          <option {% if user.gender == "Male" %} selected {% endif %} value="Male">Male</option>
-          <option {% if user.gender == "Female" %} selected {% endif %} value="Female">Female</option>
+          <option {% if user.sex == "Male" %} selected {% endif %} value="Male">Male</option>
+          <option {% if user.sex == "Female" %} selected {% endif %} value="Female">Female</option>
       </select>
     </div>
-    <div id="feedback-gender" class="feedback" class="feedback">
+    <div id="feedback-sex" class="feedback" class="feedback">
         <div class="message"></div>
       </div>
-    <br id="gender-anchor">
+    <br id="sex-anchor">
     <h1><b>Skills</b></h1>
       <div id="skills">
         {% for skill in user.skills %}

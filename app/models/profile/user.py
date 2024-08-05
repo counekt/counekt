@@ -45,7 +45,7 @@ class User(UserMixin, db.Model, Base):
     name = db.Column(db.String(120))
     bio = db.Column(db.String(160))
     birthdate = db.Column(db.DateTime)
-    gender = db.Column(db.String, default="Unspecified")
+    sex = db.Column(db.String, default="Unspecified")
 
     photo_id = db.Column(db.Integer, db.ForeignKey('file.id'))
 
@@ -110,7 +110,7 @@ class User(UserMixin, db.Model, Base):
 
     def add_skill(self, title):
         if not self.skills.filter_by(title=title).first():
-            skill = Skill(owner=self, title=title)
+            skill = models.Skill(owner=self, title=title)
             db.session.add(skill)
             return title
 
@@ -164,6 +164,7 @@ class User(UserMixin, db.Model, Base):
     @staticmethod
     def check_auth_token(auth_token):
         user = User.query.filter_by(auth_token=auth_token).first()
+        print(f"User is {user} and auth token expired {user.auth_token_is_expired}")
         if user is None or user.auth_token_is_expired:
             return None
         return user
@@ -178,14 +179,14 @@ class User(UserMixin, db.Model, Base):
         return '<User {}>'.format(self.username)
 
     @classmethod
-    def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
+    def get_explore_query(cls, latitude, longitude, radius, skill=None, sex=None, min_age=None, max_age=None):
         query = cls.query.join(models.Location).filter(models.Location.is_in_explore_query(latitude, longitude, radius))
 
         if skill:
-            query = query.filter(cls.skills.any(Skill.title == skill))
+            query = query.filter(cls.skills.any(models.Skill.title == skill))
 
-        if gender:
-            query = query.filter_by(gender=gender)
+        if sex:
+            query = query.filter(User.sex==sex)
 
         if min_age:
             query = query.filter(cls.is_older_than(int(min_age)))

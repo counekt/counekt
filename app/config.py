@@ -23,7 +23,7 @@ class Config(object):
                         "Videography", "Photo Editing", "Film Editing",
                         "Music Production", "Accounting", "Sales",
                         "Design", "Law", "Investing", "Software", "Acting"]
-    AVAILABLE_GENDERS = ["Male", "Female", "Other"]
+    AVAILABLE_SEXES = ["Male", "Female"]
     SKILL_ASPECTS = {"Marketing": {"background-color": "#3eafaf", "color": "white"}, "Writing": {"background-color": "#bc903d", "color": "white"}, "Photography": {"background-color": "#8c4c42", "color": "white"},
                      "Videography": {"background-color": "#413422", "color": "white"}, "Photo Editing": {"background-color": "#3d5115", "color": "white"}, "Film Editing": {"background-color": "#431512", "color": "white"},
                      "Music Production": {"background-color": "#025d57", "color": "white"}, "Accounting": {"background-color": "#1d3d59", "color": "white"}, "Sales": {"background-color": "#0b4e88", "color": "white"},
