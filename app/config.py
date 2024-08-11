@@ -34,7 +34,7 @@ class Config(object):
     MAIL_USERNAME = getenv('MAIL_USERNAME')
     MAIL_PASSWORD = getenv('MAIL_PASSWORD')
     AUTH_EXPIRES_IN = 6000
-    ADMINS = ['frederik.w.l.christoffersen@gmail.com']
+    ADMINS = ['counekt@gmail.com']
     BUCKET = getenv('BUCKET')
     AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_KEY = getenv("AWS_SECRET_KEY")
