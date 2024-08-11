@@ -258,7 +258,7 @@ class ERC360(db.Model, Base):
         return Markup(f"{math.floor(float(mantissa)*100)/100} x 10<sup>{int(exponent)}</sup>");
 
     @classmethod
-    def get_explore_query(cls, latitude, longitude, radius, skill=None, gender=None, min_age=None, max_age=None):
+    def get_explore_query(cls, latitude, longitude, radius):
         query = cls.query.join(models.Location).filter(models.Location.is_in_explore_query(latitude, longitude, radius))
         return query
 

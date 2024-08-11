@@ -31,7 +31,7 @@ function register() {
    if ($("#year").val()) {
     formData.append("year", $("#year").val());
     }
-  formData.append("gender", $("#gender").val());
+  formData.append("sex", $("#sex").val());
   }
 
   else if (window._step == "step-2") {
@@ -54,7 +54,7 @@ function register() {
     formData.append("year", $("#year").val());
     }
     
-    formData.append("gender", $("#gender").val());
+    formData.append("sex", $("#sex").val());
 
      formData.append("email", $("#email").val());
     formData.append("username", $("#username").val());

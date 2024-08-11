@@ -12,7 +12,7 @@ CREATE TABLE "user" (
     name VARCHAR(120),
     bio VARCHAR(160),
     birthdate TIMESTAMP,
-    gender VARCHAR DEFAULT 'Unspecified',
+    sex VARCHAR DEFAULT 'Unspecified',
     photo_id INTEGER,
     main_wallet_id INTEGER,
     location_id INTEGER,

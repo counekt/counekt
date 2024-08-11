@@ -46,7 +46,7 @@ $(document).on("click", '#save-button', function(e) {
     formData.append("year", year);
   }
 
-   formData.append("gender", $("#gender").val());
+   formData.append("sex", $("#sex").val());
    formData.append("skills", skills);
 
    if (! $("#location-field").hasClass('errorClass') && ! $("#map").hasClass('errorClass')) {
@@ -74,21 +74,29 @@ $(document).on("click", '#save-button', function(e) {
           stopButtonLoading();
           $("select").find("option:selected").attr('selected', 'selected');
           $("select").find("option:not(:selected)").removeAttr('selected');
-          edit_modal = $("#modal-box").clone();
+          getNewEditModal();
           mapLatLng =  window.getLatLng();
           mapZoom = 12;
           changeToProfile();
           flash("Your changes were saved"); }
-        else{message(status, response["box_id"], true);}
+        else{message(status, response["box_id"], true);stopButtonLoading();}
         
       }});
      }
      else {
        $(".errorClass").effect("shake", {direction: "right", times: 2, distance: 8}, 350);
        document.getElementById("map").scrollIntoView(false);
+      stopButtonLoading();
 
      }
   });
+
+ function getNewEditModal() {
+
+$.get("/settings/profile/modal/", function(NewEditModal, status) {
+  edit_modal = NewEditModal;
+ });
+}
 
 
 

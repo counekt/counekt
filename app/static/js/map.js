@@ -121,7 +121,7 @@ $('#location-field').keypress(function(event){
 
 function explore(do_redirect=true) {
   if ($("#location-field").val()) {
-  var searchObject = {rad:"", loc:"", ski:"", gen:"", min:"", max:""};
+  var searchObject = {rad:"", loc:"", ski:"", sex:"", min:"", max:""};
   var formData = new FormData();
 
   formData.append("location", $("#location-field").val());
@@ -138,9 +138,9 @@ function explore(do_redirect=true) {
 
   }
 
-  if ($("#gender").val()) {
-   formData.append("gender", $("#gender").val());
-  searchObject["gen"] = $("#gender").val();
+  if ($("#sex").val()) {
+   formData.append("sex", $("#sex").val());
+  searchObject["sex"] = $("#sex").val();
 
  }
 

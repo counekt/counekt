@@ -26,9 +26,9 @@ def register():
             day = request.form.get('day')
             year = request.form.get('year')
 
-            gender = request.form.get('gender')
+            sex = request.form.get('sex')
 
-            response = funcs.verify_traits(month=month, day=day, year=year, gender=gender)
+            response = funcs.verify_traits(month=month, day=day, year=year, sex=sex)
             if response:
                 return response
             return json.dumps({'status': 'success'})
@@ -46,7 +46,7 @@ def register():
             month = request.form.get('month')
             day = request.form.get('day')
             year = request.form.get('year')
-            gender = request.form.get('gender')
+            sex = request.form.get('sex')
 
             username = request.form.get("username")
             email = request.form.get("email")
@@ -54,7 +54,7 @@ def register():
             password = request.form.get("password")
             repeat_password = request.form.get("repeat-password")
 
-            response = funcs.verify_traits(month=month, day=day, year=year, gender=gender)
+            response = funcs.verify_traits(month=month, day=day, year=year, sex=sex)
             if response:
                 return response
             response = funcs.verify_identifiers(username=username, email=email)
@@ -64,7 +64,7 @@ def register():
             if response:
                 return response
 
-            user = models.User(username=username, email=email, gender=gender)
+            user = models.User(username=username, email=email, sex=sex)
             user.set_password(password)
             user.set_birthdate(date(month=int(month), day=int(day), year=int(year)))
             db.session.add(user)

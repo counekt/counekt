@@ -71,10 +71,6 @@ class File(db.Model,Base):
         exists = bool(funcs.list_files(folder_path=self.path))
         return exists
 
-    @property
-    def is_empty(self):
-        return not self.is_local
-
     def make_local(self):
         folder = Path(current_app.root_path, self.path)
         folder.mkdir(parents=True, exist_ok=True)
