@@ -11,10 +11,11 @@ spenders = db.Table('spenders',
                   db.Column('wallet_id', db.Integer, db.ForeignKey('wallet.id'))
                   )
 
-_permits = db.Table('permits',
+Permits = db.Table('permits',
                   db.Column('permit_id', db.Integer, db.ForeignKey('permit.id')),
                   db.Column('wallet_id', db.Integer, db.ForeignKey('wallet.id'))
                   )
+
 
 class Wallet(db.Model, Base):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,7 +25,7 @@ class Wallet(db.Model, Base):
         'User', secondary=spenders, backref=db.backref("wallets",lazy='dynamic'), lazy='dynamic') 
 
     permits = db.relationship(
-        'Permit', secondary=_permits, back_populates="wallets", lazy='dynamic') 
+        'Permit', secondary=Permits, back_populates="wallets", lazy='dynamic') 
 
     @classmethod
     def get_or_register(cls,address,spender=None):
@@ -49,8 +50,8 @@ class Wallet(db.Model, Base):
     def erc360s_from_permits(self):
         return models.ERC360.query\
         .join(models.Permit,models.Permit.erc360_id == models.ERC360.id)\
-        .join(_permits, models.Permit.id == _permits.c.permit_id)\
-        .join(models.Wallet, models.Wallet.id == _permits.c.wallet_id)
+        .join(Permits, models.Permit.id == Permits.c.permit_id)\
+        .join(models.Wallet, models.Wallet.id == Permits.c.wallet_id)
 
     @property
     def erc360s_from_shards(self):

@@ -18,8 +18,8 @@ global erc360
 @ bp.route("/erc360/<address>/", methods=["GET", "POST"])
 @ bp.route("/€<address>/", methods=["GET", "POST"])
 def erc360(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/profile.html", erc360=erc360, navbar=True, background=True, size="medium", models=models)
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/profile.html", erc360=e360, navbar=True, background=True, size="medium", models=models)
 
 
 @ bp.route("/erc360/<address>/timeline/", methods=["GET"])
@@ -109,8 +109,8 @@ def mint(address):
         assert(log["address"] == address)
         account, amount = abi.decode_abi(["address","uint256"],bytes.fromhex(log["data"][2:]))
         print(account,amount)
-        erc360 = models.ERC360.query.filter_by(address=address).first()
-        erc360.update_ownership()
+        e360 = models.ERC360.query.filter_by(address=address).first()
+        e360.update_ownership()
         return json.dumps({'status': 'success'})
 
     return erc360(address)
@@ -123,10 +123,10 @@ def photo(address):
 @ bp.route("/erc360/<address>/update/timeline/", methods=["POST"])
 @ bp.route("/€<address>/update/timeline/", methods=["POST"])
 def update_timeline(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
+    e360 = models.ERC360.query.filter_by(address=address).first()
+    if not e360:
         abort(404)
-    erc360.update_timeline()
+    e360.update_timeline()
     db.session.commit()
     return json.dumps({'status': 'success'})
 
@@ -134,53 +134,53 @@ def update_timeline(address):
 @bp.route("/erc360/<address>/get/timeline/", methods=["GET"])
 @bp.route("/€<address>/get/timeline/", methods=["GET"])
 def get_timeline(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/timeline.html", erc360=erc360, models=models)
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/timeline.html", erc360=e360, models=models)
 
 
 @ bp.route("/erc360/<address>/update/ownership/", methods=["POST"])
 @ bp.route("/€<address>/update/ownership/", methods=["POST"])
 def update_ownership(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
-    if not erc360:
+    e360 = models.ERC360.query.filter_by(address=address).first()
+    if not e360:
         abort(404)
-    erc360.update_ownership()
+    e360.update_ownership()
     db.session.commit()
     return json.dumps({'status': 'success'})
 
 @bp.route("/erc360/<address>/get/ownership/", methods=["GET"])
 @bp.route("/€<address>/get/ownership/", methods=["GET"])
 def get_ownership(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/ownership/load-ownership-chart.html", erc360=erc360)
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/ownership/load-ownership-chart.html", erc360=e360)
 
 @ bp.route("/erc360/<address>/update/structure/", methods=["POST"])
 @ bp.route("/€<address>/update/structure/", methods=["POST"])
 def update_structure(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first()
+    e360 = models.ERC360.query.filter_by(address=address).first()
     if not erc360:
         abort(404)
-    erc360.update_structure()
+    e360.update_structure()
     db.session.commit()
     return json.dumps({'status': 'success'})
 
 @bp.route("/erc360/<address>/get/structure/", methods=["GET"])
 @bp.route("/€<address>/get/structure/", methods=["GET"])
 def get_structure(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/structure.html", erc360=erc360,models=models)
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/structure.html", erc360=e360,models=models)
 
 @bp.route("/erc360/<address>/get/structure/bank/transfer/", methods=["GET"])
 @bp.route("/€<address>/get/structure/bank/transfer/", methods=["GET"])
 def get_transfer(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/structure/transfer.html", erc360=erc360,models=models)
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/structure/transfer.html", erc360=e360,models=models)
 
 @bp.route("/erc360/<address>/get/edit/", methods=["GET"])
 @bp.route("/€<address>/get/edit/", methods=["GET"])
 def get_edit(address):
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    return render_template("erc360/edit.html", erc360=erc360,models=models)
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    return render_template("erc360/edit.html", erc360=e360,models=models)
 
 @ bp.route("/erc360/<address>/edit/", methods=["GET", "POST"])
 @ bp.route("/€<address>/edit/", methods=["GET", "POST"])
@@ -188,8 +188,8 @@ def get_edit(address):
 def edit(address):
     if not address:
         abort(404)
-    erc360 = models.ERC360.query.filter_by(address=address).first_or_404()
-    if not erc360:
+    e360 = models.ERC360.query.filter_by(address=address).first_or_404()
+    if not e360:
         abort(404)
     if flask_request.method == 'POST':
 
@@ -207,8 +207,8 @@ def edit(address):
         if len(description.strip()) > 160:
             return json.dumps({'status': 'Your corporatizable token\'s description can\'t exceed a length of 160 characters', 'box_id': 'description'})
 
-        erc360.description = description.strip()
-        erc360.public = public
+        e360.description = description.strip()
+        e360.public = public
 
         if show_location:
 
@@ -218,27 +218,27 @@ def edit(address):
             location = funcs.reverse_geocode([lat, lng])
             if not location:
                 return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
-            erc360.set_location(location=location)
+            e360.location.set(location=location)
 
-            erc360.show_location = True
+            e360.show_location = True
             if is_visible:
-                erc360.is_visible = True
+                e360.is_visible = True
         else:
-            erc360.latitude = None
-            erc360.longitude = None
-            erc360.sin_rad_lat = None
-            erc360.cos_rad_lat = None
-            erc360.rad_lng = None
-            erc360.location_address = None
-            erc360.is_visible = False
-            erc360.show_location = False
+            e360.latitude = None
+            e360.longitude = None
+            e360.sin_rad_lat = None
+            e360.cos_rad_lat = None
+            e360.rad_lng = None
+            e360.location_address = None
+            e360.is_visible = False
+            e360.show_location = False
 
         if file:
-            erc360.profile_photo.save(file=file)
+            e360.profile_photo.save(file=file)
 
         db.session.commit()
         return json.dumps({'status': 'success', 'address': address})
-    return render_template("erc360/profile.html", erc360=erc360, models=models, background=True, navbar=True, size="medium", noscroll=True)
+    return render_template("erc360/profile.html", erc360=e360, models=models, background=True, navbar=True, size="medium", noscroll=True)
 
 
 @bp.route("/create/erc360/", methods=["GET", "POST"])
@@ -292,28 +292,28 @@ def create():
 
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
             wallet = models.Wallet.get_or_register(address=receipt["from"],spender=current_user)
-            erc360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress,block=receipt.blockNumber)
+            e360 = models.ERC360(symbol=symbol, name=name, public=public, creator=wallet,address=receipt.contractAddress,block=receipt.blockNumber)
             if show_location:
                 location = funcs.reverse_geocode([lat, lng])
                 if not location:
                     return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})
-                erc360.set_location(location=location)
+                e360.location.set(location=location)
 
-                erc360.show_location = True
+                e360.show_location = True
                 if is_visible:
-                    erc360.is_visible = True
+                    e360.is_visible = True
             else:
-                erc360.latitude = None
-                erc360.longitude = None
-                erc360.sin_rad_lat = None
-                erc360.cos_rad_lat = None
-                erc360.rad_lng = None
-                erc360.location_address = None
-                erc360.is_visible = False
-                erc360.show_location = False
+                e360.latitude = None
+                e360.longitude = None
+                e360.sin_rad_lat = None
+                e360.cos_rad_lat = None
+                e360.rad_lng = None
+                e360.location_address = None
+                e360.is_visible = False
+                e360.show_location = False
 
             if file:
-                erc360.profile_photo.save(file=file)
+                e360.profile_photo.save(file=file)
 
             current_app.logger.info("testing code")
             # Wait for transaction to be mined...
@@ -327,12 +327,12 @@ def create():
             if not receipt.contractAddress or deploy_data != original_code:
                 return json.dumps({'status': 'Deployment did not go through!'})
         current_app.logger.info("UNPUSHED ERC360 CREATED")
-        db.session.add(erc360)
+        db.session.add(e360)
         current_user.register_wallet(receipt["from"])
         # FINISH
         db.session.commit()
         current_app.logger.info("ERC360 MOTHERFUCKING PUSHED")
-        return json.dumps({'status': 'success', 'address': erc360.address})
+        return json.dumps({'status': 'success', 'address': e360.address})
     skillrows = [current_user.skills.all()[i:i + 3] for i in range(0, len(current_user.skills.all()), 3)]
     return render_template("profile/user/profile.html", user=current_user, skillrows=skillrows, skill_aspects=current_app.config["SKILL_ASPECTS"], available_skills=current_app.config["AVAILABLE_SKILLS"], background=True, navbar=True, size="medium", noscroll=True)
 

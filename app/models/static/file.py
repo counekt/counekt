@@ -50,7 +50,11 @@ class File(db.Model,Base):
             return url
         else:
             #generate url for image
-            return funcs.generate_presigned_url(self.full_bucket_path)
+            return self.presigned_url
+    
+    @property
+    def presigned_url(self):
+        return funcs.generate_presigned_url(self.full_bucket_path)
 
     def empty(self):
         if not self.is_empty:
@@ -64,7 +68,7 @@ class File(db.Model,Base):
     @property
     def is_local(self):
         local_folder = Path(current_app.root_path, self.path)
-        return local_folder.exists() and os.listdir(str(local_folder))
+        return bool(local_folder.exists() and os.listdir(str(local_folder)))
 
     @property
     def is_global(self):

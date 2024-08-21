@@ -7,7 +7,7 @@ from flask import url_for
 import app.models as models
 import json
 import app.funcs as funcs
-from app.models.profile.wallet import _permits
+from app.models.profile.wallet import Permits
 import math
 from markupsafe import Markup
 
