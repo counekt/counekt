@@ -26,6 +26,6 @@ def verify_credentials(symbol,name,show_location,lat,lng):
 		if not lat or not lng:
 			return json.dumps({'status': 'Coordinates must be filled in, if you want to show your ERC360\'s location and or be visible on the map', 'box_id': 'location'})
 
-		location = funcs.reverse_geocode([lat, lng])
+		location = reverse_geocode([lat, lng])
 		if not location:
 			return json.dumps({'status': 'Invalid coordinates', 'box_id': 'location'})

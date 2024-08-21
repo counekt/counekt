@@ -74,8 +74,8 @@ CREATE TABLE spenders (
 CREATE TABLE permits (
     permit_id INTEGER,
     wallet_id INTEGER,
-    CONSTRAINT fk_permits_permit_id FOREIGN KEY (permit_id) REFERENCES permit (id),
-    CONSTRAINT fk_permits_wallet_id FOREIGN KEY (wallet_id) REFERENCES wallet (id)
+    CONSTRAINT fk_permits_permit_id FOREIGN KEY (permit_id) REFERENCES permit (id) ON DELETE CASCADE,
+    CONSTRAINT fk_permits_wallet_id FOREIGN KEY (wallet_id) REFERENCES wallet (id) ON DELETE CASCADE
 );
 
 

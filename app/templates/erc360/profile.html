@@ -247,6 +247,7 @@ $('#location-field').keypress(function(event){
   if(event.keyCode == 13){
     console.log("coord");
     getCoordinates();
+    $(this).blur();
   }
 });
 

@@ -191,7 +191,7 @@ def download_file(file_path, output_path, sync=False):
     """
     if sync:
         try:
-            s3 = current_app.boto_session.resource('s3', endpoint_url='https://s3.nl-1.wasabisys.com')
+            s3 = current_app.boto_session.resource('s3', endpoint_url='https://s3.eu-central-1.wasabisys.com')
             s3.Bucket(current_app.config["BUCKET"]).download_file(file_path, output_path)
             return True
         except EndpointConnectionError as e:
@@ -205,8 +205,8 @@ def download_file(file_path, output_path, sync=False):
             current_app.logger.error(e.message)
 
 def generate_presigned_url(file_path):
-    s3 = current_app.boto_session.client('s3', config=Config(signature_version=UNSIGNED),endpoint_url='https://s3.nl-1.wasabisys.com')
-    url = s3.generate_presigned_url('get_object',Params={'Bucket': current_app.config["BUCKET"],'Key': file_path},ExpiresIn=0)
+    s3 = current_app.boto_session.client('s3', config=Config(signature_version=UNSIGNED),endpoint_url='https://s3.eu-central-1.wasabisys.com')
+    url = s3.generate_presigned_url('get_object',Params={'Bucket': current_app.config["BUCKET"],'Key': file_path})
     return url
 
 def list_files(folder_path, sync=False):
@@ -258,7 +258,7 @@ def delete_async_file(app, file_path):
 
 def download_async_file(app, file_path, output_path):
     with app.app_context():
-        s3 = current_app.boto_session.resource('s3',endpoint_url="https://s3.nl-1.wasabisys.com")
+        s3 = current_app.boto_session.resource('s3',endpoint_url="https://s3.eu-central-1.wasabisys.com")
         s3.Bucket(current_app.config["BUCKET"]).download_file(file_path, output_path)
 
 

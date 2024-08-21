@@ -16,7 +16,7 @@ from app.etherscan import Etherscan
 
 w3 = Web3(Web3.HTTPProvider(Config.WEB3_NETWORK+Config.ALCHEMY_KEY))
 etherscan = Etherscan(Config.ETHERSCAN_API_KEY,server=Config.ETHEREUM_SERVER)
-geolocator = Nominatim(user_agent="frederik.w.l.christoffersen@gmail.com")
+geolocator = Nominatim(user_agent="counekt@gmail.com")
 db = SQLAlchemy(query_class=CustomQuery)
 migrate = Migrate()
 mail = Mail()

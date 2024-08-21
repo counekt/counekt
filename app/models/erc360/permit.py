@@ -5,7 +5,7 @@ from eth_utils import keccak
 from eth_abi import encode
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from app.funcs import keccak_256
-from app.models.profile.wallet import _permits
+from app.models.profile.wallet import Permits
 
 
 class Permit(db.Model, Base):
@@ -19,7 +19,7 @@ class Permit(db.Model, Base):
 	_parent = db.relationship("Permit",backref="children",remote_side=[id])
 
 	wallets = db.relationship(
-        'Wallet', secondary=_permits, back_populates="permits", lazy='dynamic') 
+        'Wallet', secondary=Permits, back_populates="permits", lazy='dynamic') 
 	
 	@hybrid_property
 	def parent(self):
@@ -77,7 +77,7 @@ class Permit(db.Model, Base):
 
 	def delete(self):
 		for w in self.wallets:
-			db.session.execute(_permits.delete().where((_permits.c.permit_id == self.id) and (_permits.c.wallet_id == w.id) ))
+			db.session.execute(Permits.delete().where((Permits.c.permit_id == self.id) and (Permits.c.wallet_id == w.id) ))
 		db.session.delete(self)
 
 	def __repr__(self):

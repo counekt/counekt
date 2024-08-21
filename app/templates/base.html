@@ -19,6 +19,7 @@
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     <script src="{{ url_for('static', filename='js/wallet.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Le_RiQqAAAAADiEPMgSUfjAeTVCIYY9H6bZ-BSF"></script>
     {% block head %}{% endblock %}
   </head>
   <body {% if noscroll %}class="noscroll"{% endif %}>
@@ -52,6 +53,14 @@
     {% endif %}
     </div>
     <div id="modal-box">{% block modal %}{% endblock %}</div>
+    <script type="text/javascript">
+        function onClick(e) {
+    e.preventDefault();
+    grecaptcha.enterprise.ready(async () => {
+      const token = await grecaptcha.enterprise.execute('6Le_RiQqAAAAADiEPMgSUfjAeTVCIYY9H6bZ-BSF', {action: 'LOGIN'});
+    });
+  }
+    </script>
     <script type="text/javascript">
 
         function miniprofile(name="",identifier="", bio="", href="",photo_src="",tick="") {
